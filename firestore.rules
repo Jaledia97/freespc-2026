@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    // =========================================================================
+    // SYSTEM: CIPHER PROTECTION PROTOCOLS v2
+    // STATUS: REVISED
+    // =========================================================================
+
+    // HELPER FUNCTIONS
+    
+    // Check if the authenticated user's ID matches the requested target
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Check if the user has the 'manager' role in their user profile
+    function isManager() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'manager';
+    }
+
+    // =========================================================================
+    // COLLECTIONS
+    // =========================================================================
+
+    // 1. USERS COLLECTION
+    // Policy: Users can only read/write their OWN document.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // 2. BINGO HALLS COLLECTION
+    // Policy: Public Read, Manager Write.
+    // Update: Protocols relaxed to allow public visibility of halls.
+    match /bingo_halls/{hallId} {
+      allow read: if true;
+      allow write: if isManager();
+    }
+
+    // 3. TRANSACTIONS COLLECTION
+    // Policy: User Read Own, Manager Read All, Append-Only (No Delete).
+    match /transactions/{transactionId} {
+      // Create: Authenticated users can create, but MUST claim the transaction as their own.
+      allow create: if request.auth != null && 
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Read: Users see their own; Managers see everything.
+      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || 
+                     isManager();
+      
+      // Update/Delete: DENIED. Ledger integrity must be maintained.
+      allow update, delete: if false;
+    }
+  }
+}

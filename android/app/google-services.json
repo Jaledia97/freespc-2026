@@ -12,7 +12,20 @@
           "package_name": "com.freespc.freespc"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "533105080399-kjb9t28u4tkmetlj1c7uv0aivggjfr27.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.freespc.freespc",
+            "certificate_hash": "5e31e75f06a18fe5a1a5e89ab506aae04e50174a"
+          }
+        },
+        {
+          "client_id": "533105080399-8mss0hje72o1lf1somlblt2sfsjq5lci.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyD6Wge3SbMBdc4vJtl35oXgJVqo1AkXuI0"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "533105080399-8mss0hje72o1lf1somlblt2sfsjq5lci.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "533105080399-o4mssjleggk7qmcbobankcsnik06n5ps.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.freespc.freespc"
+              }
+            }
+          ]
         }
       }
     }
