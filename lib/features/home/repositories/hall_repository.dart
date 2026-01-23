@@ -67,29 +67,43 @@ class HallRepository {
       'homeBaseId': hallId,
       'qrToken': 'meb-owner-token-${userId.substring(0, 5)}', // Semi-stable token
     });
+
+    // 3. Create Public Worker Profile (Safe for scanning)
+    await _firestore.collection('public_workers').doc(userId).set({
+      'uid': userId,
+      'firstName': 'Mary Esther Owner', // ideally fetch this from user profile if available, but for seed we hardcode or query first
+      'role': 'owner',
+      'qrToken': 'meb-owner-token-${userId.substring(0, 5)}',
+      'homeBaseId': hallId,
+    });
   }
 
   Future<UserModel?> getWorkerFromQr(String qrToken) async {
     try {
       print('Scanning for Token: $qrToken');
+      // Query the SAFE collection
       final querySnapshot = await _firestore
-          .collection('users')
+          .collection('public_workers')
           .where('qrToken', isEqualTo: qrToken)
           .limit(1)
           .get();
 
       if (querySnapshot.docs.isEmpty) return null;
 
-      final userDoc = querySnapshot.docs.first;
-      final user = UserModel.fromJson(userDoc.data());
-
-      // Validate Role
-      final validRoles = ['worker', 'admin', 'owner'];
-      if (!validRoles.contains(user.role)) {
-        return null; // Found user but not authorized
-      }
-
-      return user;
+      final data = querySnapshot.docs.first.data();
+      
+      // Return safe partial user model
+      return UserModel(
+        uid: data['uid'],
+        email: '', // Not exposed
+        firstName: data['firstName'] ?? 'Worker',
+        lastName: '',
+        username: '',
+        birthday: DateTime.now(), // Dummy
+        role: data['role'],
+        homeBaseId: data['homeBaseId'],
+        qrToken: data['qrToken'],
+      );
     } catch (e) {
       print("Error finding worker: $e");
       return null;

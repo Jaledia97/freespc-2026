@@ -15,10 +15,10 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
-    // Check if the user has the 'manager' role in their user profile
+    // Check if the user has an elevated role (manager, owner, admin)
     function isManager() {
-      return request.auth != null && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'manager';
+      let role = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      return request.auth != null && (role == 'manager' || role == 'owner' || role == 'admin');
     }
 
     // =========================================================================
@@ -31,9 +31,15 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
 
+    // 1.5. PUBLIC WORKERS (For Verification)
+    // Policy: Authenticated users can READ. Only Managers can WRITE.
+    match /public_workers/{workerId} {
+      allow read: if request.auth != null;
+      allow write: if isManager();
+    }
+
     // 2. BINGO HALLS COLLECTION
     // Policy: Public Read, Manager Write.
-    // Update: Protocols relaxed to allow public visibility of halls.
     match /bingo_halls/{hallId} {
       allow read: if true;
       allow write: if isManager();
