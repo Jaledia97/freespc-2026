@@ -17,6 +17,12 @@
 ### Features
 - Implemented the full "Scan-to-Earn" loop with optimistic UI updates.
 
+### Security & Roles (Phase 7)
+- **Roles**: Added `worker`, `owner`, and `admin` roles with `qrToken` support in `UserModel`.
+- **Environment**: Added "Mary Esther" Seed Tool to `HallRepository` and `ProfileScreen` for role/env setup.
+- **Scanning**: Enforced strict worker verification in `ScanActionDialog` (Fixed permissive scanner bug).
+- **Audit**: Updated `TransactionService` to record `authorizedByWorkerId` for verified points.
+
 ## NEXT STEPS
 - Verify Onboarding flow on a fresh install.
 - Implement "My Halls" subscription logic.
