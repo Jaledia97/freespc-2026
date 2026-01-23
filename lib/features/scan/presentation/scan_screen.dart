@@ -52,7 +52,7 @@ class _ScanScreenState extends State<ScanScreen> {
                 context: context,
                 barrierDismissible: false,
                 builder: (context) => ScanActionDialog(
-                  hallId: code, 
+                  content: code!, 
                   onResumeCamera: () { },
                 ),
               ).then((_) {

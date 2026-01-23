@@ -13,6 +13,7 @@ class TransactionService {
     required String hallId,
     required int points,
     required String description,
+    String? authorizedByWorkerId,
   }) async {
     if (hallId.isEmpty) {
        throw Exception("Invalid Hall ID (Empty)");
@@ -45,6 +46,7 @@ class TransactionService {
         'timestamp': FieldValue.serverTimestamp(),
         'type': 'earn',
         'description': description,
+        if (authorizedByWorkerId != null) 'authorizedByWorkerId': authorizedByWorkerId,
       });
     });
   }

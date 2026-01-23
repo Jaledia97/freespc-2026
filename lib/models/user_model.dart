@@ -14,9 +14,10 @@ abstract class UserModel with _$UserModel {
     required DateTime birthday,
     String? phoneNumber,
     String? recoveryEmail,
-    @Default('player') String role,
+    @Default('player') String role, // player, worker, admin, owner
     @Default(0) int currentPoints,
     String? homeBaseId,
+    String? qrToken,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, Object?> json) => _$UserModelFromJson(json);

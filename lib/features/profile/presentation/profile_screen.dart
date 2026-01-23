@@ -30,6 +30,20 @@ class ProfileScreen extends ConsumerWidget {
                 ref.read(hallRepositoryProvider).createMockHall();
               },
             ),
+            ListTile(
+              title: const Text('ADMIN: Seed Mary Esther Env', style: TextStyle(color: Colors.blue)),
+              subtitle: const Text('Sets You as Owner of Mary Esther'),
+              trailing: const Icon(Icons.build),
+              onTap: () async {
+                final user = ref.read(authStateChangesProvider).value;
+                if (user != null) {
+                   await ref.read(hallRepositoryProvider).seedMaryEstherEnv(user.uid);
+                   ScaffoldMessenger.of(context).showSnackBar(
+                     const SnackBar(content: Text('Environment Seeded! You are now Owner.')),
+                   );
+                }
+              },
+            ),
           ],
         ),
       ),

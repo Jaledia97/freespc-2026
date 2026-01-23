@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../wallet/services/transaction_service.dart';
 import '../../../services/auth_service.dart';
+import '../../home/repositories/hall_repository.dart';
+import '../../../models/user_model.dart';
+import '../../../models/bingo_hall_model.dart'; // Just in case, though we used string ID
 
-enum DialogState { idle, loading, success }
+// Added notFound state
+enum DialogState { checking, idle, loading, success, notFound }
 
 class ScanActionDialog extends ConsumerStatefulWidget {
-  final String hallId;
+  final String content; 
   final VoidCallback onResumeCamera;
 
   const ScanActionDialog({
     super.key,
-    required this.hallId,
+    required this.content,
     required this.onResumeCamera,
   });
 
@@ -20,7 +24,37 @@ class ScanActionDialog extends ConsumerStatefulWidget {
 }
 
 class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
-  DialogState _state = DialogState.idle;
+  DialogState _state = DialogState.checking;
+  UserModel? _verifiedWorker;
+  String? _targetHallId;
+
+  @override
+  void initState() {
+    super.initState();
+    _verifyScanContent();
+  }
+
+  Future<void> _verifyScanContent() async {
+    // Check if this is a worker
+    final worker = await ref.read(hallRepositoryProvider).getWorkerFromQr(widget.content);
+    
+    if (worker != null && worker.homeBaseId != null) {
+      _verifiedWorker = worker;
+      _targetHallId = worker.homeBaseId;
+      if (mounted) {
+        setState(() {
+           _state = DialogState.idle; // Idle here means "Found & Waiting for confirmation"
+        });
+      }
+    } else {
+      // STRICT: If not a worker, it is INVALID.
+      if (mounted) {
+        setState(() {
+           _state = DialogState.notFound;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,12 +65,54 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (_state == DialogState.idle) ...[
-              Text(
-                "Found Hall: ${widget.hallId}",
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+            if (_state == DialogState.checking) ...[
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              const Text("Verifying Code..."),
+            ] else if (_state == DialogState.notFound) ...[
+               const Icon(Icons.error_outline, color: Colors.grey, size: 60),
+               const SizedBox(height: 16),
+               const Text(
+                 "Invalid or Revoked Code",
+                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+               ),
+               const SizedBox(height: 8),
+               const Text(
+                 "This QR code is not recognized as a valid Worker Token.",
+                 textAlign: TextAlign.center,
+                 style: TextStyle(color: Colors.grey),
+               ),
+               const SizedBox(height: 24),
+               SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("EXIT", style: TextStyle(fontSize: 18)),
+                ),
               ),
+            ] else if (_state == DialogState.idle) ...[
+                 // Worker Found State
+                 const Icon(Icons.verified_user, color: Colors.blue, size: 48),
+                 const SizedBox(height: 8),
+                 Text(
+                  "Verified by ${_verifiedWorker!.firstName}", 
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
+                  textAlign: TextAlign.center,
+                ),
+                Text("Role: ${_verifiedWorker!.role}", style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                const SizedBox(height: 16),
+                Text("Checking in at: $_targetHallId"),
+
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
@@ -50,7 +126,7 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
                     ),
                   ),
                   onPressed: _logWin,
-                  child: const Text("LOG WIN (+10 pts)", style: TextStyle(fontSize: 20)),
+                  child: const Text("ACCEPT WIN (+10 pts)", style: TextStyle(fontSize: 20)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -74,11 +150,13 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
             ] else if (_state == DialogState.loading) ...[
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
-              const Text("Processing..."),
+              const Text("Processing Transaction..."),
             ] else if (_state == DialogState.success) ...[
               const Icon(Icons.check_circle, color: Colors.green, size: 80),
               const SizedBox(height: 16),
               const Text("Points Added!", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              if (_verifiedWorker != null) 
+                const Text("Authorized Transaction", style: TextStyle(color: Colors.grey)),
             ],
           ],
         ),
@@ -90,34 +168,23 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
     setState(() => _state = DialogState.loading);
 
     final user = ref.read(authStateChangesProvider).value;
-    if (user != null) {
+    if (user != null && _targetHallId != null) {
       try {
         await ref.read(transactionServiceProvider).awardPoints(
           userId: user.uid,
-          hallId: widget.hallId,
+          hallId: _targetHallId!, 
           points: 10,
-          description: "Scanned at ${widget.hallId}",
+          description: "Authorized Check-in by ${_verifiedWorker!.firstName} (${_verifiedWorker!.role})",
+          authorizedByWorkerId: _verifiedWorker?.uid,
         );
 
         setState(() => _state = DialogState.success);
         
-        // Wait 1.5s then close
         await Future.delayed(const Duration(milliseconds: 1500));
         
         if (mounted) {
-          Navigator.pop(context); // Close Dialog
-          Navigator.of(context).popUntil((route) => route.isFirst); // Go to Home (assuming Scan is moved to)
-          // Or just close scanner if it is a tab.
-          // If Scanner is a tab, we probably just want to close the dialog. 
-          // But requirement said "Close Scanner (pop)". 
-          // Let's assume Scanner is accessed via FAB and is a pushed route? 
-          // Actually MainLayout has it as a TAB/FAB. 
-          // If it's the `MainLayout` FAB, we are in `ScanScreen`.
-          // If we want to "Go Home", we can just switch tab or pop if `ScanScreen` was pushed.
-          // Given `MainLayout` structure "Docked Navigation", let's assume `ScanScreen` might be a modal or separate screen. 
-          // Re-reading `MainLayout`: it uses `widget.child`? No, standard Scaffold.
-          // Wait, `MainLayout` refactor... let's check `MainLayout` code later.
-          // For now, let's just close the dialog.
+          Navigator.pop(context); 
+          Navigator.of(context).popUntil((route) => route.isFirst); 
           
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Points Added!')),
