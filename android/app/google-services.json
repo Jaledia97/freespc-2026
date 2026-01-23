@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "533105080399",
+    "project_id": "freespc-2026",
+    "storage_bucket": "freespc-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:533105080399:android:c7387cad2567f6b310123a",
+        "android_client_info": {
+          "package_name": "com.freespc.freespc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6Wge3SbMBdc4vJtl35oXgJVqo1AkXuI0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
