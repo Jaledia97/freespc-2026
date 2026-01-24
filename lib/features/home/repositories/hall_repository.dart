@@ -85,11 +85,12 @@ class HallRepository {
         hallName: 'Mary Esther Bingo',
         title: 'Friday Night Megapot',
         description: '\$10,000 Must Go! Doors open at 4pm.',
-        imageUrl: 'https://picsum.photos/seed/bingo1/800/400',
+        imageUrl: 'https://loremflickr.com/800/400/bingo?lock=1',
         postedAt: now.subtract(const Duration(hours: 2)),
         startTime: now.add(const Duration(hours: 2)), // Happening soon
         latitude: baseLat,
         longitude: baseLng,
+        tags: ['Session', 'Progressives'],
       ),
       SpecialModel(
         id: 'sp2',
@@ -97,11 +98,12 @@ class HallRepository {
         hallName: 'Grand Bingo Hall',
         title: 'BOGO Buy-In',
         description: 'Buy one pack, get one FREE all day Saturday.',
-        imageUrl: 'https://picsum.photos/seed/bingo2/800/400',
+        imageUrl: 'https://loremflickr.com/800/400/bingo?lock=2',
         postedAt: now.subtract(const Duration(days: 1)),
         startTime: now.add(const Duration(days: 1, hours: 4)),
         latitude: baseLat + 0.1, // Nearby
         longitude: baseLng + 0.1,
+        tags: ['Specials', 'Session'],
       ),
       SpecialModel(
         id: 'sp3',
@@ -109,11 +111,12 @@ class HallRepository {
         hallName: 'Beachside Bingo',
         title: 'Seafood & Slots',
         description: 'Free shrimp cocktail with every \$20 spend.',
-        imageUrl: 'https://picsum.photos/seed/bingo3/800/400',
+        imageUrl: 'https://loremflickr.com/800/400/casino?lock=3',
         postedAt: now.subtract(const Duration(hours: 5)),
         startTime: now.add(const Duration(minutes: 30)), // Starting VERY soon
         latitude: baseLat - 0.05,
         longitude: baseLng + 0.05,
+        tags: ['Pulltabs', 'Regular Program'],
       ),
       SpecialModel(
         id: 'sp4', // Far away example (should be filtered out if we test radius)
@@ -121,11 +124,12 @@ class HallRepository {
         hallName: 'Downtown Gaming (Far)',
         title: 'Far Away Special',
         description: 'This is > 75 miles away.',
-        imageUrl: 'https://picsum.photos/seed/bingo4/800/400',
+        imageUrl: 'https://loremflickr.com/800/400/gambling?lock=4',
         postedAt: now.subtract(const Duration(minutes: 30)),
         startTime: now.add(const Duration(hours: 5)),
         latitude: baseLat + 2.0, // ~138 miles away (1 deg lat ~ 69 miles)
         longitude: baseLng,
+        tags: ['Session', 'Raffles'],
       ),
       SpecialModel(
         id: 'sp5',
@@ -133,11 +137,12 @@ class HallRepository {
         hallName: 'Westside Winners',
         title: 'New Player Bonus',
         description: '\$20 Free Play for all new signups this week.',
-        imageUrl: 'https://picsum.photos/seed/bingo5/800/400',
+        imageUrl: 'https://loremflickr.com/800/400/bingo,balls?lock=5',
         postedAt: now.subtract(const Duration(days: 2)),
         startTime: now.add(const Duration(days: 0)), // Ongoing
         latitude: baseLat + 0.02,
         longitude: baseLng - 0.02,
+        tags: ['Specials', 'New Player'],
       ),
     ];
 

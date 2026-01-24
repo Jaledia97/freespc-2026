@@ -50,7 +50,11 @@
 - **Geo-Fencing**: Home Feed now limits "Specials" to a **75-mile radius** and sorts by "Happening Now".
 - **New Feature**: Added "Upcoming Games" directory for browsing all scheduled events.
 - **Android**: Fixed `SocketException` (Internet Permission) and `NetworkImage` crashes.
-- **Optimization**: Tuned database query limits to prevent over-fetching.
+- **Category Browsing**: Implemented "Spotify-Style" directory with searchable category grid ("Session", "Pulltabs", etc.).
+- **Smart Cards**: Created unified `SpecialCard` with expansion logic, tags, and action buttons (Call, Cal, Map).
+- **Interactivity**: Added `url_launcher` and `add_2_calendar` for phone/map/calendar integration.
+- **UI Standardization**: Home Feed (Featured) and Directory (Compact) now share the exact same logic.
+- **Accessibility**: Improved contrast for category grid and action buttons.
 
 ## NEXT STEPS
 - Verify Onboarding flow on a fresh install.

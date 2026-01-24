@@ -16,6 +16,7 @@ abstract class SpecialModel with _$SpecialModel {
     DateTime? startTime,
     double? latitude,
     double? longitude,
+    @Default([]) List<String> tags,
   }) = _SpecialModel;
 
   factory SpecialModel.fromJson(Map<String, Object?> json) => _$SpecialModelFromJson(json);

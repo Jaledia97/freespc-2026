@@ -20,6 +20,9 @@ _SpecialModel _$SpecialModelFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['startTime'] as String),
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
+      tags:
+          (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
@@ -34,4 +37,5 @@ Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
       'startTime': instance.startTime?.toIso8601String(),
       'latitude': instance.latitude,
       'longitude': instance.longitude,
+      'tags': instance.tags,
     };

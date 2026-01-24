@@ -4,6 +4,7 @@ import '../../home/repositories/hall_repository.dart';
 import 'hall_profile_screen.dart';
 import 'hall_search_screen.dart';
 import 'upcoming_games_screen.dart';
+import 'widgets/special_card.dart';
 import '../../../services/location_service.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -101,55 +102,7 @@ class HomeScreen extends ConsumerWidget {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final special = specials[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      clipBehavior: Clip.antiAlias,
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: InkWell(
-                        onTap: () async {
-                           // In a real app, nav to Hall Details. 
-                           // For now, we simulate fetching the hall or verify if we have it.
-                           // Since we don't have a 'getHallById', we'll just show a snackbar or 
-                           // we could fetch all halls and find it. 
-                           // For MVP, enable tap to print.
-                           print("Tapped special: ${special.title}");
-                        },
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Full Width Image
-                            Image.network(
-                              special.imageUrl,
-                              height: 200,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => 
-                                Container(height: 200, color: Colors.grey, child: const Icon(Icons.broken_image)),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    special.title, 
-                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    special.hallName,
-                                    style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Theme.of(context).primaryColor),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(special.description),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+                    return SpecialCard(special: special, isFeatured: true);
                   },
                   childCount: specials.length,
                 ),
