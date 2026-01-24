@@ -14,6 +14,10 @@ _BingoHallModel _$BingoHallModelFromJson(Map<String, dynamic> json) =>
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       isActive: json['isActive'] as bool,
+      street: json['street'] as String?,
+      city: json['city'] as String?,
+      state: json['state'] as String?,
+      zipCode: json['zipCode'] as String?,
     );
 
 Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
@@ -24,4 +28,8 @@ Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
       'latitude': instance.latitude,
       'longitude': instance.longitude,
       'isActive': instance.isActive,
+      'street': instance.street,
+      'city': instance.city,
+      'state': instance.state,
+      'zipCode': instance.zipCode,
     };

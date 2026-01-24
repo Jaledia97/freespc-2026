@@ -19,6 +19,9 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   currentPoints: (json['currentPoints'] as num?)?.toInt() ?? 0,
   homeBaseId: json['homeBaseId'] as String?,
   qrToken: json['qrToken'] as String?,
+  following:
+      (json['following'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
@@ -35,4 +38,5 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'currentPoints': instance.currentPoints,
       'homeBaseId': instance.homeBaseId,
       'qrToken': instance.qrToken,
+      'following': instance.following,
     };

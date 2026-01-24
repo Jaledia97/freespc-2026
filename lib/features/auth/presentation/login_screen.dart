@@ -21,7 +21,7 @@ class LoginScreen extends ConsumerWidget {
             const SizedBox(height: 48),
             ElevatedButton.icon(
               icon: const ImageIcon(
-                 NetworkImage("https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"), 
+                 NetworkImage("https://cdn-icons-png.flaticon.com/512/300/300221.png"), 
                  size: 24,
               ), // Using icon for now, usually local asset
               label: const Text('Sign in with Google'),

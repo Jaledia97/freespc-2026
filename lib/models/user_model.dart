@@ -18,6 +18,7 @@ abstract class UserModel with _$UserModel {
     @Default(0) int currentPoints,
     String? homeBaseId,
     String? qrToken,
+    @Default([]) List<String> following,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, Object?> json) => _$UserModelFromJson(json);

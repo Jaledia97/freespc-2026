@@ -32,7 +32,25 @@
 - **Security**: Split Worker Identity into `public_workers` collection. Scanner now verifies against safe, public data instead of private User Profiles.
 - **Architecture**: Separated concern between Private User Data (Full PII) and Public Verification Profile (Safe PII).
 - **Performance**: Optimized `AuthWrapper` to prevent whole-app rebuilds when user points change.
+- **Performance**: Optimized `AuthWrapper` to prevent whole-app rebuilds when user points change.
 - **Efficiency**: Downgraded GPS to `Balanced` mode (100m filter) to significantly improve battery life.
+
+### Hall Profiles & Subscriptions (Phase 9)
+- **UI**: Added `HallProfileScreen` with Follow and Home Base actions.
+- **Backend**: Updated `UserModel` and `HallRepository` to track subscriptions.
+- **Feature**: Implemented "My Halls" screen to filter subscribed locations.
+
+### "Picklehead" Pivot (Phase 10)
+- **Home Screen**: Completely redesigned as a Visual Specials Feed with Quick Actions.
+- **My Halls**: Updated to show "Nearest to You" (GPS Top 5) alongside subscribed halls.
+- **Search**: Added dedicated `HallSearchScreen` for manual discovery.
+- **Data**: Implemented `SpecialModel` for the new feed.
+- **UI Polish**: Refined "My Halls" with vertical lists and expandable detailed cards for followed halls.
+- **Migration**: Moved "Specials" feed from client-side mock to real Firestore collection (`specials`).
+- **Geo-Fencing**: Home Feed now limits "Specials" to a **75-mile radius** and sorts by "Happening Now".
+- **New Feature**: Added "Upcoming Games" directory for browsing all scheduled events.
+- **Android**: Fixed `SocketException` (Internet Permission) and `NetworkImage` crashes.
+- **Optimization**: Tuned database query limits to prevent over-fetching.
 
 ## NEXT STEPS
 - Verify Onboarding flow on a fresh install.

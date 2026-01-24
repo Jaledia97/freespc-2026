@@ -12,6 +12,10 @@ abstract class BingoHallModel with _$BingoHallModel {
     required double latitude,
     required double longitude,
     required bool isActive,
+    String? street,
+    String? city,
+    String? state,
+    String? zipCode,
   }) = _BingoHallModel;
 
   factory BingoHallModel.fromJson(Map<String, dynamic> json) =>

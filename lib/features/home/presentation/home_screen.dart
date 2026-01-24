@@ -1,90 +1,204 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../home/repositories/hall_repository.dart';
+import 'hall_profile_screen.dart';
+import 'hall_search_screen.dart';
+import 'upcoming_games_screen.dart';
 import '../../../services/location_service.dart';
-import 'package:geolocator/geolocator.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    // In a real implementation this would be a stream from the repository
+    final userLocation = ref.watch(userLocationStreamProvider).valueOrNull;
+    final specialsStream = ref.watch(hallRepositoryProvider).getSpecialsFeed(userLocation); 
+
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          // 1. Pinned App Bar
+          const SliverAppBar(
+            title: Text('FreeSpc'),
+            centerTitle: true,
+            floating: true,
+            pinned: true,
+          ),
+
+          // 2. Quick Action Bar
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    const SizedBox(width: 16),
+                    _QuickAction(
+                      icon: Icons.search,
+                      label: 'Find Hall',
+                      color: Colors.orange,
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HallSearchScreen())),
+                    ),
+                    _QuickAction(
+                      icon: Icons.calendar_today,
+                      label: 'Upcoming Games',
+                      color: Colors.purpleAccent,
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingGamesScreen())),
+                    ),
+                    _QuickAction(
+                      icon: Icons.local_activity,
+                      label: 'Raffles',
+                      color: Colors.purple,
+                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming Soon"))),
+                    ),
+                    _QuickAction(
+                      icon: Icons.emoji_events,
+                      label: 'Tournaments',
+                      color: Colors.red,
+                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming Soon"))),
+                    ),
+                    _QuickAction(
+                      icon: Icons.people,
+                      label: 'Friends',
+                      color: Colors.teal,
+                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming Soon"))),
+                    ),
+                    _QuickAction(
+                      icon: Icons.person_search,
+                      label: 'Find Friend',
+                      color: Colors.blue,
+                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming Soon"))),
+                    ),
+                    _QuickAction(
+                      icon: Icons.map,
+                      label: 'Map View',
+                      color: Colors.green,
+                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming Soon"))),
+                    ),
+                    const SizedBox(width: 16),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // 3. The Specials Feed
+          StreamBuilder(
+            stream: specialsStream,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
+              }
+              if (snapshot.hasError) {
+                return SliverFillRemaining(child: Center(child: Text("Error: ${snapshot.error}")));
+              }
+              
+              final specials = snapshot.data ?? [];
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final special = specials[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      clipBehavior: Clip.antiAlias,
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: InkWell(
+                        onTap: () async {
+                           // In a real app, nav to Hall Details. 
+                           // For now, we simulate fetching the hall or verify if we have it.
+                           // Since we don't have a 'getHallById', we'll just show a snackbar or 
+                           // we could fetch all halls and find it. 
+                           // For MVP, enable tap to print.
+                           print("Tapped special: ${special.title}");
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Full Width Image
+                            Image.network(
+                              special.imageUrl,
+                              height: 200,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => 
+                                Container(height: 200, color: Colors.grey, child: const Icon(Icons.broken_image)),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    special.title, 
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    special.hallName,
+                                    style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Theme.of(context).primaryColor),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(special.description),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  childCount: specials.length,
+                ),
+              );
+            },
+          ),
+          
+          // Bottom Padding to clear BottomAppBar (80) + FAB space
+          const SliverToBoxAdapter(child: SizedBox(height: 140)),
+        ],
+      ),
+    );
+  }
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Trigger permission request
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(locationServiceProvider).determinePosition();
-    });
-  }
+class _QuickAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _QuickAction({
+    required this.icon, 
+    required this.label, 
+    required this.color, 
+    required this.onTap
+  });
 
   @override
   Widget build(BuildContext context) {
-    final hallsAsync = ref.watch(hallsStreamProvider);
-    final userLocationAsync = ref.watch(userLocationStreamProvider);
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Directory')),
-      body: hallsAsync.when(
-        data: (halls) {
-          // Get location if available, otherwise null
-          final userLocation = userLocationAsync.valueOrNull;
-          
-          // Calculate distances
-          final hallsWithDistance = halls.map((hall) {
-            double? distanceInMeters;
-            if (userLocation != null) {
-              distanceInMeters = ref.read(locationServiceProvider).getDistanceBetween(
-                userLocation.latitude,
-                userLocation.longitude,
-                hall.latitude,
-                hall.longitude,
-              );
-            }
-            return MapEntry(hall, distanceInMeters);
-          }).toList();
-
-          // Sort by distance (if available)
-          if (userLocation != null) {
-            hallsWithDistance.sort((a, b) {
-              final dA = a.value ?? double.infinity;
-              final dB = b.value ?? double.infinity;
-              return dA.compareTo(dB);
-            });
-          }
-
-          return ListView.builder(
-            itemCount: hallsWithDistance.length,
-            itemBuilder: (context, index) {
-              final entry = hallsWithDistance[index];
-              final hall = entry.key;
-              final distance = entry.value;
-
-              String subtitle = hall.beaconUuid;
-              if (distance != null) {
-                final miles = distance * 0.000621371;
-                subtitle = "${miles.toStringAsFixed(1)} mi • ${hall.beaconUuid}";
-              }
-
-              return ListTile(
-                leading: const Icon(Icons.store),
-                title: Text(hall.name),
-                subtitle: Text(subtitle),
-                trailing: distance != null 
-                    ? const Icon(Icons.near_me, size: 16, color: Colors.blue) 
-                    : null,
-                onTap: () {
-                  print("Tapped ${hall.name}");
-                },
-              );
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error loading halls: $err')),
+    return Padding(
+      padding: const EdgeInsets.only(right: 16.0),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(height: 8),
+            Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+          ],
+        ),
       ),
     );
   }

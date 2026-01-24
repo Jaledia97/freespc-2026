@@ -44,6 +44,16 @@ class ProfileScreen extends ConsumerWidget {
                 }
               },
             ),
+            ListTile(
+              title: const Text('ADMIN: Seed Specials (5 items)', style: TextStyle(color: Colors.green)),
+              trailing: const Icon(Icons.cloud_upload),
+              onTap: () async {
+                 await ref.read(hallRepositoryProvider).seedSpecials();
+                 ScaffoldMessenger.of(context).showSnackBar(
+                   const SnackBar(content: Text('Specials Seeded!')),
+                 );
+              },
+            ),
           ],
         ),
       ),
