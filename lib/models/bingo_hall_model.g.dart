@@ -18,6 +18,7 @@ _BingoHallModel _$BingoHallModelFromJson(Map<String, dynamic> json) =>
       city: json['city'] as String?,
       state: json['state'] as String?,
       zipCode: json['zipCode'] as String?,
+      geoHash: json['geoHash'] as String?,
     );
 
 Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
@@ -32,4 +33,5 @@ Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
       'city': instance.city,
       'state': instance.state,
       'zipCode': instance.zipCode,
+      'geoHash': instance.geoHash,
     };

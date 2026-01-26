@@ -56,7 +56,19 @@
 - **UI Standardization**: Home Feed (Featured) and Directory (Compact) now share the exact same logic.
 - **Accessibility**: Improved contrast for category grid and action buttons.
 
-## NEXT STEPS
-- Verify Onboarding flow on a fresh install.
-- Implement "My Halls" subscription logic.
-- Add Error Handling for invalid QR codes.
+### Onboarding & Advanced Auth (Phase 15/16)
+- **UI**: Added Premium login screen with glassmorphism and social auth row.
+- **Features**: Implemented `sign_in_with_apple`, `flutter_facebook_auth`, and Phone Verification logic.
+- **Logic**: Robust `AuthWrapper` handles user profile creation and routing seamlessly.
+
+### Map & Scalability (Phase 17/17.5)
+- **Map Engine**: Implemented `HallSearchScreen` with Google Maps and Sliding Panel.
+- **Geocoding**: Added Address Search and Radius Slider (1-100mi).
+- **Scalability**: Rebuilt backend with `geoflutterfire_plus` (Server-Side Geohashing) and `RxDart` streaming.
+- **Efficiency**: Added debounce logic to Map Search to throttle API costs.
+- **Data Integrity**: Updated Admin Seed tools to generate valid `geoHash` data for all mock halls.
+
+### Profile & Logic (Phase 18 - In Progress)
+- **Service**: Added `updateUserProfile` to `AuthService`.
+- **UI**: created `EditProfileDialog` scaffolding.
+

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geoflutterfire_plus/geoflutterfire_plus.dart'; 
 import '../../../models/bingo_hall_model.dart';
 import '../../../models/user_model.dart'; // Import UserModel
 import '../../../models/special_model.dart';
@@ -101,7 +102,7 @@ class HallRepository {
         imageUrl: 'https://loremflickr.com/800/400/bingo?lock=2',
         postedAt: now.subtract(const Duration(days: 1)),
         startTime: now.add(const Duration(days: 1, hours: 4)),
-        latitude: baseLat + 0.1, // Nearby
+        latitude: baseLat + 0.1, 
         longitude: baseLng + 0.1,
         tags: ['Specials', 'Session'],
       ),
@@ -113,13 +114,13 @@ class HallRepository {
         description: 'Free shrimp cocktail with every \$20 spend.',
         imageUrl: 'https://loremflickr.com/800/400/casino?lock=3',
         postedAt: now.subtract(const Duration(hours: 5)),
-        startTime: now.add(const Duration(minutes: 30)), // Starting VERY soon
+        startTime: now.add(const Duration(minutes: 30)), 
         latitude: baseLat - 0.05,
         longitude: baseLng + 0.05,
         tags: ['Pulltabs', 'Regular Program'],
       ),
       SpecialModel(
-        id: 'sp4', // Far away example (should be filtered out if we test radius)
+        id: 'sp4',
         hallId: 'downtown-hall', 
         hallName: 'Downtown Gaming (Far)',
         title: 'Far Away Special',
@@ -127,7 +128,7 @@ class HallRepository {
         imageUrl: 'https://loremflickr.com/800/400/gambling?lock=4',
         postedAt: now.subtract(const Duration(minutes: 30)),
         startTime: now.add(const Duration(hours: 5)),
-        latitude: baseLat + 2.0, // ~138 miles away (1 deg lat ~ 69 miles)
+        latitude: baseLat + 2.0, 
         longitude: baseLng,
         tags: ['Session', 'Raffles'],
       ),
@@ -148,6 +149,37 @@ class HallRepository {
 
     for (var special in specials) {
       await collection.doc(special.id).set(special.toJson());
+      
+      // Also ensure the Hall exists with GeoHash for the Map
+      // This is a "Backfill" for our mock data
+      final hallId = special.hallId;
+      final hallName = special.hallName;
+      final lat = special.latitude ?? baseLat;
+      final lng = special.longitude ?? baseLng;
+      
+      // Check if hall exists first to avoid overwriting real data? 
+      // For seed tool, overwriting is expected.
+      
+      final geoPoint = GeoFirePoint(GeoPoint(lat, lng));
+      
+      final hall = BingoHallModel(
+        id: hallId,
+        name: hallName,
+        beaconUuid: "mock-$hallId",
+        latitude: lat,
+        longitude: lng,
+        isActive: true,
+        street: "Mock Street",
+        city: "Mary Esther", 
+        state: "FL",
+        zipCode: "32569",
+        geoHash: geoPoint.geohash,
+      );
+      
+      final hallData = hall.toJson();
+      hallData['geo'] = hall.geoFirePoint;
+      
+      await _firestore.collection('bingo_halls').doc(hallId).set(hallData, SetOptions(merge: true));
     }
   }
 
@@ -195,30 +227,46 @@ class HallRepository {
 
   Future<void> createMockHall() async {
     final random = Random();
+    final lat = 30.0 + random.nextDouble();
+    final lng = -86.0 - random.nextDouble();
+    
+    final geoPoint = GeoFirePoint(GeoPoint(lat, lng));
+
     final mockHall = BingoHallModel(
-      id: '', // Firestone will generate ID if we add it differently, but for set() we need one. Let's rely on doc reference for ID or assign UUID.
-      // Ideally id matches Doc ID. Let's generate a new Doc ref.
+      id: '', 
       name: "Grand Bingo Hall ${random.nextInt(100)}",
       beaconUuid: "mock-uuid-${random.nextInt(1000)}",
-      latitude: 30.0 + random.nextDouble(),
-      longitude: -86.0 - random.nextDouble(),
+      latitude: lat,
+      longitude: lng,
       isActive: true,
       street: "123 Random St",
       city: "Mary Esther",
       state: "FL",
       zipCode: "32569", 
+      geoHash: geoPoint.geohash,
     );
 
-    // We need to exclude ID from the data we set if we want Firestore to generate one, 
-    // or generate one ourselves. BingoHallModel requires ID. 
-    // Let's create a new doc ref first.
     final docRef = _firestore.collection('bingo_halls').doc();
     
-    // Create copy with the generated Doc ID
     final hallWithId = mockHall.copyWith(id: docRef.id);
     
-    await docRef.set(hallWithId.toJson());
+    final hallData = hallWithId.toJson();
+    hallData['geo'] = hallWithId.geoFirePoint;
+    
+    await docRef.set(hallData);
   }
+
+  Future<List<BingoHallModel>> getAllHalls() async {
+    try {
+      final snapshot = await _firestore.collection('bingo_halls').get();
+      return snapshot.docs.map((doc) => BingoHallModel.fromJson(doc.data())).toList();
+    } catch (e) {
+      print("Error getting all halls: $e");
+      return [];
+    }
+  }
+
+
 
   // --- Advanced Search ---
   Future<List<BingoHallModel>> searchHalls(String query, {Position? userLocation}) async {
@@ -294,6 +342,9 @@ class HallRepository {
   Future<void> seedMaryEstherEnv(String userId) async {
     const hallId = 'mary-esther-bingo';
     
+    // Generate GeoHash
+    final GeoFirePoint geoPoint = GeoFirePoint(GeoPoint(30.407, -86.662));
+
     // 1. Create/Update the specific Hall
     final hall = BingoHallModel(
       id: hallId,
@@ -301,14 +352,19 @@ class HallRepository {
       beaconUuid: "meb-beacon-001",
       latitude: 30.407,
       longitude: -86.662,
-      isActive: true,
+      isActive: true, // ... other fields
       street: "205 Mary Esther Blvd",
       city: "Mary Esther",
       state: "FL",
       zipCode: "32569",
+      geoHash: geoPoint.geohash, // Scalable field
     );
     
-    await _firestore.collection('bingo_halls').doc(hallId).set(hall.toJson());
+    // We need to store the 'geo' object as a Map for GFF+
+    final hallData = hall.toJson();
+    hallData['geo'] = hall.geoFirePoint;
+
+    await _firestore.collection('bingo_halls').doc(hallId).set(hallData);
     
     // 2. Update the User to be Owner
     final userRef = _firestore.collection('users').doc(userId);
@@ -328,6 +384,67 @@ class HallRepository {
       'homeBaseId': hallId,
     });
   }
+
+
+
+  Future<void> checkHallData(String hallId) async {
+    final doc = await _firestore.collection('bingo_halls').doc(hallId).get();
+    print("DEBUG: Raw Hall Data for $hallId:");
+    print(doc.data());
+    if (doc.data() != null && doc.data()!.containsKey('geo')) {
+      print("DEBUG: 'geo' field type: ${doc.data()!['geo'].runtimeType}");
+      print("DEBUG: 'geo' content: ${doc.data()!['geo']}");
+    } else {
+      print("DEBUG: No 'geo' field found!");
+    }
+  }
+
+  // --- Scalable Search ---
+  // Replaces getAllHalls and old getHallsInRadius
+  Stream<List<BingoHallModel>> getHallsInRadius({
+    required double latitude,
+    required double longitude,
+    required double radiusInMiles,
+  }) {
+    final center = GeoFirePoint(GeoPoint(latitude, longitude));
+    final radiusInKm = radiusInMiles * 1.60934;
+
+    final collection = _firestore.collection('bingo_halls');
+    
+    // Subscribes to updates within the radius
+    return GeoCollectionReference(collection).subscribeWithin(
+      center: center,
+      radiusInKm: radiusInKm,
+      field: 'geo', 
+      geopointFrom: (data) {
+        // Robust parsing
+        try {
+          if (data['geo'] == null || data['geo'] is! Map) {
+             throw Exception('Invalid geo field');
+          }
+          return (data['geo'] as Map)['geopoint'] as GeoPoint;
+        } catch (e) {
+          // print('Error parsing geopoint: $e'); // Optional: noisy log
+          return const GeoPoint(0, 0); // Fallback to avoid crash, will likely be filtered out or show at 0,0
+        }
+      },
+    ).map((snapshots) {
+      print("GeoFire Query: Found ${snapshots.length} potential matches");
+      return snapshots.map((doc) {
+        final data = doc.data(); 
+        if (data == null) return null;
+        // Verify geo field exists before returning model, otherwise standard json parsing might fail if we relied on it
+        // Actually locally we use lat/lng from model, not 'geo'
+        try {
+           return BingoHallModel.fromJson(data);
+        } catch (e) {
+           print("Error parsing hall model: $e");
+           return null;
+        } 
+      }).whereType<BingoHallModel>().toList();
+    });
+  }
+
 
   Future<UserModel?> getWorkerFromQr(String qrToken) async {
     try {

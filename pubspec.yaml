@@ -49,6 +49,12 @@ dependencies:
   geolocator: ^14.0.2
   url_launcher: ^6.3.2
   add_2_calendar: ^3.0.1
+  sign_in_with_apple: ^7.0.1
+  flutter_facebook_auth: ^7.1.5
+  google_maps_flutter: ^2.14.0
+  sliding_up_panel: ^2.0.0+1
+  geocoding: ^4.0.0
+  geoflutterfire_plus: ^0.0.34
 
 dev_dependencies:
   flutter_test:

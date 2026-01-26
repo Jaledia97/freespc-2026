@@ -38,6 +38,7 @@ class ProfileScreen extends ConsumerWidget {
                 final user = ref.read(authStateChangesProvider).value;
                 if (user != null) {
                    await ref.read(hallRepositoryProvider).seedMaryEstherEnv(user.uid);
+                   await ref.read(hallRepositoryProvider).checkHallData('mary-esther-bingo'); // Verify write
                    ScaffoldMessenger.of(context).showSnackBar(
                      const SnackBar(content: Text('Environment Seeded! You are now Owner.')),
                    );
