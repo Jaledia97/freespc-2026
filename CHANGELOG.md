@@ -1,74 +1,68 @@
 # Changelog
 
-## [Unreleased] - 2026-01-23
+# Changelog
 
-### Infrastructure
-- Fixed `google_sign_in` and `build_runner` dependency issues.
+All notable changes to the FreeSPC project will be documented in this file.
 
-### Auth
-- Implemented `AuthWrapper`, `LoginScreen`, and `OnboardingScreen` (User Profile creation).
+## [2026-01-26] - Scalable Geohashing Map, Profile Logic & Auth Updates (Phase 17.5 & 18)
 
-### Database
-- Added `UserModel` (with Freezed) and `TransactionService` (Transactional Point System).
+### Scalability & Infrastructure
+- **Geohashing**: Migrated Hall Search to use `geoflutterfire_plus` for server-side geohashing, enabling infinite scalability (suppots 10k+ locations without client overload).
+- **Optimization**: Implemented "Debounce" logic (100ms throttle) on map interactions to prevent excessive Firestore reads and reduce billing costs.
+- **Data Integrity**: Updated Admin Seed tools (`seedSpecials`, `createMockHall`) to automatically generate valid `geoHash` fields for all mock data.
 
-### UI
-- Created `MainLayout` (Docked FAB), `ScanActionDialog` (Animated Kiosk Flow), and `WalletScreen` (Real-time Point Display).
+### Map Features
+- **Smart Search**: Added a `HallSearchScreen` with Google Maps, Address Geocoding (City/Zip search), and a Radius Slider (1-100mi).
+- **Streaming**: "Live Crosshair" logic streams only visible halls in the current viewport/radius using `RxDart`.
+
+### User Profile (Work in Progress)
+- **Service**: Added `updateUserProfile` to `AuthService` to allow modifications to First Name, Last Name, and Username.
+- **UI**: Added scaffolding for `EditProfileDialog` to facilitate user profile updates.
+
+### Authentication
+- **Methods**: Integrated `sign_in_with_apple` and `flutter_facebook_auth` dependencies.
+- **Security**: Hardened `AuthWrapper` to handle user profile creation/routing more robustly.
+
+---
+
+## [2026-01-24] - Visual Polish, Smart Cards & Upcoming Games (Phase 10-17)
+
+### UI & UX Redesign
+- **Smart Cards**: Introduced a unified `SpecialCard` widget with stateful expansion, embedded action buttons (Call, Navigate, Calendar), and tag display.
+- **Interactivity**: Added `url_launcher` for phone calls/navigation and `add_2_calendar` for one-tap event saving.
+- **Directory**: "Upcoming Games" screen redesigned with a "Spotify-style" category grid ("Session", "Pulltabs", "Progressives") for easier browsing.
+- **Accessibility**: Improved color contrast ratios for category text and action buttons.
+
+### Geo-Fencing
+- **Feed Logic**: Home Screen "Specials Feed" now limits results to a **75-mile radius** from the user's location, sorted by "Happening Now".
+
+---
+
+## [2026-01-23] - Security, Scanner & Geolocation (Phase 7-9)
+
+### Security & Roles
+- **RBAC**: Implemented Role-Based Access Control (`worker`, `owner`, `admin`) secured by `firestore.rules`.
+- **Public Workers**: Separated Verified Worker Identity into a public `public_workers` collection to protect PII during scans.
+- **Scanner Audit**: Updated `TransactionService` to record `authorizedByWorkerId` on every point transaction for full auditability.
+- **Strict Verification**: `ScanActionDialog` now strictly verifies worker QR tokens against the public registry before processing points.
+
+### Geolocation
+- **GPS**: Added `geolocator` dependency and `LocationService`.
+- **Proximity**: Updated Home Screen to display real-time distance to halls (e.g., "3.2 mi") sorted by proximity.
+- **Battery**: Optimized GPS tracking to use `LocationAccuracy.balanced` (100m filter) to preserve user battery life.
+
+---
+
+## [2026-01-22] - Foundation & Authentication (Phase 1-6)
+
+### Core Infrastructure
+- **Setup**: Initialized project structure, dependencies (`riverpod`, `freezed`, `json_serializable`), and Firebase configuration.
+- **Database**: Defined core data models: `UserModel`, `BingoHallModel`, `TransactionModel`.
+- **Theme**: Implemented `AppTheme` with custom color palette and typography.
 
 ### Features
-- Implemented the full "Scan-to-Earn" loop with optimistic UI updates.
+- **Authentication**: Built `AuthService` with Google Sign-In and Email/Password flow.
+- **Scan-to-Earn**: Created the core "Game Loop" where users scan a QR code at a kiosk to earn points instantly.
+- **Wallet**: Developed `WalletScreen` with real-time point balance updates via Firestore streams.
 
-### Security & Roles (Phase 7)
-- **Roles**: Added `worker`, `owner`, and `admin` roles with `qrToken` support in `UserModel`.
-- **Environment**: Added "Mary Esther" Seed Tool to `HallRepository` and `ProfileScreen` for role/env setup.
-- **Scanning**: Enforced strict worker verification in `ScanActionDialog` (Fixed permissive scanner bug).
-- **Audit**: Updated `TransactionService` to record `authorizedByWorkerId` for verified points.
-
-### Geolocation (Phase 8)
-- **Dependency**: Added `geolocator` for GPS tracking.
-- **Service**: Implemented `LocationService` with permission handling.
-- **UI**: Updated `HomeScreen` to display real-time distance to halls (in miles) and sort by proximity.
-
-### System Audit & Refactor (Phase 8.5)
-- **Security**: Split Worker Identity into `public_workers` collection. Scanner now verifies against safe, public data instead of private User Profiles.
-- **Architecture**: Separated concern between Private User Data (Full PII) and Public Verification Profile (Safe PII).
-- **Performance**: Optimized `AuthWrapper` to prevent whole-app rebuilds when user points change.
-- **Performance**: Optimized `AuthWrapper` to prevent whole-app rebuilds when user points change.
-- **Efficiency**: Downgraded GPS to `Balanced` mode (100m filter) to significantly improve battery life.
-
-### Hall Profiles & Subscriptions (Phase 9)
-- **UI**: Added `HallProfileScreen` with Follow and Home Base actions.
-- **Backend**: Updated `UserModel` and `HallRepository` to track subscriptions.
-- **Feature**: Implemented "My Halls" screen to filter subscribed locations.
-
-### "Picklehead" Pivot (Phase 10)
-- **Home Screen**: Completely redesigned as a Visual Specials Feed with Quick Actions.
-- **My Halls**: Updated to show "Nearest to You" (GPS Top 5) alongside subscribed halls.
-- **Search**: Added dedicated `HallSearchScreen` for manual discovery.
-- **Data**: Implemented `SpecialModel` for the new feed.
-- **UI Polish**: Refined "My Halls" with vertical lists and expandable detailed cards for followed halls.
-- **Migration**: Moved "Specials" feed from client-side mock to real Firestore collection (`specials`).
-- **Geo-Fencing**: Home Feed now limits "Specials" to a **75-mile radius** and sorts by "Happening Now".
-- **New Feature**: Added "Upcoming Games" directory for browsing all scheduled events.
-- **Android**: Fixed `SocketException` (Internet Permission) and `NetworkImage` crashes.
-- **Category Browsing**: Implemented "Spotify-Style" directory with searchable category grid ("Session", "Pulltabs", etc.).
-- **Smart Cards**: Created unified `SpecialCard` with expansion logic, tags, and action buttons (Call, Cal, Map).
-- **Interactivity**: Added `url_launcher` and `add_2_calendar` for phone/map/calendar integration.
-- **UI Standardization**: Home Feed (Featured) and Directory (Compact) now share the exact same logic.
-- **Accessibility**: Improved contrast for category grid and action buttons.
-
-### Onboarding & Advanced Auth (Phase 15/16)
-- **UI**: Added Premium login screen with glassmorphism and social auth row.
-- **Features**: Implemented `sign_in_with_apple`, `flutter_facebook_auth`, and Phone Verification logic.
-- **Logic**: Robust `AuthWrapper` handles user profile creation and routing seamlessly.
-
-### Map & Scalability (Phase 17/17.5)
-- **Map Engine**: Implemented `HallSearchScreen` with Google Maps and Sliding Panel.
-- **Geocoding**: Added Address Search and Radius Slider (1-100mi).
-- **Scalability**: Rebuilt backend with `geoflutterfire_plus` (Server-Side Geohashing) and `RxDart` streaming.
-- **Efficiency**: Added debounce logic to Map Search to throttle API costs.
-- **Data Integrity**: Updated Admin Seed tools to generate valid `geoHash` data for all mock halls.
-
-### Profile & Logic (Phase 18 - In Progress)
-- **Service**: Added `updateUserProfile` to `AuthService`.
-- **UI**: created `EditProfileDialog` scaffolding.
 
