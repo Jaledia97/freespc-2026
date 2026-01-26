@@ -156,12 +156,14 @@ class AuthService {
     String? firstName, 
     String? lastName,
     String? username,
+    String? bio,
     String? email, // Optional if we allow email changes
   }) async {
     final Map<String, dynamic> updates = {};
     if (firstName != null) updates['firstName'] = firstName;
     if (lastName != null) updates['lastName'] = lastName;
     if (username != null) updates['username'] = username;
+    if (bio != null) updates['bio'] = bio;
     
     // Safety check just in case
     if (updates.isEmpty) return;

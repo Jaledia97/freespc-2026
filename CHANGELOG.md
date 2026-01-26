@@ -15,9 +15,13 @@ All notable changes to the FreeSPC project will be documented in this file.
 - **Smart Search**: Added a `HallSearchScreen` with Google Maps, Address Geocoding (City/Zip search), and a Radius Slider (1-100mi).
 - **Streaming**: "Live Crosshair" logic streams only visible halls in the current viewport/radius using `RxDart`.
 
-### User Profile (Work in Progress)
-- **Service**: Added `updateUserProfile` to `AuthService` to allow modifications to First Name, Last Name, and Username.
-- **UI**: Added scaffolding for `EditProfileDialog` to facilitate user profile updates.
+### User Profile (Phase 18)
+- **Service**: Added `updateUserProfile` to `AuthService` (First/Last Name, Username, Bio).
+- **UI Refresh**: Implemented a complete Profile Screen redesign featuring:
+    - **Header**: Avatar using Initials + Edit Profile Dialog.
+    - **Actions**: "My Tournaments" & "My Raffles" quick access buttons.
+    - **Bio Section**: Dedicated "About Me" area with a clean divider.
+    - **Menu**: Collapsible "Developer Options" for admin seeding tools.
 
 ### Authentication
 - **Methods**: Integrated `sign_in_with_apple` and `flutter_facebook_auth` dependencies.

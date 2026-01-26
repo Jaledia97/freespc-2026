@@ -16,6 +16,7 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
   late final TextEditingController _firstNameController;
   late final TextEditingController _lastNameController;
   late final TextEditingController _usernameController;
+  late final TextEditingController _bioController;
   bool _isLoading = false;
 
   @override
@@ -24,6 +25,7 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
     _firstNameController = TextEditingController(text: widget.user.firstName);
     _lastNameController = TextEditingController(text: widget.user.lastName);
     _usernameController = TextEditingController(text: widget.user.username);
+    _bioController = TextEditingController(text: widget.user.bio ?? '');
   }
 
   @override
@@ -31,6 +33,7 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _usernameController.dispose();
+    _bioController.dispose();
     super.dispose();
   }
 
@@ -42,6 +45,7 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         username: _usernameController.text.trim(),
+        bio: _bioController.text.trim(),
       );
       if (mounted) Navigator.pop(context); // Close dialog on success
     } catch (e) {
@@ -76,6 +80,13 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
             TextField(
               controller: _usernameController,
               decoration: const InputDecoration(labelText: 'Username'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _bioController,
+              decoration: const InputDecoration(labelText: 'Bio / About Me'),
+              maxLines: 3,
+              maxLength: 140,
             ),
           ],
         ),
