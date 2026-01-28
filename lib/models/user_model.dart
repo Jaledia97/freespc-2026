@@ -19,6 +19,8 @@ abstract class UserModel with _$UserModel {
     String? homeBaseId,
     String? qrToken,
     String? bio, 
+    String? photoUrl,
+    String? bannerUrl,
     @Default([]) List<String> following,
   }) = _UserModel;
 

@@ -24,8 +24,25 @@ class ProfileScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // TODO: Settings
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Settings coming soon")));
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: const Color(0xFF1E1E1E),
+                builder: (context) => SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                       ListTile(
+                        leading: const Icon(Icons.logout, color: Colors.redAccent),
+                        title: const Text('Logout', style: TextStyle(color: Colors.redAccent)),
+                        onTap: () {
+                          Navigator.pop(context); // Close sheet
+                          ref.read(authServiceProvider).signOut();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
             },
           ),
         ],
@@ -67,18 +84,19 @@ class ProfileScreen extends ConsumerWidget {
                 
                 const SizedBox(height: 24),
 
-                // 3. Bio / About Me
-                if (user.bio != null && user.bio!.isNotEmpty)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                // 3. Bio & Home Hall Card
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // About Me Section
+                      if (user.bio != null && user.bio!.isNotEmpty) ...[
                         const Text(
                           "About Me",
                           style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
@@ -88,9 +106,31 @@ class ProfileScreen extends ConsumerWidget {
                           user.bio!,
                           style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
                         ),
+                        const SizedBox(height: 24),
                       ],
-                    ),
+
+                      // Home Hall Section
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Home Hall",
+                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          if (user.homeBaseId != null)
+                            GestureDetector(
+                              onTap: () {
+                                ref.read(hallRepositoryProvider).toggleHomeBase(user.uid, user.homeBaseId!, user.homeBaseId);
+                              },
+                              child: const Text("UNSET", style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
+                            ),
+                        ],
+                      ),
+                      const Divider(color: Colors.white24, height: 24),
+                      _HomeBaseDisplay(homeBaseId: user.homeBaseId),
+                    ],
                   ),
+                ),
 
                 const SizedBox(height: 24),
                 const Divider(color: Colors.white10),
@@ -141,14 +181,7 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 
                 // 5. Logout
-                ProfileMenu(
-                  title: "Logout",
-                  icon: Icons.logout,
-                  isDestructive: true,
-                  onTap: () {
-                    ref.read(authServiceProvider).signOut();
-                  },
-                ),
+                const SizedBox(height: 48),
                 const SizedBox(height: 48),
               ],
             ),
@@ -191,6 +224,60 @@ class ProfileScreen extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _HomeBaseDisplay extends ConsumerWidget {
+  final String? homeBaseId;
+
+  const _HomeBaseDisplay({required this.homeBaseId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (homeBaseId == null) {
+      return const Text(
+        "No Home Base Set",
+        style: TextStyle(
+          color: Colors.white38,
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+        ),
+      );
+    }
+
+    final hallAsync = ref.watch(hallStreamProvider(homeBaseId!));
+
+    return hallAsync.when(
+      data: (hall) {
+        if (hall == null) {
+          return const Text(
+            "Unknown Hall",
+            style: TextStyle(
+              color: Colors.redAccent,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          );
+        }
+        return Text(
+          hall.name,
+          style: const TextStyle(
+            color: Colors.blueAccent,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        );
+      },
+      loading: () => const SizedBox(
+        width: 14,
+        height: 14,
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blueGrey),
+      ),
+      error: (_, __) => const Text(
+        "Error loading hall",
+        style: TextStyle(color: Colors.red, fontSize: 12),
       ),
     );
   }

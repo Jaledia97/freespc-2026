@@ -20,6 +20,8 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   homeBaseId: json['homeBaseId'] as String?,
   qrToken: json['qrToken'] as String?,
   bio: json['bio'] as String?,
+  photoUrl: json['photoUrl'] as String?,
+  bannerUrl: json['bannerUrl'] as String?,
   following:
       (json['following'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
@@ -40,5 +42,7 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'homeBaseId': instance.homeBaseId,
       'qrToken': instance.qrToken,
       'bio': instance.bio,
+      'photoUrl': instance.photoUrl,
+      'bannerUrl': instance.bannerUrl,
       'following': instance.following,
     };

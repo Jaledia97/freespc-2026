@@ -6,6 +6,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:rxdart/rxdart.dart';
+import 'dart:math' as math;
 import '../../home/repositories/hall_repository.dart';
 import '../../../services/location_service.dart';
 import 'hall_profile_screen.dart';
@@ -28,13 +29,18 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
   // Search State
   final _searchSubject = BehaviorSubject<SearchCriteria>();
   late Stream<List<BingoHallModel>> _hallsStream;
-  List<BingoHallModel> _currentHalls = []; // Keep track for Panel/Markers
+  List<BingoHallModel> _allFetchedHalls = []; // All halls from repository
+  List<BingoHallModel> _currentHalls = []; // Visible filtered halls
   Set<Marker> _markers = {};
-  Set<Circle> _circles = {};
+  // Removed _circles as per user request
+  
+  // Viewport State
+  LatLngBounds? _currentBounds;
+  bool _isProgrammaticMove = false; // Prevent feedback loops
 
   // Default bounds
   LatLng _currentCenter = const LatLng(39.8283, -98.5795); 
-  double _currentRadius = 25.0;
+  double _currentRadius = 10.0;
 
   @override
   void initState() {
@@ -45,9 +51,8 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
 
   void _setupStream() {
     _hallsStream = _searchSubject
-        .debounceTime(const Duration(milliseconds: 100)) // Throttle slightly
+        .debounceTime(const Duration(milliseconds: 100))
         .switchMap((criteria) {
-          // SwitchMap cancels the previous stream when a new one arrives!
           return ref.read(hallRepositoryProvider).getHallsInRadius(
             latitude: criteria.center.latitude,
             longitude: criteria.center.longitude,
@@ -55,67 +60,95 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
           );
         });
         
-    // Listen to update local state (markers/panel)
+    // Listen to update local state
     _hallsStream.listen((halls) {
         if (mounted) {
           setState(() {
-            _currentHalls = halls;
-            _markers = halls.map((hall) {
-              return Marker(
-                markerId: MarkerId(hall.id),
-                position: LatLng(hall.latitude, hall.longitude),
-                infoWindow: InfoWindow(title: hall.name, snippet: hall.city),
-                onTap: () => _panelController.open(),
-              );
-            }).toSet();
+            _allFetchedHalls = halls;
+            _filterVisibleHalls(); // Filter immediately upon new data
           });
         }
     });
 
-    // Initial push
     _searchSubject.add(SearchCriteria(_currentCenter, _currentRadius));
+  }
+  
+  void _filterVisibleHalls() {
+    List<BingoHallModel> filtered;
+    
+    if (_currentBounds == null) {
+      // Fallback if bounds aren't ready (e.g. initial load before map idle)
+      filtered = _allFetchedHalls;
+    } else {
+      filtered = _allFetchedHalls.where((hall) {
+        return _contains(_currentBounds!, LatLng(hall.latitude, hall.longitude));
+      }).toList();
+    }
+    
+    setState(() {
+      _currentHalls = filtered;
+      _markers = filtered.map((hall) {
+        return Marker(
+          markerId: MarkerId(hall.id),
+          position: LatLng(hall.latitude, hall.longitude),
+          infoWindow: InfoWindow(title: hall.name, snippet: hall.city),
+          onTap: () => _panelController.open(),
+        );
+      }).toSet();
+    });
+  }
+  
+  bool _contains(LatLngBounds bounds, LatLng point) {
+    return point.latitude >= bounds.southwest.latitude &&
+           point.latitude <= bounds.northeast.latitude &&
+           point.longitude >= bounds.southwest.longitude &&
+           point.longitude <= bounds.northeast.longitude;
   }
 
   Future<void> _initializeLocation() async {
     final userPosition = ref.read(userLocationStreamProvider).valueOrNull;
     if (userPosition != null) {
       _updateCenter(LatLng(userPosition.latitude, userPosition.longitude));
-    } else {
-      _updateCircle();
     }
   }
 
   void _updateCenter(LatLng newCenter) {
     setState(() => _currentCenter = newCenter);
-    // Push new criteria to stream
     _searchSubject.add(SearchCriteria(newCenter, _currentRadius));
   }
   
-  void _animateTo(LatLng dest) {
-    setState(() => _currentCenter = dest);
-    _mapController?.animateCamera(CameraUpdate.newLatLngZoom(dest, _getZoomLevel(_currentRadius)));
-    _updateCircle();
-    _searchSubject.add(SearchCriteria(dest, _currentRadius));
-  }
-
-  void _updateCircle() {
+  void _animateTo(LatLng dest, double radius) {
     setState(() {
-      _circles = {
-        Circle(
-          circleId: const CircleId("radius_circle"),
-          center: _currentCenter,
-          radius: _currentRadius * 1609.34,
-          fillColor: Colors.blue.withOpacity(0.15),
-          strokeColor: Colors.transparent,
-          strokeWidth: 0,
-        ),
-      };
+      _currentCenter = dest;
+      _currentRadius = radius;
+      _isProgrammaticMove = true;
     });
+    
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLngZoom(dest, _getZoomLevel(radius))
+    ).then((_) => Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) setState(() => _isProgrammaticMove = false);
+    }));
+
+    _searchSubject.add(SearchCriteria(dest, radius));
   }
   
+  // Helper: Zoom -> Radius (Approximate)
+  // Zoom 10 ~= 25mi radius visible vertically
+  // Zoom 11 ~= 12mi
+  // Formula: Radius = 40000 / (2^zoom) * adjustment? 
+  // Simplified Log Model:  Radius = 2^(15.5 - zoom)
+  // Zoom 12 -> 2^(3.5) = 11.3mi
+  // Zoom 10 -> 2^(5.5) = 45mi
+  double _getRadiusFromZoom(double zoom) {
+    return math.pow(2, 15.5 - zoom).toDouble().clamp(1.0, 100.0);
+  }
+
+  // Helper: Radius -> Zoom
+  // Zoom = 15.5 - log2(radius)
   double _getZoomLevel(double radius) {
-    double scale = radius / 500;
-    return 16 - (16 * scale).clamp(0, 10).toDouble();
+    if (radius <= 0) return 16;
+    return (15.5 - (math.log(radius) / math.log(2))).clamp(0.0, 20.0);
   }
 
   Future<void> _onSearchSubmitted(String query) async {
@@ -125,7 +158,7 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
       List<Location> locations = await locationFromAddress(query);
       if (locations.isNotEmpty) {
         final loc = locations.first;
-        _animateTo(LatLng(loc.latitude, loc.longitude));
+        _animateTo(LatLng(loc.latitude, loc.longitude), _currentRadius);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Location not found")));
       }
@@ -139,7 +172,7 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
     ref.listen(userLocationStreamProvider, (prev, next) {
       if (next.value != null && prev?.value == null) {
         final pos = next.value!;
-        _animateTo(LatLng(pos.latitude, pos.longitude));
+        _animateTo(LatLng(pos.latitude, pos.longitude), 10.0);
       }
     });
 
@@ -154,25 +187,35 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
         body: Stack(
           children: [
             GoogleMap(
-              initialCameraPosition: CameraPosition(target: _currentCenter, zoom: 10),
+              minMaxZoomPreference: const MinMaxZoomPreference(8.5, null),
+              initialCameraPosition: CameraPosition(target: _currentCenter, zoom: _getZoomLevel(_currentRadius)),
               onMapCreated: (controller) {
                 _mapController = controller;
-                _updateCircle();
               },
               onCameraMove: (position) {
-                 // Update visual circle instantly
-                 setState(() {
-                   _currentCenter = position.target;
-                   _updateCircle();
-                 });
-                 // Push to stream (debounced)
-                 _searchSubject.add(SearchCriteria(position.target, _currentRadius));
+                 if (!_isProgrammaticMove) {
+                   // User is pinching/panning manually
+                   final newRadius = _getRadiusFromZoom(position.zoom);
+                   setState(() {
+                     _currentCenter = position.target;
+                     _currentRadius = newRadius;
+                   });
+                   // Push debounced search
+                   _searchSubject.add(SearchCriteria(position.target, newRadius));
+                 }
               },
-              onCameraIdle: () {
-                 // No specific action needed as stream handles it
+              onCameraIdle: () async {
+                 // Update bounds and filter list
+                 if (_mapController != null) {
+                   final bounds = await _mapController!.getVisibleRegion();
+                   setState(() {
+                     _currentBounds = bounds;
+                   });
+                   _filterVisibleHalls();
+                 }
               },
               markers: _markers,
-              circles: _circles,
+              // circles: _circles, // Removed
               myLocationEnabled: true,
               myLocationButtonEnabled: false,
               mapType: MapType.normal,
@@ -230,14 +273,12 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
                               label: "${_currentRadius.round()} mi",
                               divisions: 99,
                               onChanged: (val) {
-                                setState(() {
-                                  _currentRadius = val;
-                                  _updateCircle(); 
-                                });
-                                _searchSubject.add(SearchCriteria(_currentCenter, val));
+                                // Programmatic update from slider
+                                _animateTo(_currentCenter, val);
                               },
                               onChangeEnd: (val) {
-                                // No specific action needed as stream handles it
+                                // Refresh bounds filtering if needed? 
+                                // Stream update handles it.
                               },
                             ),
                           ),

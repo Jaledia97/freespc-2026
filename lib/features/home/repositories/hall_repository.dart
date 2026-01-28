@@ -13,6 +13,10 @@ final hallsStreamProvider = StreamProvider.family<List<BingoHallModel>, List<Str
   return ref.watch(hallRepositoryProvider).getHallsByIds(ids);
 });
 
+final hallStreamProvider = StreamProvider.family<BingoHallModel?, String>((ref, id) {
+  return ref.watch(hallRepositoryProvider).getHallStream(id);
+});
+
 class HallRepository {
   final FirebaseFirestore _firestore;
 
@@ -33,6 +37,18 @@ class HallRepository {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) => BingoHallModel.fromJson(doc.data())).toList();
+    });
+  }
+
+  Stream<BingoHallModel?> getHallStream(String id) {
+    return _firestore.collection('bingo_halls').doc(id).snapshots().map((doc) {
+      if (!doc.exists || doc.data() == null) return null;
+      try {
+        return BingoHallModel.fromJson(doc.data()!);
+      } catch (e) {
+        print("Error parsing hall $id: $e");
+        return null;
+      }
     });
   }
 
@@ -86,7 +102,7 @@ class HallRepository {
         hallName: 'Mary Esther Bingo',
         title: 'Friday Night Megapot',
         description: '\$10,000 Must Go! Doors open at 4pm.',
-        imageUrl: 'https://loremflickr.com/800/400/bingo?lock=1',
+        imageUrl: 'https://images.unsplash.com/photo-1518893063132-36e465be779d?auto=format&fit=crop&w=800&q=80', // Bingo/Cards
         postedAt: now.subtract(const Duration(hours: 2)),
         startTime: now.add(const Duration(hours: 2)), // Happening soon
         latitude: baseLat,
@@ -99,7 +115,7 @@ class HallRepository {
         hallName: 'Grand Bingo Hall',
         title: 'BOGO Buy-In',
         description: 'Buy one pack, get one FREE all day Saturday.',
-        imageUrl: 'https://loremflickr.com/800/400/bingo?lock=2',
+        imageUrl: 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?auto=format&fit=crop&w=800&q=80', // Slots/Casino
         postedAt: now.subtract(const Duration(days: 1)),
         startTime: now.add(const Duration(days: 1, hours: 4)),
         latitude: baseLat + 0.1, 
@@ -112,7 +128,7 @@ class HallRepository {
         hallName: 'Beachside Bingo',
         title: 'Seafood & Slots',
         description: 'Free shrimp cocktail with every \$20 spend.',
-        imageUrl: 'https://loremflickr.com/800/400/casino?lock=3',
+        imageUrl: 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=800&q=80', // Neon/Nightlife
         postedAt: now.subtract(const Duration(hours: 5)),
         startTime: now.add(const Duration(minutes: 30)), 
         latitude: baseLat - 0.05,
@@ -125,7 +141,7 @@ class HallRepository {
         hallName: 'Downtown Gaming (Far)',
         title: 'Far Away Special',
         description: 'This is > 75 miles away.',
-        imageUrl: 'https://loremflickr.com/800/400/gambling?lock=4',
+        imageUrl: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80', // Crowd/Event
         postedAt: now.subtract(const Duration(minutes: 30)),
         startTime: now.add(const Duration(hours: 5)),
         latitude: baseLat + 2.0, 
@@ -138,7 +154,7 @@ class HallRepository {
         hallName: 'Westside Winners',
         title: 'New Player Bonus',
         description: '\$20 Free Play for all new signups this week.',
-        imageUrl: 'https://loremflickr.com/800/400/bingo,balls?lock=5',
+        imageUrl: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=800&q=80', // Abstract/Fun
         postedAt: now.subtract(const Duration(days: 2)),
         startTime: now.add(const Duration(days: 0)), // Ongoing
         latitude: baseLat + 0.02,

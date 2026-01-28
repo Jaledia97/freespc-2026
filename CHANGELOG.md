@@ -4,6 +4,21 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [2026-01-28] - Map Refinement & Persistent Images (Phase 17.9 & 18.5)
+
+### Map Search & Logic
+- **Advanced Filtering**: Implemented "Visible Region" filtering. "Halls Nearby" list now updates dynamically to show strictly what is visible in the map viewport.
+- **Bi-Directional Sync**: Radius Slider and Map Zoom are now synchronized. Zooming the map updates the slider, and sliding the radius smooth-zooms the map.
+- **Constraints**: Enforced a `minZoom` preference (approx 100mi radius) to prevent massive, unperformant queries.
+- **UI Clean Up**: Removed visual radius circle overlay for a cleaner, less obstructed map view.
+
+### Infrastructure
+- **Image Persistence**: Updated `HallRepository` to use static, high-quality Unsplash URLs for seeded Specials, resolving the issue of randomly changing images.
+- **Storage**: Integrated Firebase Storage for profile and banner image uploads.
+- **Settings**: Relocated "Logout" functionality to a new clean Settings modal in the Profile Screen.
+
+---
+
 ## [2026-01-26] - Scalable Geohashing Map, Profile Logic & Auth Updates (Phase 17.5 & 18)
 
 ### Scalability & Infrastructure

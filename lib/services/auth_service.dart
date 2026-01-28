@@ -176,6 +176,15 @@ class AuthService {
     }
   }
 
+  Future<void> updateUserFields(String uid, Map<String, dynamic> data) async {
+    try {
+      await _firestore.collection('users').doc(uid).update(data);
+    } catch (e) {
+      print("Error updating user fields: $e");
+      rethrow;
+    }
+  }
+
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();
