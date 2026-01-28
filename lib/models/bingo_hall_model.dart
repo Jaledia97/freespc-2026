@@ -21,6 +21,8 @@ abstract class BingoHallModel with _$BingoHallModel {
     String? zipCode,
     // Geohashing for scalable search
     String? geoHash,
+    // Bonus Logic
+    @Default(0.0) double followBonus,
   }) = _BingoHallModel;
 
   factory BingoHallModel.fromJson(Map<String, dynamic> json) =>

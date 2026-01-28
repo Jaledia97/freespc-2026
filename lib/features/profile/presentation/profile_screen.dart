@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/auth_service.dart';
 import '../../home/repositories/hall_repository.dart';
+import '../../wallet/repositories/wallet_repository.dart';
 import 'widgets/profile_header.dart';
 import 'widgets/profile_menu.dart';
 import '../../my_halls/presentation/my_halls_screen.dart';
@@ -172,6 +173,18 @@ class ProfileScreen extends ConsumerWidget {
                              const SnackBar(content: Text('Specials Seeded!')),
                            );
                           // Force refresh of map might be needed
+                        },
+                      ),
+                      ListTile(
+                        title: const Text('ADMIN: Seed Wallet Data', style: TextStyle(color: Colors.amber)),
+                        trailing: const Icon(Icons.account_balance_wallet, color: Colors.white54),
+                        onTap: () async {
+                           try {
+                             await ref.read(walletRepositoryProvider).seedWalletData(user.uid);
+                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wallet Data Seeded!')));
+                           } catch (e) {
+                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                           }
                         },
                       ),
                     ],

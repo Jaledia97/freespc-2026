@@ -73,6 +73,7 @@ class HallProfileScreen extends ConsumerWidget {
                                   user.uid,
                                   hall.id,
                                   isFollowing,
+                                  hall.name, // Pass name for membership creation
                                 );
                               },
                               onLongPress: () {

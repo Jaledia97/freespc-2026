@@ -4,6 +4,25 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+19] - 2026-01-28 - Wallet System & Bonus Logic (Phase 19)
+
+### Added
+- **Wallet System**: Comprehensive wallet UI displaying Hall Membership Cards, Raffle Ticket Stubs, and Active Tournaments.
+- **Hall Memberships**: Logic to track balances per hall. Cards are automatically created when "Following" a hall.
+- **Follow Bonus**: Halls can now offer a point bonus (e.g., +50 pts) instantly upon following. "Westside Winners" configured with 50pt bonus for testing.
+- **QR Integration**: Scanning a worker's QR code now credits points specifically to that hall's membership card (verifying "Following" status first).
+- **Mock Data Seeding**: "Seed Wallet Data" and updated "Seed Specials" to test wallet features and bonuses.
+
+### Changed
+- **Map Refinement**: Increased zoom limit to support full 100-mile radius. Removed blue radius circle overlay.
+- **Image Stability**: Switched from dynamic LoremFlickr to static Unsplash images for consistent UI testing.
+- **Search Logic**: Map zoom level and radius slider are now bidirectionally synchronized.
+- **Dependencies**: Added `intl` for currency formatting.
+
+### Fixed
+- **GlassContainer**: Fixed sizing constraint issues.
+- **Data Models**: Resolved `freezed` generation errors by enforcing `abstract class` definitions.
+
 ## [2026-01-28] - Map Refinement & Persistent Images (Phase 17.9 & 18.5)
 
 ### Map Search & Logic

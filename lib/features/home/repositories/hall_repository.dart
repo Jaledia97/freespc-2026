@@ -190,6 +190,7 @@ class HallRepository {
         state: "FL",
         zipCode: "32569",
         geoHash: geoPoint.geohash,
+        followBonus: 50.0, // Bonus for following
       );
       
       final hallData = hall.toJson();
@@ -494,7 +495,7 @@ class HallRepository {
     }
   }
 
-  Future<void> toggleFollow(String userId, String hallId, bool isFollowing) async {
+  Future<void> toggleFollow(String userId, String hallId, bool isFollowing, String hallName) async {
     final userRef = _firestore.collection('users').doc(userId);
     if (isFollowing) {
       // Unfollow
@@ -503,9 +504,49 @@ class HallRepository {
       });
     } else {
       // Follow
+      // 1. Update List
       await userRef.update({
         'following': FieldValue.arrayUnion([hallId])
       });
+
+      // 2. Ensure Membership Card Exists & Check for Bonus
+      final membershipRef = userRef.collection('memberships').doc(hallId);
+      final doc = await membershipRef.get();
+      
+      if (!doc.exists) {
+        // Fetch Hall Details to check for Bonus
+        double initialBalance = 0.0;
+        final hallDoc = await _firestore.collection('bingo_halls').doc(hallId).get();
+        if (hallDoc.exists) {
+          final hallData = hallDoc.data();
+          final bonus = (hallData?['followBonus'] as num?)?.toDouble() ?? 0.0;
+          if (bonus > 0) {
+            initialBalance = bonus;
+            
+            // Log Transaction for Bonus
+            final transactionRef = _firestore.collection('transactions').doc();
+             await transactionRef.set({
+              'id': transactionRef.id,
+              'userId': userId,
+              'hallId': hallId,
+              'amount': bonus.toInt(), // Stored as int usually, or double? keeping consistency
+              'timestamp': FieldValue.serverTimestamp(),
+              'type': 'bonus',
+              'description': 'New Follow Bonus',
+            });
+          }
+        }
+
+        // Create default membership
+        await membershipRef.set({
+          'hallId': hallId,
+          'hallName': hallName,
+          'balance': initialBalance, 
+          'currencyName': 'Points',
+          'tier': 'Member',
+          'joinedAt': FieldValue.serverTimestamp(),
+        });
+      }
     }
   }
 
