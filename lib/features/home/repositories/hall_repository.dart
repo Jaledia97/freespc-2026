@@ -5,6 +5,7 @@ import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import '../../../models/bingo_hall_model.dart';
 import '../../../models/user_model.dart'; // Import UserModel
 import '../../../models/special_model.dart';
+import '../../../models/raffle_model.dart';
 import 'dart:math';
 
 final hallRepositoryProvider = Provider((ref) => HallRepository(FirebaseFirestore.instance));
@@ -15,6 +16,14 @@ final hallsStreamProvider = StreamProvider.family<List<BingoHallModel>, List<Str
 
 final hallStreamProvider = StreamProvider.family<BingoHallModel?, String>((ref, id) {
   return ref.watch(hallRepositoryProvider).getHallStream(id);
+});
+
+final hallSpecialsProvider = StreamProvider.family<List<SpecialModel>, String>((ref, hallId) {
+  return ref.read(hallRepositoryProvider).getSpecialsForHall(hallId);
+});
+
+final hallRafflesProvider = StreamProvider.family<List<RaffleModel>, String>((ref, hallId) {
+  return ref.read(hallRepositoryProvider).getRaffles(hallId);
 });
 
 class HallRepository {
@@ -57,7 +66,6 @@ class HallRepository {
     return _firestore
         .collection('specials')
         .orderBy('startTime', descending: false) // Closest upcoming first
-        // .where('startTime', isGreaterThan: DateTime.now().subtract(const Duration(hours: 12))) // Optional optimization
         .snapshots()
         .map((snapshot) {
           final specials = snapshot.docs.map((doc) => SpecialModel.fromJson(doc.data())).toList();
@@ -81,6 +89,45 @@ class HallRepository {
     });
   }
 
+  Stream<List<SpecialModel>> getSpecialsForHall(String hallId) {
+    return _firestore
+        .collection('specials')
+        .where('hallId', isEqualTo: hallId)
+        .orderBy('startTime', descending: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => SpecialModel.fromJson(doc.data())).toList());
+  }
+
+  // --- Specials Management (CMS) ---
+  Future<void> addSpecial(SpecialModel special) async {
+    // Generate ID if empty
+    final docRef = _firestore.collection('specials').doc();
+    final newSpecial = special.copyWith(id: docRef.id);
+    await docRef.set(newSpecial.toJson());
+  }
+
+  Future<void> updateSpecial(SpecialModel special) async {
+    await _firestore.collection('specials').doc(special.id).update(special.toJson());
+  }
+
+  Future<void> deleteSpecial(String specialId) async {
+    await _firestore.collection('specials').doc(specialId).delete();
+  }
+
+  Future<void> updateHall(BingoHallModel hall) async {
+    // Ensure we keep the geo field if we are replacing, or use merge.
+    // If we use merge, we only update fields present in the map.
+    // Ideally we pass a Map of changes, but passing Model is easier.
+    // We must ensure we don't wipe 'geo' if the model doesn't have it fully hydrated (our model has geoFirePoint getter).
+    
+    final data = hall.toJson();
+    // Re-calculate geo if lat/lng changed
+    final geoPoint = GeoFirePoint(GeoPoint(hall.latitude, hall.longitude));
+    data['geo'] = geoPoint.data; // Use 'data' property of GeoFirePoint which returns the Map needed
+
+    await _firestore.collection('bingo_halls').doc(hall.id).set(data, SetOptions(merge: true));
+  }
+
   // --- Admin/Seed Tools ---
   Future<void> seedSpecials() async {
     final collection = _firestore.collection('specials');
@@ -102,7 +149,7 @@ class HallRepository {
         hallName: 'Mary Esther Bingo',
         title: 'Friday Night Megapot',
         description: '\$10,000 Must Go! Doors open at 4pm.',
-        imageUrl: 'https://images.unsplash.com/photo-1518893063132-36e465be779d?auto=format&fit=crop&w=800&q=80', // Bingo/Cards
+        imageUrl: 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80', // Money/Cash (Working)
         postedAt: now.subtract(const Duration(hours: 2)),
         startTime: now.add(const Duration(hours: 2)), // Happening soon
         latitude: baseLat,
@@ -387,7 +434,7 @@ class HallRepository {
     final userRef = _firestore.collection('users').doc(userId);
     
     await userRef.update({
-      'role': 'owner',
+      'role': 'super-admin', // Updated per user request
       'homeBaseId': hallId,
       'qrToken': 'meb-owner-token-${userId.substring(0, 5)}', // Semi-stable token
     });
@@ -557,5 +604,67 @@ class HallRepository {
     await _firestore.collection('users').doc(userId).update({
       'homeBaseId': newHomeBaseId
     });
+  }
+
+  // --- Raffles ---
+  Stream<List<RaffleModel>> getRaffles(String hallId) {
+    return _firestore
+        .collection('raffles')
+        .where('hallId', isEqualTo: hallId)
+        // .where('endsAt', isGreaterThan: DateTime.now()) // Only active
+        .snapshots()
+        .map((snapshot) {
+      print("DEBUG: Raffles Stream emitted ${snapshot.docs.length} docs for Hall $hallId");
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        print("DEBUG: Validating Raffle: ${doc.id} -> $data");
+        return RaffleModel.fromJson(data);
+      }).toList();
+    });
+  }
+
+  Future<void> seedRaffles(String hallId) async {
+    final collection = _firestore.collection('raffles');
+    final now = DateTime.now();
+
+    final raffles = [
+      RaffleModel(
+        id: 'raffle-${hallId}-1',
+        hallId: hallId,
+        name: 'Weekly Cash Pot',
+        description: 'Win \$500 Cash! Winner drawn Friday night.',
+        imageUrl: 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80', // Money/Cash
+        ticketPrice: 50,
+        maxTickets: 200,
+        soldTickets: 45,
+        endsAt: now.add(const Duration(days: 4)),
+      ),
+      RaffleModel(
+        id: 'raffle-${hallId}-2',
+        hallId: hallId,
+        name: 'Luxury Spa Day',
+        description: 'Full day package at Serenity Spa.',
+        imageUrl: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80', // Spa
+        ticketPrice: 20,
+        maxTickets: 100,
+        soldTickets: 12,
+        endsAt: now.add(const Duration(days: 10)),
+      ),
+       RaffleModel(
+        id: 'raffle-${hallId}-3',
+        hallId: hallId,
+        name: '65" 4K TV',
+        description: 'Upgrade your living room!',
+        imageUrl: 'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=800&q=80', // TV
+        ticketPrice: 100,
+        maxTickets: 50,
+        soldTickets: 2,
+        endsAt: now.add(const Duration(days: 30)),
+      ),
+    ];
+
+    for (var r in raffles) {
+      await collection.doc(r.id).set(r.toJson());
+    }
   }
 }

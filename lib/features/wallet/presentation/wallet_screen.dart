@@ -28,7 +28,7 @@ class WalletScreen extends ConsumerWidget {
           final userId = user.uid;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 100), // Added padding for Nav Bar
+            padding: const EdgeInsets.only(bottom: 150), // Increased padding for Nav Bar
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

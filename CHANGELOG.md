@@ -4,6 +4,26 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+20] - 2026-01-29 - Hall Manager Dashboard (Phase 20)
+
+### Added
+- **Manager Mode**: Secure "Admin Mode" for venue operators, protected by a PIN Gateway (`4836`).
+- **Dashboard Hub**: Centralized dashboard for accessing management modules (Profile, Specials, Tournaments, Raffles).
+- **Profile CMS**: Operators can now edit their Hall's Name, Bio, Phone, Website, and Logo directly from the app.
+- **Specials CMS**: Full CRUD (Create, Read, Update, Delete) interface for managing Special Events with Date/Time pickers.
+- **Raffle Utility**: A compliance-focused tool for running manual drawings:
+    - **Roll Call**: Generates a 4-digit code for users to join.
+    - **Session Logic**: Lists participants, locks entry, distributes tickets, and draws a random winner.
+- **Super-Admin Tools**: Added "View As" mode in Profile Settings to toggle between roles (`Super Admin`, `Owner`, `Worker`, `Player`) for testing permissions.
+
+### Changed
+- **Permissions**: Updated `ProfileScreen` to show "Switch to Manager Mode" button for `owner`, `manager` `admin`, and `super-admin`.
+- **Data Models**: Updated `BingoHallModel` to include `phone`, `websiteUrl`, and `description` fields.
+- **Seeding**: Updated `seedMaryEstherEnv` to set the user as `super-admin` for full access to all tools.
+
+### Fixed
+- **Null Safety**: Resolved potential crashes in `ManageSpecialsScreen` regarding nullable start times.
+
 ## [0.0.1+19] - 2026-01-28 - Wallet System & Bonus Logic (Phase 19)
 
 ### Added

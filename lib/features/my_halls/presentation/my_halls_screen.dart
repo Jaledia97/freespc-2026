@@ -33,10 +33,28 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
     });
   }
 
+  String _getHallImage(String hallId) {
+    // Return static Unsplash images based on ID to avoid random "mock" look
+    switch (hallId) {
+      case 'mary-esther-bingo':
+        return 'https://images.unsplash.com/photo-1518893063132-36e465be779d?auto=format&fit=crop&w=800&q=80';
+      case 'grand-bingo-1':
+        return 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?auto=format&fit=crop&w=800&q=80';
+      case 'beach-bingo':
+        return 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=800&q=80';
+      case 'westside-hall':
+        return 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=800&q=80';
+      case 'downtown-hall':
+        return 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80';
+      default:
+        // Use a high-reliability fallback (Abstract Gradient/Pattern) if others fail
+        return 'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=800&q=80';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProfileAsync = ref.watch(userProfileProvider);
-
     final userLocationAsync = ref.watch(userLocationStreamProvider);
 
     return Scaffold(
@@ -53,7 +71,6 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
         data: (user) {
           if (user == null) return const Center(child: Text("Please log in."));
 
-          // Watch the provider here. It only rebuilds if user.following changes.
           final userLocation = userLocationAsync.valueOrNull;
           final nearbyHallsAsync = ref.watch(nearbyHallsFutureProvider((ids: user.following, location: userLocation)));
 
@@ -74,17 +91,23 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                     
                     return hallsAsync.when(
                       data: (myHalls) {
-                        // Halls are already filtered by the query
                         final userLocation = userLocationAsync.valueOrNull;
+                        
+                        // Sort: Home Base first
+                        final sortedHalls = List<BingoHallModel>.from(myHalls);
+                        sortedHalls.sort((a, b) {
+                          if (a.id == user.homeBaseId) return -1;
+                          if (b.id == user.homeBaseId) return 1;
+                          return 0;
+                        });
 
                         return SliverList(
                        delegate: SliverChildBuilderDelegate(
                          (context, index) {
-                           final hall = myHalls[index];
+                           final hall = sortedHalls[index];
                            final isHome = user.homeBaseId == hall.id;
                            final isExpanded = _expandedHallIds.contains(hall.id);
                            
-                           // Calculate Distance
                            double? distanceInMiles;
                            if (userLocation != null) {
                              final meters = ref.read(locationServiceProvider).getDistanceBetween(
@@ -101,7 +124,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                                onTap: () => _toggleExpanded(hall.id),
                                child: Column(
                                  children: [
-                                   // 1. Banner Image (Mock)
+                                   // 1. Banner Image (Static Unsplash)
                                    Stack(
                                      children: [
                                        Container(
@@ -109,7 +132,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                                          width: double.infinity,
                                          color: Colors.grey[300],
                                          child: Image.network(
-                                           "https://picsum.photos/seed/${hall.id}/800/200", // Consistent mock banner
+                                           _getHallImage(hall.id), 
                                            fit: BoxFit.cover,
                                            errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image)),
                                          ),
@@ -148,7 +171,6 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                                                  overflow: TextOverflow.ellipsis,
                                                ),
                                              ),
-                                             // Distance Text
                                              if (distanceInMiles != null)
                                                Text(
                                                  "${distanceInMiles.toStringAsFixed(1)} mi",
@@ -159,17 +181,16 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                                          if (isExpanded) ...[
                                             const SizedBox(height: 16),
                                             const Divider(),
-                                            // Action Buttons
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                               children: [
                                                 TextButton.icon(
-                                                  onPressed: () {}, // Todo
+                                                  onPressed: () {}, 
                                                   icon: const Icon(Icons.call),
                                                   label: const Text("Call"),
                                                 ),
                                                 TextButton.icon(
-                                                  onPressed: () {}, // Todo
+                                                  onPressed: () {}, 
                                                   icon: const Icon(Icons.directions),
                                                   label: const Text("Directions"),
                                                 ),
@@ -203,7 +224,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
 
               const SliverToBoxAdapter(child: Divider(height: 32, thickness: 2)),
 
-              // Section 2: GPS Suggestions (Vertical List)
+              // Section 2: GPS Suggestions
               const SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -222,7 +243,6 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                         final hall = nearbyHalls[index];
                         final isExpanded = _expandedHallIds.contains(hall.id);
 
-                        // Calculate Distance
                         double? distanceInMiles;
                         if (userLocation != null) {
                            final meters = ref.read(locationServiceProvider).getDistanceBetween(
@@ -239,7 +259,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                             onTap: () => _toggleExpanded(hall.id),
                             child: Column(
                               children: [
-                                // 1. Banner Image (Mock)
+                                // 1. Banner Image (Static Unsplash)
                                 Stack(
                                   children: [
                                     Container(
@@ -247,12 +267,12 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                                       width: double.infinity,
                                       color: Colors.grey[300],
                                       child: Image.network(
-                                        "https://picsum.photos/seed/${hall.id}/800/200", 
+                                        _getHallImage(hall.id), 
                                         fit: BoxFit.cover,
                                         errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image)),
                                       ),
                                     ),
-                                    Positioned( // "New" or "Nearby" Badge
+                                    Positioned( // "Nearby" Badge
                                       top: 8, right: 8,
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

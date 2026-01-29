@@ -19,6 +19,9 @@ abstract class BingoHallModel with _$BingoHallModel {
     String? city,
     String? state,
     String? zipCode,
+    String? phone,
+    String? websiteUrl,
+    String? description,
     // Geohashing for scalable search
     String? geoHash,
     // Bonus Logic

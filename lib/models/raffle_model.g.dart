@@ -6,25 +6,27 @@ part of 'raffle_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-RaffleModel _$RaffleModelFromJson(Map<String, dynamic> json) => RaffleModel(
+_RaffleModel _$RaffleModelFromJson(Map<String, dynamic> json) => _RaffleModel(
   id: json['id'] as String,
   hallId: json['hallId'] as String,
-  title: json['title'] as String,
+  name: json['name'] as String,
   description: json['description'] as String,
-  price: (json['price'] as num).toDouble(),
-  prizePool: json['prizePool'] as String,
-  drawTime: RaffleModel._fromJson(json['drawTime'] as Timestamp),
-  imageUrl: json['imageUrl'] as String?,
+  imageUrl: json['imageUrl'] as String,
+  ticketPrice: (json['ticketPrice'] as num?)?.toInt() ?? 10,
+  maxTickets: (json['maxTickets'] as num?)?.toInt() ?? 100,
+  soldTickets: (json['soldTickets'] as num?)?.toInt() ?? 0,
+  endsAt: DateTime.parse(json['endsAt'] as String),
 );
 
-Map<String, dynamic> _$RaffleModelToJson(RaffleModel instance) =>
+Map<String, dynamic> _$RaffleModelToJson(_RaffleModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'hallId': instance.hallId,
-      'title': instance.title,
+      'name': instance.name,
       'description': instance.description,
-      'price': instance.price,
-      'prizePool': instance.prizePool,
-      'drawTime': RaffleModel._toJson(instance.drawTime),
       'imageUrl': instance.imageUrl,
+      'ticketPrice': instance.ticketPrice,
+      'maxTickets': instance.maxTickets,
+      'soldTickets': instance.soldTickets,
+      'endsAt': instance.endsAt.toIso8601String(),
     };

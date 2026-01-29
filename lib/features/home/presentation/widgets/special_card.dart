@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:add_2_calendar/add_2_calendar.dart';
 import '../../../../models/special_model.dart';
+import '../../repositories/hall_repository.dart';
+import '../hall_profile_screen.dart';
 
-class SpecialCard extends StatefulWidget {
+class SpecialCard extends ConsumerStatefulWidget {
   final SpecialModel special;
   final bool isFeatured;
 
   const SpecialCard({super.key, required this.special, this.isFeatured = false});
 
   @override
-  State<SpecialCard> createState() => _SpecialCardState();
+  ConsumerState<SpecialCard> createState() => _SpecialCardState();
 }
 
-class _SpecialCardState extends State<SpecialCard> with SingleTickerProviderStateMixin {
+class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
 
   void _toggleExpand() {
@@ -67,11 +70,6 @@ class _SpecialCardState extends State<SpecialCard> with SingleTickerProviderStat
               ),
 
             // Header Row (Title, Subtitle, Icon)
-            // Use IgnorePointer to let the parent InkWell handle the tap? 
-            // Or just put it in the column. logic above handles tap for whole card.
-            // But ListTile has its own tap. We disable it or wrapper handles it.
-            // If we use ListTile inside InkWell, ListTile's internal InkWell might capture taps.
-            // Better to standard Column/Row or disable ListTile tap.
             IgnorePointer(ignoring: true, child: headerContent),
 
             // Expandable Body
@@ -116,50 +114,64 @@ class _SpecialCardState extends State<SpecialCard> with SingleTickerProviderStat
                           const Divider(),
                           
                           // Action Buttons
-                          // Note: These need to be tappable!
-                          // Since they are children of the parent InkWell, we need to ensure they consume the tap event 
-                          // so it doesn't just toggle expansion.
-                          // InkWell inside InkWell works fine usually.
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _ActionButton(
-                                icon: Icons.phone, 
-                                label: "Call", 
-                                onTap: () async {
-                                   final Uri launchUri = Uri(scheme: 'tel', path: '555-555-5555'); 
-                                   if (await canLaunchUrl(launchUri)) {
-                                     await launchUrl(launchUri);
-                                   }
-                                }
-                              ),
-                              _ActionButton(
-                                icon: Icons.calendar_month, 
-                                label: "Add to Cal", 
-                                onTap: () {
-                                  if (widget.special.startTime == null) return;
-                                  final event = Event(
-                                    title: widget.special.title,
-                                    description: widget.special.description,
-                                    location: widget.special.hallName,
-                                    startDate: widget.special.startTime!,
-                                    endDate: widget.special.startTime!.add(const Duration(hours: 2)),
-                                  );
-                                  Add2Calendar.addEvent2Cal(event);
-                                }
-                              ),
-                              _ActionButton(
-                                icon: Icons.directions, 
-                                label: "Navigate", 
-                                onTap: () async {
-                                   if (widget.special.latitude == null || widget.special.longitude == null) return;
-                                   final Uri googleMapsUrl = Uri.parse("https://www.google.com/maps/search/?api=1&query=${widget.special.latitude},${widget.special.longitude}");
-                                   if (await canLaunchUrl(googleMapsUrl)) {
-                                       await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
-                                   }
-                                }
-                              ),
-                            ],
+                          Container(
+                            width: double.infinity,
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              alignment: WrapAlignment.spaceBetween,
+                              children: [
+                                _ActionButton(
+                                  icon: Icons.store, 
+                                  label: "Visit Hall", 
+                                  onTap: () async {
+                                    // Fetch Hall Data & Navigate
+                                    final hall = await ref.read(hallRepositoryProvider).getHallStream(widget.special.hallId).first;
+                                    if (hall != null && context.mounted) {
+                                       Navigator.push(context, MaterialPageRoute(builder: (_) => HallProfileScreen(hall: hall)));
+                                    } else if (context.mounted) {
+                                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Could not load hall details.")));
+                                    }
+                                  }
+                                ),
+                                _ActionButton(
+                                  icon: Icons.phone, 
+                                  label: "Call", 
+                                  onTap: () async {
+                                     final Uri launchUri = Uri(scheme: 'tel', path: '555-555-5555'); 
+                                     if (await canLaunchUrl(launchUri)) {
+                                       await launchUrl(launchUri);
+                                     }
+                                  }
+                                ),
+                                _ActionButton(
+                                  icon: Icons.calendar_month, 
+                                  label: "Add to Cal", 
+                                  onTap: () {
+                                    if (widget.special.startTime == null) return;
+                                    final event = Event(
+                                      title: widget.special.title,
+                                      description: widget.special.description,
+                                      location: widget.special.hallName,
+                                      startDate: widget.special.startTime!,
+                                      endDate: widget.special.startTime!.add(const Duration(hours: 2)),
+                                    );
+                                    Add2Calendar.addEvent2Cal(event);
+                                  }
+                                ),
+                                _ActionButton(
+                                  icon: Icons.directions, 
+                                  label: "Navigate", 
+                                  onTap: () async {
+                                     if (widget.special.latitude == null || widget.special.longitude == null) return;
+                                     final Uri googleMapsUrl = Uri.parse("https://www.google.com/maps/search/?api=1&query=${widget.special.latitude},${widget.special.longitude}");
+                                     if (await canLaunchUrl(googleMapsUrl)) {
+                                         await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+                                     }
+                                  }
+                                ),
+                              ],
+                            ),
                           )
                         ],
                       ),
@@ -190,7 +202,7 @@ class _ActionButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
         child: Column(
           children: [
             Icon(icon, color: iconColor, size: 28),

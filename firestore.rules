@@ -59,5 +59,15 @@ service cloud.firestore {
       // Update/Delete: DENIED. Ledger integrity must be maintained.
       allow update, delete: if false;
     }
+
+    // 4. RAFFLES & SPECIALS (Added for Phase 20)
+    match /raffles/{raffleId} {
+      allow read: if true;
+      allow write: if request.auth != null; // Allowing auth users to seed for now
+    }
+    match /specials/{specialId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
   }
 }

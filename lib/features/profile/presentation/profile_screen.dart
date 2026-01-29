@@ -6,6 +6,7 @@ import '../../wallet/repositories/wallet_repository.dart';
 import 'widgets/profile_header.dart';
 import 'widgets/profile_menu.dart';
 import '../../my_halls/presentation/my_halls_screen.dart';
+import '../../manager/presentation/pin_entry_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -25,6 +26,11 @@ class ProfileScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
+              // Extract values BEFORE the list
+              final user = userAsync.value; // Safe
+              final role = user?.role;
+              final overrideRole = ref.watch(roleOverrideProvider);
+
               showModalBottomSheet(
                 context: context,
                 backgroundColor: const Color(0xFF1E1E1E),
@@ -32,6 +38,31 @@ class ProfileScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                       // Manager Mode Switch (Conditional)
+                       if (role == 'owner' || role == 'manager' || role == 'admin' || role == 'super-admin')
+                         ListTile(
+                           leading: const Icon(Icons.admin_panel_settings, color: Colors.blueAccent),
+                           title: const Text('Switch to Manager Mode', style: TextStyle(color: Colors.blueAccent)),
+                           onTap: () {
+                             Navigator.pop(context); // Close sheet
+                             Navigator.push(context, MaterialPageRoute(builder: (_) => const PinEntryScreen()));
+                           },
+                         ),
+                       
+                       // Super Admin: View As
+                       if (role == 'super-admin' || overrideRole != null) 
+                         ExpansionTile(
+                           leading: const Icon(Icons.visibility, color: Colors.purpleAccent),
+                           title: Text(overrideRole != null ? 'Viewing as: $overrideRole' : 'View As...', style: const TextStyle(color: Colors.purpleAccent)),
+                           children: [
+                             _roleOption(context, ref, 'super-admin', 'Super Admin (Reset)'),
+                             _roleOption(context, ref, 'owner', 'Owner'),
+                             _roleOption(context, ref, 'admin', 'Admin'),
+                             _roleOption(context, ref, 'manager', 'Manager'),
+                             _roleOption(context, ref, 'worker', 'Worker'),
+                             _roleOption(context, ref, 'player', 'Player'),
+                           ],
+                         ),
                        ListTile(
                         leading: const Icon(Icons.logout, color: Colors.redAccent),
                         title: const Text('Logout', style: TextStyle(color: Colors.redAccent)),
@@ -238,6 +269,22 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _roleOption(BuildContext context, WidgetRef ref, String role, String label) {
+    return ListTile(
+      title: Text(label, style: const TextStyle(color: Colors.white70)),
+      onTap: () {
+        if (role == 'super-admin') {
+          // Reset
+          ref.read(roleOverrideProvider.notifier).state = null;
+        } else {
+          ref.read(roleOverrideProvider.notifier).state = role;
+        }
+        Navigator.pop(context); // Close sheet
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Now viewing as $label")));
+      },
     );
   }
 }

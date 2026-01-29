@@ -18,6 +18,9 @@ _BingoHallModel _$BingoHallModelFromJson(Map<String, dynamic> json) =>
       city: json['city'] as String?,
       state: json['state'] as String?,
       zipCode: json['zipCode'] as String?,
+      phone: json['phone'] as String?,
+      websiteUrl: json['websiteUrl'] as String?,
+      description: json['description'] as String?,
       geoHash: json['geoHash'] as String?,
       followBonus: (json['followBonus'] as num?)?.toDouble() ?? 0.0,
     );
@@ -34,6 +37,9 @@ Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
       'city': instance.city,
       'state': instance.state,
       'zipCode': instance.zipCode,
+      'phone': instance.phone,
+      'websiteUrl': instance.websiteUrl,
+      'description': instance.description,
       'geoHash': instance.geoHash,
       'followBonus': instance.followBonus,
     };
