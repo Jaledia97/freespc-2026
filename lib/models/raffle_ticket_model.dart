@@ -9,6 +9,7 @@ abstract class RaffleTicketModel with _$RaffleTicketModel {
   const factory RaffleTicketModel({
     required String id,
     required String raffleId,
+    required String hallId,
     required String title,
     required String hallName,
     required int quantity,

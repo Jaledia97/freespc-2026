@@ -12,10 +12,9 @@ abstract class RaffleModel with _$RaffleModel {
     required String name, // Was title
     required String description,
     required String imageUrl,
-    @Default(10) int ticketPrice, // Price in Hall Points (int is cleaner for points)
     @Default(100) int maxTickets,
     @Default(0) int soldTickets,
-    required DateTime endsAt, // Was drawTime
+    required DateTime endsAt, // Draw Time
   }) = _RaffleModel;
 
   factory RaffleModel.fromJson(Map<String, dynamic> json) =>

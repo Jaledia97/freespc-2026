@@ -101,25 +101,27 @@ class WalletRepository {
       batch.set(doc, m.toJson());
     }
 
-    // 2. Seed Raffle Tickets
+    // 2. Seed Raffle Tickets (Aligned with HallRepository.seedRaffles for 'mary-esther-bingo')
     final tickets = [
       RaffleTicketModel(
         id: 'ticket-001',
-        raffleId: 'raffle-mega',
-        title: 'MacBook Pro Giveaway',
+        raffleId: 'raffle-mary-esther-bingo-1', // Matches Hall Repo
+        hallId: 'mary-esther-bingo',
+        title: 'Weekly Cash Pot',
         hallName: 'Mary Esther Bingo',
         quantity: 5,
         purchaseDate: DateTime.now().subtract(const Duration(days: 1)),
-        imageUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca4?auto=format&fit=crop&w=200&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80',
       ),
       RaffleTicketModel(
         id: 'ticket-002',
-        raffleId: 'raffle-cash',
-        title: '\$500 Cash Pot',
-        hallName: 'Grand Bingo Hall',
+        raffleId: 'raffle-mary-esther-bingo-2', // Matches Hall Repo
+        hallId: 'mary-esther-bingo',
+        title: 'Luxury Spa Day',
+        hallName: 'Mary Esther Bingo',
         quantity: 2,
         purchaseDate: DateTime.now().subtract(const Duration(days: 3)),
-        imageUrl: 'https://images.unsplash.com/photo-1518183214770-9cffbec72538?auto=format&fit=crop&w=200&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
       ),
     ];
 

@@ -606,21 +606,28 @@ class HallRepository {
     });
   }
 
-  // --- Raffles ---
+  // --- Raffles Management (CMS) ---
   Stream<List<RaffleModel>> getRaffles(String hallId) {
     return _firestore
         .collection('raffles')
         .where('hallId', isEqualTo: hallId)
-        // .where('endsAt', isGreaterThan: DateTime.now()) // Only active
+        .orderBy('endsAt', descending: false)
         .snapshots()
-        .map((snapshot) {
-      print("DEBUG: Raffles Stream emitted ${snapshot.docs.length} docs for Hall $hallId");
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        print("DEBUG: Validating Raffle: ${doc.id} -> $data");
-        return RaffleModel.fromJson(data);
-      }).toList();
-    });
+        .map((snapshot) => snapshot.docs.map((doc) => RaffleModel.fromJson(doc.data())).toList());
+  }
+
+  Future<void> addRaffle(RaffleModel raffle) async {
+    final docRef = _firestore.collection('raffles').doc();
+    final newRaffle = raffle.copyWith(id: docRef.id);
+    await docRef.set(newRaffle.toJson());
+  }
+
+  Future<void> updateRaffle(RaffleModel raffle) async {
+    await _firestore.collection('raffles').doc(raffle.id).set(raffle.toJson());
+  }
+
+  Future<void> deleteRaffle(String raffleId) async {
+    await _firestore.collection('raffles').doc(raffleId).delete();
   }
 
   Future<void> seedRaffles(String hallId) async {
@@ -634,7 +641,6 @@ class HallRepository {
         name: 'Weekly Cash Pot',
         description: 'Win \$500 Cash! Winner drawn Friday night.',
         imageUrl: 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80', // Money/Cash
-        ticketPrice: 50,
         maxTickets: 200,
         soldTickets: 45,
         endsAt: now.add(const Duration(days: 4)),
@@ -645,7 +651,6 @@ class HallRepository {
         name: 'Luxury Spa Day',
         description: 'Full day package at Serenity Spa.',
         imageUrl: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80', // Spa
-        ticketPrice: 20,
         maxTickets: 100,
         soldTickets: 12,
         endsAt: now.add(const Duration(days: 10)),
@@ -656,7 +661,6 @@ class HallRepository {
         name: '65" 4K TV',
         description: 'Upgrade your living room!',
         imageUrl: 'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=800&q=80', // TV
-        ticketPrice: 100,
         maxTickets: 50,
         soldTickets: 2,
         endsAt: now.add(const Duration(days: 30)),

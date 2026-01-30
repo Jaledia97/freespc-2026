@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../repositories/raffle_manager_repository.dart';
+import '../../../../models/raffle_model.dart'; // Import Model
 
 class RaffleToolScreen extends ConsumerStatefulWidget {
   final String hallId;
-  const RaffleToolScreen({super.key, required this.hallId});
+  final RaffleModel raffle; // Requirement
+
+  const RaffleToolScreen({super.key, required this.hallId, required this.raffle});
 
   @override
   ConsumerState<RaffleToolScreen> createState() => _RaffleToolScreenState();
@@ -12,7 +15,7 @@ class RaffleToolScreen extends ConsumerStatefulWidget {
 
 class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
   bool _complianceAccepted = false;
-  final TextEditingController _raffleNameCtrl = TextEditingController();
+  // _raffleNameCtrl Removed - we use widget.raffle.name
 
   @override
   void initState() {
@@ -36,6 +39,8 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
             Text("1. You hold all necessary local gaming licenses.", style: TextStyle(color: Colors.white70)),
             SizedBox(height: 8),
             Text("2. You accept full liability for this event.", style: TextStyle(color: Colors.white70)),
+            SizedBox(height: 8),
+            Text("3. No purchase was required for entry.", style: TextStyle(color: Colors.white70)),
           ],
         ),
         actions: [
@@ -65,12 +70,16 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
       return const Scaffold(backgroundColor: Color(0xFF141414)); // Wait for dialog
     }
 
+    // We use the hallId + raffleId to make unique session key if needed, or just hallId?
+    // Repository logic uses 'hallId' as the document key currently. 
+    // To support multiple concurrent raffles, we should probably use raffleId. 
+    // BUT for simplicity/MVP refactor, let's keep it one session per hall at a time.
     final sessionAsync = ref.watch(activeRaffleSessionProvider(widget.hallId));
 
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
-        title: const Text('Raffle Utility'),
+        title: Text('Run: ${widget.raffle.name}'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -104,13 +113,13 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.confirmation_number_outlined, size: 80, color: Colors.blueAccent),
+          const Icon(Icons.play_circle_fill, size: 80, color: Colors.blueAccent),
           const SizedBox(height: 24),
-          const Text("No Active Session", style: TextStyle(color: Colors.white, fontSize: 20)),
+          Text("Ready to start '${widget.raffle.name}'", style: const TextStyle(color: Colors.white, fontSize: 20)),
           const SizedBox(height: 32),
           ElevatedButton.icon(
              icon: const Icon(Icons.play_arrow),
-             label: const Text("Start Roll Call"),
+             label: const Text("Start Roll Call Session"),
              style: ElevatedButton.styleFrom(
                backgroundColor: Colors.blueAccent,
                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -190,25 +199,23 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
           Text("${participants.length} Players Locked In", style: const TextStyle(color: Colors.white, fontSize: 24)),
           const SizedBox(height: 32),
           
-          TextField(
-            controller: _raffleNameCtrl,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              labelText: "Raffle Name (e.g. 'Friday Pot')",
-              filled: true,
-              fillColor: Color(0xFF1E1E1E),
-            ),
+          Text(
+            "Distributing Tickets for:\n${widget.raffle.name}",
+            textAlign: TextAlign.center, 
+            style: const TextStyle(color: Colors.white54, fontSize: 16)
           ),
           const SizedBox(height: 32),
           
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green, minimumSize: const Size.fromHeight(50)),
             onPressed: () {
-               if (_raffleNameCtrl.text.isEmpty) {
-                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Enter a name")));
-                 return;
-               }
-               ref.read(raffleManagerRepositoryProvider).distributeTickets(widget.hallId, _raffleNameCtrl.text);
+               // Use widget.raffle.id and name!
+               ref.read(raffleManagerRepositoryProvider).distributeTickets(
+                 widget.hallId, 
+                 widget.raffle.name, 
+                 raffleId: widget.raffle.id, // Pass real ID
+                 imageUrl: widget.raffle.imageUrl // Pass image
+               );
             },
             child: const Text("DISTRIBUTE TICKETS"),
           ),
@@ -261,6 +268,7 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
                OutlinedButton(
                  onPressed: () {
                    ref.read(raffleManagerRepositoryProvider).resetSession(widget.hallId);
+                   Navigator.pop(context); // Exit after reset
                  }, 
                  child: const Text("Close Session")
                ),

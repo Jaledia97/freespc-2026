@@ -24,6 +24,21 @@ All notable changes to the FreeSPC project will be documented in this file.
 ### Fixed
 - **Null Safety**: Resolved potential crashes in `ManageSpecialsScreen` regarding nullable start times.
 
+## [0.0.1+21] - 2026-01-29 - Navigation Improvements & Biometrics (Phase 23 & 24)
+
+### Added
+- **Biometric Security**: Integrated FaceID and Fingerprint authentication (`local_auth`) for accessing the Hall Manager Dashboard.
+- **Biometric Fallback**: Standard PIN (`4836`) remains available as a fallback method.
+- **Deep Linking**: Implemented `initialTabIndex` on `HallProfileScreen` to allow direct navigation to specific tabs (e.g., Raffles).
+
+### Changed
+- **Wallet Navigation**: Tapping a raffle ticket in the Wallet now navigates directly to the "Active Raffles" tab of the specific Hall Profile.
+- **Configuration**: Updated `AndroidManifest.xml` and `Info.plist` to include native biometric permission declarations.
+
+### Fixed
+- **Build Errors**: Resolved `local_auth` API version mismatch by using standard parameter signatures.
+- **Orientation**: Locked application to Portrait Mode for consistent experience across devices.
+
 ## [0.0.1+19] - 2026-01-28 - Wallet System & Bonus Logic (Phase 19)
 
 ### Added
@@ -124,3 +139,8 @@ All notable changes to the FreeSPC project will be documented in this file.
 - **Wallet**: Developed `WalletScreen` with real-time point balance updates via Firestore streams.
 
 
+
+## Future Roadmap - Beacon Integration Revisit
+*Items to revisit once hardware Beacons are deployed:*
+- **Raffle System**: Current logic relies on manual "Roll Call" codes. Beacon proximity can automate checking in for raffles without codes.
+- **Auto-Checkin**: Move from scanning QR codes to passive point earning upon entry.

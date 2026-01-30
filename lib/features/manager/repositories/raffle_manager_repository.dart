@@ -69,7 +69,7 @@ class RaffleManagerRepository {
   }
 
   // Step 3: Distribute Tickets (Adds 1 ticket to each user's wallet)
-  Future<void> distributeTickets(String hallId, String raffleName) async {
+  Future<void> distributeTickets(String hallId, String raffleName, {required String raffleId, required String imageUrl}) async {
     final docRef = _firestore.collection('raffle_sessions').doc(hallId);
     final data = (await docRef.get()).data();
     if (data == null) return;
@@ -85,12 +85,13 @@ class RaffleManagerRepository {
       
       batch.set(ticketRef, {
         'id': ticketRef.id,
-        'raffleId': 'session-ticket',
-        'title': raffleName, // e.g., "Friday Night Draw"
+        'raffleId': raffleId, // Link to real raffle
+        'hallId': hallId,
+        'title': raffleName, 
         'hallName': 'Hall Draw', // fetch real name later
         'quantity': 1,
         'purchaseDate': FieldValue.serverTimestamp(),
-        'imageUrl': 'https://images.unsplash.com/photo-1546552356-3fae876a61ca?auto=format&fit=crop&w=200&q=80', // Generic Ticket
+        'imageUrl': imageUrl, 
       });
     }
 

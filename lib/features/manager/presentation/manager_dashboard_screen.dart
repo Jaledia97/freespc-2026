@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'cms/manage_specials_screen.dart';
 import 'cms/edit_hall_profile_screen.dart';
-import 'raffle_tool/raffle_tool_screen.dart';
+import 'cms/manage_raffles_screen.dart'; // New Import
+// import 'raffle_tool/raffle_tool_screen.dart'; // No longer direct link
 import '../../../../services/auth_service.dart';
 
 class ManagerDashboardScreen extends ConsumerWidget {
@@ -80,13 +81,13 @@ class ManagerDashboardScreen extends ConsumerWidget {
                     ),
                      _buildModuleCard(
                       context,
-                      title: "Raffle Tool",
+                      title: "Manage Raffles", // Renamed for clarity
                       icon: Icons.confirmation_number,
                       color: Colors.amber,
-                      desc: "Run drawings manually",
+                      desc: "Create & Run Drawings", // Updated desc
                       onTap: () {
                         if (homeHallId != null) {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => RaffleToolScreen(hallId: homeHallId)));
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => ManageRafflesScreen(hallId: homeHallId)));
                          } else {
                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error: No Hall Assigned")));
                          }

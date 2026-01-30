@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'manager_dashboard_screen.dart';
 
+import 'package:local_auth/local_auth.dart' as local_auth;
+
 class PinEntryScreen extends StatefulWidget {
   const PinEntryScreen({super.key});
 
@@ -12,6 +14,50 @@ class PinEntryScreen extends StatefulWidget {
 class _PinEntryScreenState extends State<PinEntryScreen> {
   String _pin = "";
   final String _correctPin = "4836"; // Hardcoded Dev PIN
+  
+  final local_auth.LocalAuthentication auth = local_auth.LocalAuthentication();
+  bool _canCheckBiometrics = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometrics();
+  }
+
+  Future<void> _checkBiometrics() async {
+    try {
+      final canCheck = await auth.canCheckBiometrics;
+      final isSupported = await auth.isDeviceSupported();
+      setState(() {
+        _canCheckBiometrics = canCheck && isSupported;
+      });
+      
+      if (_canCheckBiometrics) {
+        _authenticate();
+      }
+    } catch (e) {
+      // Ignore error for now, as this is just an initial check
+    }
+  }
+
+  Future<void> _authenticate() async {
+    try {
+      final authenticated = await auth.authenticate(
+        localizedReason: 'Scan to verify Admin Access',
+        biometricOnly: true,
+        persistAcrossBackgrounding: true,
+      );
+
+      if (authenticated && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const ManagerDashboardScreen()),
+        );
+      }
+    } catch (e) {
+      // Ignore error, fallback to PIN
+    }
+  }
 
   void _onDigitPress(String digit) {
     if (_pin.length < 4) {
@@ -78,6 +124,16 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
               "Enter your 4-digit PIN",
               style: TextStyle(color: Colors.white54, fontSize: 16),
             ),
+            if (_canCheckBiometrics)
+               Padding(
+                 padding: const EdgeInsets.only(top: 8),
+                 child: TextButton.icon(
+                   onPressed: _authenticate, 
+                   icon: const Icon(Icons.fingerprint, color: Colors.blueAccent), 
+                   label: const Text("Use Biometrics", style: TextStyle(color: Colors.blueAccent)),
+                 ),
+               ),
+
             const SizedBox(height: 48),
 
             // PIN Dots
@@ -110,8 +166,17 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
                   mainAxisSpacing: 24,
                   children: [
                     for (var i = 1; i <= 9; i++) _buildDigitBtn(i.toString()),
-                    const SizedBox(), // Empty
+                    // Biometric Button (Bottom Left)
+                    if (_canCheckBiometrics)
+                      IconButton(
+                        onPressed: _authenticate,
+                        icon: const Icon(Icons.fingerprint, color: Colors.blueAccent, size: 32),
+                      )
+                    else 
+                      const SizedBox(), 
+
                     _buildDigitBtn("0"),
+                    
                     IconButton(
                       onPressed: _onDelete,
                       icon: const Icon(Icons.backspace_outlined, color: Colors.white70, size: 28),

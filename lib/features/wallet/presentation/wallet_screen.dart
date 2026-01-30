@@ -7,6 +7,8 @@ import '../../../models/hall_membership_model.dart';
 import '../../../models/raffle_ticket_model.dart';
 import '../../../models/tournament_participation_model.dart';
 import '../../../core/widgets/glass_container.dart';
+import '../../home/presentation/hall_profile_screen.dart';
+import '../../home/repositories/hall_repository.dart';
 
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
@@ -222,63 +224,85 @@ class _RafflesList extends ConsumerWidget {
           itemCount: raffles.length,
           itemBuilder: (context, index) {
             final ticket = raffles[index];
-            return Container(
-              width: 280,
-              margin: const EdgeInsets.only(right: 12),
-              child: Stack(
-                children: [
-                  // Ticket Shape (Visual approximation)
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF252525),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white10),
-                    ),
-                    child: Row(
-                      children: [
-                        // Left Stub (Image)
-                        Container(
-                          width: 80,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[900],
-                            borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
-                            image: ticket.imageUrl != null 
-                              ? DecorationImage(image: NetworkImage(ticket.imageUrl!), fit: BoxFit.cover)
-                              : null,
+            return GestureDetector(
+              onTap: () async {
+                 // Navigate to Hall Profile (Raffles Tab)
+                 try {
+                   final hall = await ref.read(hallRepositoryProvider).getHallStream(ticket.hallId).first;
+                   if (hall != null && context.mounted) {
+                     Navigator.push(
+                       context, 
+                       MaterialPageRoute(
+                         builder: (_) => HallProfileScreen(hall: hall, initialTabIndex: 1) // 1 = Raffles Tab
+                       )
+                     );
+                   } else if (context.mounted) {
+                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Hall not found")));
+                   }
+                 } catch (e) {
+                   if (context.mounted) {
+                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error loading hall")));
+                   }
+                 }
+              },
+              child: Container(
+                width: 280,
+                margin: const EdgeInsets.only(right: 12),
+                child: Stack(
+                  children: [
+                    // Ticket Shape (Visual approximation)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF252525),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Row(
+                        children: [
+                          // Left Stub (Image)
+                          Container(
+                            width: 80,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+                              image: ticket.imageUrl != null 
+                                ? DecorationImage(image: NetworkImage(ticket.imageUrl!), fit: BoxFit.cover)
+                                : null,
+                            ),
+                            child: ticket.imageUrl == null ? const Center(child: Icon(Icons.confirmation_number, color: Colors.white24)) : null,
                           ),
-                          child: ticket.imageUrl == null ? const Center(child: Icon(Icons.confirmation_number, color: Colors.white24)) : null,
-                        ),
-                        
-                        // Dashed Line
-                        Container(width: 1, color: Colors.white10, margin: const EdgeInsets.symmetric(horizontal: 2)),
-                        
-                        // Details
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(ticket.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                const SizedBox(height: 4),
-                                Text(ticket.hallName, style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                                const Spacer(),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text("x${ticket.quantity} Tickets", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-                                    const Icon(Icons.qr_code, color: Colors.white24, size: 20),
-                                  ],
-                                ),
-                              ],
+                          
+                          // Dashed Line
+                          Container(width: 1, color: Colors.white10, margin: const EdgeInsets.symmetric(horizontal: 2)),
+                          
+                          // Details
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(ticket.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                  const SizedBox(height: 4),
+                                  Text(ticket.hallName, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                                  const Spacer(),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text("x${ticket.quantity} Tickets", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
+                                      const Icon(Icons.qr_code, color: Colors.white24, size: 20),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },

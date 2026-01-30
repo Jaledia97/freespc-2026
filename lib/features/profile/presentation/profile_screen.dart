@@ -7,6 +7,7 @@ import 'widgets/profile_header.dart';
 import 'widgets/profile_menu.dart';
 import '../../my_halls/presentation/my_halls_screen.dart';
 import '../../manager/presentation/pin_entry_screen.dart';
+import '../../settings/presentation/display_settings_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -35,43 +36,54 @@ class ProfileScreen extends ConsumerWidget {
                 context: context,
                 backgroundColor: const Color(0xFF1E1E1E),
                 builder: (context) => SafeArea(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                       // Manager Mode Switch (Conditional)
-                       if (role == 'owner' || role == 'manager' || role == 'admin' || role == 'super-admin')
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                         // Manager Mode Switch (Conditional)
+                         if (role == 'owner' || role == 'manager' || role == 'admin' || role == 'super-admin')
+                           ListTile(
+                             leading: const Icon(Icons.admin_panel_settings, color: Colors.blueAccent),
+                             title: const Text('Switch to Manager Mode', style: TextStyle(color: Colors.blueAccent)),
+                             onTap: () {
+                               Navigator.pop(context); // Close sheet
+                               Navigator.push(context, MaterialPageRoute(builder: (_) => const PinEntryScreen()));
+                             },
+                           ),
+                         
+                         // Super Admin: View As
+                         if (role == 'super-admin' || overrideRole != null) 
+                           ExpansionTile(
+                             leading: const Icon(Icons.visibility, color: Colors.purpleAccent),
+                             title: Text(overrideRole != null ? 'Viewing as: $overrideRole' : 'View As...', style: const TextStyle(color: Colors.purpleAccent)),
+                             children: [
+                               _roleOption(context, ref, 'super-admin', 'Super Admin (Reset)'),
+                               _roleOption(context, ref, 'owner', 'Owner'),
+                               _roleOption(context, ref, 'admin', 'Admin'),
+                               _roleOption(context, ref, 'manager', 'Manager'),
+                               _roleOption(context, ref, 'worker', 'Worker'),
+                               _roleOption(context, ref, 'player', 'Player'),
+                             ],
+                           ),
+                         
                          ListTile(
-                           leading: const Icon(Icons.admin_panel_settings, color: Colors.blueAccent),
-                           title: const Text('Switch to Manager Mode', style: TextStyle(color: Colors.blueAccent)),
+                           leading: const Icon(Icons.settings_display, color: Colors.blueGrey),
+                           title: const Text('Display Settings', style: TextStyle(color: Colors.white)),
                            onTap: () {
                              Navigator.pop(context); // Close sheet
-                             Navigator.push(context, MaterialPageRoute(builder: (_) => const PinEntryScreen()));
+                             Navigator.push(context, MaterialPageRoute(builder: (_) => const DisplaySettingsScreen()));
                            },
                          ),
-                       
-                       // Super Admin: View As
-                       if (role == 'super-admin' || overrideRole != null) 
-                         ExpansionTile(
-                           leading: const Icon(Icons.visibility, color: Colors.purpleAccent),
-                           title: Text(overrideRole != null ? 'Viewing as: $overrideRole' : 'View As...', style: const TextStyle(color: Colors.purpleAccent)),
-                           children: [
-                             _roleOption(context, ref, 'super-admin', 'Super Admin (Reset)'),
-                             _roleOption(context, ref, 'owner', 'Owner'),
-                             _roleOption(context, ref, 'admin', 'Admin'),
-                             _roleOption(context, ref, 'manager', 'Manager'),
-                             _roleOption(context, ref, 'worker', 'Worker'),
-                             _roleOption(context, ref, 'player', 'Player'),
-                           ],
-                         ),
-                       ListTile(
-                        leading: const Icon(Icons.logout, color: Colors.redAccent),
-                        title: const Text('Logout', style: TextStyle(color: Colors.redAccent)),
-                        onTap: () {
-                          Navigator.pop(context); // Close sheet
-                          ref.read(authServiceProvider).signOut();
-                        },
-                      ),
-                    ],
+                         ListTile(
+                          leading: const Icon(Icons.logout, color: Colors.redAccent),
+                          title: const Text('Logout', style: TextStyle(color: Colors.redAccent)),
+                          onTap: () {
+                            Navigator.pop(context); // Close sheet
+                            ref.read(authServiceProvider).signOut();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -186,13 +198,28 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       ListTile(
                         title: const Text('ADMIN: Seed Mary Esther Env', style: TextStyle(color: Colors.blue)),
-                        subtitle: const Text('Sets You as Owner of Mary Esther'),
+                        subtitle: const Text('Sets You as Owner + Resets Data'),
                         trailing: const Icon(Icons.build, color: Colors.white54),
                         onTap: () async {
-                           await ref.read(hallRepositoryProvider).seedMaryEstherEnv(user.uid);
-                           ScaffoldMessenger.of(context).showSnackBar(
-                             const SnackBar(content: Text('Environment Seeded! You are now Owner.')),
-                           );
+                           try {
+                             final repo = ref.read(hallRepositoryProvider);
+                             // 1. Reset Hall & User
+                             await repo.seedMaryEstherEnv(user.uid);
+                             // 2. Reset Raffles (Sync with Wallet)
+                             await repo.seedRaffles('mary-esther-bingo');
+                             // 3. Reset Wallet Data
+                             await ref.read(walletRepositoryProvider).seedWalletData(user.uid);
+
+                             if (context.mounted) {
+                               ScaffoldMessenger.of(context).showSnackBar(
+                                 const SnackBar(content: Text('Master Reset Complete! (User, Hall, Raffles, Wallet)')),
+                               );
+                             }
+                           } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+                              }
+                           }
                         },
                       ),
                       ListTile(

@@ -4,15 +4,18 @@ import '../../../models/bingo_hall_model.dart';
 import '../../home/repositories/hall_repository.dart';
 import '../../../services/auth_service.dart';
 import 'widgets/special_card.dart';
+import 'widgets/raffle_list_card.dart';
 
 class HallProfileScreen extends ConsumerWidget {
   final BingoHallModel hall;
   final double? distanceInMeters;
+  final int initialTabIndex;
 
   const HallProfileScreen({
     super.key,
     required this.hall,
     this.distanceInMeters,
+    this.initialTabIndex = 0,
   });
 
   @override
@@ -22,6 +25,7 @@ class HallProfileScreen extends ConsumerWidget {
     return Scaffold(
       body: DefaultTabController(
         length: 3,
+        initialIndex: initialTabIndex,
         child: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
@@ -230,66 +234,12 @@ class HallProfileScreen extends ConsumerWidget {
                            ),
                          );
                       }
-                      return GridView.builder(
-                        padding: const EdgeInsets.all(12),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.75,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
+                      return ListView.separated(
+                        padding: const EdgeInsets.all(16),
                         itemCount: raffles.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (context, index) {
-                          final raffle = raffles[index];
-                          final percentage = (raffle.soldTickets / raffle.maxTickets).clamp(0.0, 1.0);
-                          
-                          return Card(
-                            clipBehavior: Clip.antiAlias,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            elevation: 4,
-                            child: InkWell(
-                              onTap: () {
-                                // TODO: Navigate to Raffle Detail / Buy Ticket
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Buying Tickets coming next step!")));
-                              },
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Image
-                                  Expanded(
-                                    child: Image.network(
-                                      raffle.imageUrl,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      errorBuilder: (_,__,___) => Container(color: Colors.grey),
-                                    ),
-                                  ),
-                                  // Info
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(raffle.name, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                        Text(raffle.description, style: Theme.of(context).textTheme.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
-                                        const SizedBox(height: 8),
-                                        // Progress Bar
-                                        LinearProgressIndicator(value: percentage, backgroundColor: Colors.grey[200], color: Colors.amber),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text("${raffle.soldTickets}/${raffle.maxTickets} sold", style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                                            Text("${raffle.ticketPrice} pts", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.green)),
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
+                          return RaffleListCard(raffle: raffles[index]);
                         },
                       );
                     },
@@ -298,6 +248,7 @@ class HallProfileScreen extends ConsumerWidget {
                   );
                  },
               ),
+
 
               // 3. Tournaments Tab
               const Center(child: Text("Tournaments Coming Soon (Phase 21)")),
