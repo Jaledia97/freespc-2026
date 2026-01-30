@@ -99,15 +99,25 @@ class HallRepository {
   }
 
   // --- Specials Management (CMS) ---
-  Future<void> addSpecial(SpecialModel special) async {
+  Future<void> addSpecial(SpecialModel special, {bool sendNotification = false}) async {
     // Generate ID if empty
     final docRef = _firestore.collection('specials').doc();
     final newSpecial = special.copyWith(id: docRef.id);
     await docRef.set(newSpecial.toJson());
+
+    if (sendNotification) {
+      // Mock Cloud Function Trigger
+      print("PUSH NOTIFICATION TRIGGERED for Special: ${newSpecial.title}");
+    }
   }
 
-  Future<void> updateSpecial(SpecialModel special) async {
+  Future<void> updateSpecial(SpecialModel special, {bool sendNotification = false}) async {
     await _firestore.collection('specials').doc(special.id).update(special.toJson());
+
+    if (sendNotification) {
+      // Mock Cloud Function Trigger
+      print("PUSH NOTIFICATION TRIGGERED for Special: ${special.title}");
+    }
   }
 
   Future<void> deleteSpecial(String specialId) async {
@@ -670,5 +680,24 @@ class HallRepository {
     for (var r in raffles) {
       await collection.doc(r.id).set(r.toJson());
     }
+  }
+  // --- Asset Library ---
+  Future<void> addToAssetLibrary(String hallId, String url, String type) async {
+    await _firestore.collection('bingo_halls').doc(hallId).collection('assets').add({
+      'url': url,
+      'type': type,
+      'uploadedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Stream<List<String>> getAssetLibrary(String hallId, String type) {
+    return _firestore
+        .collection('bingo_halls')
+        .doc(hallId)
+        .collection('assets')
+        .where('type', isEqualTo: type)
+        .orderBy('uploadedAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((d) => d.data()['url'] as String).toList());
   }
 }

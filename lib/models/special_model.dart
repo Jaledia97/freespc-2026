@@ -14,9 +14,11 @@ abstract class SpecialModel with _$SpecialModel {
     required String imageUrl,
     required DateTime postedAt,
     DateTime? startTime,
+    DateTime? endTime,
     double? latitude,
     double? longitude,
     @Default([]) List<String> tags,
+    @Default('none') String recurrence, // none, daily, weekly, monthly
   }) = _SpecialModel;
 
   factory SpecialModel.fromJson(Map<String, Object?> json) => _$SpecialModelFromJson(json);

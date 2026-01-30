@@ -18,11 +18,15 @@ _SpecialModel _$SpecialModelFromJson(Map<String, dynamic> json) =>
       startTime: json['startTime'] == null
           ? null
           : DateTime.parse(json['startTime'] as String),
+      endTime: json['endTime'] == null
+          ? null
+          : DateTime.parse(json['endTime'] as String),
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
           const [],
+      recurrence: json['recurrence'] as String? ?? 'none',
     );
 
 Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
@@ -35,7 +39,9 @@ Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
       'imageUrl': instance.imageUrl,
       'postedAt': instance.postedAt.toIso8601String(),
       'startTime': instance.startTime?.toIso8601String(),
+      'endTime': instance.endTime?.toIso8601String(),
       'latitude': instance.latitude,
       'longitude': instance.longitude,
       'tags': instance.tags,
+      'recurrence': instance.recurrence,
     };

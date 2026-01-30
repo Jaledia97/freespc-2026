@@ -38,20 +38,45 @@ class HallProfileScreen extends ConsumerWidget {
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                       Container(
-                         color: Colors.grey[800],
-                         // TODO: Use real image
-                         child: const Center(child: Icon(Icons.casino, size: 80, color: Colors.white24)),
-                       ),
+                       // Banner Image
+                       hall.bannerUrl != null 
+                         ? Image.network(hall.bannerUrl!, fit: BoxFit.cover)
+                         : Container(
+                             color: Colors.grey[800],
+                             child: const Center(child: Icon(Icons.casino, size: 80, color: Colors.white24)),
+                           ),
+                       
+                       // Gradient Overlay (for text readability)
                        Container(
                          decoration: BoxDecoration(
                            gradient: LinearGradient(
                              begin: Alignment.topCenter,
                              end: Alignment.bottomCenter,
-                             colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                             colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+                             stops: const [0.4, 1.0],
                            ),
                          ),
                        ),
+
+                       // Logo Overlay (Bottom Left)
+                       if (hall.logoUrl != null)
+                         Positioned(
+                           bottom: 10, // Adjust based on collapse behavior if needed
+                           left: 16,
+                           child: Container(
+                             width: 80, 
+                             height: 80,
+                             decoration: BoxDecoration(
+                               shape: BoxShape.circle,
+                               border: Border.all(color: Colors.white, width: 2),
+                               boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8)],
+                               image: DecorationImage(
+                                 image: NetworkImage(hall.logoUrl!),
+                                 fit: BoxFit.cover,
+                               ),
+                             ),
+                           ),
+                         ),
                     ],
                   ),
                 ),

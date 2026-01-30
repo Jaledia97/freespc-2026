@@ -335,12 +335,19 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
                         decoration: BoxDecoration(
                           color: Colors.amber.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
-                          image: const DecorationImage(
-                             image: NetworkImage("https://loremflickr.com/200/200/bingo"), // Placeholder
-                             fit: BoxFit.cover,
-                          ),
+                          image: hall.logoUrl != null
+                              ? DecorationImage(
+                                  image: NetworkImage(hall.logoUrl!),
+                                  fit: BoxFit.cover,
+                                )
+                              : const DecorationImage(
+                                  image: NetworkImage("https://loremflickr.com/200/200/bingo"), // Placeholder
+                                  fit: BoxFit.cover,
+                                ),
                         ),
-                        child: const Icon(Icons.store, color: Colors.amber),
+                        child: hall.logoUrl == null 
+                            ? const Icon(Icons.store, color: Colors.amber)
+                            : null,
                       ),
                       title: Text(hall.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       subtitle: Text(

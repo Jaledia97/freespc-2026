@@ -124,7 +124,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                                onTap: () => _toggleExpanded(hall.id),
                                child: Column(
                                  children: [
-                                   // 1. Banner Image (Static Unsplash)
+                                    // 1. Banner Image (Dynamic)
                                    Stack(
                                      children: [
                                        Container(
@@ -132,7 +132,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                                          width: double.infinity,
                                          color: Colors.grey[300],
                                          child: Image.network(
-                                           _getHallImage(hall.id), 
+                                           hall.bannerUrl ?? _getHallImage(hall.id), 
                                            fit: BoxFit.cover,
                                            errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image)),
                                          ),
@@ -259,7 +259,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                             onTap: () => _toggleExpanded(hall.id),
                             child: Column(
                               children: [
-                                // 1. Banner Image (Static Unsplash)
+                                // 1. Banner Image (Dynamic)
                                 Stack(
                                   children: [
                                     Container(
@@ -267,7 +267,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                                       width: double.infinity,
                                       color: Colors.grey[300],
                                       child: Image.network(
-                                        _getHallImage(hall.id), 
+                                        hall.bannerUrl ?? _getHallImage(hall.id), 
                                         fit: BoxFit.cover,
                                         errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image)),
                                       ),

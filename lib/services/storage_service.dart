@@ -62,4 +62,21 @@ class StorageService {
       rethrow;
     }
   }
+
+  Future<String> uploadHallImage(File file, String hallId, String type) async {
+    try {
+      final ref = _storage.ref().child('halls/$hallId/${type}_v${DateTime.now().millisecondsSinceEpoch}.jpg');
+      print('Starting hall image upload to: ${ref.fullPath}');
+      
+      final snapshot = await ref.putFile(file);
+      if (snapshot.state == TaskState.success) {
+         return await ref.getDownloadURL();
+      } else {
+         throw Exception('Hall image upload failed: ${snapshot.state}');
+      }
+    } catch (e) {
+      print('Error uploading hall image: $e');
+      rethrow;
+    }
+  }
 }

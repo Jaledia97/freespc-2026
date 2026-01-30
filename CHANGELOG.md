@@ -24,6 +24,22 @@ All notable changes to the FreeSPC project will be documented in this file.
 ### Fixed
 - **Null Safety**: Resolved potential crashes in `ManageSpecialsScreen` regarding nullable start times.
 
+## [0.0.1+22] - 2026-01-30 - Recurring Specials & Robust UI (Phase 21)
+
+### Added
+- **Recurring Specials**: Added "Recurrence" dropdown to Edit Special screen (`Daily`, `Weekly`, `Monthly`), enabling automated schedule logic.
+- **End Time Option**: Admins can now optionally set an End Time for specials via a checkbox toggle.
+- **Push Notification Trigger**: "Send Push Notification" checkbox added to the edit/create flow, guarded by a "Notification Fatigue" warning dialog to prevent spam.
+- **Image Integration**: Specials creation now supports uploading directly from Gallery/Camera or selecting from the Hall's Asset Library.
+
+### Changed
+- **Date Picker UI**: Replaced standard `TextFormField` date inputs with custom `InkWell` + `InputDecorator` buttons to ensure 100% touch responsiveness and prevent keyboard conflicts.
+- **Draft Safety**: Confirmed that all Special edits remain in a local "Draft" state until the **Save** button is explicitly pressed.
+
+### Fixed
+- **Runtime Crash**: Resolved a "Dependency on Inherited Widget" crash caused by accessing `context` inside `initState` for date formatting.
+- **Date Range**: Widened the Date Picker range (2020-2030) to facilitate backdating or editing past specials without assertion errors.
+
 ## [0.0.1+21] - 2026-01-29 - Navigation Improvements & Biometrics (Phase 23 & 24)
 
 ### Added

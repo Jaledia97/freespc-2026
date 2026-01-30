@@ -22,6 +22,8 @@ abstract class BingoHallModel with _$BingoHallModel {
     String? phone,
     String? websiteUrl,
     String? description,
+    String? logoUrl,
+    String? bannerUrl,
     // Geohashing for scalable search
     String? geoHash,
     // Bonus Logic
