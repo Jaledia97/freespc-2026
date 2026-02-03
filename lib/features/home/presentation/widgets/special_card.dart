@@ -87,12 +87,10 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
                             children: [
                               Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
                               const SizedBox(width: 4),
-                              Text(
-                                widget.special.startTime != null 
-                                  ? "Starts: ${widget.special.startTime.toString().substring(0, 16)}" 
-                                  : "Check Hall for Time",
-                                style: const TextStyle(fontWeight: FontWeight.w600),
-                              ),
+                                Text(
+                                  _formattedDate(widget.special),
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                ),
                             ],
                           ),
                           const SizedBox(height: 8),
@@ -182,6 +180,37 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
         ),
       ),
     );
+  }
+  String _formattedDate(SpecialModel special) {
+    if (special.startTime == null) return "Check Hall for Time";
+    
+    final dt = special.startTime!;
+    final timeStr = "${dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour)}:${dt.minute.toString().padLeft(2, '0')} ${dt.hour >= 12 ? 'PM' : 'AM'}";
+    
+    if (special.recurrence == 'daily') {
+      return "Every Day at $timeStr";
+    } else if (special.recurrence == 'weekly') {
+      const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      final weekday = days[dt.weekday - 1]; // dt.weekday is 1-7 (Mon-Sun)
+      return "Every $weekday at $timeStr";
+    } else if (special.recurrence == 'monthly') {
+      return "Monthly on the ${dt.day}${_ordinal(dt.day)} at $timeStr";
+    } else {
+      // One time event
+      final months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      final dateStr = "${months[dt.month - 1]} ${dt.day}";
+      return "$dateStr at $timeStr";
+    }
+  }
+
+  String _ordinal(int n) {
+    if (n >= 11 && n <= 13) return 'th';
+    switch (n % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
   }
 }
 

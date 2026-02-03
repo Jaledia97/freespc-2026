@@ -4,7 +4,18 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
-## [0.0.1+20] - 2026-01-29 - Hall Manager Dashboard (Phase 20)
+## [0.0.1+23] - 2026-02-02 - Smart Recurrence & UI Polish (Phase 21)
+
+### Added
+- **Smart Rotation**: recurring specials (Daily, Weekly, Monthly) now technically "rotate" in the feed, projecting their start/end times to the next logical date automatically.
+- **Calendar Integration**: "Add to Calendar" button is now fully functional on Android & iOS, with proper permission handling.
+- **Smart Dates**: Special Cards now display friendly recurrence text (e.g., "Every Friday at 7 PM") instead of raw timestamps.
+
+### Changed
+- **Midnight Rule**: Specials created without an explicit End Time now default to ending at 11:59 PM of the start day, preventing open-ended events.
+- **Navigation**: Removed the redundant "Map View" quick action button, consolidating map access to the "Find Hall" button.
+
+
 
 ### Added
 - **Manager Mode**: Secure "Admin Mode" for venue operators, protected by a PIN Gateway (`4836`).

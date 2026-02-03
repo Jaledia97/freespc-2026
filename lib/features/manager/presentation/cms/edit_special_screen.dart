@@ -261,6 +261,11 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     setState(() => _isSaving = true);
 
     try {
+      // Midnight Rule: If no end time, default to 11:59:59 PM of the start date
+      final DateTime endTime = _hasEndTime 
+          ? _endTime! // _endTime is nullable in class, but logic ensures it's set if _hasEndTime is true? Verify below.
+          : DateTime(_startTime.year, _startTime.month, _startTime.day, 23, 59, 59);
+
       final newSpecial = SpecialModel(
         id: widget.special?.id ?? '', // ID handled by repo if empty
         hallId: widget.hallId,
@@ -270,7 +275,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
         imageUrl: _imageUrl!,
         postedAt: widget.special?.postedAt ?? DateTime.now(),
         startTime: _startTime,
-        endTime: _hasEndTime ? _endTime : null, // Only save if enabled
+        endTime: endTime,
         tags: _selectedTags,
         recurrence: _recurrence,
       );

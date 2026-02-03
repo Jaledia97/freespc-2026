@@ -72,12 +72,7 @@ class HomeScreen extends ConsumerWidget {
                       color: Colors.blue,
                       onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming Soon"))),
                     ),
-                    _QuickAction(
-                      icon: Icons.map,
-                      label: 'Map View',
-                      color: Colors.green,
-                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming Soon"))),
-                    ),
+
                     const SizedBox(width: 16),
                   ],
                 ),

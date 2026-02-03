@@ -49,5 +49,9 @@
 	<string>This app needs gallery access to upload profile pictures.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>This app needs Face ID to secure Admin Access.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>This app needs calendar access to add special events to your schedule.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>This app needs contacts access to add events to your calendar.</string>
 </dict>
 </plist>

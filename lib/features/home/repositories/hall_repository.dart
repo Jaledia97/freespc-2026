@@ -65,16 +65,19 @@ class HallRepository {
   Stream<List<SpecialModel>> getSpecialsFeed(Position? userLocation) {
     return _firestore
         .collection('specials')
-        .orderBy('startTime', descending: false) // Closest upcoming first
+        // .orderBy('startTime', descending: false) // Removed ordering here as we re-sort after projection
         .snapshots()
         .map((snapshot) {
           final specials = snapshot.docs.map((doc) => SpecialModel.fromJson(doc.data())).toList();
+          
+          // 1. Project Recurring Events
+          final projectedSpecials = _projectSpecials(specials);
 
-          if (userLocation == null) return specials; // Return all if no location
+          if (userLocation == null) return projectedSpecials; // Return all if no location
 
-          // Filter by 75 mile radius
-          return specials.where((s) {
-            if (s.latitude == null || s.longitude == null) return true; // Keep if no coords (legacy/global)
+          // 2. Filter by 75 mile radius
+          return projectedSpecials.where((s) {
+            if (s.latitude == null || s.longitude == null) return true; // Keep if no coords
             
             final distanceMeters = Geolocator.distanceBetween(
               userLocation.latitude, 
@@ -83,8 +86,7 @@ class HallRepository {
               s.longitude!
             );
             
-            // 75 miles in meters ~= 120,700
-            return distanceMeters <= 120700;
+            return distanceMeters <= 120700; // 75 miles
           }).toList();
     });
   }
@@ -93,9 +95,93 @@ class HallRepository {
     return _firestore
         .collection('specials')
         .where('hallId', isEqualTo: hallId)
-        .orderBy('startTime', descending: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => SpecialModel.fromJson(doc.data())).toList());
+        .map((snapshot) {
+           final specials = snapshot.docs.map((doc) => SpecialModel.fromJson(doc.data())).toList();
+           return _projectSpecials(specials);
+        });
+  }
+
+  // Helper: Projects recurring events into the future
+  List<SpecialModel> _projectSpecials(List<SpecialModel> input) {
+    final now = DateTime.now();
+    final output = <SpecialModel>[];
+
+    for (var s in input) {
+      // 1. If not recurring, check expiry
+      if (s.recurrence == 'none') {
+        // Only show if not expired more than 24 hours ago? Or keep history?
+        // For feed, usually only upcoming or active.
+        final end = s.endTime ?? s.startTime?.add(const Duration(hours: 2));
+        if (end != null && end.isAfter(now.subtract(const Duration(hours: 12)))) {
+           output.add(s);
+        }
+        continue;
+      }
+
+      // 2. Recurring Logic
+      if (s.startTime == null) continue;
+
+      final originalStart = s.startTime!;
+      final originalEnd = s.endTime ?? originalStart.add(const Duration(hours: 4)); // Default duration 4h
+      final duration = originalEnd.difference(originalStart);
+      
+      DateTime activeStart = originalStart;
+      DateTime activeEnd = originalEnd;
+      
+      // If the original instance is already past, find the NEXT instance relative to NOW
+      if (activeEnd.isBefore(now)) {
+        if (s.recurrence == 'daily') {
+          // Project to today with same time
+          var candidate = DateTime(now.year, now.month, now.day, originalStart.hour, originalStart.minute);
+          // If that candidate is already over (or started?), move to tomorrow?
+          // Let's say we want to show it if it ends in future.
+          var candidateEnd = candidate.add(duration);
+          
+          if (candidateEnd.isBefore(now)) {
+             candidate = candidate.add(const Duration(days: 1));
+          }
+          activeStart = candidate;
+        } else if (s.recurrence == 'weekly') {
+           // Find offset to next weekday
+           int daysToAdd = (originalStart.weekday - now.weekday + 7) % 7;
+           var candidate = DateTime(now.year, now.month, now.day, originalStart.hour, originalStart.minute).add(Duration(days: daysToAdd));
+           var candidateEnd = candidate.add(duration);
+           
+           if (candidateEnd.isBefore(now)) {
+              candidate = candidate.add(const Duration(days: 7));
+           }
+           activeStart = candidate;
+        } else if (s.recurrence == 'monthly') {
+           // Try this month
+           var candidate = DateTime(now.year, now.month, originalStart.day, originalStart.hour, originalStart.minute);
+           var candidateEnd = candidate.add(duration);
+           
+           if (candidateEnd.isBefore(now)) {
+              // Move to next month
+              // Handle Dec -> Jan wrap automatically by DateTime
+              candidate = DateTime(now.year, now.month + 1, originalStart.day, originalStart.hour, originalStart.minute);
+           }
+           activeStart = candidate;
+        }
+        
+        activeEnd = activeStart.add(duration);
+        
+        // Use the projected times
+        output.add(s.copyWith(
+          startTime: activeStart,
+          endTime: activeEnd,
+        ));
+      } else {
+        // Original instance is still valid
+        output.add(s);
+      }
+    }
+
+    // Sort valid/projected list
+    output.sort((a, b) => (a.startTime ?? DateTime.now()).compareTo(b.startTime ?? DateTime.now()));
+    
+    return output;
   }
 
   // --- Specials Management (CMS) ---
