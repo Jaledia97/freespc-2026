@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:geocoding/geocoding.dart';
 import '../../../home/repositories/hall_repository.dart';
 import '../../../../models/bingo_hall_model.dart';
 import '../../../../services/storage_service.dart';
@@ -208,16 +209,56 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     setState(() => _isSaving = true);
     
     try {
+      double newLat = _currentHall!.latitude;
+      double newLng = _currentHall!.longitude;
+      String? newState = _currentHall!.state; // Keep old state unless geocoder finds one?
+
+      // Check for Address Changes
+      final addressChanged = 
+        _streetCtrl.text.trim() != (_currentHall!.street ?? '') ||
+        _cityCtrl.text.trim() != (_currentHall!.city ?? '') ||
+        _zipCtrl.text.trim() != (_currentHall!.zipCode ?? '');
+
+      if (addressChanged) {
+        // Attempt Geocoding
+        try {
+          final fullAddress = "${_streetCtrl.text.trim()}, ${_cityCtrl.text.trim()}, ${_zipCtrl.text.trim()}";
+          // We can assume USA or append it? "fullAddress, USA"
+          
+          List<Location> locations = await locationFromAddress(fullAddress);
+          if (locations.isNotEmpty) {
+            newLat = locations.first.latitude;
+            newLng = locations.first.longitude;
+            
+            // Optional: Reverse geocode to get State/AdminArea if missing or to correct it
+            try {
+               List<Placemark> placemarks = await placemarkFromCoordinates(newLat, newLng);
+               if (placemarks.isNotEmpty) {
+                 newState = placemarks.first.administrativeArea ?? newState;
+               }
+            } catch (_) {} // Ignore reverse geocode error
+          } else {
+             if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Warning: Could not locate address on map.")));
+          }
+        } catch (e) {
+          print("Geocoding error: $e");
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Warning: Address check failed. Map pin may not update.")));
+        }
+      }
+
       final updatedHall = _currentHall!.copyWith(
         name: _nameCtrl.text.trim(),
         phone: _phoneCtrl.text.trim(),
         websiteUrl: _webCtrl.text.trim(),
         street: _streetCtrl.text.trim(),
         city: _cityCtrl.text.trim(),
+        state: newState,
         zipCode: _zipCtrl.text.trim(),
         description: _descCtrl.text.trim(),
         logoUrl: _logoUrl,
         bannerUrl: _bannerUrl,
+        latitude: newLat,
+        longitude: newLng,
       );
 
       await ref.read(hallRepositoryProvider).updateHall(updatedHall);

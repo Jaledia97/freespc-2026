@@ -76,7 +76,7 @@ class HallRepository {
           if (userLocation == null) return projectedSpecials; // Return all if no location
 
           // 2. Filter by 75 mile radius
-          return projectedSpecials.where((s) {
+          final nearbySpecials = projectedSpecials.where((s) {
             if (s.latitude == null || s.longitude == null) return true; // Keep if no coords
             
             final distanceMeters = Geolocator.distanceBetween(
@@ -88,6 +88,13 @@ class HallRepository {
             
             return distanceMeters <= 120700; // 75 miles
           }).toList();
+
+          // Fallback: If nothing nearby, show everything (Demo Mode behavior)
+          if (nearbySpecials.isEmpty && projectedSpecials.isNotEmpty) {
+             return projectedSpecials;
+          }
+          
+          return nearbySpecials;
     });
   }
 
@@ -251,6 +258,21 @@ class HallRepository {
         latitude: baseLat,
         longitude: baseLng,
         tags: ['Session', 'Progressives'],
+        recurrence: 'weekly',
+      ),
+      SpecialModel(
+        id: 'sp1-raffle',
+        hallId: 'mary-esther-bingo',
+        hallName: 'Mary Esther Bingo',
+        title: 'Weekly Cash Pot Raffle',
+        description: 'Win \$500 Cash! Tickets available at the counter or in the app.',
+        imageUrl: 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80',
+        postedAt: now.subtract(const Duration(hours: 1)),
+        startTime: now.add(const Duration(days: 0, hours: 2)), // Today
+        latitude: baseLat,
+        longitude: baseLng,
+        tags: ['Raffles'],
+        recurrence: 'weekly',
       ),
       SpecialModel(
         id: 'sp2',

@@ -12,6 +12,7 @@ import '../../../services/location_service.dart';
 import 'hall_profile_screen.dart';
 import '../../../models/bingo_hall_model.dart';
 import '../../../core/widgets/glass_container.dart';
+import 'widgets/hall_map_detail_panel.dart';
 
 class HallSearchScreen extends ConsumerStatefulWidget {
   const HallSearchScreen({super.key});
@@ -219,7 +220,7 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
           maxHeight: MediaQuery.of(context).size.height * 0.7,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           color: const Color(0xFF1A1A1A),
-          panel: _selectedHall == null ? _buildListView() : _buildDetailView(),
+          panel: _selectedHall == null ? _buildListView() : HallMapDetailPanel(hall: _selectedHall!, onClose: _onBackFromDetail),
           body: Stack(
             children: [
               GoogleMap(
@@ -422,143 +423,8 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
     );
   }
 
-  Widget _buildDetailView() {
-    final hall = _selectedHall!;
-    
-    // Fetch specials for this specific hall
-    final specialsAsync = ref.watch(hallSpecialsProvider(hall.id));
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildPanelHandle(),
-        
-        // Hall Header Info
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 70, 
-                height: 70,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.grey[800],
-                  image: hall.logoUrl != null 
-                    ? DecorationImage(image: NetworkImage(hall.logoUrl!), fit: BoxFit.cover)
-                    : null,
-                ),
-                child: hall.logoUrl == null ? const Icon(Icons.store, size: 30, color: Colors.white54) : null,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(hall.name, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text("${hall.street}, ${hall.city}", style: const TextStyle(color: Colors.white70, fontSize: 13)),
-                    const SizedBox(height: 4),
-                    Text(hall.phone ?? "No Phone Listed", style: const TextStyle(color: Colors.blueAccent, fontSize: 13)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        
-        const SizedBox(height: 16),
-        
-        // Action Buttons Row
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-             children: [
-               Expanded(
-                 child: ElevatedButton.icon(
-                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent, foregroundColor: Colors.white),
-                   icon: const Icon(Icons.info),
-                   label: const Text("View Profile"),
-                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => HallProfileScreen(hall: hall))),
-                 ),
-               ),
-               const SizedBox(width: 12),
-               Expanded(
-                 child: OutlinedButton.icon(
-                   style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.white24), foregroundColor: Colors.white),
-                   icon: const Icon(Icons.directions),
-                   label: const Text("Navigate"),
-                   onPressed: () {}, // Implement launchUrl
-                 ),
-               ),
-             ],
-          ),
-        ),
+  // _buildDetailView removed in favor of HallMapDetailPanel
 
-        const SizedBox(height: 24),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Text("Next 5 Games", style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
-        ),
-        const SizedBox(height: 8),
-
-        Expanded(
-          child: specialsAsync.when(
-            data: (specials) {
-              final next5 = specials.take(5).toList();
-              if (next5.isEmpty) {
-                 return const Center(
-                   child: Column(
-                     mainAxisAlignment: MainAxisAlignment.center,
-                     children: [
-                       Icon(Icons.calendar_today, color: Colors.white24, size: 40),
-                       SizedBox(height: 8),
-                       Text("No upcoming events scheduled.", style: TextStyle(color: Colors.white54)),
-                     ],
-                   ),
-                 );
-              }
-              return ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: next5.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (ctx, i) {
-                   final s = next5[i];
-                   return Container(
-                     padding: const EdgeInsets.all(12),
-                     decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(8)),
-                     child: Row(
-                       children: [
-                         Column(
-                           children: [
-                             Text(_month(s.startTime), style: const TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold)),
-                             Text("${s.startTime?.day}", style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                           ],
-                         ),
-                         const SizedBox(width: 16),
-                         Expanded(
-                           child: Column(
-                             crossAxisAlignment: CrossAxisAlignment.start,
-                             children: [
-                               Text(s.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                               Text(_time(s.startTime), style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                             ],
-                           ),
-                         ),
-                       ],
-                     ),
-                   );
-                },
-              );
-            },
-            error: (e, _) => Center(child: Text("Error: $e", style: const TextStyle(color: Colors.red))),
-            loading: () => const Center(child: CircularProgressIndicator()),
-          ),
-        ),
-      ],
-    );
-  }
 
   String _month(DateTime? d) {
     if (d == null) return "JAN";

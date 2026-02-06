@@ -52,7 +52,7 @@ class HomeScreen extends ConsumerWidget {
                       icon: Icons.local_activity,
                       label: 'Raffles',
                       color: Colors.purple,
-                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming Soon"))),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingGamesScreen(initialCategory: 'Raffles'))),
                     ),
                     _QuickAction(
                       icon: Icons.emoji_events,

@@ -3,8 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'cms/manage_specials_screen.dart';
 import 'cms/edit_hall_profile_screen.dart';
 import 'cms/manage_raffles_screen.dart'; // New Import
+import 'cms/photo_approval_screen.dart';
+import '../../profile/presentation/hall_selection_screen.dart';
 // import 'raffle_tool/raffle_tool_screen.dart'; // No longer direct link
 import '../../../../services/auth_service.dart';
+import '../../home/repositories/hall_repository.dart';
+import '../../../../models/bingo_hall_model.dart';
 
 class ManagerDashboardScreen extends ConsumerWidget {
   const ManagerDashboardScreen({super.key});
@@ -14,6 +18,10 @@ class ManagerDashboardScreen extends ConsumerWidget {
     final userAsync = ref.watch(userProfileProvider);
     final user = userAsync.value;
     final homeHallId = user?.homeBaseId;
+
+    // Fetch hall details to get Beacon Code & specific Name
+    final hallAsync = homeHallId != null ? ref.watch(hallStreamProvider(homeHallId)) : const AsyncValue.data(null);
+    final hall = hallAsync.value;
 
     return Scaffold(
       backgroundColor: const Color(0xFF141414), // Darker than standard
@@ -32,8 +40,23 @@ class ManagerDashboardScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Welcome / Status
-              _buildStatusHeader(user?.homeBaseId),
-              const SizedBox(height: 32),
+              _buildStatusHeader(hall, homeHallId),
+              const SizedBox(height: 24),
+
+              // Super Admin Section
+              if (user?.role == 'super-admin') ...[
+                 const Text("Super Admin Controls", style: TextStyle(color: Colors.amber, fontSize: 14, fontWeight: FontWeight.bold)),
+                 const SizedBox(height: 12),
+                 _buildModuleCard(
+                    context, 
+                    title: "Switch Managed Hall", 
+                    icon: Icons.swap_horiz, 
+                    color: Colors.amber, 
+                    desc: "Select any hall to manage", 
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HallSelectionScreen()))
+                 ),
+                 const SizedBox(height: 32),
+              ],
               
               const Text("Management Modules", style: TextStyle(color: Colors.white54, fontSize: 14)),
               const SizedBox(height: 16),
@@ -93,6 +116,20 @@ class ManagerDashboardScreen extends ConsumerWidget {
                          }
                       },
                     ),
+                     _buildModuleCard(
+                      context,
+                      title: "Photo Approvals",
+                      icon: Icons.photo_library,
+                      color: Colors.teal,
+                      desc: "Review tagged photos",
+                      onTap: () {
+                        if (homeHallId != null && hall != null) {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoApprovalScreen(hallId: homeHallId, hallName: hall.name)));
+                         } else {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error: No Hall Assigned")));
+                         }
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -103,7 +140,7 @@ class ManagerDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatusHeader(String? hallId) {
+  Widget _buildStatusHeader(BingoHallModel? hall, String? hallId) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -123,13 +160,20 @@ class ManagerDashboardScreen extends ConsumerWidget {
             child: const Icon(Icons.admin_panel_settings, color: Colors.white),
           ),
           const SizedBox(width: 16),
-           Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("Admin Mode Active", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-              Text(hallId != null ? "Managing: $hallId" : "No Hall Assigned", style: const TextStyle(color: Colors.white70, fontSize: 14)), 
-            ],
-          ),
+           Expanded(
+             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Admin Mode Active", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                const SizedBox(height: 4),
+                if (hall != null) ...[
+                   Text(hall.name, style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold)), 
+                   Text("Beacon: ${hall.beaconUuid}", style: const TextStyle(color: Colors.orangeAccent, fontSize: 12, fontFamily: 'Courier')), 
+                ] else 
+                   Text(hallId != null ? "Managing: $hallId" : "No Hall Assigned", style: const TextStyle(color: Colors.white70, fontSize: 14)), 
+              ],
+                       ),
+           ),
         ],
       ),
     );

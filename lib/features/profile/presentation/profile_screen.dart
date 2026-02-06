@@ -8,6 +8,7 @@ import 'widgets/profile_menu.dart';
 import '../../my_halls/presentation/my_halls_screen.dart';
 import '../../manager/presentation/pin_entry_screen.dart';
 import '../../settings/presentation/display_settings_screen.dart';
+import 'my_photos_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -51,6 +52,7 @@ class ProfileScreen extends ConsumerWidget {
                              },
                            ),
                          
+
                          // Super Admin: View As
                          if (role == 'super-admin' || overrideRole != null) 
                            ExpansionTile(
@@ -106,25 +108,33 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 32),
 
                 // 2. Action Grid (Tournaments & Raffles)
-                Row(
-                  children: [
-                    _buildActionCard(
-                      context, 
-                      "My Tournaments", 
-                      Icons.emoji_events, 
-                      Colors.purple,
-                      () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tournaments coming soon (Phase 21)"))),
-                    ),
-                    const SizedBox(width: 16),
-                    _buildActionCard(
-                      context, 
-                      "My Raffles", 
-                      Icons.local_activity, 
-                      Colors.orange,
-                      () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Raffles coming soon (Phase 20)"))),
-                    ),
-                  ],
-                ),
+                  Row(
+                    children: [
+                      _buildActionCard(
+                        context, 
+                        "Gallery", 
+                        Icons.photo_camera, 
+                        Colors.pinkAccent,
+                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyPhotosScreen())),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildActionCard(
+                        context, 
+                        "Tournaments", 
+                        Icons.emoji_events, 
+                        Colors.purple,
+                        () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tournaments coming soon (Phase 21)"))),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildActionCard(
+                        context, 
+                        "Raffles", 
+                        Icons.local_activity, 
+                        Colors.orange,
+                        () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Raffles coming soon (Phase 20)"))),
+                      ),
+                    ],
+                  ),
                 
                 const SizedBox(height: 24),
 

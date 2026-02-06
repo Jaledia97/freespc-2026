@@ -4,6 +4,26 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+24] - 2026-02-06 - Social Photo Gallery (Phase 26)
+
+### Added
+- **Social Gallery**: Complete ecosystem for uploading, viewing, and moderating photos.
+    - **Upload Workflow**: Users can upload photos with captions and tags (Halls & Friends).
+    - **Tagging**: "Personal" uploads appear instantly. "Hall" tags require approval. Tagging UI includes search delegates and smart chips.
+    - **Display**: Instagram-style 3-column grid for Halls, "My Gallery" for users.
+    - **Lightbox**: Full-screen photo viewer with pinch-to-zoom.
+- **Moderation Tools**: 
+    - **Approval Flow**: Hall Managers can Approve/Decline tagged photos.
+    - **Safety**: "Report" button for users, auto-hiding content after 5 reports. Strict ToS warning on upload.
+    - **Delete**: Owners can delete their own photos.
+- **Smart UI**: 
+    - **Personal Badge**: Untagged photos get a "PERSONAL" badge on the user profile.
+    - **Context Awareness**: "Tag Hall" button hides when uploading directly from a Hall Profile.
+
+### Changed
+- **Profile Navigation**: Added "Gallery" pill button to Hall Profile header.
+- **User Profile**: Added "My Photos" section with status indicators (Live/Pending/Declined).
+
 ## [0.0.1+23] - 2026-02-02 - Smart Recurrence & UI Polish (Phase 21)
 
 ### Added

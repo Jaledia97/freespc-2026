@@ -194,6 +194,25 @@ class AuthService {
     }
   }
 
+  Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final term = query.toLowerCase();
+      // Simple MVP search: fetch recent users (limit 50) and filter client side
+      // For production, use Algolia/Elastic or dedicated search fields
+      
+      final snapshot = await _firestore.collection('users').limit(50).get();
+      return snapshot.docs.map((doc) => UserModel.fromJson(doc.data())).where((user) {
+        final name = "${user.firstName} ${user.lastName}".toLowerCase();
+        final username = user.username?.toLowerCase() ?? '';
+        return name.contains(term) || username.contains(term);
+      }).toList();
+    } catch (e) {
+      print("Error searching users: $e");
+      return [];
+    }
+  }
+
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();

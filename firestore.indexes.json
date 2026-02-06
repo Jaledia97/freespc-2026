@@ -1,0 +1,51 @@
+{
+    "indexes": [
+        {
+            "collectionGroup": "gallery_photos",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "approvedHallIds",
+                    "arrayConfig": "CONTAINS"
+                },
+                {
+                    "fieldPath": "isHidden",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "timestamp",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "gallery_photos",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "pendingHallIds",
+                    "arrayConfig": "CONTAINS"
+                },
+                {
+                    "fieldPath": "timestamp",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "gallery_photos",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "uploaderId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "timestamp",
+                    "order": "DESCENDING"
+                }
+            ]
+        }
+    ],
+    "fieldOverrides": []
+}

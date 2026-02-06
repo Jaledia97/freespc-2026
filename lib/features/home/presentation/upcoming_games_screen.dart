@@ -6,7 +6,8 @@ import 'widgets/special_card.dart';
 import '../../../models/special_model.dart';
 
 class UpcomingGamesScreen extends ConsumerStatefulWidget {
-  const UpcomingGamesScreen({super.key});
+  final String? initialCategory;
+  const UpcomingGamesScreen({super.key, this.initialCategory});
 
   @override
   ConsumerState<UpcomingGamesScreen> createState() => _UpcomingGamesScreenState();
@@ -14,7 +15,13 @@ class UpcomingGamesScreen extends ConsumerStatefulWidget {
 
 class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
   String _searchQuery = '';
-  String? _selectedCategory; // Null = Show Grid, Value = Show Filtered List
+  String? _selectedCategory; 
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategory = widget.initialCategory;
+  }
 
   final List<String> _categories = [
     'Session',

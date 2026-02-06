@@ -5,6 +5,8 @@ import '../../home/repositories/hall_repository.dart';
 import '../../../services/auth_service.dart';
 import 'widgets/special_card.dart';
 import 'widgets/raffle_list_card.dart';
+import 'widgets/hall_about_tab.dart';
+import 'hall_full_gallery_screen.dart';
 
 class HallProfileScreen extends ConsumerWidget {
   final BingoHallModel hall;
@@ -24,7 +26,7 @@ class HallProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       body: DefaultTabController(
-        length: 3,
+        length: 4,
         initialIndex: initialTabIndex,
         child: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -89,7 +91,7 @@ class HallProfileScreen extends ConsumerWidget {
                         // Distance & Beacon
                         Row(
                           children: [
-                            if (distanceInMeters != null)
+                             if (distanceInMeters != null)
                              Container(
                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(8)),
@@ -99,7 +101,15 @@ class HallProfileScreen extends ConsumerWidget {
                                ),
                              ),
                              const SizedBox(width: 8),
-                             Expanded(child: Text("Beacon: ${hall.beaconUuid}", style: const TextStyle(color: Colors.grey), overflow: TextOverflow.ellipsis)),
+                             Expanded(
+                               child: Row(
+                                 children: [
+                                   const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                                   const SizedBox(width: 4),
+                                   Text("${hall.city}, ${hall.state}", style: const TextStyle(color: Colors.grey), overflow: TextOverflow.ellipsis),
+                                 ],
+                               ),
+                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -112,68 +122,114 @@ class HallProfileScreen extends ConsumerWidget {
                             final isHome = user.homeBaseId == hall.id;
 
                             return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                // Follow Button
-                                InkWell(
-                                  onTap: () {
-                                    ref.read(hallRepositoryProvider).toggleFollow(
-                                      user.uid,
-                                      hall.id,
-                                      isFollowing,
-                                      hall.name, 
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: isFollowing ? Colors.red.withOpacity(0.1) : Colors.grey[100],
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(
-                                          isFollowing ? Icons.favorite : Icons.favorite_border,
-                                          color: isFollowing ? Colors.red : Colors.grey,
-                                          size: 28,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(isFollowing ? "Following" : "Follow", style: const TextStyle(fontSize: 12)),
-                                    ],
-                                  ),
-                                ),
-                                // Home Base Button
-                                InkWell(
-                                  onTap: () {
-                                      ref.read(hallRepositoryProvider).toggleHomeBase(
+                                // Follow / Home Button
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: () {
+                                      ref.read(hallRepositoryProvider).toggleFollow(
                                         user.uid,
                                         hall.id,
-                                        user.homeBaseId,
+                                        isFollowing,
+                                        hall.name, 
                                       );
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text(isHome ? "Home Base Removed" : "Home Base Set!")),
-                                      );
-                                  },
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: isHome ? const Color(0xFF673AB7).withOpacity(0.1) : Colors.grey[100],
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(
-                                          isHome ? Icons.home : Icons.home_outlined,
-                                          color: isHome ? const Color(0xFF673AB7) : Colors.grey,
-                                          size: 28,
-                                        ),
+                                    },
+                                    onLongPress: () {
+                                        ref.read(hallRepositoryProvider).toggleHomeBase(
+                                          user.uid,
+                                          hall.id,
+                                          user.homeBaseId,
+                                        );
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text(isHome ? "Home Base Removed" : "Home Base Set!")),
+                                        );
+                                    },
+                                    borderRadius: BorderRadius.circular(30),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: isHome 
+                                            ? Colors.deepPurple.withOpacity(0.1) 
+                                            : (isFollowing ? Colors.red.withOpacity(0.1) : Colors.grey[100]),
+                                        borderRadius: BorderRadius.circular(30),
+                                        border: isHome ? Border.all(color: Colors.deepPurple.withOpacity(0.3)) : null,
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text("Home Base", style: const TextStyle(fontSize: 12)),
-                                    ],
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            isHome 
+                                                ? Icons.home 
+                                                : (isFollowing ? Icons.favorite : Icons.favorite_border),
+                                            color: isHome 
+                                                ? Colors.deepPurple
+                                                : (isFollowing ? Colors.red : Colors.grey),
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            isHome ? "Home Hall" : (isFollowing ? "Following" : "Follow"), 
+                                            style: TextStyle(
+                                              fontSize: 14, 
+                                              fontWeight: FontWeight.bold,
+                                              color: isHome ? Colors.deepPurple : Colors.black87
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Gallery Button
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: () {
+                                       Navigator.push(context, MaterialPageRoute(builder: (_) => HallFullGalleryScreen(hallId: hall.id, hallName: hall.name)));
+                                    },
+                                    borderRadius: BorderRadius.circular(30),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.pinkAccent.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                      child: const Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.photo_library, color: Colors.pinkAccent, size: 20),
+                                          SizedBox(width: 8),
+                                          Text("Gallery", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                
+                                // Store Button
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: () {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text("Store coming soon!")),
+                                        );
+                                    },
+                                    borderRadius: BorderRadius.circular(30),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                      child: const Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.store_mall_directory, color: Colors.green, size: 20),
+                                          SizedBox(width: 8),
+                                          Text("Store", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -193,10 +249,15 @@ class HallProfileScreen extends ConsumerWidget {
                     labelColor: Colors.black87,
                     unselectedLabelColor: Colors.grey,
                     indicatorColor: Colors.blue,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start, // Align to left edge
+                    padding: EdgeInsets.zero,
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 20),
                     tabs: [
                       Tab(text: "EVENTS"),
                       Tab(text: "RAFFLES"),
                       Tab(text: "TOURNAMENTS"),
+                      Tab(text: "ABOUT"),
                     ],
                   ),
                 ),
@@ -277,6 +338,9 @@ class HallProfileScreen extends ConsumerWidget {
 
               // 3. Tournaments Tab
               const Center(child: Text("Tournaments Coming Soon (Phase 21)")),
+
+              // 4. About Tab
+              HallAboutTab(hall: hall),
             ],
           ),
         ),
