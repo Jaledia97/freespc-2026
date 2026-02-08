@@ -26,6 +26,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
   late TextEditingController _streetCtrl;
   late TextEditingController _cityCtrl;
   late TextEditingController _zipCtrl;
+  late TextEditingController _unitCtrl;
 
   bool _isInit = false;
   bool _isSaving = false;
@@ -46,6 +47,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     _streetCtrl = TextEditingController();
     _cityCtrl = TextEditingController();
     _zipCtrl = TextEditingController();
+    _unitCtrl = TextEditingController();
   }
 
   @override
@@ -62,6 +64,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
           _streetCtrl.text = hall.street ?? '';
           _cityCtrl.text = hall.city ?? '';
           _zipCtrl.text = hall.zipCode ?? '';
+          _unitCtrl.text = hall.unitNumber ?? '';
           _descCtrl.text = hall.description ?? ''; 
           _bannerUrl = hall.bannerUrl;
           _logoUrl = hall.logoUrl;
@@ -217,12 +220,13 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
       final addressChanged = 
         _streetCtrl.text.trim() != (_currentHall!.street ?? '') ||
         _cityCtrl.text.trim() != (_currentHall!.city ?? '') ||
-        _zipCtrl.text.trim() != (_currentHall!.zipCode ?? '');
+        _zipCtrl.text.trim() != (_currentHall!.zipCode ?? '') ||
+        _unitCtrl.text.trim() != (_currentHall!.unitNumber ?? '');
 
       if (addressChanged) {
         // Attempt Geocoding
         try {
-          final fullAddress = "${_streetCtrl.text.trim()}, ${_cityCtrl.text.trim()}, ${_zipCtrl.text.trim()}";
+          final fullAddress = "${_streetCtrl.text.trim()} ${_unitCtrl.text.trim()}, ${_cityCtrl.text.trim()}, ${_zipCtrl.text.trim()}";
           // We can assume USA or append it? "fullAddress, USA"
           
           List<Location> locations = await locationFromAddress(fullAddress);
@@ -254,6 +258,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         city: _cityCtrl.text.trim(),
         state: newState,
         zipCode: _zipCtrl.text.trim(),
+        unitNumber: _unitCtrl.text.trim(),
         description: _descCtrl.text.trim(),
         logoUrl: _logoUrl,
         bannerUrl: _bannerUrl,
@@ -318,7 +323,13 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                         _input("Website", _webCtrl),
                         const SizedBox(height: 16),
                         _sectionHeader("Location"),
-                        _input("Street Address", _streetCtrl),
+                        Row(
+                          children: [
+                            Expanded(child: _input("Street Address", _streetCtrl)),
+                            const SizedBox(width: 12),
+                            SizedBox(width: 100, child: _input("Unit/Suite", _unitCtrl)),
+                          ],
+                        ),
                         const SizedBox(height: 12),
                         Row(
                           children: [

@@ -137,7 +137,7 @@ class HallAboutTab extends ConsumerWidget {
           
           _contactRow(
             Icons.location_on, 
-            "${hall.street}\n${hall.city}, ${hall.state} ${hall.zipCode}",
+            "${hall.street}${(hall.unitNumber != null && hall.unitNumber!.isNotEmpty) ? ' ${hall.unitNumber}' : ''}\n${hall.city}, ${hall.state} ${hall.zipCode}",
             onTap: _openMap,
           ),
           const Divider(height: 32),

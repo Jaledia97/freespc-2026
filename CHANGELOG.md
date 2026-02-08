@@ -4,6 +4,14 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+25] - 2026-02-08 - Unit Number Support
+
+### Added
+- **Address Detail**: Added `Unit/Suite` field support for Bingo Halls located in plazas.
+    - **Data Model**: Updated `BingoHallModel` with `unitNumber`.
+    - **CMS**: Added "Unit/Suite" input field to Hall Profile Editor.
+    - **Display**: Hall Profile "About" tab now displays full address including unit number.
+
 ## [0.0.1+24] - 2026-02-06 - Social Photo Gallery (Phase 26)
 
 ### Added
