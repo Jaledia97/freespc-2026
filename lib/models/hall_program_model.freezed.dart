@@ -18,7 +18,7 @@ mixin _$HallProgramModel {
  String get title; String get pricing; String get details; String? get specificDay;// e.g., "Monday", "Tuesday", or null for "Any Day" / "General"
  String? get startTime;// e.g., "6:00 PM"
  String? get endTime;// e.g., "9:00 PM"
- bool get isActive;
+ DateTime? get overrideEndTime;
 /// Create a copy of HallProgramModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,16 +31,16 @@ $HallProgramModelCopyWith<HallProgramModel> get copyWith => _$HallProgramModelCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HallProgramModel&&(identical(other.title, title) || other.title == title)&&(identical(other.pricing, pricing) || other.pricing == pricing)&&(identical(other.details, details) || other.details == details)&&(identical(other.specificDay, specificDay) || other.specificDay == specificDay)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isActive, isActive) || other.isActive == isActive));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HallProgramModel&&(identical(other.title, title) || other.title == title)&&(identical(other.pricing, pricing) || other.pricing == pricing)&&(identical(other.details, details) || other.details == details)&&(identical(other.specificDay, specificDay) || other.specificDay == specificDay)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.overrideEndTime, overrideEndTime) || other.overrideEndTime == overrideEndTime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,pricing,details,specificDay,startTime,endTime,isActive);
+int get hashCode => Object.hash(runtimeType,title,pricing,details,specificDay,startTime,endTime,overrideEndTime);
 
 @override
 String toString() {
-  return 'HallProgramModel(title: $title, pricing: $pricing, details: $details, specificDay: $specificDay, startTime: $startTime, endTime: $endTime, isActive: $isActive)';
+  return 'HallProgramModel(title: $title, pricing: $pricing, details: $details, specificDay: $specificDay, startTime: $startTime, endTime: $endTime, overrideEndTime: $overrideEndTime)';
 }
 
 
@@ -51,7 +51,7 @@ abstract mixin class $HallProgramModelCopyWith<$Res>  {
   factory $HallProgramModelCopyWith(HallProgramModel value, $Res Function(HallProgramModel) _then) = _$HallProgramModelCopyWithImpl;
 @useResult
 $Res call({
- String title, String pricing, String details, String? specificDay, String? startTime, String? endTime, bool isActive
+ String title, String pricing, String details, String? specificDay, String? startTime, String? endTime, DateTime? overrideEndTime
 });
 
 
@@ -68,7 +68,7 @@ class _$HallProgramModelCopyWithImpl<$Res>
 
 /// Create a copy of HallProgramModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? pricing = null,Object? details = null,Object? specificDay = freezed,Object? startTime = freezed,Object? endTime = freezed,Object? isActive = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? pricing = null,Object? details = null,Object? specificDay = freezed,Object? startTime = freezed,Object? endTime = freezed,Object? overrideEndTime = freezed,}) {
   return _then(_self.copyWith(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,pricing: null == pricing ? _self.pricing : pricing // ignore: cast_nullable_to_non_nullable
@@ -76,8 +76,8 @@ as String,details: null == details ? _self.details : details // ignore: cast_nul
 as String,specificDay: freezed == specificDay ? _self.specificDay : specificDay // ignore: cast_nullable_to_non_nullable
 as String?,startTime: freezed == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
 as String?,endTime: freezed == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
-as String?,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
-as bool,
+as String?,overrideEndTime: freezed == overrideEndTime ? _self.overrideEndTime : overrideEndTime // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 
@@ -162,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  String pricing,  String details,  String? specificDay,  String? startTime,  String? endTime,  bool isActive)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  String pricing,  String details,  String? specificDay,  String? startTime,  String? endTime,  DateTime? overrideEndTime)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HallProgramModel() when $default != null:
-return $default(_that.title,_that.pricing,_that.details,_that.specificDay,_that.startTime,_that.endTime,_that.isActive);case _:
+return $default(_that.title,_that.pricing,_that.details,_that.specificDay,_that.startTime,_that.endTime,_that.overrideEndTime);case _:
   return orElse();
 
 }
@@ -183,10 +183,10 @@ return $default(_that.title,_that.pricing,_that.details,_that.specificDay,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  String pricing,  String details,  String? specificDay,  String? startTime,  String? endTime,  bool isActive)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  String pricing,  String details,  String? specificDay,  String? startTime,  String? endTime,  DateTime? overrideEndTime)  $default,) {final _that = this;
 switch (_that) {
 case _HallProgramModel():
-return $default(_that.title,_that.pricing,_that.details,_that.specificDay,_that.startTime,_that.endTime,_that.isActive);case _:
+return $default(_that.title,_that.pricing,_that.details,_that.specificDay,_that.startTime,_that.endTime,_that.overrideEndTime);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +203,10 @@ return $default(_that.title,_that.pricing,_that.details,_that.specificDay,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  String pricing,  String details,  String? specificDay,  String? startTime,  String? endTime,  bool isActive)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  String pricing,  String details,  String? specificDay,  String? startTime,  String? endTime,  DateTime? overrideEndTime)?  $default,) {final _that = this;
 switch (_that) {
 case _HallProgramModel() when $default != null:
-return $default(_that.title,_that.pricing,_that.details,_that.specificDay,_that.startTime,_that.endTime,_that.isActive);case _:
+return $default(_that.title,_that.pricing,_that.details,_that.specificDay,_that.startTime,_that.endTime,_that.overrideEndTime);case _:
   return null;
 
 }
@@ -218,7 +218,7 @@ return $default(_that.title,_that.pricing,_that.details,_that.specificDay,_that.
 @JsonSerializable()
 
 class _HallProgramModel implements HallProgramModel {
-  const _HallProgramModel({required this.title, this.pricing = '', this.details = '', this.specificDay, this.startTime, this.endTime, this.isActive = true});
+  const _HallProgramModel({required this.title, this.pricing = '', this.details = '', this.specificDay, this.startTime, this.endTime, this.overrideEndTime});
   factory _HallProgramModel.fromJson(Map<String, dynamic> json) => _$HallProgramModelFromJson(json);
 
 @override final  String title;
@@ -230,7 +230,7 @@ class _HallProgramModel implements HallProgramModel {
 // e.g., "6:00 PM"
 @override final  String? endTime;
 // e.g., "9:00 PM"
-@override@JsonKey() final  bool isActive;
+@override final  DateTime? overrideEndTime;
 
 /// Create a copy of HallProgramModel
 /// with the given fields replaced by the non-null parameter values.
@@ -245,16 +245,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HallProgramModel&&(identical(other.title, title) || other.title == title)&&(identical(other.pricing, pricing) || other.pricing == pricing)&&(identical(other.details, details) || other.details == details)&&(identical(other.specificDay, specificDay) || other.specificDay == specificDay)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isActive, isActive) || other.isActive == isActive));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HallProgramModel&&(identical(other.title, title) || other.title == title)&&(identical(other.pricing, pricing) || other.pricing == pricing)&&(identical(other.details, details) || other.details == details)&&(identical(other.specificDay, specificDay) || other.specificDay == specificDay)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.overrideEndTime, overrideEndTime) || other.overrideEndTime == overrideEndTime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,pricing,details,specificDay,startTime,endTime,isActive);
+int get hashCode => Object.hash(runtimeType,title,pricing,details,specificDay,startTime,endTime,overrideEndTime);
 
 @override
 String toString() {
-  return 'HallProgramModel(title: $title, pricing: $pricing, details: $details, specificDay: $specificDay, startTime: $startTime, endTime: $endTime, isActive: $isActive)';
+  return 'HallProgramModel(title: $title, pricing: $pricing, details: $details, specificDay: $specificDay, startTime: $startTime, endTime: $endTime, overrideEndTime: $overrideEndTime)';
 }
 
 
@@ -265,7 +265,7 @@ abstract mixin class _$HallProgramModelCopyWith<$Res> implements $HallProgramMod
   factory _$HallProgramModelCopyWith(_HallProgramModel value, $Res Function(_HallProgramModel) _then) = __$HallProgramModelCopyWithImpl;
 @override @useResult
 $Res call({
- String title, String pricing, String details, String? specificDay, String? startTime, String? endTime, bool isActive
+ String title, String pricing, String details, String? specificDay, String? startTime, String? endTime, DateTime? overrideEndTime
 });
 
 
@@ -282,7 +282,7 @@ class __$HallProgramModelCopyWithImpl<$Res>
 
 /// Create a copy of HallProgramModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? pricing = null,Object? details = null,Object? specificDay = freezed,Object? startTime = freezed,Object? endTime = freezed,Object? isActive = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? pricing = null,Object? details = null,Object? specificDay = freezed,Object? startTime = freezed,Object? endTime = freezed,Object? overrideEndTime = freezed,}) {
   return _then(_HallProgramModel(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,pricing: null == pricing ? _self.pricing : pricing // ignore: cast_nullable_to_non_nullable
@@ -290,8 +290,8 @@ as String,details: null == details ? _self.details : details // ignore: cast_nul
 as String,specificDay: freezed == specificDay ? _self.specificDay : specificDay // ignore: cast_nullable_to_non_nullable
 as String?,startTime: freezed == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
 as String?,endTime: freezed == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
-as String?,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
-as bool,
+as String?,overrideEndTime: freezed == overrideEndTime ? _self.overrideEndTime : overrideEndTime // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 

@@ -14,7 +14,9 @@ _HallProgramModel _$HallProgramModelFromJson(Map<String, dynamic> json) =>
       specificDay: json['specificDay'] as String?,
       startTime: json['startTime'] as String?,
       endTime: json['endTime'] as String?,
-      isActive: json['isActive'] as bool? ?? true,
+      overrideEndTime: json['overrideEndTime'] == null
+          ? null
+          : DateTime.parse(json['overrideEndTime'] as String),
     );
 
 Map<String, dynamic> _$HallProgramModelToJson(_HallProgramModel instance) =>
@@ -25,5 +27,5 @@ Map<String, dynamic> _$HallProgramModelToJson(_HallProgramModel instance) =>
       'specificDay': instance.specificDay,
       'startTime': instance.startTime,
       'endTime': instance.endTime,
-      'isActive': instance.isActive,
+      'overrideEndTime': instance.overrideEndTime?.toIso8601String(),
     };

@@ -17,8 +17,8 @@ class HallProgramsTab extends StatelessWidget {
       );
     }
     
-    final activePrograms = programs.where((p) => p.isActive).toList();
-    final inactivePrograms = programs.where((p) => !p.isActive).toList();
+    final activePrograms = programs.where((p) => _isProgramActive(p)).toList();
+    final inactivePrograms = programs.where((p) => !_isProgramActive(p)).toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -44,6 +44,91 @@ class HallProgramsTab extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  bool _isProgramActive(HallProgramModel program) {
+    // 1. Check Override
+    if (program.overrideEndTime != null) {
+      if (program.overrideEndTime!.isAfter(DateTime.now())) {
+        return true; // Forced Active
+      }
+      // If override is expired, fall through to schedule check or return false?
+      // User likely wants it to expire -> Inactive.
+      // But maybe they want it to revert to schedule?
+      // "Limit override to this time" implies after that time, the override is gone.
+      // So we should probably fall back to normal schedule.
+    }
+
+    // 2. Check Schedule
+    final now = DateTime.now();
+    
+    // Check Day
+    if (program.specificDay != null) {
+      // Simple Day Check
+      // We need a helper to match "Monday" to DateTime.weekday
+      if (!_isSameDay(program.specificDay!, now)) {
+         return false;
+      }
+    }
+    
+    // Check Timeframe (if exists)
+    if (program.startTime != null && program.endTime != null) {
+       return _isWithinTimeframe(program.startTime!, program.endTime!, now);
+    }
+    
+    // If no day/time restrictions, it's always active? Or always inactive?
+    // "General" programs (no day/time) are usually always active.
+    return true; 
+  }
+
+  bool _isSameDay(String dayName, DateTime date) {
+    final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    final index = days.indexOf(dayName);
+    if (index == -1) return false;
+    // DateTime.weekday: Mon=1, Sun=7. List index: Mon=0, Sun=6.
+    return date.weekday == (index + 1);
+  }
+
+  bool _isWithinTimeframe(String startStr, String endStr, DateTime now) {
+    try {
+      final start = _parseTimeOfDay(startStr);
+      final end = _parseTimeOfDay(endStr);
+      if (start == null || end == null) return true; // Error parsing -> assume active?
+
+      final nowTime = TimeOfDay.fromDateTime(now);
+      
+      // Convert to minutes for comparison
+      final startMin = start.hour * 60 + start.minute;
+      final endMin = end.hour * 60 + end.minute;
+      final nowMin = nowTime.hour * 60 + nowTime.minute;
+      
+      if (endMin < startMin) {
+        // Overnight, e.g. 10PM to 2AM
+        return nowMin >= startMin || nowMin <= endMin;
+      } else {
+        return nowMin >= startMin && nowMin <= endMin;
+      }
+      
+    } catch (_) {
+      return true;
+    }
+  }
+
+  TimeOfDay? _parseTimeOfDay(String timeStr) {
+     if (!timeStr.contains(":")) return null;
+      try {
+        final parts = timeStr.split(" ");
+        final timeParts = parts[0].split(":");
+        int hour = int.parse(timeParts[0]);
+        int minute = int.parse(timeParts[1]);
+        if (parts.length > 1) {
+           if (parts[1] == "PM" && hour != 12) hour += 12;
+           if (parts[1] == "AM" && hour == 12) hour = 0;
+        }
+        return TimeOfDay(hour: hour, minute: minute);
+      } catch (e) {
+        return null;
+      }
   }
 
   Widget _buildProgramCard(HallProgramModel program) {

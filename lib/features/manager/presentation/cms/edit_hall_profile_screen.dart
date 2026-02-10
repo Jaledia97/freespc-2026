@@ -458,25 +458,61 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                               ..._programs.asMap().entries.map((entry) {
                                 final index = entry.key;
                                 final program = entry.value;
+                                
+                                final isOverridden = program.overrideEndTime != null && program.overrideEndTime!.isAfter(DateTime.now());
+                                
                                 return Card(
                                   color: const Color(0xFF2C2C2C),
                                   margin: const EdgeInsets.only(bottom: 8),
                                   child: ListTile(
                                     leading: Checkbox(
-                                      value: program.isActive, 
-                                      activeColor: Colors.blueAccent,
-                                      onChanged: (val) {
-                                        setState(() {
-                                          _programs[index] = program.copyWith(isActive: val ?? false);
-                                        });
+                                      value: isOverridden, 
+                                      activeColor: Colors.greenAccent,
+                                      onChanged: (val) async {
+                                        if (val == true) {
+                                          // Turn ON Override: Ask for End Time
+                                          final time = await showTimePicker(
+                                            context: context, 
+                                            initialTime: const TimeOfDay(hour: 23, minute: 59),
+                                            helpText: "Select when this override ends",
+                                          );
+                                          
+                                          if (time != null) {
+                                            final now = DateTime.now();
+                                            var endDt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+                                            // If time is earlier than now, assume tomorrow? Or just allow it (it will expire immediately)
+                                            if (endDt.isBefore(now)) {
+                                               endDt = endDt.add(const Duration(days: 1));
+                                            }
+                                            
+                                            setState(() {
+                                              _programs[index] = program.copyWith(overrideEndTime: endDt);
+                                            });
+                                          }
+                                        } else {
+                                          // Turn OFF Override
+                                          setState(() {
+                                            _programs[index] = program.copyWith(overrideEndTime: null);
+                                          });
+                                        }
                                       },
                                     ),
-                                    title: Text(program.title, style: TextStyle(color: program.isActive ? Colors.white : Colors.white54, fontWeight: FontWeight.bold)),
-                                    subtitle: Text(
-                                      "${program.specificDay != null ? '${program.specificDay} • ' : ''}${program.pricing.replaceAll('\n', ', ')}", 
-                                      style: const TextStyle(color: Colors.white70),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                    title: Text(program.title, style: TextStyle(color: isOverridden ? Colors.greenAccent : Colors.white, fontWeight: FontWeight.bold)),
+                                    subtitle: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        if (isOverridden)
+                                          Text(
+                                            "Forced Active until ${TimeOfDay.fromDateTime(program.overrideEndTime!).format(context)}",
+                                            style: const TextStyle(color: Colors.greenAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                                          ),
+                                        Text(
+                                          "${program.specificDay != null ? '${program.specificDay} • ' : ''}${program.pricing.replaceAll('\n', ', ')}", 
+                                          style: const TextStyle(color: Colors.white70),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
                                     trailing: IconButton(
                                       icon: const Icon(Icons.edit, color: Colors.blueAccent),
@@ -822,7 +858,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                     specificDay: isDaySpecific ? selectedDay : null,
                     startTime: isTimeframeEnabled ? selectedStartTime?.format(context) : null,
                     endTime: isTimeframeEnabled ? selectedEndTime?.format(context) : null,
-                    isActive: existing?.isActive ?? true, // Maintain existing state or default true
+                    overrideEndTime: existing?.overrideEndTime, // Preserve existing override
                   );
                   
                   Navigator.pop(ctx, newProgram); // Return the new object
