@@ -29,6 +29,10 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
   late TextEditingController _unitCtrl;
   late TextEditingController _stateCtrl;
 
+  // Operating Hours Logic
+  final List<String> _days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  final Map<String, Map<String, TextEditingController>> _hoursCtrls = {};
+
   bool _isInit = false;
   bool _isSaving = false;
   BingoHallModel? _currentHall;
@@ -50,6 +54,32 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     _zipCtrl = TextEditingController();
     _unitCtrl = TextEditingController();
     _stateCtrl = TextEditingController();
+    
+    // Init Hours Controllers
+    for (var day in _days) {
+      _hoursCtrls[day] = {
+        'open': TextEditingController(),
+        'close': TextEditingController(),
+      };
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _descCtrl.dispose();
+    _phoneCtrl.dispose();
+    _webCtrl.dispose();
+    _streetCtrl.dispose();
+    _cityCtrl.dispose();
+    _zipCtrl.dispose();
+    _unitCtrl.dispose();
+    _stateCtrl.dispose();
+    for (var day in _days) {
+      _hoursCtrls[day]?['open']?.dispose();
+      _hoursCtrls[day]?['close']?.dispose();
+    }
+    super.dispose();
   }
 
   @override
@@ -71,6 +101,16 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
           _descCtrl.text = hall.description ?? ''; 
           _bannerUrl = hall.bannerUrl;
           _logoUrl = hall.logoUrl;
+          
+          // Populate Hours
+          if (hall.operatingHours.isNotEmpty) {
+            hall.operatingHours.forEach((day, times) {
+               if (_hoursCtrls.containsKey(day)) {
+                 _hoursCtrls[day]?['open']?.text = times['open'] ?? '';
+                 _hoursCtrls[day]?['close']?.text = times['close'] ?? '';
+               }
+            });
+          }
         }
       });
       _isInit = true;
@@ -262,6 +302,15 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         }
       }
 
+      final Map<String, dynamic> finalHours = {};
+      for (var day in _days) {
+         final open = _hoursCtrls[day]?['open']?.text.trim() ?? '';
+         final close = _hoursCtrls[day]?['close']?.text.trim() ?? '';
+         if (open.isNotEmpty) {
+           finalHours[day] = {'open': open, 'close': close};
+         }
+      }
+
       final updatedHall = _currentHall!.copyWith(
         name: _nameCtrl.text.trim(),
         phone: _phoneCtrl.text.trim(),
@@ -273,6 +322,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         unitNumber: _unitCtrl.text.trim(),
         description: _descCtrl.text.trim(),
         logoUrl: _logoUrl,
+        operatingHours: finalHours,
         bannerUrl: _bannerUrl,
         latitude: newLat,
         longitude: newLng,
@@ -326,6 +376,16 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                          _input("Hall Name", _nameCtrl),
+                        const SizedBox(height: 16),
+                        _sectionHeader("Operating Hours"),
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            "If close time is left blank, it will display as 'to CLOSE'. e.g. '5:00 PM to CLOSE'",
+                            style: TextStyle(color: Colors.white54, fontSize: 13, fontStyle: FontStyle.italic),
+                          ),
+                        ),
+                        ..._days.map((day) => _buildDayRow(day)).toList(),
                         const SizedBox(height: 16),
                         _sectionHeader("Contact"),
                         _input("Bio / Description", _descCtrl, maxLines: 3),
@@ -420,6 +480,28 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     );
   }
 
+  Widget _buildDayRow(String day) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+             width: 100,
+             child: Text(day, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+          Expanded(
+            child: _input("Open", _hoursCtrls[day]!['open']!, isDense: true),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _input("Close", _hoursCtrls[day]!['close']!, isDense: true),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _sectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12, top: 8),
@@ -427,7 +509,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     );
   }
 
-  Widget _input(String label, TextEditingController ctrl, {int maxLines = 1}) {
+  Widget _input(String label, TextEditingController ctrl, {int maxLines = 1, bool isDense = false}) {
     return TextFormField(
       controller: ctrl,
       maxLines: maxLines,
@@ -437,6 +519,8 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         labelStyle: const TextStyle(color: Colors.white54),
         filled: true,
         fillColor: const Color(0xFF1E1E1E),
+        isDense: isDense,
+        contentPadding: isDense ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8) : null,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
       ),
       validator: (v) => label == "Hall Name" && v!.isEmpty ? "Required" : null,

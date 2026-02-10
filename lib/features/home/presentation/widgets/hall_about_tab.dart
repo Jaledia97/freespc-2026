@@ -131,6 +131,22 @@ class HallAboutTab extends ConsumerWidget {
           ),
           const SizedBox(height: 32),
 
+          // Operating Hours Section
+          if (hall.operatingHours.isNotEmpty) ...[
+             const Text("Operating Hours", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+             const SizedBox(height: 12),
+             _buildOperatingHours(),
+             const SizedBox(height: 32),
+          ],
+ 
+          // Operating Hours Section
+          if (hall.operatingHours.isNotEmpty) ...[
+             const Text("Operating Hours", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+             const SizedBox(height: 12),
+             _buildOperatingHours(),
+             const SizedBox(height: 32),
+          ],
+ 
           // Contact Actions
           const Text("Contact & Location", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
@@ -156,6 +172,41 @@ class HallAboutTab extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildOperatingHours() {
+    final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    
+    return Column(
+      children: days.map((day) {
+        final times = hall.operatingHours[day] as Map<String, dynamic>?;
+        String timeString = "Closed";
+        
+        if (times != null) {
+          final open = times['open'];
+          final close = times['close'];
+          
+          if (open != null && open.isNotEmpty) {
+            if (close != null && close.isNotEmpty) {
+              timeString = "$open - $close";
+            } else {
+              timeString = "$open to CLOSE";
+            }
+          }
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+             children: [
+               Text(day, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black54)),
+               Text(timeString, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
+             ],
+          ),
+        );
+      }).toList(),
     );
   }
 

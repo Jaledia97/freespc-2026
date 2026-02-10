@@ -12,6 +12,10 @@ All notable changes to the FreeSPC project will be documented in this file.
     - **CMS**: Added "Unit/Suite" input field to Hall Profile Editor.
     - **Display**: Hall Profile "About" tab now displays full address including unit number.
     - **Control**: Added explicit "State" field to Hall Profile Editor for manual override.
+- **Operating Hours**: Added comprehensive schedule management.
+    - **CMS**: Manual entry for each day's Open/Close times.
+    - **Logic**: Automatically formats blank close times as "to CLOSE".
+    - **Display**: Shown prominently on the "About" tab.
 
 ## [0.0.1+24] - 2026-02-06 - Social Photo Gallery (Phase 26)
 

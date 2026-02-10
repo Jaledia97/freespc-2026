@@ -29,6 +29,8 @@ abstract class BingoHallModel with _$BingoHallModel {
     String? geoHash,
     // Bonus Logic
     @Default(0.0) double followBonus,
+    // Operating Hours: Map<String, Map<String, String>> (day -> {open, close})
+    @Default({}) Map<String, dynamic> operatingHours,
   }) = _BingoHallModel;
 
   factory BingoHallModel.fromJson(Map<String, dynamic> json) =>
