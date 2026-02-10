@@ -462,7 +462,16 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                                   color: const Color(0xFF2C2C2C),
                                   margin: const EdgeInsets.only(bottom: 8),
                                   child: ListTile(
-                                    title: Text(program.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                    leading: Checkbox(
+                                      value: program.isActive, 
+                                      activeColor: Colors.blueAccent,
+                                      onChanged: (val) {
+                                        setState(() {
+                                          _programs[index] = program.copyWith(isActive: val ?? false);
+                                        });
+                                      },
+                                    ),
+                                    title: Text(program.title, style: TextStyle(color: program.isActive ? Colors.white : Colors.white54, fontWeight: FontWeight.bold)),
                                     subtitle: Text(
                                       "${program.specificDay != null ? '${program.specificDay} • ' : ''}${program.pricing.replaceAll('\n', ', ')}", 
                                       style: const TextStyle(color: Colors.white70),
@@ -636,7 +645,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     // Dialog State
     String? selectedDay = existing?.specificDay;
     bool isDaySpecific = selectedDay != null;
-    bool isActive = existing?.isActive ?? true;
+    // Removed isActive (moved to main list)
 
     // Timeframe Logic
     bool isTimeframeEnabled = existing?.startTime != null;
@@ -676,17 +685,6 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SwitchListTile(
-                    title: const Text("Active Program?", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    subtitle: Text(isActive ? "Visible to users" : "Hidden in 'Inactive' section", style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                    value: isActive,
-                    onChanged: (val) => setDialogState(() => isActive = val),
-                    activeColor: Colors.greenAccent,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  const Divider(color: Colors.white24),
-                  const SizedBox(height: 12),
-
                   _input("Program Name", titleCtrl, isDense: true),
                   const SizedBox(height: 12),
                   const Text("Pricing", style: TextStyle(color: Colors.white54, fontSize: 12)),
@@ -824,7 +822,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                     specificDay: isDaySpecific ? selectedDay : null,
                     startTime: isTimeframeEnabled ? selectedStartTime?.format(context) : null,
                     endTime: isTimeframeEnabled ? selectedEndTime?.format(context) : null,
-                    isActive: isActive,
+                    isActive: existing?.isActive ?? true, // Maintain existing state or default true
                   );
                   
                   Navigator.pop(ctx, newProgram); // Return the new object
