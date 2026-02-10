@@ -16,6 +16,7 @@ All notable changes to the FreeSPC project will be documented in this file.
     - **CMS**: Manual entry for each day's Open/Close times.
     - **Logic**: Automatically formats blank close times as "to CLOSE".
     - **Display**: Shown prominently on the "About" tab.
+- **CMS Optimization**: Refactored "Edit Hall Profile" screen to use collapsible sections for better organization and reduced scrolling.
 
 ## [0.0.1+24] - 2026-02-06 - Social Photo Gallery (Phase 26)
 

@@ -375,41 +375,63 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                         _input("Hall Name", _nameCtrl),
-                        const SizedBox(height: 16),
-                        _sectionHeader("Operating Hours"),
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 12),
-                          child: Text(
-                            "If close time is left blank, it will display as 'to CLOSE'. e.g. '5:00 PM to CLOSE'",
-                            style: TextStyle(color: Colors.white54, fontSize: 13, fontStyle: FontStyle.italic),
-                          ),
-                        ),
-                        ..._days.map((day) => _buildDayRow(day)).toList(),
-                        const SizedBox(height: 16),
-                        _sectionHeader("Contact"),
-                        _input("Bio / Description", _descCtrl, maxLines: 3),
-                        const SizedBox(height: 12),
-                        _input("Phone Number", _phoneCtrl),
-                        const SizedBox(height: 12),
-                        _input("Website", _webCtrl),
-                        const SizedBox(height: 16),
-                        _sectionHeader("Location"),
-                        Row(
+                        // General Info
+                        _buildSection(
+                          title: "General Information",
+                          initiallyExpanded: true,
                           children: [
-                            Expanded(child: _input("Street Address", _streetCtrl)),
-                            const SizedBox(width: 12),
-                            SizedBox(width: 100, child: _input("Unit/Suite", _unitCtrl)),
+                            _input("Hall Name", _nameCtrl),
+                            const SizedBox(height: 12),
+                            _input("Bio / Description", _descCtrl, maxLines: 3),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        Row(
+
+                        // Contact
+                        _buildSection(
+                          title: "Contact Details",
                           children: [
-                            Expanded(flex: 2, child: _input("City", _cityCtrl)),
-                            const SizedBox(width: 8),
-                            SizedBox(width: 80, child: _input("State", _stateCtrl)),
-                            const SizedBox(width: 8),
-                            Expanded(child: _input("Zip", _zipCtrl)),
+                            _input("Phone Number", _phoneCtrl),
+                            const SizedBox(height: 12),
+                            _input("Website", _webCtrl),
+                          ],
+                        ),
+
+                        // Location
+                        _buildSection(
+                          title: "Location",
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(child: _input("Street Address", _streetCtrl)),
+                                const SizedBox(width: 12),
+                                SizedBox(width: 100, child: _input("Unit/Suite", _unitCtrl)),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(flex: 2, child: _input("City", _cityCtrl)),
+                                const SizedBox(width: 8),
+                                SizedBox(width: 80, child: _input("State", _stateCtrl)),
+                                const SizedBox(width: 8),
+                                Expanded(child: _input("Zip", _zipCtrl)),
+                              ],
+                            ),
+                          ],
+                        ),
+
+                        // Operating Hours
+                        _buildSection(
+                          title: "Operating Hours",
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                "If close time is left blank, it will display as 'to CLOSE'. e.g. '5:00 PM to CLOSE'",
+                                style: TextStyle(color: Colors.white54, fontSize: 13, fontStyle: FontStyle.italic),
+                              ),
+                            ),
+                            ..._days.map((day) => _buildDayRow(day)).toList(),
                           ],
                         ),
                       ],
@@ -502,10 +524,20 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     );
   }
 
-  Widget _sectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12, top: 8),
-      child: Text(title, style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1.0)),
+  Widget _buildSection({required String title, required List<Widget> children, bool initiallyExpanded = false}) {
+    return Card(
+      color: const Color(0xFF1E1E1E),
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: initiallyExpanded,
+          title: Text(title, style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 16)),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          children: children,
+        ),
+      ),
     );
   }
 
