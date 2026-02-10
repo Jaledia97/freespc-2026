@@ -27,6 +27,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
   late TextEditingController _cityCtrl;
   late TextEditingController _zipCtrl;
   late TextEditingController _unitCtrl;
+  late TextEditingController _stateCtrl;
 
   bool _isInit = false;
   bool _isSaving = false;
@@ -48,6 +49,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     _cityCtrl = TextEditingController();
     _zipCtrl = TextEditingController();
     _unitCtrl = TextEditingController();
+    _stateCtrl = TextEditingController();
   }
 
   @override
@@ -65,6 +67,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
           _cityCtrl.text = hall.city ?? '';
           _zipCtrl.text = hall.zipCode ?? '';
           _unitCtrl.text = hall.unitNumber ?? '';
+          _stateCtrl.text = hall.state ?? '';
           _descCtrl.text = hall.description ?? ''; 
           _bannerUrl = hall.bannerUrl;
           _logoUrl = hall.logoUrl;
@@ -214,7 +217,12 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     try {
       double newLat = _currentHall!.latitude;
       double newLng = _currentHall!.longitude;
-      String? newState = _currentHall!.state; // Keep old state unless geocoder finds one?
+      String? newState = _currentHall!.state; 
+      
+      // If user manually edited state, use that.
+      if (_stateCtrl.text.trim() != (newState ?? '')) {
+         newState = _stateCtrl.text.trim();
+      }
 
       // Check for Address Changes
       final addressChanged = 
@@ -226,7 +234,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
       if (addressChanged) {
         // Attempt Geocoding
         try {
-          final fullAddress = "${_streetCtrl.text.trim()} ${_unitCtrl.text.trim()}, ${_cityCtrl.text.trim()}, ${_zipCtrl.text.trim()}";
+          final fullAddress = "${_streetCtrl.text.trim()} ${_unitCtrl.text.trim()}, ${_cityCtrl.text.trim()}, ${_stateCtrl.text.trim()} ${_zipCtrl.text.trim()}";
           // We can assume USA or append it? "fullAddress, USA"
           
           List<Location> locations = await locationFromAddress(fullAddress);
@@ -234,13 +242,17 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
             newLat = locations.first.latitude;
             newLng = locations.first.longitude;
             
-            // Optional: Reverse geocode to get State/AdminArea if missing or to correct it
-            try {
-               List<Placemark> placemarks = await placemarkFromCoordinates(newLat, newLng);
-               if (placemarks.isNotEmpty) {
-                 newState = placemarks.first.administrativeArea ?? newState;
-               }
-            } catch (_) {} // Ignore reverse geocode error
+            // Only update state from Geocoding if the user DIDN'T explicit set one (or left it empty)
+            if (_stateCtrl.text.isEmpty) {
+              try {
+                 List<Placemark> placemarks = await placemarkFromCoordinates(newLat, newLng);
+                 if (placemarks.isNotEmpty) {
+                   newState = placemarks.first.administrativeArea ?? newState;
+                   // Update controller too so user sees it
+                   _stateCtrl.text = newState ?? '';
+                 }
+              } catch (_) {} 
+            }
           } else {
              if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Warning: Could not locate address on map.")));
           }
@@ -333,9 +345,11 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            Expanded(child: _input("City", _cityCtrl)),
-                            const SizedBox(width: 12),
-                            SizedBox(width: 100, child: _input("Zip", _zipCtrl)),
+                            Expanded(flex: 2, child: _input("City", _cityCtrl)),
+                            const SizedBox(width: 8),
+                            SizedBox(width: 80, child: _input("State", _stateCtrl)),
+                            const SizedBox(width: 8),
+                            Expanded(child: _input("Zip", _zipCtrl)),
                           ],
                         ),
                       ],
