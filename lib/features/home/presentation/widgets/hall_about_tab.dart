@@ -46,11 +46,11 @@ class HallAboutTab extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Bio Section
-          const Text("About Us", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text("About Us", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 12),
           Text(
             hall.description ?? "No description available.",
-            style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.black87),
+            style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.white70),
           ),
           const SizedBox(height: 32),
 
@@ -58,12 +58,12 @@ class HallAboutTab extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Photo Gallery", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text("Photo Gallery", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
               TextButton(
                 onPressed: () {
                    Navigator.push(context, MaterialPageRoute(builder: (_) => HallFullGalleryScreen(hallId: hall.id, hallName: hall.name)));
                 }, 
-                child: const Text("See All"),
+                child: const Text("See All", style: TextStyle(color: Colors.blueAccent)),
               ),
             ],
           ),
@@ -98,15 +98,15 @@ class HallAboutTab extends ConsumerWidget {
                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => UploadPhotoScreen(preSelectedHallId: hall.id))),
                        child: Container(
                          decoration: BoxDecoration(
-                           color: Colors.grey[200],
+                           color: const Color(0xFF2C2C2C),
                            borderRadius: BorderRadius.circular(4),
                          ),
                          child: const Column(
                            mainAxisAlignment: MainAxisAlignment.center,
                            children: [
-                             Icon(Icons.add_a_photo, size: 28, color: Colors.grey),
+                             Icon(Icons.add_a_photo, size: 28, color: Colors.white54),
                              SizedBox(height: 4),
-                             Text("Add", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                             Text("Add", style: TextStyle(color: Colors.white54, fontSize: 12)),
                            ],
                          ),
                        ),
@@ -121,7 +121,7 @@ class HallAboutTab extends ConsumerWidget {
                       child: Image.network(
                         photo.imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_,__,___) => Container(color: Colors.grey[300], child: const Icon(Icons.broken_image, color: Colors.grey)),
+                        errorBuilder: (_,__,___) => Container(color: Colors.grey[800], child: const Icon(Icons.broken_image, color: Colors.white24)),
                       ),
                     ),
                   );
@@ -133,7 +133,7 @@ class HallAboutTab extends ConsumerWidget {
 
           // Operating Hours Section
           if (hall.operatingHours.isNotEmpty) ...[
-             const Text("Operating Hours", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+             const Text("Operating Hours", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
              const SizedBox(height: 12),
              _buildOperatingHours(),
              const SizedBox(height: 32),
@@ -142,7 +142,7 @@ class HallAboutTab extends ConsumerWidget {
 
  
           // Contact Actions
-          const Text("Contact & Location", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text("Contact & Location", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 16),
           
           _contactRow(
@@ -195,8 +195,8 @@ class HallAboutTab extends ConsumerWidget {
           child: Row(
              mainAxisAlignment: MainAxisAlignment.spaceBetween,
              children: [
-               Text(day, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black54)),
-               Text(timeString, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
+               Text(day, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white54)),
+               Text(timeString, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
              ],
           ),
         );
@@ -216,10 +216,10 @@ class HallAboutTab extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
+                color: Colors.blueAccent.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: Colors.blue[800], size: 24),
+              child: Icon(icon, color: Colors.blueAccent, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -231,10 +231,10 @@ class HallAboutTab extends ConsumerWidget {
                     text,
                     style: TextStyle(
                       fontSize: 16,
-                      color: isLink ? Colors.blue[800] : Colors.grey[700],
-                      fontWeight: isLink ? FontWeight.w500 : FontWeight.normal,
+                      color: isLink ? Colors.blueAccent : Colors.white70,
+                      fontWeight: isLink ? FontWeight.bold : FontWeight.normal,
                       decoration: isLink ? TextDecoration.underline : null,
-                      decorationColor: Colors.blue[800],
+                      decorationColor: Colors.blueAccent,
                     ),
                   ),
                 ],
@@ -243,7 +243,7 @@ class HallAboutTab extends ConsumerWidget {
             if (isLink)
               const Padding(
                 padding: EdgeInsets.only(top: 10, left: 8),
-                child: Icon(Icons.arrow_outward, size: 16, color: Colors.grey),
+                child: Icon(Icons.arrow_outward, size: 16, color: Colors.white54),
               ),
           ],
         ),

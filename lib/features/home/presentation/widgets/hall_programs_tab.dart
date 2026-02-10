@@ -23,6 +23,7 @@ class HallProgramsTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final program = programs[index];
         return Card(
+          color: const Color(0xFF2C2C2C), // Dark Background
           margin: const EdgeInsets.only(bottom: 12),
           elevation: 2,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -41,7 +42,7 @@ class HallProgramsTab extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Colors.white, // White Text
                         ),
                       ),
                     ),
@@ -49,9 +50,9 @@ class HallProgramsTab extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.blueAccent.withOpacity(0.1),
+                          color: Colors.blueAccent.withOpacity(0.2), // Slightly more opaque
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.blueAccent.withOpacity(0.3)),
+                          border: Border.all(color: Colors.blueAccent.withOpacity(0.5)),
                         ),
                         child: Text(
                           program.specificDay!,
@@ -70,12 +71,12 @@ class HallProgramsTab extends StatelessWidget {
                 if (program.pricing.isNotEmpty) ...[
                   const Text(
                     "Pricing",
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black54),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white54), // White54
                   ),
                   const SizedBox(height: 4),
                   Text(
                     program.pricing,
-                    style: const TextStyle(fontSize: 15, height: 1.4, color: Colors.black87),
+                    style: const TextStyle(fontSize: 15, height: 1.4, color: Colors.white70), // White70
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -84,12 +85,12 @@ class HallProgramsTab extends StatelessWidget {
                 if (program.details.isNotEmpty) ...[
                   const Text(
                     "Details",
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black54),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white54), // White54
                   ),
                   const SizedBox(height: 4),
                   Text(
                     program.details,
-                    style: const TextStyle(fontSize: 15, height: 1.4, color: Colors.black87),
+                    style: const TextStyle(fontSize: 15, height: 1.4, color: Colors.white70), // White70
                   ),
                 ],
               ],
