@@ -6,6 +6,7 @@ import '../../../services/auth_service.dart';
 import 'widgets/special_card.dart';
 import 'widgets/raffle_list_card.dart';
 import 'widgets/hall_about_tab.dart';
+import 'widgets/hall_programs_tab.dart';
 import 'hall_full_gallery_screen.dart';
 
 class HallProfileScreen extends ConsumerWidget {
@@ -26,7 +27,7 @@ class HallProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       body: DefaultTabController(
-        length: 4,
+        length: 5,
         initialIndex: initialTabIndex,
         child: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -255,6 +256,7 @@ class HallProfileScreen extends ConsumerWidget {
                     labelPadding: const EdgeInsets.symmetric(horizontal: 20),
                     tabs: [
                       Tab(text: "EVENTS"),
+                      Tab(text: "PROGRAMS"),
                       Tab(text: "RAFFLES"),
                       Tab(text: "TOURNAMENTS"),
                       Tab(text: "ABOUT"),
@@ -287,6 +289,9 @@ class HallProfileScreen extends ConsumerWidget {
                   );
                 },
               ),
+              
+              // 2. Programs Tab
+              HallProgramsTab(programs: hall.programs),
               
               // 2. Raffles Tab
               Consumer(

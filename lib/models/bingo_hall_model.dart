@@ -9,6 +9,7 @@ part 'bingo_hall_model.g.dart';
 abstract class BingoHallModel with _$BingoHallModel {
   const BingoHallModel._();
 
+  @JsonSerializable(explicitToJson: true)
   const factory BingoHallModel({
     required String id,
     required String name,

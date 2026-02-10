@@ -56,5 +56,5 @@ Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
       'geoHash': instance.geoHash,
       'followBonus': instance.followBonus,
       'operatingHours': instance.operatingHours,
-      'programs': instance.programs,
+      'programs': instance.programs.map((e) => e.toJson()).toList(),
     };

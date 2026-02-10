@@ -229,8 +229,8 @@ return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longit
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(explicitToJson: true)
 class _BingoHallModel extends BingoHallModel {
   const _BingoHallModel({required this.id, required this.name, required this.beaconUuid, required this.latitude, required this.longitude, required this.isActive, this.street, this.city, this.state, this.zipCode, this.unitNumber, this.phone, this.websiteUrl, this.description, this.logoUrl, this.bannerUrl, this.geoHash, this.followBonus = 0.0, final  Map<String, dynamic> operatingHours = const {}, final  List<HallProgramModel> programs = const []}): _operatingHours = operatingHours,_programs = programs,super._();
   factory _BingoHallModel.fromJson(Map<String, dynamic> json) => _$BingoHallModelFromJson(json);
