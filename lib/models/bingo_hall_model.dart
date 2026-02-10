@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Added for Timestamp
+import 'hall_program_model.dart';
 
 part 'bingo_hall_model.freezed.dart';
 part 'bingo_hall_model.g.dart';
@@ -31,6 +32,8 @@ abstract class BingoHallModel with _$BingoHallModel {
     @Default(0.0) double followBonus,
     // Operating Hours: Map<String, Map<String, String>> (day -> {open, close})
     @Default({}) Map<String, dynamic> operatingHours,
+    // Programs
+    @Default([]) List<HallProgramModel> programs,
   }) = _BingoHallModel;
 
   factory BingoHallModel.fromJson(Map<String, dynamic> json) =>

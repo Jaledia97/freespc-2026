@@ -18,7 +18,8 @@ mixin _$BingoHallModel {
  String get id; String get name; String get beaconUuid; double get latitude; double get longitude; bool get isActive; String? get street; String? get city; String? get state; String? get zipCode; String? get unitNumber; String? get phone; String? get websiteUrl; String? get description; String? get logoUrl; String? get bannerUrl;// Geohashing for scalable search
  String? get geoHash;// Bonus Logic
  double get followBonus;// Operating Hours: Map<String, Map<String, String>> (day -> {open, close})
- Map<String, dynamic> get operatingHours;
+ Map<String, dynamic> get operatingHours;// Programs
+ List<HallProgramModel> get programs;
 /// Create a copy of BingoHallModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,16 +32,16 @@ $BingoHallModelCopyWith<BingoHallModel> get copyWith => _$BingoHallModelCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BingoHallModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.beaconUuid, beaconUuid) || other.beaconUuid == beaconUuid)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.street, street) || other.street == street)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode)&&(identical(other.unitNumber, unitNumber) || other.unitNumber == unitNumber)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.websiteUrl, websiteUrl) || other.websiteUrl == websiteUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&(identical(other.geoHash, geoHash) || other.geoHash == geoHash)&&(identical(other.followBonus, followBonus) || other.followBonus == followBonus)&&const DeepCollectionEquality().equals(other.operatingHours, operatingHours));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BingoHallModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.beaconUuid, beaconUuid) || other.beaconUuid == beaconUuid)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.street, street) || other.street == street)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode)&&(identical(other.unitNumber, unitNumber) || other.unitNumber == unitNumber)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.websiteUrl, websiteUrl) || other.websiteUrl == websiteUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&(identical(other.geoHash, geoHash) || other.geoHash == geoHash)&&(identical(other.followBonus, followBonus) || other.followBonus == followBonus)&&const DeepCollectionEquality().equals(other.operatingHours, operatingHours)&&const DeepCollectionEquality().equals(other.programs, programs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,name,beaconUuid,latitude,longitude,isActive,street,city,state,zipCode,unitNumber,phone,websiteUrl,description,logoUrl,bannerUrl,geoHash,followBonus,const DeepCollectionEquality().hash(operatingHours)]);
+int get hashCode => Object.hashAll([runtimeType,id,name,beaconUuid,latitude,longitude,isActive,street,city,state,zipCode,unitNumber,phone,websiteUrl,description,logoUrl,bannerUrl,geoHash,followBonus,const DeepCollectionEquality().hash(operatingHours),const DeepCollectionEquality().hash(programs)]);
 
 @override
 String toString() {
-  return 'BingoHallModel(id: $id, name: $name, beaconUuid: $beaconUuid, latitude: $latitude, longitude: $longitude, isActive: $isActive, street: $street, city: $city, state: $state, zipCode: $zipCode, unitNumber: $unitNumber, phone: $phone, websiteUrl: $websiteUrl, description: $description, logoUrl: $logoUrl, bannerUrl: $bannerUrl, geoHash: $geoHash, followBonus: $followBonus, operatingHours: $operatingHours)';
+  return 'BingoHallModel(id: $id, name: $name, beaconUuid: $beaconUuid, latitude: $latitude, longitude: $longitude, isActive: $isActive, street: $street, city: $city, state: $state, zipCode: $zipCode, unitNumber: $unitNumber, phone: $phone, websiteUrl: $websiteUrl, description: $description, logoUrl: $logoUrl, bannerUrl: $bannerUrl, geoHash: $geoHash, followBonus: $followBonus, operatingHours: $operatingHours, programs: $programs)';
 }
 
 
@@ -51,7 +52,7 @@ abstract mixin class $BingoHallModelCopyWith<$Res>  {
   factory $BingoHallModelCopyWith(BingoHallModel value, $Res Function(BingoHallModel) _then) = _$BingoHallModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String beaconUuid, double latitude, double longitude, bool isActive, String? street, String? city, String? state, String? zipCode, String? unitNumber, String? phone, String? websiteUrl, String? description, String? logoUrl, String? bannerUrl, String? geoHash, double followBonus, Map<String, dynamic> operatingHours
+ String id, String name, String beaconUuid, double latitude, double longitude, bool isActive, String? street, String? city, String? state, String? zipCode, String? unitNumber, String? phone, String? websiteUrl, String? description, String? logoUrl, String? bannerUrl, String? geoHash, double followBonus, Map<String, dynamic> operatingHours, List<HallProgramModel> programs
 });
 
 
@@ -68,7 +69,7 @@ class _$BingoHallModelCopyWithImpl<$Res>
 
 /// Create a copy of BingoHallModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? beaconUuid = null,Object? latitude = null,Object? longitude = null,Object? isActive = null,Object? street = freezed,Object? city = freezed,Object? state = freezed,Object? zipCode = freezed,Object? unitNumber = freezed,Object? phone = freezed,Object? websiteUrl = freezed,Object? description = freezed,Object? logoUrl = freezed,Object? bannerUrl = freezed,Object? geoHash = freezed,Object? followBonus = null,Object? operatingHours = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? beaconUuid = null,Object? latitude = null,Object? longitude = null,Object? isActive = null,Object? street = freezed,Object? city = freezed,Object? state = freezed,Object? zipCode = freezed,Object? unitNumber = freezed,Object? phone = freezed,Object? websiteUrl = freezed,Object? description = freezed,Object? logoUrl = freezed,Object? bannerUrl = freezed,Object? geoHash = freezed,Object? followBonus = null,Object? operatingHours = null,Object? programs = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -89,7 +90,8 @@ as String?,bannerUrl: freezed == bannerUrl ? _self.bannerUrl : bannerUrl // igno
 as String?,geoHash: freezed == geoHash ? _self.geoHash : geoHash // ignore: cast_nullable_to_non_nullable
 as String?,followBonus: null == followBonus ? _self.followBonus : followBonus // ignore: cast_nullable_to_non_nullable
 as double,operatingHours: null == operatingHours ? _self.operatingHours : operatingHours // ignore: cast_nullable_to_non_nullable
-as Map<String, dynamic>,
+as Map<String, dynamic>,programs: null == programs ? _self.programs : programs // ignore: cast_nullable_to_non_nullable
+as List<HallProgramModel>,
   ));
 }
 
@@ -174,10 +176,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String beaconUuid,  double latitude,  double longitude,  bool isActive,  String? street,  String? city,  String? state,  String? zipCode,  String? unitNumber,  String? phone,  String? websiteUrl,  String? description,  String? logoUrl,  String? bannerUrl,  String? geoHash,  double followBonus,  Map<String, dynamic> operatingHours)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String beaconUuid,  double latitude,  double longitude,  bool isActive,  String? street,  String? city,  String? state,  String? zipCode,  String? unitNumber,  String? phone,  String? websiteUrl,  String? description,  String? logoUrl,  String? bannerUrl,  String? geoHash,  double followBonus,  Map<String, dynamic> operatingHours,  List<HallProgramModel> programs)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BingoHallModel() when $default != null:
-return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longitude,_that.isActive,_that.street,_that.city,_that.state,_that.zipCode,_that.unitNumber,_that.phone,_that.websiteUrl,_that.description,_that.logoUrl,_that.bannerUrl,_that.geoHash,_that.followBonus,_that.operatingHours);case _:
+return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longitude,_that.isActive,_that.street,_that.city,_that.state,_that.zipCode,_that.unitNumber,_that.phone,_that.websiteUrl,_that.description,_that.logoUrl,_that.bannerUrl,_that.geoHash,_that.followBonus,_that.operatingHours,_that.programs);case _:
   return orElse();
 
 }
@@ -195,10 +197,10 @@ return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longit
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String beaconUuid,  double latitude,  double longitude,  bool isActive,  String? street,  String? city,  String? state,  String? zipCode,  String? unitNumber,  String? phone,  String? websiteUrl,  String? description,  String? logoUrl,  String? bannerUrl,  String? geoHash,  double followBonus,  Map<String, dynamic> operatingHours)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String beaconUuid,  double latitude,  double longitude,  bool isActive,  String? street,  String? city,  String? state,  String? zipCode,  String? unitNumber,  String? phone,  String? websiteUrl,  String? description,  String? logoUrl,  String? bannerUrl,  String? geoHash,  double followBonus,  Map<String, dynamic> operatingHours,  List<HallProgramModel> programs)  $default,) {final _that = this;
 switch (_that) {
 case _BingoHallModel():
-return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longitude,_that.isActive,_that.street,_that.city,_that.state,_that.zipCode,_that.unitNumber,_that.phone,_that.websiteUrl,_that.description,_that.logoUrl,_that.bannerUrl,_that.geoHash,_that.followBonus,_that.operatingHours);case _:
+return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longitude,_that.isActive,_that.street,_that.city,_that.state,_that.zipCode,_that.unitNumber,_that.phone,_that.websiteUrl,_that.description,_that.logoUrl,_that.bannerUrl,_that.geoHash,_that.followBonus,_that.operatingHours,_that.programs);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -215,10 +217,10 @@ return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longit
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String beaconUuid,  double latitude,  double longitude,  bool isActive,  String? street,  String? city,  String? state,  String? zipCode,  String? unitNumber,  String? phone,  String? websiteUrl,  String? description,  String? logoUrl,  String? bannerUrl,  String? geoHash,  double followBonus,  Map<String, dynamic> operatingHours)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String beaconUuid,  double latitude,  double longitude,  bool isActive,  String? street,  String? city,  String? state,  String? zipCode,  String? unitNumber,  String? phone,  String? websiteUrl,  String? description,  String? logoUrl,  String? bannerUrl,  String? geoHash,  double followBonus,  Map<String, dynamic> operatingHours,  List<HallProgramModel> programs)?  $default,) {final _that = this;
 switch (_that) {
 case _BingoHallModel() when $default != null:
-return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longitude,_that.isActive,_that.street,_that.city,_that.state,_that.zipCode,_that.unitNumber,_that.phone,_that.websiteUrl,_that.description,_that.logoUrl,_that.bannerUrl,_that.geoHash,_that.followBonus,_that.operatingHours);case _:
+return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longitude,_that.isActive,_that.street,_that.city,_that.state,_that.zipCode,_that.unitNumber,_that.phone,_that.websiteUrl,_that.description,_that.logoUrl,_that.bannerUrl,_that.geoHash,_that.followBonus,_that.operatingHours,_that.programs);case _:
   return null;
 
 }
@@ -230,7 +232,7 @@ return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longit
 @JsonSerializable()
 
 class _BingoHallModel extends BingoHallModel {
-  const _BingoHallModel({required this.id, required this.name, required this.beaconUuid, required this.latitude, required this.longitude, required this.isActive, this.street, this.city, this.state, this.zipCode, this.unitNumber, this.phone, this.websiteUrl, this.description, this.logoUrl, this.bannerUrl, this.geoHash, this.followBonus = 0.0, final  Map<String, dynamic> operatingHours = const {}}): _operatingHours = operatingHours,super._();
+  const _BingoHallModel({required this.id, required this.name, required this.beaconUuid, required this.latitude, required this.longitude, required this.isActive, this.street, this.city, this.state, this.zipCode, this.unitNumber, this.phone, this.websiteUrl, this.description, this.logoUrl, this.bannerUrl, this.geoHash, this.followBonus = 0.0, final  Map<String, dynamic> operatingHours = const {}, final  List<HallProgramModel> programs = const []}): _operatingHours = operatingHours,_programs = programs,super._();
   factory _BingoHallModel.fromJson(Map<String, dynamic> json) => _$BingoHallModelFromJson(json);
 
 @override final  String id;
@@ -262,6 +264,15 @@ class _BingoHallModel extends BingoHallModel {
   return EqualUnmodifiableMapView(_operatingHours);
 }
 
+// Programs
+ final  List<HallProgramModel> _programs;
+// Programs
+@override@JsonKey() List<HallProgramModel> get programs {
+  if (_programs is EqualUnmodifiableListView) return _programs;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_programs);
+}
+
 
 /// Create a copy of BingoHallModel
 /// with the given fields replaced by the non-null parameter values.
@@ -276,16 +287,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BingoHallModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.beaconUuid, beaconUuid) || other.beaconUuid == beaconUuid)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.street, street) || other.street == street)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode)&&(identical(other.unitNumber, unitNumber) || other.unitNumber == unitNumber)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.websiteUrl, websiteUrl) || other.websiteUrl == websiteUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&(identical(other.geoHash, geoHash) || other.geoHash == geoHash)&&(identical(other.followBonus, followBonus) || other.followBonus == followBonus)&&const DeepCollectionEquality().equals(other._operatingHours, _operatingHours));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BingoHallModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.beaconUuid, beaconUuid) || other.beaconUuid == beaconUuid)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.street, street) || other.street == street)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode)&&(identical(other.unitNumber, unitNumber) || other.unitNumber == unitNumber)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.websiteUrl, websiteUrl) || other.websiteUrl == websiteUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&(identical(other.geoHash, geoHash) || other.geoHash == geoHash)&&(identical(other.followBonus, followBonus) || other.followBonus == followBonus)&&const DeepCollectionEquality().equals(other._operatingHours, _operatingHours)&&const DeepCollectionEquality().equals(other._programs, _programs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,name,beaconUuid,latitude,longitude,isActive,street,city,state,zipCode,unitNumber,phone,websiteUrl,description,logoUrl,bannerUrl,geoHash,followBonus,const DeepCollectionEquality().hash(_operatingHours)]);
+int get hashCode => Object.hashAll([runtimeType,id,name,beaconUuid,latitude,longitude,isActive,street,city,state,zipCode,unitNumber,phone,websiteUrl,description,logoUrl,bannerUrl,geoHash,followBonus,const DeepCollectionEquality().hash(_operatingHours),const DeepCollectionEquality().hash(_programs)]);
 
 @override
 String toString() {
-  return 'BingoHallModel(id: $id, name: $name, beaconUuid: $beaconUuid, latitude: $latitude, longitude: $longitude, isActive: $isActive, street: $street, city: $city, state: $state, zipCode: $zipCode, unitNumber: $unitNumber, phone: $phone, websiteUrl: $websiteUrl, description: $description, logoUrl: $logoUrl, bannerUrl: $bannerUrl, geoHash: $geoHash, followBonus: $followBonus, operatingHours: $operatingHours)';
+  return 'BingoHallModel(id: $id, name: $name, beaconUuid: $beaconUuid, latitude: $latitude, longitude: $longitude, isActive: $isActive, street: $street, city: $city, state: $state, zipCode: $zipCode, unitNumber: $unitNumber, phone: $phone, websiteUrl: $websiteUrl, description: $description, logoUrl: $logoUrl, bannerUrl: $bannerUrl, geoHash: $geoHash, followBonus: $followBonus, operatingHours: $operatingHours, programs: $programs)';
 }
 
 
@@ -296,7 +307,7 @@ abstract mixin class _$BingoHallModelCopyWith<$Res> implements $BingoHallModelCo
   factory _$BingoHallModelCopyWith(_BingoHallModel value, $Res Function(_BingoHallModel) _then) = __$BingoHallModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String beaconUuid, double latitude, double longitude, bool isActive, String? street, String? city, String? state, String? zipCode, String? unitNumber, String? phone, String? websiteUrl, String? description, String? logoUrl, String? bannerUrl, String? geoHash, double followBonus, Map<String, dynamic> operatingHours
+ String id, String name, String beaconUuid, double latitude, double longitude, bool isActive, String? street, String? city, String? state, String? zipCode, String? unitNumber, String? phone, String? websiteUrl, String? description, String? logoUrl, String? bannerUrl, String? geoHash, double followBonus, Map<String, dynamic> operatingHours, List<HallProgramModel> programs
 });
 
 
@@ -313,7 +324,7 @@ class __$BingoHallModelCopyWithImpl<$Res>
 
 /// Create a copy of BingoHallModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? beaconUuid = null,Object? latitude = null,Object? longitude = null,Object? isActive = null,Object? street = freezed,Object? city = freezed,Object? state = freezed,Object? zipCode = freezed,Object? unitNumber = freezed,Object? phone = freezed,Object? websiteUrl = freezed,Object? description = freezed,Object? logoUrl = freezed,Object? bannerUrl = freezed,Object? geoHash = freezed,Object? followBonus = null,Object? operatingHours = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? beaconUuid = null,Object? latitude = null,Object? longitude = null,Object? isActive = null,Object? street = freezed,Object? city = freezed,Object? state = freezed,Object? zipCode = freezed,Object? unitNumber = freezed,Object? phone = freezed,Object? websiteUrl = freezed,Object? description = freezed,Object? logoUrl = freezed,Object? bannerUrl = freezed,Object? geoHash = freezed,Object? followBonus = null,Object? operatingHours = null,Object? programs = null,}) {
   return _then(_BingoHallModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -334,7 +345,8 @@ as String?,bannerUrl: freezed == bannerUrl ? _self.bannerUrl : bannerUrl // igno
 as String?,geoHash: freezed == geoHash ? _self.geoHash : geoHash // ignore: cast_nullable_to_non_nullable
 as String?,followBonus: null == followBonus ? _self.followBonus : followBonus // ignore: cast_nullable_to_non_nullable
 as double,operatingHours: null == operatingHours ? _self._operatingHours : operatingHours // ignore: cast_nullable_to_non_nullable
-as Map<String, dynamic>,
+as Map<String, dynamic>,programs: null == programs ? _self._programs : programs // ignore: cast_nullable_to_non_nullable
+as List<HallProgramModel>,
   ));
 }
 

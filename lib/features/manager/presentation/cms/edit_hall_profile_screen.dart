@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:geocoding/geocoding.dart';
 import '../../../home/repositories/hall_repository.dart';
 import '../../../../models/bingo_hall_model.dart';
+import '../../../../models/hall_program_model.dart';
 import '../../../../services/storage_service.dart';
 
 class EditHallProfileScreen extends ConsumerStatefulWidget {
@@ -32,6 +33,9 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
   // Operating Hours Logic
   final List<String> _days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   final Map<String, Map<String, TextEditingController>> _hoursCtrls = {};
+  
+  // Programs Logic
+  List<HallProgramModel> _programs = [];
 
   bool _isInit = false;
   bool _isSaving = false;
@@ -110,6 +114,11 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                  _hoursCtrls[day]?['close']?.text = times['close'] ?? '';
                }
             });
+          }
+          
+          // Populate Programs
+          if (hall.programs.isNotEmpty) {
+            _programs = List.from(hall.programs);
           }
         }
       });
@@ -323,6 +332,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         description: _descCtrl.text.trim(),
         logoUrl: _logoUrl,
         operatingHours: finalHours,
+        programs: _programs,
         bannerUrl: _bannerUrl,
         latitude: newLat,
         longitude: newLng,
@@ -375,7 +385,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // General Info
+                        // General Info (Includes Contact & Location)
                         _buildSection(
                           title: "General Information",
                           initiallyExpanded: true,
@@ -383,23 +393,23 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                             _input("Hall Name", _nameCtrl),
                             const SizedBox(height: 12),
                             _input("Bio / Description", _descCtrl, maxLines: 3),
-                          ],
-                        ),
-
-                        // Contact
-                        _buildSection(
-                          title: "Contact Details",
-                          children: [
+                            
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              child: Divider(color: Colors.white24),
+                            ),
+                            const Text("Contact Details", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 14)),
+                            const SizedBox(height: 12),
                             _input("Phone Number", _phoneCtrl),
                             const SizedBox(height: 12),
                             _input("Website", _webCtrl),
-                          ],
-                        ),
 
-                        // Location
-                        _buildSection(
-                          title: "Location",
-                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              child: Divider(color: Colors.white24),
+                            ),
+                            const Text("Location", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 14)),
+                            const SizedBox(height: 12),
                             Row(
                               children: [
                                 Expanded(child: _input("Street Address", _streetCtrl)),
@@ -432,6 +442,54 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                               ),
                             ),
                             ..._days.map((day) => _buildDayRow(day)).toList(),
+                          ],
+                        ),
+
+                        // Program Details
+                        _buildSection(
+                          title: "Program Details",
+                          children: [
+                            if (_programs.isEmpty)
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: Text("No programs added yet.", style: TextStyle(color: Colors.white54)),
+                              )
+                            else
+                              ..._programs.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final program = entry.value;
+                                return Card(
+                                  color: const Color(0xFF2C2C2C),
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  child: ListTile(
+                                    title: Text(program.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                    subtitle: Text(
+                                      "${program.specificDay != null ? '${program.specificDay} • ' : ''}${program.pricing.replaceAll('\n', ', ')}", 
+                                      style: const TextStyle(color: Colors.white70),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    trailing: IconButton(
+                                      icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                                      onPressed: () => _showAddEditProgramDialog(existing: program, index: index),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () => _showAddEditProgramDialog(),
+                                icon: const Icon(Icons.add, color: Colors.blueAccent),
+                                label: const Text("Add A Program", style: TextStyle(color: Colors.blueAccent)),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Colors.blueAccent),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -534,7 +592,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         child: ExpansionTile(
           initiallyExpanded: initiallyExpanded,
           title: Text(title, style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 16)),
-          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           children: children,
         ),
       ),
@@ -557,5 +615,132 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
       ),
       validator: (v) => label == "Hall Name" && v!.isEmpty ? "Required" : null,
     );
+  }
+
+  void _showAddEditProgramDialog({HallProgramModel? existing, int? index}) {
+    final titleCtrl = TextEditingController(text: existing?.title ?? '');
+    final pricingCtrl = TextEditingController(text: existing?.pricing ?? ''); // Per request: Multiline
+    final detailsCtrl = TextEditingController(text: existing?.details ?? '');
+    
+    // Dialog State
+    String? selectedDay = existing?.specificDay;
+    bool isDaySpecific = selectedDay != null;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1E1E1E),
+            title: Text(existing == null ? "Add Program" : "Edit Program", style: const TextStyle(color: Colors.white)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _input("Program Name", titleCtrl, isDense: true),
+                  const SizedBox(height: 12),
+                  const Text("Pricing", style: TextStyle(color: Colors.white54, fontSize: 12)),
+                  const SizedBox(height: 4),
+                  _input("Full Pricing Details", pricingCtrl, maxLines: 4, isDense: true),
+                  const SizedBox(height: 12),
+                  const Text("Details", style: TextStyle(color: Colors.white54, fontSize: 12)),
+                  const SizedBox(height: 4),
+                  _input("Program Description", detailsCtrl, maxLines: 4, isDense: true),
+                  const SizedBox(height: 16),
+                  
+                  // Day Specific Checkbox
+                  Theme(
+                    data: ThemeData.dark(),
+                    child: CheckboxListTile(
+                      title: const Text("Display only on a specific day?", style: TextStyle(color: Colors.white, fontSize: 14)),
+                      value: isDaySpecific,
+                      onChanged: (val) {
+                        setDialogState(() {
+                          isDaySpecific = val ?? false;
+                          if (!isDaySpecific) {
+                            selectedDay = null;
+                          } else if (selectedDay == null) {
+                            selectedDay = "Monday"; // Default
+                          }
+                        });
+                      },
+                      activeColor: Colors.blueAccent,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                  ),
+                  
+                  if (isDaySpecific)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: DropdownButtonFormField<String>(
+                        value: selectedDay,
+                        dropdownColor: const Color(0xFF2C2C2C),
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: "Select Day",
+                          labelStyle: const TextStyle(color: Colors.white54),
+                          filled: true,
+                          fillColor: const Color(0xFF2C2C2C),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        items: _days.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                        onChanged: (val) => setDialogState(() => selectedDay = val),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            actions: [
+              if (existing != null)
+                TextButton(
+                  onPressed: () {
+                    // Delete Logic
+                    // We need to setState on the parent widget, not the dialog.
+                    // But we can just call Navigator.pop and THEN setState.
+                    Navigator.pop(ctx, 'DELETE');
+                  },
+                  child: const Text("DELETE", style: TextStyle(color: Colors.redAccent)),
+                ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text("CANCEL", style: TextStyle(color: Colors.white54)),
+              ),
+              TextButton(
+                onPressed: () {
+                  if (titleCtrl.text.isEmpty) return;
+                  
+                  final newProgram = HallProgramModel(
+                    title: titleCtrl.text.trim(),
+                    pricing: pricingCtrl.text.trim(),
+                    details: detailsCtrl.text.trim(),
+                    specificDay: isDaySpecific ? selectedDay : null,
+                  );
+                  
+                  // Return the new object
+                  Navigator.pop(ctx, newProgram);
+                },
+                child: const Text("SAVE", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        },
+      ),
+    ).then((result) {
+      if (result != null) {
+         setState(() {
+           if (result == 'DELETE' && existing != null) {
+             _programs.removeAt(index!);
+           } else if (result is HallProgramModel) {
+             if (existing != null) {
+               _programs[index!] = result;
+             } else {
+               _programs.add(result);
+             }
+           }
+         });
+      }
+    });
   }
 }

@@ -17,6 +17,8 @@ All notable changes to the FreeSPC project will be documented in this file.
     - **Logic**: Automatically formats blank close times as "to CLOSE".
     - **Display**: Shown prominently on the "About" tab.
 - **CMS Optimization**: Refactored "Edit Hall Profile" screen to use collapsible sections for better organization and reduced scrolling.
+- **Program Details**: Added ability to manage multiple bingo programs.
+    - **Features**: Name, Multi-line Pricing/Details, and Specific Day filtering.
 
 ## [0.0.1+24] - 2026-02-06 - Social Photo Gallery (Phase 26)
 
