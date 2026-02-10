@@ -12,6 +12,9 @@ _HallProgramModel _$HallProgramModelFromJson(Map<String, dynamic> json) =>
       pricing: json['pricing'] as String? ?? '',
       details: json['details'] as String? ?? '',
       specificDay: json['specificDay'] as String?,
+      startTime: json['startTime'] as String?,
+      endTime: json['endTime'] as String?,
+      isActive: json['isActive'] as bool? ?? true,
     );
 
 Map<String, dynamic> _$HallProgramModelToJson(_HallProgramModel instance) =>
@@ -20,4 +23,7 @@ Map<String, dynamic> _$HallProgramModelToJson(_HallProgramModel instance) =>
       'pricing': instance.pricing,
       'details': instance.details,
       'specificDay': instance.specificDay,
+      'startTime': instance.startTime,
+      'endTime': instance.endTime,
+      'isActive': instance.isActive,
     };

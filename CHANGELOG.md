@@ -19,6 +19,8 @@ All notable changes to the FreeSPC project will be documented in this file.
 - **CMS Optimization**: Refactored "Edit Hall Profile" screen to use collapsible sections for better organization and reduced scrolling.
 - **Program Details**: Added ability to manage multiple bingo programs.
     - **Features**: Name, Multi-line Pricing/Details, and Specific Day filtering.
+    - **Timeframe**: Added Start/End Time for each program.
+    - **Status**: Added "Active/Inactive" toggle. Inactive programs are hidden in a collapsible section.
     - **Display**: Added "PROGRAMS" tab to Hall Profile screen to showcase these details.
     - **UI Polish**: Improved text contrast on dark backgrounds for "About" and "Programs" tabs.
 

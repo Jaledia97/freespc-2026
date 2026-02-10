@@ -617,6 +617,17 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     );
   }
 
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.white54),
+      filled: true,
+      fillColor: const Color(0xFF1E1E1E),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    );
+  }
+
   void _showAddEditProgramDialog({HallProgramModel? existing, int? index}) {
     final titleCtrl = TextEditingController(text: existing?.title ?? '');
     final pricingCtrl = TextEditingController(text: existing?.pricing ?? ''); // Per request: Multiline
@@ -625,7 +636,34 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     // Dialog State
     String? selectedDay = existing?.specificDay;
     bool isDaySpecific = selectedDay != null;
+    bool isActive = existing?.isActive ?? true;
 
+    // Timeframe Logic
+    bool isTimeframeEnabled = existing?.startTime != null;
+    TimeOfDay? selectedStartTime;
+    TimeOfDay? selectedEndTime;
+
+    // Helper to parse "6:00 PM" back to TimeOfDay
+    TimeOfDay? _parseTime(String? timeStr) {
+      if (timeStr == null || !timeStr.contains(":")) return null;
+      try {
+        final parts = timeStr.split(" ");
+        final timeParts = parts[0].split(":");
+        int hour = int.parse(timeParts[0]);
+        int minute = int.parse(timeParts[1]);
+        if (parts[1] == "PM" && hour != 12) hour += 12;
+        if (parts[1] == "AM" && hour == 12) hour = 0;
+        return TimeOfDay(hour: hour, minute: minute);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    if (existing != null) {
+      selectedStartTime = _parseTime(existing.startTime);
+      selectedEndTime = _parseTime(existing.endTime);
+    }
+    
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -638,6 +676,17 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SwitchListTile(
+                    title: const Text("Active Program?", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    subtitle: Text(isActive ? "Visible to users" : "Hidden in 'Inactive' section", style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                    value: isActive,
+                    onChanged: (val) => setDialogState(() => isActive = val),
+                    activeColor: Colors.greenAccent,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  const Divider(color: Colors.white24),
+                  const SizedBox(height: 12),
+
                   _input("Program Name", titleCtrl, isDense: true),
                   const SizedBox(height: 12),
                   const Text("Pricing", style: TextStyle(color: Colors.white54, fontSize: 12)),
@@ -678,35 +727,92 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                         value: selectedDay,
                         dropdownColor: const Color(0xFF2C2C2C),
                         style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          labelText: "Select Day",
-                          labelStyle: const TextStyle(color: Colors.white54),
-                          filled: true,
-                          fillColor: const Color(0xFF2C2C2C),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        items: _days.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                        decoration: _inputDecoration("Select Day"),
+                        items: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+                            .map((day) => DropdownMenuItem(value: day, child: Text(day)))
+                            .toList(),
                         onChanged: (val) => setDialogState(() => selectedDay = val),
+                      ),
+                    ),
+
+                  const SizedBox(height: 12),
+
+                  // Timeframe
+                  CheckboxListTile(
+                    title: const Text("Display timeframe?", style: TextStyle(color: Colors.white, fontSize: 14)),
+                    value: isTimeframeEnabled,
+                    onChanged: (val) {
+                      setDialogState(() {
+                        isTimeframeEnabled = val ?? false;
+                        if (!isTimeframeEnabled) {
+                          selectedStartTime = null;
+                          selectedEndTime = null;
+                        }
+                      });
+                    },
+                    activeColor: Colors.blueAccent,
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
+                  
+                  if (isTimeframeEnabled)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () async {
+                                final time = await showTimePicker(context: context, initialTime: selectedStartTime ?? const TimeOfDay(hour: 18, minute: 0));
+                                if (time != null) {
+                                  setDialogState(() => selectedStartTime = time);
+                                }
+                              },
+                              child: InputDecorator(
+                                decoration: _inputDecoration("Start Time"),
+                                child: Text(
+                                  selectedStartTime?.format(context) ?? "Select",
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text("-", style: TextStyle(color: Colors.white)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () async {
+                                final time = await showTimePicker(context: context, initialTime: selectedEndTime ?? const TimeOfDay(hour: 21, minute: 0));
+                                if (time != null) {
+                                  setDialogState(() => selectedEndTime = time);
+                                }
+                              },
+                              child: InputDecorator(
+                                decoration: _inputDecoration("End Time"),
+                                child: Text(
+                                  selectedEndTime?.format(context) ?? "Select",
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                 ],
               ),
             ),
             actions: [
-              if (existing != null)
-                TextButton(
-                  onPressed: () {
-                    // Delete Logic
-                    // We need to setState on the parent widget, not the dialog.
-                    // But we can just call Navigator.pop and THEN setState.
-                    Navigator.pop(ctx, 'DELETE');
-                  },
-                  child: const Text("DELETE", style: TextStyle(color: Colors.redAccent)),
-                ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text("CANCEL", style: TextStyle(color: Colors.white54)),
+                child: const Text("CANCEL", style: TextStyle(color: Colors.grey)),
               ),
+              if (existing != null)
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, "DELETE"),
+                  child: const Text("DELETE", style: TextStyle(color: Colors.redAccent)),
+                ),
               TextButton(
                 onPressed: () {
                   if (titleCtrl.text.isEmpty) return;
@@ -716,10 +822,12 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                     pricing: pricingCtrl.text.trim(),
                     details: detailsCtrl.text.trim(),
                     specificDay: isDaySpecific ? selectedDay : null,
+                    startTime: isTimeframeEnabled ? selectedStartTime?.format(context) : null,
+                    endTime: isTimeframeEnabled ? selectedEndTime?.format(context) : null,
+                    isActive: isActive,
                   );
                   
-                  // Return the new object
-                  Navigator.pop(ctx, newProgram);
+                  Navigator.pop(ctx, newProgram); // Return the new object
                 },
                 child: const Text("SAVE", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
               ),
