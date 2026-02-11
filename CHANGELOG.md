@@ -18,7 +18,7 @@ All notable changes to the FreeSPC project will be documented in this file.
     - **Display**: Shown prominently on the "About" tab.
 - **CMS Optimization**: Refactored "Edit Hall Profile" screen to use collapsible sections for better organization and reduced scrolling.
 - **Program Details**: Added ability to manage multiple bingo programs.
-    - **Features**: Name, Multi-line Pricing/Details, and Specific Day filtering.
+    - **Features**: Name, Multi-line Pricing/Details, and multi-day selection (Samsung-style).
     - **Timeframe**: Added Start/End Time for each program.
     - **Status**: Implemented "Smart Activation". Programs are active based on their schedule.
     - **Override**: Managers can force a program "Active" until a specific time using the checkbox.

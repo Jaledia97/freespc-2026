@@ -52,23 +52,20 @@ class HallProgramsTab extends StatelessWidget {
       if (program.overrideEndTime!.isAfter(DateTime.now())) {
         return true; // Forced Active
       }
-      // If override is expired, fall through to schedule check or return false?
-      // User likely wants it to expire -> Inactive.
-      // But maybe they want it to revert to schedule?
-      // "Limit override to this time" implies after that time, the override is gone.
-      // So we should probably fall back to normal schedule.
     }
 
     // 2. Check Schedule
     final now = DateTime.now();
     
-    // Check Day
-    if (program.specificDay != null) {
-      // Simple Day Check
-      // We need a helper to match "Monday" to DateTime.weekday
-      if (!_isSameDay(program.specificDay!, now)) {
-         return false;
-      }
+    // Check Days
+    if (program.selectedDays.isEmpty) {
+      // If no days selected, it's manual only.
+      // Since we already checked Override above, if we are here, there is no active override.
+      return false; 
+    }
+    
+    if (!program.selectedDays.contains(now.weekday)) {
+       return false;
     }
     
     // Check Timeframe (if exists)
@@ -76,34 +73,24 @@ class HallProgramsTab extends StatelessWidget {
        return _isWithinTimeframe(program.startTime!, program.endTime!, now);
     }
     
-    // If no day/time restrictions, it's always active? Or always inactive?
-    // "General" programs (no day/time) are usually always active.
     return true; 
   }
 
-  bool _isSameDay(String dayName, DateTime date) {
-    final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    final index = days.indexOf(dayName);
-    if (index == -1) return false;
-    // DateTime.weekday: Mon=1, Sun=7. List index: Mon=0, Sun=6.
-    return date.weekday == (index + 1);
-  }
+  // Removed _isSameDay (no longer needed)
 
   bool _isWithinTimeframe(String startStr, String endStr, DateTime now) {
     try {
       final start = _parseTimeOfDay(startStr);
       final end = _parseTimeOfDay(endStr);
-      if (start == null || end == null) return true; // Error parsing -> assume active?
+      if (start == null || end == null) return true; 
 
       final nowTime = TimeOfDay.fromDateTime(now);
       
-      // Convert to minutes for comparison
       final startMin = start.hour * 60 + start.minute;
       final endMin = end.hour * 60 + end.minute;
       final nowMin = nowTime.hour * 60 + nowTime.minute;
       
       if (endMin < startMin) {
-        // Overnight, e.g. 10PM to 2AM
         return nowMin >= startMin || nowMin <= endMin;
       } else {
         return nowMin >= startMin && nowMin <= endMin;
@@ -156,23 +143,24 @@ class HallProgramsTab extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (program.specificDay != null || (program.startTime != null && program.endTime != null))
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blueAccent.withOpacity(0.2), // Slightly more opaque
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blueAccent.withOpacity(0.5)),
-                    ),
-                    child: Text(
-                      _formatSchedule(program),
-                      style: const TextStyle(
-                        color: Colors.blueAccent,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                // Always show badge for schedule context unless it's strictly "Every Day" with no hours?
+                // But generally users want to see "Every Day" too.
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent.withOpacity(0.2), 
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blueAccent.withOpacity(0.5)),
+                  ),
+                  child: Text(
+                    _formatSchedule(program),
+                    style: const TextStyle(
+                      color: Colors.blueAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -181,12 +169,12 @@ class HallProgramsTab extends StatelessWidget {
             if (program.pricing.isNotEmpty) ...[
               const Text(
                 "Pricing",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white54), // White54
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white54), 
               ),
               const SizedBox(height: 4),
               Text(
                 program.pricing,
-                style: const TextStyle(fontSize: 15, height: 1.4, color: Colors.white70), // White70
+                style: const TextStyle(fontSize: 15, height: 1.4, color: Colors.white70), 
               ),
               const SizedBox(height: 12),
             ],
@@ -195,12 +183,12 @@ class HallProgramsTab extends StatelessWidget {
             if (program.details.isNotEmpty) ...[
               const Text(
                 "Details",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white54), // White54
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white54), 
               ),
               const SizedBox(height: 4),
               Text(
                 program.details,
-                style: const TextStyle(fontSize: 15, height: 1.4, color: Colors.white70), // White70
+                style: const TextStyle(fontSize: 15, height: 1.4, color: Colors.white70), 
               ),
             ],
           ],
@@ -210,16 +198,31 @@ class HallProgramsTab extends StatelessWidget {
   }
 
   String _formatSchedule(HallProgramModel program) {
-    String text = "";
-    if (program.specificDay != null) {
-      text = program.specificDay!;
+    if (program.selectedDays.isEmpty) return "Manual Only";
+    
+    String daysText = "Every Day";
+    if (program.selectedDays.isNotEmpty) {
+      if (program.selectedDays.length == 7) {
+        daysText = "Every Day";
+      } else if (program.selectedDays.length == 2 && program.selectedDays.contains(6) && program.selectedDays.contains(7)) {
+        daysText = "Weekends";
+      } else if (program.selectedDays.length == 5 && [1,2,3,4,5].every((d) => program.selectedDays.contains(d))) {
+        daysText = "Weekdays";
+      } else {
+        // Sort days
+        final sortedDays = List<int>.from(program.selectedDays)..sort();
+        daysText = sortedDays.map((d) => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][d - 1]).join(", ");
+      }
     }
     
+    String timeText = "";
     if (program.startTime != null && program.endTime != null) {
-      if (text.isNotEmpty) text += " • ";
-      text += "${program.startTime} - ${program.endTime}";
+      timeText = "${program.startTime} - ${program.endTime}";
     }
     
-    return text;
+    if (timeText.isNotEmpty) {
+      return "$daysText • $timeText";
+    }
+    return daysText;
   }
 }

@@ -507,7 +507,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                                             style: const TextStyle(color: Colors.greenAccent, fontSize: 12, fontWeight: FontWeight.bold),
                                           ),
                                         Text(
-                                          "${program.specificDay != null ? '${program.specificDay} • ' : ''}${program.pricing.replaceAll('\n', ', ')}", 
+                                          "${program.selectedDays.isEmpty ? 'Manual Only' : program.selectedDays.map((d) => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][d - 1]).join(', ')} • ${program.pricing.replaceAll('\n', ', ')}", 
                                           style: const TextStyle(color: Colors.white70),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -679,12 +679,11 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     final detailsCtrl = TextEditingController(text: existing?.details ?? '');
     
     // Dialog State
-    String? selectedDay = existing?.specificDay;
-    bool isDaySpecific = selectedDay != null;
+    Set<int> selectedDays = (existing?.selectedDays ?? []).toSet();
+    // Removed specificDay logic
     // Removed isActive (moved to main list)
 
     // Timeframe Logic
-    bool isTimeframeEnabled = existing?.startTime != null;
     TimeOfDay? selectedStartTime;
     TimeOfDay? selectedEndTime;
 
@@ -732,108 +731,112 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                   _input("Program Description", detailsCtrl, maxLines: 4, isDense: true),
                   const SizedBox(height: 16),
                   
-                  // Day Specific Checkbox
-                  Theme(
-                    data: ThemeData.dark(),
-                    child: CheckboxListTile(
-                      title: const Text("Display only on a specific day?", style: TextStyle(color: Colors.white, fontSize: 14)),
-                      value: isDaySpecific,
-                      onChanged: (val) {
-                        setDialogState(() {
-                          isDaySpecific = val ?? false;
-                          if (!isDaySpecific) {
-                            selectedDay = null;
-                          } else if (selectedDay == null) {
-                            selectedDay = "Monday"; // Default
-                          }
-                        });
-                      },
-                      activeColor: Colors.blueAccent,
-                      contentPadding: EdgeInsets.zero,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
-                  ),
-                  
-                  if (isDaySpecific)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: DropdownButtonFormField<String>(
-                        value: selectedDay,
-                        dropdownColor: const Color(0xFF2C2C2C),
-                        style: const TextStyle(color: Colors.white),
-                        decoration: _inputDecoration("Select Day"),
-                        items: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-                            .map((day) => DropdownMenuItem(value: day, child: Text(day)))
-                            .toList(),
-                        onChanged: (val) => setDialogState(() => selectedDay = val),
-                      ),
-                    ),
-
+                  // Day Selector
+                  const Text("Select Days", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  const Text("Leave blank to make this program manual-only (active via override).", style: TextStyle(color: Colors.white54, fontSize: 12, fontStyle: FontStyle.italic)),
                   const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12, // Increased spacing
+                    children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].asMap().entries.map((entry) {
+                      final index = entry.key; // 0-6
+                      final dayNum = index + 1; // 1-7
+                      final isSelected = selectedDays.contains(dayNum);
+                      
+                      return GestureDetector(
+                        onTap: () {
+                          setDialogState(() {
+                            if (isSelected) {
+                              selectedDays.remove(dayNum);
+                            } else {
+                              selectedDays.add(dayNum);
+                            }
+                          });
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: isSelected ? Colors.blueAccent : const Color(0xFF2C2C2C),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected ? Colors.blueAccent : Colors.white24,
+                              width: 1.5,
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            entry.value[0], // First letter
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.white54,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
 
                   // Timeframe
-                  CheckboxListTile(
-                    title: const Text("Display timeframe?", style: TextStyle(color: Colors.white, fontSize: 14)),
-                    value: isTimeframeEnabled,
-                    onChanged: (val) {
-                      setDialogState(() {
-                        isTimeframeEnabled = val ?? false;
-                        if (!isTimeframeEnabled) {
-                          selectedStartTime = null;
-                          selectedEndTime = null;
-                        }
-                      });
-                    },
-                    activeColor: Colors.blueAccent,
-                    contentPadding: EdgeInsets.zero,
-                    controlAffinity: ListTileControlAffinity.leading,
-                  ),
-                  
-                  if (isTimeframeEnabled)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              onTap: () async {
-                                final time = await showTimePicker(context: context, initialTime: selectedStartTime ?? const TimeOfDay(hour: 18, minute: 0));
-                                if (time != null) {
-                                  setDialogState(() => selectedStartTime = time);
-                                }
-                              },
-                              child: InputDecorator(
-                                decoration: _inputDecoration("Start Time"),
-                                child: Text(
-                                  selectedStartTime?.format(context) ?? "Select",
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ),
+                  const Text("Timeframe (Optional)", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      // Start Time
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            final time = await showTimePicker(context: context, initialTime: selectedStartTime ?? const TimeOfDay(hour: 18, minute: 0));
+                            if (time != null) {
+                              setDialogState(() => selectedStartTime = time);
+                            }
+                          },
+                          child: InputDecorator(
+                            decoration: _inputDecoration("Start Time").copyWith(
+                              suffixIcon: selectedStartTime != null 
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear, color: Colors.white54, size: 20),
+                                    onPressed: () => setDialogState(() => selectedStartTime = null),
+                                  )
+                                : const Icon(Icons.access_time, color: Colors.white54),
+                            ),
+                            child: Text(
+                              selectedStartTime?.format(context) ?? "Set Start",
+                              style: TextStyle(color: selectedStartTime != null ? Colors.white : Colors.white38),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          const Text("-", style: TextStyle(color: Colors.white)),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: InkWell(
-                              onTap: () async {
-                                final time = await showTimePicker(context: context, initialTime: selectedEndTime ?? const TimeOfDay(hour: 21, minute: 0));
-                                if (time != null) {
-                                  setDialogState(() => selectedEndTime = time);
-                                }
-                              },
-                              child: InputDecorator(
-                                decoration: _inputDecoration("End Time"),
-                                child: Text(
-                                  selectedEndTime?.format(context) ?? "Select",
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                      // End Time
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            final time = await showTimePicker(context: context, initialTime: selectedEndTime ?? const TimeOfDay(hour: 21, minute: 0));
+                            if (time != null) {
+                              setDialogState(() => selectedEndTime = time);
+                            }
+                          },
+                          child: InputDecorator(
+                            decoration: _inputDecoration("End Time").copyWith(
+                               suffixIcon: selectedEndTime != null 
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear, color: Colors.white54, size: 20),
+                                    onPressed: () => setDialogState(() => selectedEndTime = null),
+                                  )
+                                : const Icon(Icons.access_time, color: Colors.white54),
+                            ),
+                            child: Text(
+                              selectedEndTime?.format(context) ?? "Set End",
+                              style: TextStyle(color: selectedEndTime != null ? Colors.white : Colors.white38),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
                 ],
               ),
             ),
@@ -855,9 +858,9 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                     title: titleCtrl.text.trim(),
                     pricing: pricingCtrl.text.trim(),
                     details: detailsCtrl.text.trim(),
-                    specificDay: isDaySpecific ? selectedDay : null,
-                    startTime: isTimeframeEnabled ? selectedStartTime?.format(context) : null,
-                    endTime: isTimeframeEnabled ? selectedEndTime?.format(context) : null,
+                    selectedDays: selectedDays.toList(),
+                    startTime: selectedStartTime?.format(context),
+                    endTime: selectedEndTime?.format(context),
                     overrideEndTime: existing?.overrideEndTime, // Preserve existing override
                   );
                   

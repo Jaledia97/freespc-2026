@@ -11,7 +11,11 @@ _HallProgramModel _$HallProgramModelFromJson(Map<String, dynamic> json) =>
       title: json['title'] as String,
       pricing: json['pricing'] as String? ?? '',
       details: json['details'] as String? ?? '',
-      specificDay: json['specificDay'] as String?,
+      selectedDays:
+          (json['selectedDays'] as List<dynamic>?)
+              ?.map((e) => (e as num).toInt())
+              .toList() ??
+          const [],
       startTime: json['startTime'] as String?,
       endTime: json['endTime'] as String?,
       overrideEndTime: json['overrideEndTime'] == null
@@ -24,7 +28,7 @@ Map<String, dynamic> _$HallProgramModelToJson(_HallProgramModel instance) =>
       'title': instance.title,
       'pricing': instance.pricing,
       'details': instance.details,
-      'specificDay': instance.specificDay,
+      'selectedDays': instance.selectedDays,
       'startTime': instance.startTime,
       'endTime': instance.endTime,
       'overrideEndTime': instance.overrideEndTime?.toIso8601String(),

@@ -9,7 +9,7 @@ abstract class HallProgramModel with _$HallProgramModel {
     required String title,
     @Default('') String pricing,
     @Default('') String details,
-    String? specificDay, // e.g., "Monday", "Tuesday", or null for "Any Day" / "General"
+    @Default([]) List<int> selectedDays, // 1=Mon, 7=Sun. Empty = Every Day.
     String? startTime, // e.g., "6:00 PM"
     String? endTime,   // e.g., "9:00 PM"
     DateTime? overrideEndTime, // If set and in future, program is forced ACTIVE.
