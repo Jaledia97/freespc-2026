@@ -6,6 +6,7 @@ import 'package:geocoding/geocoding.dart';
 import '../../../home/repositories/hall_repository.dart';
 import '../../../../models/bingo_hall_model.dart';
 import '../../../../models/hall_program_model.dart';
+import '../../../../models/hall_charity_model.dart';
 import '../../../../services/storage_service.dart';
 
 class EditHallProfileScreen extends ConsumerStatefulWidget {
@@ -36,6 +37,9 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
   
   // Programs Logic
   List<HallProgramModel> _programs = [];
+  
+  // Charities Logic
+  List<HallCharityModel> _charities = [];
 
   bool _isInit = false;
   bool _isSaving = false;
@@ -119,6 +123,10 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
           // Populate Programs
           if (hall.programs.isNotEmpty) {
             _programs = List.from(hall.programs);
+          }
+          
+          if (hall.charities.isNotEmpty) {
+            _charities = List.from(hall.charities);
           }
         }
       });
@@ -333,6 +341,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         logoUrl: _logoUrl,
         operatingHours: finalHours,
         programs: _programs,
+        charities: _charities,
         bannerUrl: _bannerUrl,
         latitude: newLat,
         longitude: newLng,
@@ -537,6 +546,95 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                             ),
                           ],
                         ),
+
+
+                        // Charities
+                        _buildSection(
+                          title: "Charities & Partnerships",
+                          children: [
+                            if (_charities.isEmpty)
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: Text("No charities added yet.", style: TextStyle(color: Colors.white54)),
+                              )
+                            else
+                              GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: 8,
+                                  mainAxisSpacing: 8,
+                                  childAspectRatio: 0.8,
+                                ),
+                                itemCount: _charities.length,
+                                itemBuilder: (ctx, i) {
+                                  final charity = _charities[i];
+                                  return Stack(
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF2C2C2C),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: Colors.white10),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                                          children: [
+                                            Expanded(
+                                              child: ClipRRect(
+                                                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                                                child: Image.network(charity.logoUrl, fit: BoxFit.cover),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child: Text(
+                                                charity.name,
+                                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                                textAlign: TextAlign.center,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Positioned(
+                                        right: 0,
+                                        top: 0,
+                                        child: InkWell(
+                                          onTap: () => setState(() => _charities.removeAt(i)),
+                                          child: Container(
+                                            decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                            padding: const EdgeInsets.all(4),
+                                            child: const Icon(Icons.close, color: Colors.white, size: 14),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                             
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _showAddCharityDialog,
+                                icon: const Icon(Icons.add, color: Colors.blueAccent),
+                                label: const Text("Add Charity", style: TextStyle(color: Colors.blueAccent)),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Colors.blueAccent),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // Bottom Padding to fix clipping
+                        const SizedBox(height: 100),
                       ],
                     ),
                   ),
@@ -887,5 +985,92 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
          });
       }
     });
+  }
+
+  void _showAddCharityDialog() {
+    final nameCtrl = TextEditingController();
+    final webCtrl = TextEditingController();
+    String? logoUrl;
+    bool isUploading = false;
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1E1E1E),
+            title: const Text("Add Charity", style: TextStyle(color: Colors.white)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                   GestureDetector(
+                    onTap: () async {
+                      // Custom Image Picker for Dialog
+                      final file = await ref.read(storageServiceProvider).pickImage(source: ImageSource.gallery);
+                      if (file != null) {
+                        setDialogState(() => isUploading = true);
+                        try {
+                          final url = await ref.read(storageServiceProvider).uploadHallImage(File(file.path), widget.hallId, 'charity_logo');
+                           setDialogState(() {
+                            logoUrl = url;
+                            isUploading = false;
+                          });
+                        } catch (e) {
+                          setDialogState(() => isUploading = false);
+                        }
+                      }
+                    },
+                    child: Container(
+                      height: 100,
+                      width: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: isUploading 
+                        ? const Center(child: CircularProgressIndicator())
+                        : logoUrl != null 
+                          ? ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(logoUrl!, fit: BoxFit.cover))
+                          : const Center(child: Icon(Icons.add_a_photo, color: Colors.white54)),
+                    ),
+                   ),
+                   const SizedBox(height: 16),
+                   _input("Charity Name", nameCtrl, isDense: true),
+                   const SizedBox(height: 12),
+                   _input("Website (Optional)", webCtrl, isDense: true),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text("CANCEL", style: TextStyle(color: Colors.grey)),
+              ),
+              TextButton(
+                onPressed: () {
+                   if (nameCtrl.text.isEmpty || logoUrl == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Name and Logo required")));
+                      return;
+                   }
+                   
+                   final newCharity = HallCharityModel(
+                     id: DateTime.now().millisecondsSinceEpoch.toString(),
+                     name: nameCtrl.text.trim(),
+                     logoUrl: logoUrl!,
+                     websiteUrl: webCtrl.text.trim().isEmpty ? null : webCtrl.text.trim(),
+                   );
+                   
+                   setState(() => _charities.add(newCharity));
+                   Navigator.pop(ctx);
+                },
+                child: const Text("ADD", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 }

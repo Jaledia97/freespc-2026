@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Added for Timestamp
 import 'hall_program_model.dart';
+import 'hall_charity_model.dart';
 
 part 'bingo_hall_model.freezed.dart';
 part 'bingo_hall_model.g.dart';
@@ -35,6 +36,8 @@ abstract class BingoHallModel with _$BingoHallModel {
     @Default({}) Map<String, dynamic> operatingHours,
     // Programs
     @Default([]) List<HallProgramModel> programs,
+    // Charities
+    @Default([]) List<HallCharityModel> charities,
   }) = _BingoHallModel;
 
   factory BingoHallModel.fromJson(Map<String, dynamic> json) =>
