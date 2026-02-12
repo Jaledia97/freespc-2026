@@ -24,6 +24,8 @@ All notable changes to the FreeSPC project will be documented in this file.
     - **Override**: Managers can force a program "Active" until a specific time using the checkbox.
     - **Display**: Added "PROGRAMS" tab to Hall Profile screen to showcase these details.
     - **UI Polish**: Improved text contrast on dark backgrounds for "About" and "Programs" tabs.
+    - **Charities**: Added "Charities & Partnerships" section to Hall Profile Editor.
+    - **Fix**: Resolved clipping issue in Hall Profile Editor.
 
 ## [0.0.1+24] - 2026-02-06 - Social Photo Gallery (Phase 26)
 
