@@ -138,17 +138,27 @@ class HallRepository {
       if (s.startTime == null) continue;
 
       final originalStart = s.startTime!;
-      final originalEnd = s.endTime ?? originalStart.add(const Duration(hours: 4)); // Default duration 4h
+      // FIX: Convert to Local to get the correct "Wall Clock" hour/minute as intended by the user.
+      // Firestore stores as UTC. If we use UTC hour (e.g. 00:00 for 7pm EST), we project to 00:00 Today, which is wrong.
+      final localStart = originalStart.toLocal();
+      
+      final originalEnd = s.endTime ?? originalStart.add(const Duration(hours: 4)); 
       final duration = originalEnd.difference(originalStart);
       
-      DateTime activeStart = originalStart;
+      DateTime activeStart = localStart; // Default to local version logic
+      // Note: We don't really use 'activeStart' except as a base for candidates.
+      
+      // Calculate Candidate base using LOCAL time components
+      DateTime createCandidate(DateTime base, int addedDays) {
+         return DateTime(base.year, base.month, base.day, localStart.hour, localStart.minute).add(Duration(days: addedDays));
+      }
       DateTime activeEnd = originalEnd;
       
       // If the original instance is already past, find the NEXT instance relative to NOW
       if (activeEnd.isBefore(now)) {
         if (s.recurrence == 'daily') {
           // Project to today with same time
-          var candidate = DateTime(now.year, now.month, now.day, originalStart.hour, originalStart.minute);
+          var candidate = createCandidate(now, 0);
           // If that candidate is already over (or started?), move to tomorrow?
           // Let's say we want to show it if it ends in future.
           var candidateEnd = candidate.add(duration);
@@ -159,8 +169,9 @@ class HallRepository {
           activeStart = candidate;
         } else if (s.recurrence == 'weekly') {
            // Find offset to next weekday
-           int daysToAdd = (originalStart.weekday - now.weekday + 7) % 7;
-           var candidate = DateTime(now.year, now.month, now.day, originalStart.hour, originalStart.minute).add(Duration(days: daysToAdd));
+           // use localStart.weekday to ensure it matches the user's intended day
+           int daysToAdd = (localStart.weekday - now.weekday + 7) % 7;
+           var candidate = createCandidate(now, daysToAdd);
            var candidateEnd = candidate.add(duration);
            
            if (candidateEnd.isBefore(now)) {
@@ -169,13 +180,13 @@ class HallRepository {
            activeStart = candidate;
         } else if (s.recurrence == 'monthly') {
            // Try this month
-           var candidate = DateTime(now.year, now.month, originalStart.day, originalStart.hour, originalStart.minute);
+           var candidate = DateTime(now.year, now.month, localStart.day, localStart.hour, localStart.minute);
            var candidateEnd = candidate.add(duration);
            
            if (candidateEnd.isBefore(now)) {
               // Move to next month
               // Handle Dec -> Jan wrap automatically by DateTime
-              candidate = DateTime(now.year, now.month + 1, originalStart.day, originalStart.hour, originalStart.minute);
+              candidate = DateTime(now.year, now.month + 1, localStart.day, localStart.hour, localStart.minute);
            }
            activeStart = candidate;
         }

@@ -4,6 +4,11 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+27] - 2026-02-12 - Patch: Timezone Logic
+
+### Fixed
+- **Recurring Specials**: Fixed a timezone issue where recurring events were projecting using UTC hours instead of local "wall clock" time. This ensures 7 PM EST correctly projects to 7 PM on future dates, rather than shifting due to UTC offsets.
+
 ## [0.0.1+26] - 2026-02-12 - Specials Management & UX (Phase 28)
 
 ### Added
