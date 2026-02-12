@@ -4,6 +4,19 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+26] - 2026-02-12 - Specials Management & UX (Phase 28)
+
+### Added
+- **Multi-Select Delete**: Long-press on special cards to enter selection mode, allowing batch deletion of multiple items at once.
+- **Dynamic Quick Select**: "Quick Select" images in the Special Editor now dynamically populate from your *historically used* images (from past specials).
+- **Template Improvements**:
+    - **Tap to Use**: Tapping a template card now immediately creates a *new copy* for use (without "Copy of" prefix).
+    - **Edit Mode**: Dedicated Pencil icon for modifying the template itself.
+- **Asset Library**: Updated Asset Library modal to also show historic images.
+
+### Changed
+- **UI Polish**: Improved visual feedback for selection mode and delete actions.
+
 ## [0.0.1+25] - 2026-02-08 - Unit Number Support
 
 ### Added

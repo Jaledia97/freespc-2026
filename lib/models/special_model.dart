@@ -19,6 +19,8 @@ abstract class SpecialModel with _$SpecialModel {
     double? longitude,
     @Default([]) List<String> tags,
     @Default('none') String recurrence, // none, daily, weekly, monthly
+    @Default(false) bool isTemplate,
+    DateTime? archivedAt,
   }) = _SpecialModel;
 
   factory SpecialModel.fromJson(Map<String, Object?> json) => _$SpecialModelFromJson(json);

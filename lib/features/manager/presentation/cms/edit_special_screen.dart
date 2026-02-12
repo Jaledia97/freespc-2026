@@ -31,17 +31,13 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
 
   List<String> _selectedTags = ['Specials'];
   String _recurrence = 'none'; // none, daily, weekly, monthly
+  bool _isTemplate = false;
   
   // Notification Logic
   bool _sendNotification = false;
-  
   bool _isSaving = false;
 
-  final List<String> _presets = [
-    'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80', // Cash
-    'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=800&q=80', // Neon
-    'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?auto=format&fit=crop&w=800&q=80', // Slots
-  ];
+
 
   @override
   void initState() {
@@ -51,9 +47,8 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     _tagCtrl = TextEditingController();
     _imageUrl = widget.special?.imageUrl;
     
-    if (_imageUrl == null && widget.special == null) {
-       _imageUrl = _presets[0]; // Default for new
-    }
+    // If creating new, _imageUrl starts null. We can't synchronously set default from async stream.
+    // User can just pick one.
 
     if (widget.special != null) {
       _startTime = widget.special!.startTime ?? DateTime.now();
@@ -61,6 +56,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
       _hasEndTime = _endTime != null;
       _selectedTags = List.from(widget.special!.tags);
       _recurrence = widget.special?.recurrence ?? 'none';
+      _isTemplate = widget.special?.isTemplate ?? false;
     }
   }
 
@@ -152,10 +148,11 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
               ),
               Expanded(
                 child: Consumer(
-                  builder: (_, ref, __) {
-                    final assetsAsync = ref.watch(hallRepositoryProvider).getAssetLibrary(widget.hallId, 'special');
+                  builder: (_, ref, child) {
+                    // Use historic images instead of empty asset library
+                    final assetsStream = ref.watch(hallRepositoryProvider).getRecentSpecialImages(widget.hallId);
                     return StreamBuilder<List<String>>(
-                      stream: assetsAsync, 
+                      stream: assetsStream, 
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
                         
@@ -263,11 +260,11 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     try {
       // Midnight Rule: If no end time, default to 11:59:59 PM of the start date
       final DateTime endTime = _hasEndTime 
-          ? _endTime! // _endTime is nullable in class, but logic ensures it's set if _hasEndTime is true? Verify below.
+          ? _endTime! 
           : DateTime(_startTime.year, _startTime.month, _startTime.day, 23, 59, 59);
 
       final newSpecial = SpecialModel(
-        id: widget.special?.id ?? '', // ID handled by repo if empty
+        id: widget.special?.id ?? '', // ID handled by repo if empty, or reused if editing
         hallId: widget.hallId,
         hallName: '', // Logic in repo/server usually
         title: _titleCtrl.text.trim(),
@@ -278,11 +275,14 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
         endTime: endTime,
         tags: _selectedTags,
         recurrence: _recurrence,
+        isTemplate: _isTemplate,
       );
 
-      if (widget.special == null) {
+      if (widget.special == null || widget.special!.id.isEmpty) {
+        // Create
         await ref.read(hallRepositoryProvider).addSpecial(newSpecial, sendNotification: _sendNotification);
       } else {
+        // Update
         await ref.read(hallRepositoryProvider).updateSpecial(newSpecial, sendNotification: _sendNotification);
       }
 
@@ -332,7 +332,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
-        title: Text(widget.special == null ? 'New Special' : 'Edit Special'),
+        title: Text(widget.special == null || widget.special!.id.isEmpty ? 'New Special' : 'Edit Special'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -390,23 +390,49 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
               ),
               const SizedBox(height: 12),
               // Presets
-              Row(
-                children: [
-                  const Text("Quick Select: ", style: TextStyle(color: Colors.grey)),
-                  ..._presets.map((url) => GestureDetector(
-                    onTap: () => setState(() => _imageUrl = url),
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 8),
-                      width: 40, 
-                      height: 40,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: _imageUrl == url ? Colors.green : Colors.transparent, width: 2),
-                        image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
-                      ),
-                    ),
-                  )),
-                ],
+              // Dynamic Quick Select (Most Recent)
+              Consumer(
+                builder: (context, ref, child) {
+                  // Use historic images for quick select
+                  final assetsStream = ref.watch(hallRepositoryProvider).getRecentSpecialImages(widget.hallId);
+                  return StreamBuilder<List<String>>(
+                    stream: assetsStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const SizedBox(height: 50, child: Center(child: CircularProgressIndicator()));
+                      }
+                      
+                      final images = snapshot.data ?? [];
+                      if (images.isEmpty) return const SizedBox.shrink();
+
+                      // Take top 4
+                      final recent = images.take(4).toList();
+                      
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Quick Select (Recent): ", style: TextStyle(color: Colors.grey)),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: recent.map((url) => GestureDetector(
+                              onTap: () => setState(() => _imageUrl = url),
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 12),
+                                width: 50, 
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: _imageUrl == url ? Colors.green : Colors.transparent, width: 2),
+                                  image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
+                                ),
+                              ),
+                            )).toList(),
+                          ),
+                        ],
+                      );
+                    }
+                  );
+                },
               ),
               const SizedBox(height: 24),
 
@@ -486,7 +512,8 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: DropdownButtonFormField<String>(
-                  value: _recurrence,
+                  key: ValueKey(_recurrence), // Ensure updates when state changes
+                  initialValue: _recurrence,
                   decoration: const InputDecoration(border: InputBorder.none),
                   dropdownColor: const Color(0xFF1E1E1E),
                   style: const TextStyle(color: Colors.white),
@@ -508,9 +535,9 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
               // Push Notification Checkbox
               Container(
                  decoration: BoxDecoration(
-                   color: _sendNotification ? Colors.amber.withOpacity(0.1) : Colors.transparent,
+                   color: _sendNotification ? Colors.amber.withValues(alpha: 0.1) : Colors.transparent,
                    borderRadius: BorderRadius.circular(8),
-                   border: _sendNotification ? Border.all(color: Colors.amber.withOpacity(0.5)) : null,
+                   border: _sendNotification ? Border.all(color: Colors.amber.withValues(alpha: 0.5)) : null,
                  ),
                  child: CheckboxListTile(
                     title: const Text("Send Push Notification?", style: TextStyle(color: Colors.white)),
@@ -522,6 +549,28 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                     activeColor: Colors.amber, 
                     onChanged: _handleNotificationToggle,
                     secondary: Icon(Icons.notifications_active, color: _sendNotification ? Colors.amber : Colors.white54),
+                 ),
+              ),
+
+              const SizedBox(height: 24),
+              
+              // Template Checkbox
+              Container(
+                 decoration: BoxDecoration(
+                   color: _isTemplate ? Colors.blue.withValues(alpha: 0.1) : Colors.transparent,
+                   borderRadius: BorderRadius.circular(8),
+                   border: _isTemplate ? Border.all(color: Colors.blue.withValues(alpha: 0.5)) : null,
+                 ),
+                 child: CheckboxListTile(
+                    title: const Text("Save as Template?", style: TextStyle(color: Colors.white)),
+                    subtitle: const Text("Templates are saved for future use.", style: TextStyle(color: Colors.white54, fontSize: 12)),
+                    value: _isTemplate,
+                    checkColor: Colors.black,
+                    activeColor: Colors.blueAccent,
+                    onChanged: (val) {
+                      setState(() => _isTemplate = val ?? false);
+                    },
+                    secondary: Icon(Icons.copy, color: _isTemplate ? Colors.blueAccent : Colors.white54),
                  ),
               ),
 
@@ -548,7 +597,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                 runSpacing: 8.0,
                 children: _selectedTags.map((tag) => Chip(
                   label: Text(tag, style: const TextStyle(color: Colors.white)),
-                  backgroundColor: Colors.blueAccent.withOpacity(0.2),
+                  backgroundColor: Colors.blueAccent.withValues(alpha: 0.2),
                   deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white54),
                   onDeleted: () => _removeTag(tag),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),

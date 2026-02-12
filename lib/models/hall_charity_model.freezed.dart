@@ -210,8 +210,8 @@ return $default(_that.id,_that.name,_that.logoUrl,_that.websiteUrl);case _:
 }
 
 /// @nodoc
+@JsonSerializable()
 
-@JsonSerializable(explicitToJson: true)
 class _HallCharityModel implements HallCharityModel {
   const _HallCharityModel({required this.id, required this.name, required this.logoUrl, this.websiteUrl});
   factory _HallCharityModel.fromJson(Map<String, dynamic> json) => _$HallCharityModelFromJson(json);

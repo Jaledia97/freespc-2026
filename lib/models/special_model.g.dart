@@ -27,6 +27,10 @@ _SpecialModel _$SpecialModelFromJson(Map<String, dynamic> json) =>
           (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
           const [],
       recurrence: json['recurrence'] as String? ?? 'none',
+      isTemplate: json['isTemplate'] as bool? ?? false,
+      archivedAt: json['archivedAt'] == null
+          ? null
+          : DateTime.parse(json['archivedAt'] as String),
     );
 
 Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
@@ -44,4 +48,6 @@ Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
       'longitude': instance.longitude,
       'tags': instance.tags,
       'recurrence': instance.recurrence,
+      'isTemplate': instance.isTemplate,
+      'archivedAt': instance.archivedAt?.toIso8601String(),
     };

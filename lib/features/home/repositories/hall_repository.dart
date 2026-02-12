@@ -105,16 +105,24 @@ class HallRepository {
         .snapshots()
         .map((snapshot) {
            final specials = snapshot.docs.map((doc) => SpecialModel.fromJson(doc.data())).toList();
-           return _projectSpecials(specials);
+           // For CMS, we want EVERYTHING.
+           // However, _projectSpecials is designed for the FEED (hiding expired).
+           // Let's create a separate helper or flag.
+           return _projectSpecials(specials, includeAll: true);
         });
   }
 
   // Helper: Projects recurring events into the future
-  List<SpecialModel> _projectSpecials(List<SpecialModel> input) {
+  List<SpecialModel> _projectSpecials(List<SpecialModel> input, {bool includeAll = false}) {
     final now = DateTime.now();
     final output = <SpecialModel>[];
 
     for (var s in input) {
+      if (includeAll) {
+        output.add(s);
+        continue;
+      }
+      
       // 1. If not recurring, check expiry
       if (s.recurrence == 'none') {
         // Only show if not expired more than 24 hours ago? Or keep history?
@@ -807,5 +815,25 @@ class HallRepository {
         .orderBy('uploadedAt', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs.map((d) => d.data()['url'] as String).toList());
+  }
+
+  // --- Historic Image Usage (Quick Select) ---
+  Stream<List<String>> getRecentSpecialImages(String hallId) {
+    return _firestore
+        .collection('specials')
+        .where('hallId', isEqualTo: hallId)
+        .orderBy('postedAt', descending: true)
+        .limit(20) // Fetch top 20 to get enough unique ones
+        .snapshots()
+        .map((snapshot) {
+          final urls = <String>{};
+          for (var doc in snapshot.docs) {
+            final data = doc.data();
+            if (data['imageUrl'] != null) {
+              urls.add(data['imageUrl'] as String);
+            }
+          }
+          return urls.toList();
+        });
   }
 }
