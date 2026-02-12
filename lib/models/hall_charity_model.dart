@@ -4,8 +4,8 @@ part 'hall_charity_model.freezed.dart';
 part 'hall_charity_model.g.dart';
 
 @freezed
-class HallCharityModel with _$HallCharityModel {
-  @JsonSerializable(explicitToJson: true)
+abstract class HallCharityModel with _$HallCharityModel {
+
   const factory HallCharityModel({
     required String id,
     required String name,
