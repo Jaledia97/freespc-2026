@@ -65,6 +65,7 @@ class HallRepository {
   Stream<List<SpecialModel>> getSpecialsFeed(Position? userLocation) {
     return _firestore
         .collection('specials')
+        .where('isTemplate', isEqualTo: false) // EXCLUDE TEMPLATES
         // .orderBy('startTime', descending: false) // Removed ordering here as we re-sort after projection
         .snapshots()
         .map((snapshot) {

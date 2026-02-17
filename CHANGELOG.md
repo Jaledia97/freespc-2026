@@ -4,6 +4,15 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+28] - 2026-02-17 - Specials Workflow Refactor
+
+### Changed
+- **Specials Feed**: References to templates are now strictly excluded from the `getSpecialsFeed` query (`isTemplate: false`).
+- **CMS Workflow**:
+    - **Context-Aware FABs**: "Create Special" and "Create Template" buttons now appear contextually based on the active tab.
+    - **Publish Workflow**: Replaced "Save" with a robust **"Publish"** menu offering "Post Live", "Save as Template", and "Post & Save Template" options.
+    - **Copy Logic**: Removed "Copy of" prefix for templates; copies are now created cleanly.
+
 ## [0.0.1+27] - 2026-02-12 - Patch: Timezone Logic
 
 ### Fixed

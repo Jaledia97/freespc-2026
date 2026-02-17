@@ -155,11 +155,15 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen> wit
               ? null // Hide FAB in selection mode
               : FloatingActionButton.extended(
                   onPressed: () {
-                     Navigator.push(context, MaterialPageRoute(builder: (_) => EditSpecialScreen(hallId: hallId)));
+                     final isTemplateMode = _tabController.index == 2;
+                     Navigator.push(context, MaterialPageRoute(builder: (_) => EditSpecialScreen(
+                       hallId: hallId,
+                       createTemplateMode: isTemplateMode,
+                     )));
                   },
-                  backgroundColor: Colors.green,
-                  label: const Text("New Special"),
-                  icon: const Icon(Icons.add),
+                  backgroundColor: _tabController.index == 2 ? Colors.blueAccent : Colors.green,
+                  label: Text(_tabController.index == 2 ? "Create Template" : "Create Special"),
+                  icon: Icon(_tabController.index == 2 ? Icons.post_add : Icons.add),
                 ),
           body: specialsAsync.when(
             data: (specials) {

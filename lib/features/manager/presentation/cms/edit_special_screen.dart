@@ -9,8 +9,9 @@ import '../../../../services/storage_service.dart';
 class EditSpecialScreen extends ConsumerStatefulWidget {
   final String hallId;
   final SpecialModel? special; // If null, create mode
+  final bool createTemplateMode; // Default false
 
-  const EditSpecialScreen({super.key, required this.hallId, this.special});
+  const EditSpecialScreen({super.key, required this.hallId, this.special, this.createTemplateMode = false});
 
   @override
   ConsumerState<EditSpecialScreen> createState() => _EditSpecialScreenState();
@@ -31,7 +32,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
 
   List<String> _selectedTags = ['Specials'];
   String _recurrence = 'none'; // none, daily, weekly, monthly
-  bool _isTemplate = false;
+  // bool _isTemplate = false; // Removed unused field
   
   // Notification Logic
   bool _sendNotification = false;
@@ -56,7 +57,10 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
       _hasEndTime = _endTime != null;
       _selectedTags = List.from(widget.special!.tags);
       _recurrence = widget.special?.recurrence ?? 'none';
-      _isTemplate = widget.special?.isTemplate ?? false;
+      // _isTemplate = widget.special?.isTemplate ?? false; // Removed unused
+    } else {
+      // New Creation
+      // _isTemplate = widget.createTemplateMode; // Removed unused
     }
   }
 
@@ -248,13 +252,83 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     }
   }
 
-  Future<void> _save() async {
+  void _showPublishOptions() {
     if (!_formKey.currentState!.validate()) return;
     if (_imageUrl == null) {
        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an image.')));
        return;
     }
 
+    // Determine Context
+    final isNew = widget.special == null || widget.special!.id.isEmpty;
+    final isEditingTemplate = !isNew && (widget.special?.isTemplate ?? false);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF222222),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text("Publish Options", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+            
+            // OPTION 1: Post Live (Not available if strictly creating a template)
+            if (!widget.createTemplateMode)
+            ListTile(
+              leading: const Icon(Icons.send, color: Colors.greenAccent),
+              title: Text(isEditingTemplate ? "Post Live (Copy)" : "Post Live", style: const TextStyle(color: Colors.white)),
+              subtitle: const Text("Visible to everyone immediately.", style: TextStyle(color: Colors.white54, fontSize: 12)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _save(isTemplate: false, createCopy: isEditingTemplate); 
+              },
+            ),
+
+            // OPTION 2: Save as Template (Always available for new, or maintenance)
+            if (isNew || isEditingTemplate || widget.createTemplateMode)
+            ListTile(
+              leading: const Icon(Icons.copy, color: Colors.blueAccent),
+              title: Text(isEditingTemplate ? "Save Changes" : "Save as Template", style: const TextStyle(color: Colors.white)),
+              subtitle: const Text("Save for future use. Hidden from feed.", style: TextStyle(color: Colors.white54, fontSize: 12)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _save(isTemplate: true, createCopy: false);
+              },
+            ),
+
+            // OPTION 3: Post AND Save Template (Only for new specials)
+            if (isNew && !widget.createTemplateMode)
+            ListTile(
+              leading: const Icon(Icons.library_add_check, color: Colors.amber),
+              title: const Text("Post to Feed & Save Logic", style: TextStyle(color: Colors.white)),
+              subtitle: const Text("Goes live AND saves a template copy.", style: TextStyle(color: Colors.white54, fontSize: 12)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _save(isTemplate: false, createCopy: false, alsoSaveTemplate: true);
+              },
+            ),
+             
+            // Editing Live Special
+            if (!isNew && !isEditingTemplate)
+             ListTile(
+              leading: const Icon(Icons.save, color: Colors.blueAccent),
+              title: const Text("Save Changes", style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _save(isTemplate: false, createCopy: false);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _save({required bool isTemplate, required bool createCopy, bool alsoSaveTemplate = false}) async {
     setState(() => _isSaving = true);
 
     try {
@@ -263,27 +337,36 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
           ? _endTime! 
           : DateTime(_startTime.year, _startTime.month, _startTime.day, 23, 59, 59);
 
-      final newSpecial = SpecialModel(
-        id: widget.special?.id ?? '', // ID handled by repo if empty, or reused if editing
+      final baseSpecial = SpecialModel(
+        id: createCopy ? '' : (widget.special?.id ?? ''), 
         hallId: widget.hallId,
-        hallName: '', // Logic in repo/server usually
+        hallName: '', 
         title: _titleCtrl.text.trim(),
         description: _descCtrl.text.trim(),
         imageUrl: _imageUrl!,
-        postedAt: widget.special?.postedAt ?? DateTime.now(),
+        postedAt: DateTime.now(), // Always fresh post time if new/copy
         startTime: _startTime,
         endTime: endTime,
         tags: _selectedTags,
         recurrence: _recurrence,
-        isTemplate: _isTemplate,
+        isTemplate: isTemplate,
       );
 
-      if (widget.special == null || widget.special!.id.isEmpty) {
+      // 1. Main Action
+      if (baseSpecial.id.isEmpty) {
         // Create
-        await ref.read(hallRepositoryProvider).addSpecial(newSpecial, sendNotification: _sendNotification);
+        await ref.read(hallRepositoryProvider).addSpecial(baseSpecial, sendNotification: _sendNotification && !isTemplate);
       } else {
         // Update
-        await ref.read(hallRepositoryProvider).updateSpecial(newSpecial, sendNotification: _sendNotification);
+        // Preserve postedAt if updating
+        final updated = baseSpecial.copyWith(postedAt: widget.special?.postedAt ?? DateTime.now());
+        await ref.read(hallRepositoryProvider).updateSpecial(updated, sendNotification: false);
+      }
+
+      // 2. Dual Creation (Post & Save Template)
+      if (alsoSaveTemplate) {
+        final templateCopy = baseSpecial.copyWith(id: '', isTemplate: true);
+        await ref.read(hallRepositoryProvider).addSpecial(templateCopy, sendNotification: false);
       }
 
       if (mounted) Navigator.pop(context);
@@ -340,8 +423,8 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
             const Center(child: Padding(padding: EdgeInsets.only(right: 16), child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
           else
             TextButton(
-              onPressed: _save, 
-              child: const Text("SAVE", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold))
+              onPressed: _showPublishOptions, 
+              child: const Text("PUBLISH", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold))
             ),
         ],
       ),
@@ -554,7 +637,8 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
 
               const SizedBox(height: 24),
               
-              // Template Checkbox
+              // Template Checkbox REMOVED (Handled by Publish Dialog)
+              /*
               Container(
                  decoration: BoxDecoration(
                    color: _isTemplate ? Colors.blue.withValues(alpha: 0.1) : Colors.transparent,
@@ -573,8 +657,8 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                     secondary: Icon(Icons.copy, color: _isTemplate ? Colors.blueAccent : Colors.white54),
                  ),
               ),
-
               const SizedBox(height: 24),
+              */
 
               // Tags
               _label("Tags"),
