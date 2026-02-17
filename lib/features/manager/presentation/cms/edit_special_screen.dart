@@ -31,7 +31,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
   bool _hasEndTime = false;
 
   List<String> _selectedTags = ['Specials'];
-  List<String> _selectedTags = ['Specials'];
+
   // String _recurrence = 'none'; // Deprecated
   RecurrenceRule _recurrenceRule = const RecurrenceRule(frequency: 'none');
   

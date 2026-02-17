@@ -310,7 +310,7 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen> wit
                   : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                       if (isArchived || isTemplate)
+                       if (isArchived)
                         IconButton(
                           icon: const Icon(Icons.copy, color: Colors.greenAccent),
                           tooltip: "Use as Copy",

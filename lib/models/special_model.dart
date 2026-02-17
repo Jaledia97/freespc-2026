@@ -28,7 +28,7 @@ abstract class SpecialModel with _$SpecialModel {
 }
 
 @freezed
-class RecurrenceRule with _$RecurrenceRule {
+abstract class RecurrenceRule with _$RecurrenceRule {
   const factory RecurrenceRule({
     required String frequency, // daily, weekly, monthly, yearly
     @Default(1) int interval,
@@ -40,3 +40,5 @@ class RecurrenceRule with _$RecurrenceRule {
 
   factory RecurrenceRule.fromJson(Map<String, Object?> json) => _$RecurrenceRuleFromJson(json);
 }
+
+
