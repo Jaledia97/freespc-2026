@@ -13,6 +13,13 @@ All notable changes to the FreeSPC project will be documented in this file.
     - **Publish Workflow**: Replaced "Save" with a robust **"Publish"** menu offering "Post Live", "Save as Template", and "Post & Save Template" options.
     - **Copy Logic**: Removed "Copy of" prefix for templates; copies are now created cleanly.
 
+## [Unreleased] - Phase 30: Advanced Recurrence
+### Added
+- **RecurrenceRule**: Added robust recurrence model (frequency, interval, daysOfWeek, endCondition).
+- **Schedule UI**: Collapsible "Schedule & Recurrence" section in `EditSpecialScreen`.
+- **Custom Recurrence**: Modal support for "Every 2 weeks", specific days, and end dates.
+- **HallRepository**: Advanced projection logic for custom recurrences.
+
 ## [0.0.1+27] - 2026-02-12 - Patch: Timezone Logic
 
 ### Fixed

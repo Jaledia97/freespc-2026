@@ -27,6 +27,11 @@ _SpecialModel _$SpecialModelFromJson(Map<String, dynamic> json) =>
           (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
           const [],
       recurrence: json['recurrence'] as String? ?? 'none',
+      recurrenceRule: json['recurrenceRule'] == null
+          ? null
+          : RecurrenceRule.fromJson(
+              json['recurrenceRule'] as Map<String, dynamic>,
+            ),
       isTemplate: json['isTemplate'] as bool? ?? false,
       archivedAt: json['archivedAt'] == null
           ? null
@@ -48,6 +53,33 @@ Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
       'longitude': instance.longitude,
       'tags': instance.tags,
       'recurrence': instance.recurrence,
+      'recurrenceRule': instance.recurrenceRule,
       'isTemplate': instance.isTemplate,
       'archivedAt': instance.archivedAt?.toIso8601String(),
+    };
+
+_RecurrenceRule _$RecurrenceRuleFromJson(Map<String, dynamic> json) =>
+    _RecurrenceRule(
+      frequency: json['frequency'] as String,
+      interval: (json['interval'] as num?)?.toInt() ?? 1,
+      daysOfWeek:
+          (json['daysOfWeek'] as List<dynamic>?)
+              ?.map((e) => (e as num).toInt())
+              .toList() ??
+          const [],
+      endCondition: json['endCondition'] as String? ?? 'never',
+      endDate: json['endDate'] == null
+          ? null
+          : DateTime.parse(json['endDate'] as String),
+      occurrenceCount: (json['occurrenceCount'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$RecurrenceRuleToJson(_RecurrenceRule instance) =>
+    <String, dynamic>{
+      'frequency': instance.frequency,
+      'interval': instance.interval,
+      'daysOfWeek': instance.daysOfWeek,
+      'endCondition': instance.endCondition,
+      'endDate': instance.endDate?.toIso8601String(),
+      'occurrenceCount': instance.occurrenceCount,
     };

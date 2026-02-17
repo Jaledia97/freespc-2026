@@ -139,69 +139,120 @@ class HallRepository {
       if (s.startTime == null) continue;
 
       final originalStart = s.startTime!;
-      // FIX: Convert to Local to get the correct "Wall Clock" hour/minute as intended by the user.
-      // Firestore stores as UTC. If we use UTC hour (e.g. 00:00 for 7pm EST), we project to 00:00 Today, which is wrong.
-      final localStart = originalStart.toLocal();
-      
-      final originalEnd = s.endTime ?? originalStart.add(const Duration(hours: 4)); 
+      final localStart = originalStart.toLocal(); // Wall Clock Time
+      final originalEnd = s.endTime ?? originalStart.add(const Duration(hours: 4));
       final duration = originalEnd.difference(originalStart);
       
-      DateTime activeStart = localStart; // Default to local version logic
-      // Note: We don't really use 'activeStart' except as a base for candidates.
-      
-      // Calculate Candidate base using LOCAL time components
-      DateTime createCandidate(DateTime base, int addedDays) {
-         return DateTime(base.year, base.month, base.day, localStart.hour, localStart.minute).add(Duration(days: addedDays));
-      }
-      DateTime activeEnd = originalEnd;
-      
-      // If the original instance is already past, find the NEXT instance relative to NOW
-      if (activeEnd.isBefore(now)) {
-        if (s.recurrence == 'daily') {
-          // Project to today with same time
-          var candidate = createCandidate(now, 0);
-          // If that candidate is already over (or started?), move to tomorrow?
-          // Let's say we want to show it if it ends in future.
-          var candidateEnd = candidate.add(duration);
-          
-          if (candidateEnd.isBefore(now)) {
-             candidate = candidate.add(const Duration(days: 1));
-          }
-          activeStart = candidate;
-        } else if (s.recurrence == 'weekly') {
-           // Find offset to next weekday
-           // use localStart.weekday to ensure it matches the user's intended day
-           int daysToAdd = (localStart.weekday - now.weekday + 7) % 7;
-           var candidate = createCandidate(now, daysToAdd);
-           var candidateEnd = candidate.add(duration);
-           
-           if (candidateEnd.isBefore(now)) {
-              candidate = candidate.add(const Duration(days: 7));
-           }
-           activeStart = candidate;
-        } else if (s.recurrence == 'monthly') {
-           // Try this month
-           var candidate = DateTime(now.year, now.month, localStart.day, localStart.hour, localStart.minute);
-           var candidateEnd = candidate.add(duration);
-           
-           if (candidateEnd.isBefore(now)) {
-              // Move to next month
-              // Handle Dec -> Jan wrap automatically by DateTime
-              candidate = DateTime(now.year, now.month + 1, localStart.day, localStart.hour, localStart.minute);
-           }
-           activeStart = candidate;
-        }
-        
-        activeEnd = activeStart.add(duration);
-        
-        // Use the projected times
-        output.add(s.copyWith(
-          startTime: activeStart,
-          endTime: activeEnd,
-        ));
+      // Determine Rule
+      RecurrenceRule rule;
+      if (s.recurrenceRule != null) {
+        rule = s.recurrenceRule!;
       } else {
-        // Original instance is still valid
-        output.add(s);
+        // Legacy Conversion
+        String freq = 'daily';
+        if (s.recurrence == 'weekly') freq = 'weekly';
+        if (s.recurrence == 'monthly') freq = 'monthly';
+        rule = RecurrenceRule(frequency: freq, interval: 1);
+      }
+
+      // Projection Logic
+      // We want to find the NEXT occurrence relative to NOW.
+      // If the original event is in the future, show it.
+      // If it's in the past, project forward based on rule.
+
+      DateTime candidateStart = DateTime(
+        localStart.year, 
+        localStart.month, 
+        localStart.day, 
+        localStart.hour, 
+        localStart.minute
+      );
+
+      // Safety break: Don't loop forever
+      int safety = 0;
+      bool found = false;
+      
+      // Check End Conditions
+      bool isEnded(DateTime checkDate, int count) {
+        if (rule.endCondition == 'date' && rule.endDate != null) {
+          return checkDate.isAfter(rule.endDate!);
+        }
+        if (rule.endCondition == 'count' && rule.occurrenceCount != null) {
+          return count >= rule.occurrenceCount!;
+        }
+        return false;
+      }
+
+      // If original is valid (future or active), use it first
+      final candidateEnd = candidateStart.add(duration);
+      if (candidateEnd.isAfter(now)) {
+        // It's valid!
+        // But check if it matches "Days of Week" restriction if weekly
+        if (rule.frequency == 'weekly' && rule.daysOfWeek.isNotEmpty) {
+           if (rule.daysOfWeek.contains(candidateStart.weekday)) {
+             output.add(s);
+             found = true;
+           }
+        } else {
+           output.add(s);
+           found = true;
+        }
+      }
+
+      // If not recently found/valid, or we want next occurrence:
+      if (!found) {
+        // Iterate forward until we find a future occurrence or hit end condition
+        // Start from original
+        DateTime current = candidateStart;
+        int occurrences = 1; // Count original as 1
+
+        while (safety < 500) { // scan limit
+          safety++;
+          
+          // Advance based on frequency & interval
+          if (rule.frequency == 'daily') {
+            current = current.add(Duration(days: rule.interval));
+          } else if (rule.frequency == 'weekly') {
+             // If we have specific days, we stay in same week until exhausted, then jump interval
+             if (rule.daysOfWeek.isNotEmpty) {
+               // Move to next day in list
+               // This is complex. Simpler approach: Iterate days one by one, check if day matches list AND week matches interval
+               // Optimization: Just jump days?
+               // Let's stick to standard intervals for now.
+               // Support "Every 2 weeks on Mon/Wed"
+               // We need to find the next valid day.
+               
+               // Brute force day by day? efficient enough for near term.
+               current = current.add(const Duration(days: 1));
+               
+               // Check if this day is in allowed list
+               if (!rule.daysOfWeek.contains(current.weekday)) continue;
+
+               // Check interval (weeks since start)
+               final daysDiff = current.difference(candidateStart).inDays;
+               final weeksDiff = (daysDiff / 7).floor();
+               if (weeksDiff % rule.interval != 0) continue;
+
+             } else {
+               // Simple weekly
+               current = current.add(Duration(days: 7 * rule.interval));
+             }
+          } else if (rule.frequency == 'monthly') {
+            current = DateTime(current.year, current.month + rule.interval, current.day, current.hour, current.minute);
+          } else if (rule.frequency == 'yearly') {
+             current = DateTime(current.year + rule.interval, current.month, current.day, current.hour, current.minute);
+          }
+
+          if (isEnded(current, occurrences)) break;
+          occurrences++;
+
+          final end = current.add(duration);
+          if (end.isAfter(now)) {
+             output.add(s.copyWith(startTime: current, endTime: end));
+             found = true;
+             break; // Found the next one
+          }
+        }
       }
     }
 
@@ -595,7 +646,7 @@ class HallRepository {
     print(doc.data());
     if (doc.data() != null && doc.data()!.containsKey('geo')) {
       print("DEBUG: 'geo' field type: ${doc.data()!['geo'].runtimeType}");
-      print("DEBUG: 'geo' content: ${doc.data()!['geo']}");
+      print("DEBUG: Hall $hallId has \${projected.length} items to show.");
     } else {
       print("DEBUG: No 'geo' field found!");
     }

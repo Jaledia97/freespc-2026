@@ -18,10 +18,25 @@ abstract class SpecialModel with _$SpecialModel {
     double? latitude,
     double? longitude,
     @Default([]) List<String> tags,
-    @Default('none') String recurrence, // none, daily, weekly, monthly
+    @Default('none') String recurrence, // Deprecated, use recurrenceRule
+    RecurrenceRule? recurrenceRule,
     @Default(false) bool isTemplate,
     DateTime? archivedAt,
   }) = _SpecialModel;
 
   factory SpecialModel.fromJson(Map<String, Object?> json) => _$SpecialModelFromJson(json);
+}
+
+@freezed
+class RecurrenceRule with _$RecurrenceRule {
+  const factory RecurrenceRule({
+    required String frequency, // daily, weekly, monthly, yearly
+    @Default(1) int interval,
+    @Default([]) List<int> daysOfWeek, // 1=Mon, 7=Sun
+    @Default('never') String endCondition, // never, date, count
+    DateTime? endDate,
+    int? occurrenceCount,
+  }) = _RecurrenceRule;
+
+  factory RecurrenceRule.fromJson(Map<String, Object?> json) => _$RecurrenceRuleFromJson(json);
 }
