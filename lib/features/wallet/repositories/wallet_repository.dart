@@ -101,60 +101,17 @@ class WalletRepository {
       batch.set(doc, m.toJson());
     }
 
-    // 2. Seed Raffle Tickets (Aligned with HallRepository.seedRaffles for 'mary-esther-bingo')
-    final tickets = [
-      RaffleTicketModel(
-        id: 'ticket-001',
-        raffleId: 'raffle-mary-esther-bingo-1', // Matches Hall Repo
-        hallId: 'mary-esther-bingo',
-        title: 'Weekly Cash Pot',
-        hallName: 'Mary Esther Bingo',
-        quantity: 5,
-        purchaseDate: DateTime.now().subtract(const Duration(days: 1)),
-        imageUrl: 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80',
-      ),
-      RaffleTicketModel(
-        id: 'ticket-002',
-        raffleId: 'raffle-mary-esther-bingo-2', // Matches Hall Repo
-        hallId: 'mary-esther-bingo',
-        title: 'Luxury Spa Day',
-        hallName: 'Mary Esther Bingo',
-        quantity: 2,
-        purchaseDate: DateTime.now().subtract(const Duration(days: 3)),
-        imageUrl: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
-      ),
-    ];
 
-    for (var t in tickets) {
-      final doc = userRef.collection('raffle_tickets').doc(t.id);
-      batch.set(doc, t.toJson());
+    // 2. Clear Raffle Tickets (Clean Slate)
+    final existingTickets = await userRef.collection('raffle_tickets').get();
+    for (var doc in existingTickets.docs) {
+      batch.delete(doc.reference);
     }
 
-    // 3. Seed Tournaments
-    final tournaments = [
-      TournamentParticipationModel(
-        id: 'tourney-001',
-        tournamentId: 't-weekly',
-        title: 'Weekly High Rollers',
-        hallName: 'Mary Esther Bingo',
-        currentPlacement: '3rd',
-        status: 'Active',
-        lastUpdated: DateTime.now().subtract(const Duration(hours: 2)),
-      ),
-      TournamentParticipationModel(
-        id: 'tourney-002',
-        tournamentId: 't-slots',
-        title: 'Slot Mania',
-        hallName: 'Beachside Bingo',
-        currentPlacement: 'Qualifying',
-        status: 'Pending',
-        lastUpdated: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-    ];
-
-    for (var t in tournaments) {
-      final doc = userRef.collection('tournaments').doc(t.id);
-      batch.set(doc, t.toJson());
+    // 3. Clear Tournaments (Clean Slate)
+    final existingTournaments = await userRef.collection('tournaments').get();
+    for (var doc in existingTournaments.docs) {
+      batch.delete(doc.reference);
     }
 
     await batch.commit();

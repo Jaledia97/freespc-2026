@@ -21,6 +21,12 @@ class RoleUtils {
   // Hall-Level Permissions
   // Note: App-level admins usually have implicit access to all halls for support purposes.
   
+  static bool canManageHall(UserModel user, String hallId) {
+    if (isSuperAdmin(user)) return true;
+    if ([owner, manager].contains(user.role) && user.homeBaseId == hallId) return true;
+    return false;
+  }
+
   static bool canManageFinancials(UserModel user, String hallId) {
     if (isSuperAdmin(user)) return true;
     if (user.role == owner && user.homeBaseId == hallId) return true;

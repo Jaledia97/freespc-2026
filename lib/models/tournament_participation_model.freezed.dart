@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TournamentParticipationModel {
 
- String get id; String get tournamentId; String get title; String get hallName; String get currentPlacement;// e.g. "1st", "Eliminated", "Qualifying"
+ String get id; String get tournamentId; String get title; String get hallId;// Added field
+ String get hallName;// Kept for fallback
+ String get currentPlacement;// e.g. "1st", "Eliminated", "Qualifying"
  String get status;// Active, Completed, Pending
  DateTime get lastUpdated;
 /// Create a copy of TournamentParticipationModel
@@ -30,16 +32,16 @@ $TournamentParticipationModelCopyWith<TournamentParticipationModel> get copyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TournamentParticipationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.title, title) || other.title == title)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.currentPlacement, currentPlacement) || other.currentPlacement == currentPlacement)&&(identical(other.status, status) || other.status == status)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TournamentParticipationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.title, title) || other.title == title)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.currentPlacement, currentPlacement) || other.currentPlacement == currentPlacement)&&(identical(other.status, status) || other.status == status)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tournamentId,title,hallName,currentPlacement,status,lastUpdated);
+int get hashCode => Object.hash(runtimeType,id,tournamentId,title,hallId,hallName,currentPlacement,status,lastUpdated);
 
 @override
 String toString() {
-  return 'TournamentParticipationModel(id: $id, tournamentId: $tournamentId, title: $title, hallName: $hallName, currentPlacement: $currentPlacement, status: $status, lastUpdated: $lastUpdated)';
+  return 'TournamentParticipationModel(id: $id, tournamentId: $tournamentId, title: $title, hallId: $hallId, hallName: $hallName, currentPlacement: $currentPlacement, status: $status, lastUpdated: $lastUpdated)';
 }
 
 
@@ -50,7 +52,7 @@ abstract mixin class $TournamentParticipationModelCopyWith<$Res>  {
   factory $TournamentParticipationModelCopyWith(TournamentParticipationModel value, $Res Function(TournamentParticipationModel) _then) = _$TournamentParticipationModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String tournamentId, String title, String hallName, String currentPlacement, String status, DateTime lastUpdated
+ String id, String tournamentId, String title, String hallId, String hallName, String currentPlacement, String status, DateTime lastUpdated
 });
 
 
@@ -67,11 +69,12 @@ class _$TournamentParticipationModelCopyWithImpl<$Res>
 
 /// Create a copy of TournamentParticipationModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tournamentId = null,Object? title = null,Object? hallName = null,Object? currentPlacement = null,Object? status = null,Object? lastUpdated = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tournamentId = null,Object? title = null,Object? hallId = null,Object? hallName = null,Object? currentPlacement = null,Object? status = null,Object? lastUpdated = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tournamentId: null == tournamentId ? _self.tournamentId : tournamentId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+as String,hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
 as String,hallName: null == hallName ? _self.hallName : hallName // ignore: cast_nullable_to_non_nullable
 as String,currentPlacement: null == currentPlacement ? _self.currentPlacement : currentPlacement // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
@@ -161,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String tournamentId,  String title,  String hallName,  String currentPlacement,  String status,  DateTime lastUpdated)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String tournamentId,  String title,  String hallId,  String hallName,  String currentPlacement,  String status,  DateTime lastUpdated)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TournamentParticipationModel() when $default != null:
-return $default(_that.id,_that.tournamentId,_that.title,_that.hallName,_that.currentPlacement,_that.status,_that.lastUpdated);case _:
+return $default(_that.id,_that.tournamentId,_that.title,_that.hallId,_that.hallName,_that.currentPlacement,_that.status,_that.lastUpdated);case _:
   return orElse();
 
 }
@@ -182,10 +185,10 @@ return $default(_that.id,_that.tournamentId,_that.title,_that.hallName,_that.cur
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String tournamentId,  String title,  String hallName,  String currentPlacement,  String status,  DateTime lastUpdated)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String tournamentId,  String title,  String hallId,  String hallName,  String currentPlacement,  String status,  DateTime lastUpdated)  $default,) {final _that = this;
 switch (_that) {
 case _TournamentParticipationModel():
-return $default(_that.id,_that.tournamentId,_that.title,_that.hallName,_that.currentPlacement,_that.status,_that.lastUpdated);case _:
+return $default(_that.id,_that.tournamentId,_that.title,_that.hallId,_that.hallName,_that.currentPlacement,_that.status,_that.lastUpdated);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +205,10 @@ return $default(_that.id,_that.tournamentId,_that.title,_that.hallName,_that.cur
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String tournamentId,  String title,  String hallName,  String currentPlacement,  String status,  DateTime lastUpdated)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String tournamentId,  String title,  String hallId,  String hallName,  String currentPlacement,  String status,  DateTime lastUpdated)?  $default,) {final _that = this;
 switch (_that) {
 case _TournamentParticipationModel() when $default != null:
-return $default(_that.id,_that.tournamentId,_that.title,_that.hallName,_that.currentPlacement,_that.status,_that.lastUpdated);case _:
+return $default(_that.id,_that.tournamentId,_that.title,_that.hallId,_that.hallName,_that.currentPlacement,_that.status,_that.lastUpdated);case _:
   return null;
 
 }
@@ -217,13 +220,16 @@ return $default(_that.id,_that.tournamentId,_that.title,_that.hallName,_that.cur
 @JsonSerializable()
 
 class _TournamentParticipationModel implements TournamentParticipationModel {
-  const _TournamentParticipationModel({required this.id, required this.tournamentId, required this.title, required this.hallName, required this.currentPlacement, required this.status, required this.lastUpdated});
+  const _TournamentParticipationModel({required this.id, required this.tournamentId, required this.title, required this.hallId, required this.hallName, required this.currentPlacement, required this.status, required this.lastUpdated});
   factory _TournamentParticipationModel.fromJson(Map<String, dynamic> json) => _$TournamentParticipationModelFromJson(json);
 
 @override final  String id;
 @override final  String tournamentId;
 @override final  String title;
+@override final  String hallId;
+// Added field
 @override final  String hallName;
+// Kept for fallback
 @override final  String currentPlacement;
 // e.g. "1st", "Eliminated", "Qualifying"
 @override final  String status;
@@ -243,16 +249,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TournamentParticipationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.title, title) || other.title == title)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.currentPlacement, currentPlacement) || other.currentPlacement == currentPlacement)&&(identical(other.status, status) || other.status == status)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TournamentParticipationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.title, title) || other.title == title)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.currentPlacement, currentPlacement) || other.currentPlacement == currentPlacement)&&(identical(other.status, status) || other.status == status)&&(identical(other.lastUpdated, lastUpdated) || other.lastUpdated == lastUpdated));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tournamentId,title,hallName,currentPlacement,status,lastUpdated);
+int get hashCode => Object.hash(runtimeType,id,tournamentId,title,hallId,hallName,currentPlacement,status,lastUpdated);
 
 @override
 String toString() {
-  return 'TournamentParticipationModel(id: $id, tournamentId: $tournamentId, title: $title, hallName: $hallName, currentPlacement: $currentPlacement, status: $status, lastUpdated: $lastUpdated)';
+  return 'TournamentParticipationModel(id: $id, tournamentId: $tournamentId, title: $title, hallId: $hallId, hallName: $hallName, currentPlacement: $currentPlacement, status: $status, lastUpdated: $lastUpdated)';
 }
 
 
@@ -263,7 +269,7 @@ abstract mixin class _$TournamentParticipationModelCopyWith<$Res> implements $To
   factory _$TournamentParticipationModelCopyWith(_TournamentParticipationModel value, $Res Function(_TournamentParticipationModel) _then) = __$TournamentParticipationModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String tournamentId, String title, String hallName, String currentPlacement, String status, DateTime lastUpdated
+ String id, String tournamentId, String title, String hallId, String hallName, String currentPlacement, String status, DateTime lastUpdated
 });
 
 
@@ -280,11 +286,12 @@ class __$TournamentParticipationModelCopyWithImpl<$Res>
 
 /// Create a copy of TournamentParticipationModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tournamentId = null,Object? title = null,Object? hallName = null,Object? currentPlacement = null,Object? status = null,Object? lastUpdated = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tournamentId = null,Object? title = null,Object? hallId = null,Object? hallName = null,Object? currentPlacement = null,Object? status = null,Object? lastUpdated = null,}) {
   return _then(_TournamentParticipationModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tournamentId: null == tournamentId ? _self.tournamentId : tournamentId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+as String,hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
 as String,hallName: null == hallName ? _self.hallName : hallName // ignore: cast_nullable_to_non_nullable
 as String,currentPlacement: null == currentPlacement ? _self.currentPlacement : currentPlacement // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable

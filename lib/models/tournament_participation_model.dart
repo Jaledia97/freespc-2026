@@ -10,7 +10,8 @@ abstract class TournamentParticipationModel with _$TournamentParticipationModel 
     required String id,
     required String tournamentId,
     required String title,
-    required String hallName,
+    required String hallId, // Added field
+    required String hallName, // Kept for fallback
     required String currentPlacement, // e.g. "1st", "Eliminated", "Qualifying"
     required String status, // Active, Completed, Pending
     required DateTime lastUpdated,

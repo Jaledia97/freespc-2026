@@ -640,6 +640,12 @@ class HallRepository {
 
 
 
+  Future<void> promoteToSuperAdmin(String userId) async {
+    await _firestore.collection('users').doc(userId).update({
+      'role': 'superadmin',
+    });
+  }
+
   Future<void> checkHallData(String hallId) async {
     final doc = await _firestore.collection('bingo_halls').doc(hallId).get();
     print("DEBUG: Raw Hall Data for $hallId:");

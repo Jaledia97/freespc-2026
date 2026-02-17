@@ -9,12 +9,11 @@ import '../../my_halls/presentation/my_halls_screen.dart';
 import '../../manager/presentation/pin_entry_screen.dart';
 import '../../settings/presentation/display_settings_screen.dart';
 import 'my_photos_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/auth_service.dart';
-import '../../home/repositories/hall_repository.dart';
-import '../../wallet/repositories/wallet_repository.dart';
 import '../../../core/utils/role_utils.dart'; // Import RoleUtils
+import '../../wallet/presentation/my_raffles_screen.dart'; // Import MyRafflesScreen
+
+class ProfileScreen extends ConsumerWidget {
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -134,7 +133,7 @@ import '../../../core/utils/role_utils.dart'; // Import RoleUtils
                         "Raffles", 
                         Icons.local_activity, 
                         Colors.orange,
-                        () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Raffles coming soon (Phase 20)"))),
+                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRafflesScreen())),
                       ),
                     ],
                   ),
@@ -255,6 +254,17 @@ import '../../../core/utils/role_utils.dart'; // Import RoleUtils
                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wallet Data Seeded!')));
                            } catch (e) {
                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                           }
+                        },
+                      ),
+                      ListTile(
+                        title: const Text('ADMIN: Promote to Super Admin', style: TextStyle(color: Colors.purpleAccent)),
+                        subtitle: const Text('Grants full access without resetting data'),
+                        trailing: const Icon(Icons.security, color: Colors.white54),
+                        onTap: () async {
+                           await ref.read(hallRepositoryProvider).promoteToSuperAdmin(user.uid);
+                           if (context.mounted) {
+                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You are now a Super Admin!')));
                            }
                         },
                       ),

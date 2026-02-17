@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'my_raffles_screen.dart'; // Import MyRafflesScreen
+import 'widgets/raffle_ticket_item.dart'; // Import RaffleTicketItem
 import '../../../services/auth_service.dart';
 import '../../wallet/repositories/wallet_repository.dart';
 import '../../../models/hall_membership_model.dart';
@@ -49,7 +51,10 @@ class WalletScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text("My Raffles", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-                      TextButton(onPressed: (){}, child: const Text("See All", style: TextStyle(color: Colors.amber))),
+                      TextButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRafflesScreen())),
+                        child: const Text("See All", style: TextStyle(color: Colors.amber)),
+                      ),
                     ],
                   ),
                 ),
@@ -115,7 +120,7 @@ class _HallCardsParams extends ConsumerWidget {
           controller: PageController(viewportFraction: 0.9),
           itemCount: memberships.length,
           itemBuilder: (context, index) {
-            return _buildHallCard(memberships[index]);
+            return HallMembershipCard(membership: memberships[index]);
           },
         );
       },
@@ -123,82 +128,105 @@ class _HallCardsParams extends ConsumerWidget {
       error: (e, s) => Center(child: Text("Error loading cards: $e")),
     );
   }
+}
 
-  Widget _buildHallCard(HallMembershipModel membership) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-         borderRadius: BorderRadius.circular(24),
-         image: membership.bannerUrl != null 
-             ? DecorationImage(
-                 image: NetworkImage(membership.bannerUrl!), 
-                 fit: BoxFit.cover,
-                 colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.darken),
-               )
-             : null,
-         gradient: membership.bannerUrl == null ? const LinearGradient(
-           colors: [Color(0xFF2C3E50), Color(0xFF000000)],
-           begin: Alignment.topLeft,
-           end: Alignment.bottomRight,
-         ) : null,
-         boxShadow: [
-           BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10, offset: const Offset(0,5)),
-         ]
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
+class HallMembershipCard extends ConsumerWidget {
+  final HallMembershipModel membership;
+  const HallMembershipCard({super.key, required this.membership});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 1. Listen to LIVE Hall Data
+    final hallAsync = ref.watch(hallStreamProvider(membership.hallId));
+
+    return hallAsync.when(
+      data: (hall) {
+        // Use Live Data if available, else fallback to Membership snapshot
+        final hallName = hall?.name ?? membership.hallName;
+        final bannerUrl = hall?.bannerUrl ?? membership.bannerUrl;
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+             borderRadius: BorderRadius.circular(24),
+             image: bannerUrl != null 
+                 ? DecorationImage(
+                     image: NetworkImage(bannerUrl), 
+                     fit: BoxFit.cover,
+                     colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.darken),
+                   )
+                 : null,
+             gradient: bannerUrl == null ? const LinearGradient(
+               colors: [Color(0xFF2C3E50), Color(0xFF000000)],
+               begin: Alignment.topLeft,
+               end: Alignment.bottomRight,
+             ) : null,
+             boxShadow: [
+               BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10, offset: const Offset(0,5)),
+             ]
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Hall Name
-              Expanded(
-                child: Text(
-                  membership.hallName,
-                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                  maxLines: 1, overflow: TextOverflow.ellipsis,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Hall Name (Live)
+                  Expanded(
+                    child: Text(
+                      hallName,
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  // Tier Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.amber.withOpacity(0.5)),
+                    ),
+                    child: Text(membership.tier, style: const TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold)),
+                  ),
+                ],
               ),
-              // Tier Badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.amber.withOpacity(0.5)),
-                ),
-                child: Text(membership.tier, style: const TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold)),
+
+              // Balance
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    NumberFormat.decimalPattern().format(membership.balance),
+                    style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.w900, letterSpacing: -1),
+                  ),
+                  Text(
+                    membership.currencyName.toUpperCase(),
+                    style: const TextStyle(color: Colors.white54, fontSize: 14, letterSpacing: 1.5),
+                  ),
+                ],
+              ),
+
+              // Footer
+              Row(
+                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                 children: [
+                   const Text("Member ID: **** 9382", style: TextStyle(color: Colors.white38, fontSize: 12)),
+                   Icon(Icons.nfc, color: Colors.white.withOpacity(0.3), size: 32),
+                 ],
               ),
             ],
           ),
-
-          // Balance
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                NumberFormat.decimalPattern().format(membership.balance),
-                style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.w900, letterSpacing: -1),
-              ),
-              Text(
-                membership.currencyName.toUpperCase(),
-                style: const TextStyle(color: Colors.white54, fontSize: 14, letterSpacing: 1.5),
-              ),
-            ],
-          ),
-
-          // Footer
-          Row(
-             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-             children: [
-               const Text("Member ID: **** 9382", style: TextStyle(color: Colors.white38, fontSize: 12)),
-               Icon(Icons.nfc, color: Colors.white.withOpacity(0.3), size: 32),
-             ],
-          ),
-        ],
+        );
+      },
+      loading: () => Container(
+         margin: const EdgeInsets.symmetric(horizontal: 8),
+         decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(24)),
+         child: const Center(child: CircularProgressIndicator()),
       ),
+      error: (_,__) => const SizedBox(), // Minimal fallback
     );
   }
 }
@@ -215,7 +243,7 @@ class _RafflesList extends ConsumerWidget {
     return rafflesAsync.when(
       data: (raffles) {
         if (raffles.isEmpty) {
-           return const Center(child: Text("No tickets purchased yet.", style: TextStyle(color: Colors.white38)));
+           return const Center(child: Text("No tickets collected yet.", style: TextStyle(color: Colors.white38)));
         }
 
         return ListView.builder(
@@ -223,88 +251,7 @@ class _RafflesList extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: raffles.length,
           itemBuilder: (context, index) {
-            final ticket = raffles[index];
-            return GestureDetector(
-              onTap: () async {
-                 // Navigate to Hall Profile (Raffles Tab)
-                 try {
-                   final hall = await ref.read(hallRepositoryProvider).getHallStream(ticket.hallId).first;
-                   if (hall != null && context.mounted) {
-                     Navigator.push(
-                       context, 
-                       MaterialPageRoute(
-                         builder: (_) => HallProfileScreen(hall: hall, initialTabIndex: 1) // 1 = Raffles Tab
-                       )
-                     );
-                   } else if (context.mounted) {
-                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Hall not found")));
-                   }
-                 } catch (e) {
-                   if (context.mounted) {
-                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error loading hall")));
-                   }
-                 }
-              },
-              child: Container(
-                width: 280,
-                margin: const EdgeInsets.only(right: 12),
-                child: Stack(
-                  children: [
-                    // Ticket Shape (Visual approximation)
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF252525),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white10),
-                      ),
-                      child: Row(
-                        children: [
-                          // Left Stub (Image)
-                          Container(
-                            width: 80,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[900],
-                              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
-                              image: ticket.imageUrl != null 
-                                ? DecorationImage(image: NetworkImage(ticket.imageUrl!), fit: BoxFit.cover)
-                                : null,
-                            ),
-                            child: ticket.imageUrl == null ? const Center(child: Icon(Icons.confirmation_number, color: Colors.white24)) : null,
-                          ),
-                          
-                          // Dashed Line
-                          Container(width: 1, color: Colors.white10, margin: const EdgeInsets.symmetric(horizontal: 2)),
-                          
-                          // Details
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(ticket.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                  const SizedBox(height: 4),
-                                  Text(ticket.hallName, style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                                  const Spacer(),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text("x${ticket.quantity} Tickets", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-                                      const Icon(Icons.qr_code, color: Colors.white24, size: 20),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return RaffleTicketItem(ticket: raffles[index]);
           },
         );
       },
@@ -314,6 +261,9 @@ class _RafflesList extends ConsumerWidget {
   }
 }
 
+
+
+// --- My Tournaments List ---
 // --- My Tournaments List ---
 class _TournamentsList extends ConsumerWidget {
   final String userId;
@@ -339,48 +289,68 @@ class _TournamentsList extends ConsumerWidget {
           itemCount: tournaments.length,
           separatorBuilder: (c, i) => const Divider(color: Colors.white10),
           itemBuilder: (context, index) {
-            final t = tournaments[index];
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              tileColor: const Color(0xFF1E1E1E),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              leading: Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.emoji_events, color: Colors.purple),
-              ),
-              title: Text(t.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              subtitle: Text(t.hallName, style: const TextStyle(color: Colors.white54)),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: t.status == 'Active' ? Colors.green.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      t.currentPlacement, 
-                      style: TextStyle(
-                        color: t.status == 'Active' ? Colors.green : Colors.grey, 
-                        fontWeight: FontWeight.bold, fontSize: 12
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
+            return TournamentItem(tournament: tournaments[index]);
           },
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, s) => const SizedBox(),
+    );
+  }
+}
+
+class TournamentItem extends ConsumerWidget {
+  final TournamentParticipationModel tournament;
+  const TournamentItem({super.key, required this.tournament});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Listen to LIVE Hall Data
+    final hallAsync = ref.watch(hallStreamProvider(tournament.hallId));
+
+    return hallAsync.when(
+      data: (hall) {
+        final hallName = hall?.name ?? tournament.hallName;
+
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          tileColor: const Color(0xFF1E1E1E),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          leading: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.purple.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.emoji_events, color: Colors.purple),
+          ),
+          title: Text(tournament.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          subtitle: Text(hallName, style: const TextStyle(color: Colors.white54)), // Use Live Name
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: tournament.status == 'Active' ? Colors.green.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  tournament.currentPlacement, 
+                  style: TextStyle(
+                    color: tournament.status == 'Active' ? Colors.green : Colors.grey, 
+                    fontWeight: FontWeight.bold, fontSize: 12
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      loading: () => const ListTile(title: Text("Loading...", style: TextStyle(color: Colors.white38))),
+      error: (_,__) => const SizedBox(),
     );
   }
 }

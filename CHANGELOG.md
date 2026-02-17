@@ -4,6 +4,16 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+29] - 2026-02-17 - Wallet Data Sync & Raffles (Phase 33-38)
+
+### Added
+- **My Raffles Screen**: dedicated screen to view user's collected tickets, accessible from Wallet "See All" and Profile "Raffles".
+- **Dynamic Wallet Seeding**: updated "Seed Wallet Data" to clear "ghost" data, allowing for clean manual testing.
+
+### Changed
+- **Wallet Live Data**: "My Raffles" and "Active Tournaments" cards now subscribe to live Hall streams for real-time name updates.
+- **Terminology Overhaul**: replaced all commercial terms (Buy/Purchase/Sold) with free-to-play terms (Collect/Acquire/Claimed).
+- **Compliance**: updated Raffle Tool compliance dialog to explicitly state "No payment was required".
 ## [0.0.1+28] - 2026-02-17 - Specials Workflow Refactor
 
 ### Changed

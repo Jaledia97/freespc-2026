@@ -40,7 +40,7 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
             SizedBox(height: 8),
             Text("2. You accept full liability for this event.", style: TextStyle(color: Colors.white70)),
             SizedBox(height: 8),
-            Text("3. No purchase was required for entry.", style: TextStyle(color: Colors.white70)),
+            Text("3. No payment was required for entry.", style: TextStyle(color: Colors.white70)),
           ],
         ),
         actions: [
