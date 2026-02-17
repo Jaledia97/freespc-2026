@@ -9,9 +9,12 @@ import '../../my_halls/presentation/my_halls_screen.dart';
 import '../../manager/presentation/pin_entry_screen.dart';
 import '../../settings/presentation/display_settings_screen.dart';
 import 'my_photos_screen.dart';
-
-class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key});
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../services/auth_service.dart';
+import '../../home/repositories/hall_repository.dart';
+import '../../wallet/repositories/wallet_repository.dart';
+import '../../../core/utils/role_utils.dart'; // Import RoleUtils
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,7 +45,7 @@ class ProfileScreen extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                          // Manager Mode Switch (Conditional)
-                         if (role == 'owner' || role == 'manager' || role == 'admin' || role == 'super-admin')
+                         if (user != null && RoleUtils.canAccessDashboard(user))
                            ListTile(
                              leading: const Icon(Icons.admin_panel_settings, color: Colors.blueAccent),
                              title: const Text('Switch to Manager Mode', style: TextStyle(color: Colors.blueAccent)),

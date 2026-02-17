@@ -3,15 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'manager_dashboard_screen.dart';
 
 import 'package:local_auth/local_auth.dart' as local_auth;
+import '../../../../services/auth_service.dart'; // Import AuthService
+import '../../../../core/utils/role_utils.dart'; // Import RoleUtils
 
-class PinEntryScreen extends StatefulWidget {
+class PinEntryScreen extends ConsumerStatefulWidget {
   const PinEntryScreen({super.key});
 
   @override
-  State<PinEntryScreen> createState() => _PinEntryScreenState();
+  ConsumerState<PinEntryScreen> createState() => _PinEntryScreenState();
 }
 
-class _PinEntryScreenState extends State<PinEntryScreen> {
+class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
   String _pin = "";
   final String _correctPin = "4836"; // Hardcoded Dev PIN
   
@@ -49,10 +51,7 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
       );
 
       if (authenticated && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ManagerDashboardScreen()),
-        );
+        _navigateToDashboard();
       }
     } catch (e) {
       // Ignore error, fallback to PIN
@@ -81,10 +80,7 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
   void _validatePin() {
     if (_pin == _correctPin) {
       // Success
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const ManagerDashboardScreen()),
-      );
+      _navigateToDashboard();
     } else {
       // Failure
       ScaffoldMessenger.of(context).showSnackBar(
@@ -98,6 +94,20 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
         _pin = "";
       });
     }
+  }
+
+  void _navigateToDashboard() {
+     final user = ref.read(userProfileProvider).value;
+     if (user != null && RoleUtils.canAccessDashboard(user)) {
+       Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const ManagerDashboardScreen()),
+        );
+     } else {
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Access Denied: Insufficient Permissions"), backgroundColor: Colors.red),
+       );
+     }
   }
 
   @override

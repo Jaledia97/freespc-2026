@@ -623,7 +623,7 @@ class HallRepository {
     final userRef = _firestore.collection('users').doc(userId);
     
     await userRef.update({
-      'role': 'super-admin', // Updated per user request
+      'role': 'superadmin', // Updated to Super Admin per user request
       'homeBaseId': hallId,
       'qrToken': 'meb-owner-token-${userId.substring(0, 5)}', // Semi-stable token
     });

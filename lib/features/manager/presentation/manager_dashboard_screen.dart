@@ -10,6 +10,8 @@ import '../../../../services/auth_service.dart';
 import '../../home/repositories/hall_repository.dart';
 import '../../../../models/bingo_hall_model.dart';
 
+import '../../../../core/utils/role_utils.dart';
+
 class ManagerDashboardScreen extends ConsumerWidget {
   const ManagerDashboardScreen({super.key});
 
@@ -44,7 +46,7 @@ class ManagerDashboardScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Super Admin Section
-              if (user?.role == 'super-admin') ...[
+              if (RoleUtils.isSuperAdmin(user!)) ...[
                  const Text("Super Admin Controls", style: TextStyle(color: Colors.amber, fontSize: 14, fontWeight: FontWeight.bold)),
                  const SizedBox(height: 12),
                  _buildModuleCard(
@@ -68,67 +70,68 @@ class ManagerDashboardScreen extends ConsumerWidget {
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                   children: [
+                    // HALL PROFILE (Owner/Manager/Admin)
+                    if (homeHallId != null && RoleUtils.canManageHall(user, homeHallId))
                     _buildModuleCard(
                       context,
                       title: "Hall Profile",
                       icon: Icons.storefront,
                       color: Colors.blue,
                       desc: "Edit details, logo, hours",
-                      onTap: () {
-                         if (homeHallId != null) {
-                           Navigator.push(context, MaterialPageRoute(builder: (_) => EditHallProfileScreen(hallId: homeHallId)));
-                         } else {
-                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error: No Home Hall Assigned")));
-                         }
-                      },
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditHallProfileScreen(hallId: homeHallId))),
                     ),
+
+                    // SPECIALS (Manager+)
+                    if (homeHallId != null && RoleUtils.canManageSpecials(user, homeHallId))
                     _buildModuleCard(
                       context,
                       title: "Specials",
                       icon: Icons.local_offer,
                       color: Colors.green,
                       desc: "Promote food, drink, games",
-                      onTap: () {
-                         Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageSpecialsScreen()));
-                      },
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageSpecialsScreen())),
                     ),
-                    _buildModuleCard(
-                      context,
-                      title: "Tournaments",
-                      icon: Icons.emoji_events,
-                      color: Colors.purple,
-                      desc: "Manage event calendar",
-                      onTap: () {
-                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tournament CMS coming in Phase 21")));
-                      },
-                    ),
+
+                    // FINANCIALS (Owner Only)
+                    if (homeHallId != null && RoleUtils.canManageFinancials(user, homeHallId)) ...[
+                      _buildModuleCard(
+                        context,
+                        title: "Financials",
+                        icon: Icons.attach_money,
+                        color: Colors.teal,
+                        desc: "Revenue, Payouts, Taxes",
+                        onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Financials Dashboard coming soon"))),
+                      ),
+                       _buildModuleCard(
+                        context,
+                        title: "Personnel",
+                        icon: Icons.people,
+                        color: Colors.indigo,
+                        desc: "Manage Staff & Permissions",
+                        onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Personnel Management coming soon"))),
+                      ),
+                    ],
+
+                    // RAFFLES (Manager+)
+                    if (homeHallId != null && RoleUtils.canManageGames(user, homeHallId))
                      _buildModuleCard(
                       context,
-                      title: "Manage Raffles", // Renamed for clarity
+                      title: "Manage Raffles", 
                       icon: Icons.confirmation_number,
                       color: Colors.amber,
-                      desc: "Create & Run Drawings", // Updated desc
-                      onTap: () {
-                        if (homeHallId != null) {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => ManageRafflesScreen(hallId: homeHallId)));
-                         } else {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error: No Hall Assigned")));
-                         }
-                      },
+                      desc: "Create & Run Drawings", 
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ManageRafflesScreen(hallId: homeHallId))),
                     ),
+
+                    // PHOTOS (Worker+)
+                     if (homeHallId != null && RoleUtils.canScanAndVerify(user, homeHallId))
                      _buildModuleCard(
                       context,
                       title: "Photo Approvals",
                       icon: Icons.photo_library,
                       color: Colors.teal,
                       desc: "Review tagged photos",
-                      onTap: () {
-                        if (homeHallId != null && hall != null) {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoApprovalScreen(hallId: homeHallId, hallName: hall.name)));
-                         } else {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error: No Hall Assigned")));
-                         }
-                      },
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoApprovalScreen(hallId: homeHallId, hallName: hall?.name ?? ''))),
                     ),
                   ],
                 ),
