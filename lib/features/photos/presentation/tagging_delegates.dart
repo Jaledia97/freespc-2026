@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../home/repositories/hall_repository.dart';
 import '../../../models/bingo_hall_model.dart';
-import '../../../models/user_model.dart';
+import '../../../models/public_profile.dart';
 import '../../../services/auth_service.dart';
 
 class HallSearchDelegate extends SearchDelegate<BingoHallModel?> {
@@ -61,7 +61,7 @@ class HallSearchDelegate extends SearchDelegate<BingoHallModel?> {
   }
 }
 
-class UserSearchDelegate extends SearchDelegate<UserModel?> {
+class UserSearchDelegate extends SearchDelegate<PublicProfile?> {
   final WidgetRef ref;
   
   UserSearchDelegate(this.ref);
@@ -86,7 +86,7 @@ class UserSearchDelegate extends SearchDelegate<UserModel?> {
   Widget buildResults(BuildContext context) {
      return Consumer(
       builder: (context, ref, _) {
-       return FutureBuilder<List<UserModel>>(
+       return FutureBuilder<List<PublicProfile>>(
         future: ref.read(authServiceProvider).searchUsers(query),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
@@ -100,7 +100,7 @@ class UserSearchDelegate extends SearchDelegate<UserModel?> {
               return ListTile(
                 leading: const CircleAvatar(child: Icon(Icons.person)),
                 title: Text("${user.firstName} ${user.lastName}"),
-                subtitle: Text("@${user.username ?? 'user'}"),
+                subtitle: Text("@${user.username}"),
                 onTap: () => close(context, user),
               );
             },

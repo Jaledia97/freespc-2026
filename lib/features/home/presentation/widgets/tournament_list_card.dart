@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/tournament_model.dart';
 import 'package:intl/intl.dart';
 import '../../repositories/hall_repository.dart';
@@ -24,16 +25,17 @@ class TournamentListCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image Section
-            if (tournament.imageUrl != null && tournament.imageUrl!.isNotEmpty)
+              if (tournament.imageUrl != null && tournament.imageUrl!.isNotEmpty)
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: Image.network(
-                  tournament.imageUrl!,
+                child: CachedNetworkImage(
+                  imageUrl: tournament.imageUrl!,
                   height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
+                  placeholder: (context, url) => 
+                      const SizedBox(height: 150, child: Center(child: CircularProgressIndicator())),
+                  errorWidget: (context, url, error) =>
                       const SizedBox(height: 150, child: Center(child: Icon(Icons.broken_image, color: Colors.grey))),
                 ),
               ),

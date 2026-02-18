@@ -6,7 +6,10 @@ import '../../../models/bingo_hall_model.dart';
 import '../../../models/user_model.dart'; // Import UserModel
 import '../../../models/special_model.dart';
 import '../../../models/raffle_model.dart';
+import '../../../models/raffle_model.dart';
+import 'special_projection_logic.dart'; // Isolate Logic
 import 'dart:math';
+import 'package:flutter/foundation.dart'; // For compute
 
 final hallRepositoryProvider = Provider((ref) => HallRepository(FirebaseFirestore.instance));
 
@@ -66,13 +69,13 @@ class HallRepository {
     return _firestore
         .collection('specials')
         .where('isTemplate', isEqualTo: false) // EXCLUDE TEMPLATES
-        // .orderBy('startTime', descending: false) // Removed ordering here as we re-sort after projection
+        .limit(100) // SAFETY LIMIT
         .snapshots()
-        .map((snapshot) {
+        .asyncMap((snapshot) async {
           final specials = snapshot.docs.map((doc) => SpecialModel.fromJson(doc.data())).toList();
           
-          // 1. Project Recurring Events
-          final projectedSpecials = _projectSpecials(specials);
+          // 1. Project Recurring Events (in Isolate)
+          final projectedSpecials = await compute(projectSpecialsComputed, specials);
 
           if (userLocation == null) return projectedSpecials; // Return all if no location
 
@@ -104,163 +107,14 @@ class HallRepository {
         .collection('specials')
         .where('hallId', isEqualTo: hallId)
         .snapshots()
-        .map((snapshot) {
+        .asyncMap((snapshot) async {
            final specials = snapshot.docs.map((doc) => SpecialModel.fromJson(doc.data())).toList();
            // For CMS, we want EVERYTHING.
-           // However, _projectSpecials is designed for the FEED (hiding expired).
-           // Let's create a separate helper or flag.
-           return _projectSpecials(specials, includeAll: true);
+           return await compute(projectSpecialsComputedAll, specials);
         });
   }
 
-  // Helper: Projects recurring events into the future
-  List<SpecialModel> _projectSpecials(List<SpecialModel> input, {bool includeAll = false}) {
-    final now = DateTime.now();
-    final output = <SpecialModel>[];
 
-    for (var s in input) {
-      if (includeAll) {
-        output.add(s);
-        continue;
-      }
-      
-      // 1. If not recurring, check expiry
-      if (s.recurrence == 'none') {
-        // Only show if not expired more than 24 hours ago? Or keep history?
-        // For feed, usually only upcoming or active.
-        final end = s.endTime ?? s.startTime?.add(const Duration(hours: 2));
-        if (end != null && end.isAfter(now.subtract(const Duration(hours: 12)))) {
-           output.add(s);
-        }
-        continue;
-      }
-
-      // 2. Recurring Logic
-      if (s.startTime == null) continue;
-
-      final originalStart = s.startTime!;
-      final localStart = originalStart.toLocal(); // Wall Clock Time
-      final originalEnd = s.endTime ?? originalStart.add(const Duration(hours: 4));
-      final duration = originalEnd.difference(originalStart);
-      
-      // Determine Rule
-      RecurrenceRule rule;
-      if (s.recurrenceRule != null) {
-        rule = s.recurrenceRule!;
-      } else {
-        // Legacy Conversion
-        String freq = 'daily';
-        if (s.recurrence == 'weekly') freq = 'weekly';
-        if (s.recurrence == 'monthly') freq = 'monthly';
-        rule = RecurrenceRule(frequency: freq, interval: 1);
-      }
-
-      // Projection Logic
-      // We want to find the NEXT occurrence relative to NOW.
-      // If the original event is in the future, show it.
-      // If it's in the past, project forward based on rule.
-
-      DateTime candidateStart = DateTime(
-        localStart.year, 
-        localStart.month, 
-        localStart.day, 
-        localStart.hour, 
-        localStart.minute
-      );
-
-      // Safety break: Don't loop forever
-      int safety = 0;
-      bool found = false;
-      
-      // Check End Conditions
-      bool isEnded(DateTime checkDate, int count) {
-        if (rule.endCondition == 'date' && rule.endDate != null) {
-          return checkDate.isAfter(rule.endDate!);
-        }
-        if (rule.endCondition == 'count' && rule.occurrenceCount != null) {
-          return count >= rule.occurrenceCount!;
-        }
-        return false;
-      }
-
-      // If original is valid (future or active), use it first
-      final candidateEnd = candidateStart.add(duration);
-      if (candidateEnd.isAfter(now)) {
-        // It's valid!
-        // But check if it matches "Days of Week" restriction if weekly
-        if (rule.frequency == 'weekly' && rule.daysOfWeek.isNotEmpty) {
-           if (rule.daysOfWeek.contains(candidateStart.weekday)) {
-             output.add(s);
-             found = true;
-           }
-        } else {
-           output.add(s);
-           found = true;
-        }
-      }
-
-      // If not recently found/valid, or we want next occurrence:
-      if (!found) {
-        // Iterate forward until we find a future occurrence or hit end condition
-        // Start from original
-        DateTime current = candidateStart;
-        int occurrences = 1; // Count original as 1
-
-        while (safety < 500) { // scan limit
-          safety++;
-          
-          // Advance based on frequency & interval
-          if (rule.frequency == 'daily') {
-            current = current.add(Duration(days: rule.interval));
-          } else if (rule.frequency == 'weekly') {
-             // If we have specific days, we stay in same week until exhausted, then jump interval
-             if (rule.daysOfWeek.isNotEmpty) {
-               // Move to next day in list
-               // This is complex. Simpler approach: Iterate days one by one, check if day matches list AND week matches interval
-               // Optimization: Just jump days?
-               // Let's stick to standard intervals for now.
-               // Support "Every 2 weeks on Mon/Wed"
-               // We need to find the next valid day.
-               
-               // Brute force day by day? efficient enough for near term.
-               current = current.add(const Duration(days: 1));
-               
-               // Check if this day is in allowed list
-               if (!rule.daysOfWeek.contains(current.weekday)) continue;
-
-               // Check interval (weeks since start)
-               final daysDiff = current.difference(candidateStart).inDays;
-               final weeksDiff = (daysDiff / 7).floor();
-               if (weeksDiff % rule.interval != 0) continue;
-
-             } else {
-               // Simple weekly
-               current = current.add(Duration(days: 7 * rule.interval));
-             }
-          } else if (rule.frequency == 'monthly') {
-            current = DateTime(current.year, current.month + rule.interval, current.day, current.hour, current.minute);
-          } else if (rule.frequency == 'yearly') {
-             current = DateTime(current.year + rule.interval, current.month, current.day, current.hour, current.minute);
-          }
-
-          if (isEnded(current, occurrences)) break;
-          occurrences++;
-
-          final end = current.add(duration);
-          if (end.isAfter(now)) {
-             output.add(s.copyWith(startTime: current, endTime: end));
-             found = true;
-             break; // Found the next one
-          }
-        }
-      }
-    }
-
-    // Sort valid/projected list
-    output.sort((a, b) => (a.startTime ?? DateTime.now()).compareTo(b.startTime ?? DateTime.now()));
-    
-    return output;
-  }
 
   // --- Specials Management (CMS) ---
   Future<void> addSpecial(SpecialModel special, {bool sendNotification = false}) async {

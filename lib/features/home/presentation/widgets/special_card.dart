@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:add_2_calendar/add_2_calendar.dart';
 import '../../../../models/special_model.dart';
@@ -37,7 +38,10 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
               width: 50, height: 50,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(image: NetworkImage(widget.special.imageUrl), fit: BoxFit.cover),
+                image: DecorationImage(
+                  image: CachedNetworkImageProvider(widget.special.imageUrl), 
+                  fit: BoxFit.cover
+                ),
               ),
             ),
       title: Text(widget.special.title, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -60,12 +64,17 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
           children: [
             // Featured Banner Image (If Featured)
             if (widget.isFeatured)
-              Image.network(
-                widget.special.imageUrl,
+              CachedNetworkImage(
+                imageUrl: widget.special.imageUrl,
                 height: 200,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => 
+                placeholder: (context, url) => Container(
+                  height: 200, 
+                  color: Colors.grey[200], 
+                  child: const Center(child: CircularProgressIndicator())
+                ),
+                errorWidget: (context, url, error) => 
                   Container(height: 200, color: Colors.grey, child: const Icon(Icons.broken_image)),
               ),
 

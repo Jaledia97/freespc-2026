@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../models/bingo_hall_model.dart';
 import '../../home/repositories/hall_repository.dart';
 import '../../../services/auth_service.dart';
@@ -45,7 +46,12 @@ class HallProfileScreen extends ConsumerWidget {
                     children: [
                        // Banner Image
                        hall.bannerUrl != null 
-                         ? Image.network(hall.bannerUrl!, fit: BoxFit.cover)
+                         ? CachedNetworkImage(
+                             imageUrl: hall.bannerUrl!, 
+                             fit: BoxFit.cover,
+                             placeholder: (context, url) => Container(color: Colors.grey[800]),
+                             errorWidget: (context, url, error) => const Icon(Icons.error),
+                           )
                          : Container(
                              color: Colors.grey[800],
                              child: const Center(child: Icon(Icons.casino, size: 80, color: Colors.white24)),
@@ -76,7 +82,7 @@ class HallProfileScreen extends ConsumerWidget {
                                border: Border.all(color: Colors.white, width: 2),
                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8)],
                                image: DecorationImage(
-                                 image: NetworkImage(hall.logoUrl!),
+                                 image: CachedNetworkImageProvider(hall.logoUrl!),
                                  fit: BoxFit.cover,
                                ),
                              ),

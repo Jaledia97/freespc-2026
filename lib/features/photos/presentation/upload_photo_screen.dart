@@ -7,7 +7,7 @@ import '../repositories/photo_repository.dart';
 import '../../home/repositories/hall_repository.dart';
 import 'tagging_delegates.dart';
 import '../../../models/bingo_hall_model.dart';
-import '../../../models/user_model.dart';
+import '../../../models/public_profile.dart';
 
 class UploadPhotoScreen extends ConsumerStatefulWidget {
   final String? preSelectedHallId; // If coming from a specific hall
@@ -26,7 +26,7 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
 
   // Tagging State
   final List<BingoHallModel> _taggedHalls = [];
-  final List<UserModel> _taggedUsers = [];
+  final List<PublicProfile> _taggedUsers = [];
 
   @override
   void initState() {

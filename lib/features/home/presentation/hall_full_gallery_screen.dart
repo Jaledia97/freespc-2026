@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../photos/repositories/photo_repository.dart';
 import '../../photos/models/gallery_photo_model.dart';
 import '../../photos/presentation/upload_photo_screen.dart';
@@ -57,10 +58,11 @@ class HallFullGalleryScreen extends ConsumerWidget {
                 onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoDetailScreen(photo: photo)));
                 },
-                child: Image.network(
-                  photo.imageUrl,
+                child: CachedNetworkImage(
+                  imageUrl: photo.imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_,__,___) => Container(color: Colors.grey[900], child: const Icon(Icons.broken_image)),
+                  placeholder: (context, url) => Container(color: Colors.grey[900]),
+                  errorWidget: (_,__,___) => Container(color: Colors.grey[900], child: const Icon(Icons.broken_image)),
                 ),
               );
             },

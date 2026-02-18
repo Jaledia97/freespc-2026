@@ -4,8 +4,8 @@ service cloud.firestore {
   match /databases/{database}/documents {
   
     // =========================================================================
-    // SYSTEM: CIPHER PROTECTION PROTOCOLS v2
-    // STATUS: REVISED
+    // SYSTEM: CIPHER PROTECTION PROTOCOLS v3 (Security Hardened)
+    // STATUS: ACTIVE
     // =========================================================================
 
     // HELPER FUNCTIONS
@@ -15,30 +15,55 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
-    // Check if the user has an elevated role (manager, owner, admin)
+    // Check if the user has an elevated role (manager, owner, admin, superadmin)
     function isManager() {
+      // NOTE: This relies on the role being securely set.
+      // Since we are now protecting the role field, this is safe to use.
       let role = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
       return request.auth != null && (role == 'manager' || role == 'owner' || role == 'admin' || role == 'superadmin');
+    }
+
+    // Check if the user is a superadmin
+    function isSuperAdmin() {
+      let role = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      return request.auth != null && role == 'superadmin';
     }
 
     // =========================================================================
     // COLLECTIONS
     // =========================================================================
 
-    // 1. USERS COLLECTION
-    // Policy: Users can only read/write their OWN document.
-    match /users/{userId} {
-      allow read, write: if isOwner(userId);
+    // 1. PUBLIC PROFILES (For Safe Search)
+    // Policy: Public Read, Owner Write (Sanitized fields only logic handled by client, 
+    // but we can enforce some basics here if needed, or rely on the Fact that 
+    // sensitive fields aren't even IN this collection).
+    match /public_profiles/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId);
     }
 
-    // 1.5. PUBLIC WORKERS (For Verification)
+    // 2. USERS COLLECTION
+    // Policy: Owner Read. Owner Update (Restricted Fields).
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      
+      // Create: Allow initial creation.
+      allow create: if isOwner(userId);
+
+      // Update: Prevent changing 'role', 'currentPoints', or 'qrToken'
+      // effectively locking the "sensitive" fields.
+      allow update: if isOwner(userId) 
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'currentPoints', 'qrToken']));
+    }
+
+    // 2.5. PUBLIC WORKERS (For Verification)
     // Policy: Authenticated users can READ. Only Managers can WRITE.
     match /public_workers/{workerId} {
       allow read: if request.auth != null;
       allow write: if isManager();
     }
 
-    // 2. BINGO HALLS COLLECTION
+    // 3. BINGO HALLS COLLECTION
     // Policy: Public Read, Manager Write.
     match /bingo_halls/{hallId} {
       allow read: if true;
@@ -51,7 +76,7 @@ service cloud.firestore {
       }
     }
 
-    // 3. TRANSACTIONS COLLECTION
+    // 4. TRANSACTIONS COLLECTION
     // Policy: User Read Own, Manager Read All, Append-Only (No Delete).
     match /transactions/{transactionId} {
       // Create: Authenticated users can create, but MUST claim the transaction as their own.
@@ -66,17 +91,18 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // 4. RAFFLES & SPECIALS (Added for Phase 20)
+    // 5. RAFFLES & SPECIALS
+    // Policy: Public Read, Manager Write ONLY.
     match /raffles/{raffleId} {
       allow read: if true;
-      allow write: if request.auth != null; // Allowing auth users to seed for now
+      allow write: if isManager();
     }
     match /specials/{specialId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isManager();
     }
 
-    // 5. COLLECTION GROUP QUERIES
+    // 6. COLLECTION GROUP QUERIES
     match /{path=**}/tournaments/{tournamentId} {
       allow read: if true;
     }

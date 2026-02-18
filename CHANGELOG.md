@@ -4,6 +4,16 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+32] - 2026-02-18 - Performance & Scalability (Phase 47)
+
+### Optimized
+- **Image Caching**: Integrated `cached_network_image` across the app (`SpecialCard`, `HallProfile`, `TournamentList`, `Gallery`) to significantly reduce bandwidth and memory usage.
+- **Background Processing**: Moved complex recurrence projection logic (`_projectSpecials`) to a background Isolate, preventing UI freezes during feed loading.
+- **Database Efficiency**: Implemented strict `limit(100)` and `asyncMap` patterns in `HallRepository` to ensure the app scales without crashing.
+
+### Fixed
+- **Build System**: Resolved import errors in `special_projection_logic.dart` and cleaned up unused imports.
+
 ## [0.0.1+31] - 2026-02-17 - CMS Improvements (Phase 44-46)
 
 ### Added
