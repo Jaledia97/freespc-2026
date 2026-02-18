@@ -7,6 +7,8 @@ import 'widgets/special_card.dart';
 import 'widgets/raffle_list_card.dart';
 import 'widgets/hall_about_tab.dart';
 import 'widgets/hall_programs_tab.dart';
+import 'widgets/tournament_list_card.dart';
+import '../../manager/repositories/tournament_repository.dart'; // Ensure this matches exactly where hallTournamentsProvider is defined
 import 'hall_full_gallery_screen.dart';
 
 class HallProfileScreen extends ConsumerWidget {
@@ -299,7 +301,10 @@ class HallProfileScreen extends ConsumerWidget {
                   final rafflesAsync = ref.watch(hallRafflesProvider(hall.id));
                   return rafflesAsync.when(
                     data: (raffles) {
-                       if (raffles.isEmpty) {
+                       // Filter out templates
+                       final visibleRaffles = raffles.where((r) => !r.isTemplate).toList();
+
+                       if (visibleRaffles.isEmpty) {
                          return Center(
                            child: Column(
                              mainAxisAlignment: MainAxisAlignment.center,
@@ -327,10 +332,10 @@ class HallProfileScreen extends ConsumerWidget {
                       }
                       return ListView.separated(
                         padding: const EdgeInsets.all(16),
-                        itemCount: raffles.length,
+                        itemCount: visibleRaffles.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (context, index) {
-                          return RaffleListCard(raffle: raffles[index]);
+                          return RaffleListCard(raffle: visibleRaffles[index]);
                         },
                       );
                     },
@@ -342,7 +347,32 @@ class HallProfileScreen extends ConsumerWidget {
 
 
               // 3. Tournaments Tab
-              const Center(child: Text("Tournaments Coming Soon (Phase 21)")),
+              // 3. Tournaments Tab
+              Consumer(
+                builder: (context, ref, _) {
+                  final tournamentsAsync = ref.watch(hallTournamentsProvider(hall.id));
+                  return tournamentsAsync.when(
+                    data: (tournaments) {
+                      // Filter out templates/archived if needed
+                      final visibleTournaments = tournaments.where((t) => !t.isTemplate).toList();
+                      
+                      if (visibleTournaments.isEmpty) {
+                        return const Center(child: Text("No upcoming tournaments."));
+                      }
+                      
+                      return ListView.builder(
+                        padding: EdgeInsets.zero,
+                        itemCount: visibleTournaments.length,
+                        itemBuilder: (context, index) {
+                          return TournamentListCard(tournament: visibleTournaments[index]);
+                        },
+                      );
+                    },
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, stack) => Center(child: Text("Error: $e")),
+                  );
+                },
+              ),
 
               // 4. About Tab
               HallAboutTab(hall: hall),

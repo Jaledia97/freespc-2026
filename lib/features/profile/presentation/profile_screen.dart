@@ -11,6 +11,7 @@ import '../../settings/presentation/display_settings_screen.dart';
 import 'my_photos_screen.dart';
 import '../../../core/utils/role_utils.dart'; // Import RoleUtils
 import '../../wallet/presentation/my_raffles_screen.dart'; // Import MyRafflesScreen
+import '../../home/presentation/tournaments_screen.dart'; // Import TournamentsScreen
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -125,7 +126,7 @@ class ProfileScreen extends ConsumerWidget {
                         "Tournaments", 
                         Icons.emoji_events, 
                         Colors.purple,
-                        () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tournaments coming soon (Phase 21)"))),
+                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TournamentsScreen())),
                       ),
                       const SizedBox(width: 8),
                       _buildActionCard(

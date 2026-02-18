@@ -4,6 +4,23 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+30] - 2026-02-17 - Tournaments & Raffle Refactor (Phase 42-43)
+
+### Added
+- **Tournament Images**: 
+    - Added `imageUrl` to `TournamentModel`.
+    - Updated `EditTournamentScreen` to support cover image upload.
+    - Updated `TournamentListCard` to display the tournament image in the feed.
+- **Raffle Templates**: 
+    - Managers can now create Raffle Templates to quickly start recurring raffles.
+    - Added "Templates" tab to `ManageRafflesScreen`.
+    - Added "Save as Template" option to `EditRaffleScreen`.
+
+### Changed
+- **Raffle Workflow**: 
+    - Refactored `ManageRafflesScreen` to use the standardized "Active / Expired / Templates" tabbed layout.
+    - Updated `WalletScreen` and `HallProfileScreen` to filter out template raffles from public view.
+
 ## [0.0.1+29] - 2026-02-17 - Wallet Data Sync & Raffles (Phase 33-38)
 
 ### Added

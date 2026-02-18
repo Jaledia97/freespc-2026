@@ -4,6 +4,7 @@ import 'cms/manage_specials_screen.dart';
 import 'cms/edit_hall_profile_screen.dart';
 import 'cms/manage_raffles_screen.dart'; // New Import
 import 'cms/photo_approval_screen.dart';
+import 'cms/manage_tournaments_screen.dart'; // New Import
 import '../../profile/presentation/hall_selection_screen.dart';
 // import 'raffle_tool/raffle_tool_screen.dart'; // No longer direct link
 import '../../../../services/auth_service.dart';
@@ -121,6 +122,17 @@ class ManagerDashboardScreen extends ConsumerWidget {
                       color: Colors.amber,
                       desc: "Create & Run Drawings", 
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ManageRafflesScreen(hallId: homeHallId))),
+                    ),
+
+                    // TOURNAMENTS (Manager+)
+                    if (homeHallId != null && RoleUtils.canManageGames(user, homeHallId))
+                     _buildModuleCard(
+                      context,
+                      title: "Tournaments", 
+                      icon: Icons.emoji_events,
+                      color: Colors.purple,
+                      desc: "Create & Run Events", 
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageTournamentsScreen())),
                     ),
 
                     // PHOTOS (Worker+)

@@ -5,14 +5,25 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../../../../models/raffle_model.dart';
+import '../../../../models/special_model.dart'; // For RecurrenceRule
 import '../../../../core/utils/time_utils.dart';
 import '../../../home/repositories/hall_repository.dart';
 
 class EditRaffleScreen extends ConsumerStatefulWidget {
   final String hallId;
   final RaffleModel? raffle;
+  final bool isCreatingFromTemplate;
+  final bool isTemplate;
+  final bool isEditingTemplate;
 
-  const EditRaffleScreen({super.key, required this.hallId, this.raffle});
+  const EditRaffleScreen({
+    super.key, 
+    required this.hallId, 
+    this.raffle,
+    this.isCreatingFromTemplate = false,
+    this.isTemplate = false,
+    this.isEditingTemplate = false,
+  });
 
   @override
   ConsumerState<EditRaffleScreen> createState() => _EditRaffleScreenState();
@@ -24,6 +35,10 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
   late TextEditingController _descCtrl;
   late TextEditingController _imgUrlCtrl;
   late DateTime _endsAt;
+  
+  bool _isTemplate = false;
+  RecurrenceRule? _recurrenceRule;
+  
   bool _isSaving = false;
   bool _isUploading = false;
 
@@ -40,7 +55,19 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
     _nameCtrl = TextEditingController(text: widget.raffle?.name ?? '');
     _descCtrl = TextEditingController(text: widget.raffle?.description ?? '');
     _imgUrlCtrl = TextEditingController(text: widget.raffle?.imageUrl ?? _presets[0]);
-    _endsAt = widget.raffle?.endsAt ?? DateTime.now().add(const Duration(days: 1));
+    
+    if (widget.isCreatingFromTemplate) {
+      final now = DateTime.now();
+      final base = widget.raffle?.endsAt ?? now;
+      // Default to tomorrow same time
+      _endsAt = DateTime(now.year, now.month, now.day + 1, base.hour, base.minute);
+      _isTemplate = false;
+      _recurrenceRule = null;
+    } else {
+      _endsAt = widget.raffle?.endsAt ?? DateTime.now().add(const Duration(days: 1));
+      _isTemplate = widget.isTemplate || (widget.raffle?.isTemplate ?? false) || widget.isEditingTemplate;
+      _recurrenceRule = widget.raffle?.recurrenceRule;
+    }
   }
 
   Future<void> _pickAndUploadImage() async {
@@ -81,19 +108,29 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
     setState(() => _isSaving = true);
 
     try {
+      String id = widget.raffle?.id ?? '';
+      // Create new ID if:
+      // 1. Explicitly creating from template
+      // 2. Creating scratch (raffle is null) AND NOT explicitly editing a template
+      if (widget.isCreatingFromTemplate || (widget.raffle == null && !widget.isEditingTemplate)) {
+        id = ''; // New
+      }
+
       final raffle = RaffleModel(
-        id: widget.raffle?.id ?? '', // ID generated in repo if empty
+        id: id,
         hallId: widget.hallId,
         name: _nameCtrl.text.trim(),
         description: _descCtrl.text.trim(),
         imageUrl: _imgUrlCtrl.text.trim(),
         endsAt: _endsAt,
-        maxTickets: 100, // Hardcoded cap for now? Or add field
-        soldTickets: widget.raffle?.soldTickets ?? 0,
+        maxTickets: widget.raffle?.maxTickets ?? 100,
+        soldTickets: widget.isCreatingFromTemplate ? 0 : (widget.raffle?.soldTickets ?? 0),
+        isTemplate: _isTemplate,
+        recurrenceRule: _isTemplate ? _recurrenceRule : null,
       );
 
       final repo = ref.read(hallRepositoryProvider);
-      if (widget.raffle == null) {
+      if (id.isEmpty) {
         await repo.addRaffle(raffle);
       } else {
         await repo.updateRaffle(raffle);
@@ -127,12 +164,91 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
     });
   }
 
+  void _openRecurrencePicker() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        String freq = _recurrenceRule?.frequency ?? 'weekly';
+        int interval = _recurrenceRule?.interval ?? 1;
+        List<int> days = List.from(_recurrenceRule?.daysOfWeek ?? []);
+        
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1E1E1E),
+              title: const Text("Recurrence (Auto-Schedule)", style: TextStyle(color: Colors.white)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButton<String>(
+                    value: freq,
+                    dropdownColor: const Color(0xFF2C2C2C),
+                    style: const TextStyle(color: Colors.white),
+                    items: const [
+                      DropdownMenuItem(value: 'daily', child: Text("Daily")),
+                      DropdownMenuItem(value: 'weekly', child: Text("Weekly")),
+                      DropdownMenuItem(value: 'monthly', child: Text("Monthly")),
+                    ],
+                    onChanged: (val) => setState(() => freq = val!),
+                  ),
+                  if (freq == 'weekly') ...[
+                    const SizedBox(height: 16),
+                    const Text("Repeat On:", style: TextStyle(color: Colors.white70)),
+                    Wrap(
+                      spacing: 4,
+                      children: List.generate(7, (index) {
+                        final day = index + 1;
+                        final isSelected = days.contains(day);
+                        return FilterChip(
+                          label: Text(['M','T','W','T','F','S','S'][index]),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) days.add(day); else days.remove(day);
+                            });
+                          },
+                        );
+                      }),
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx), 
+                  child: const Text("Cancel")
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    this.setState(() {
+                      _recurrenceRule = RecurrenceRule(
+                        frequency: freq,
+                        interval: interval,
+                        daysOfWeek: days,
+                      );
+                    });
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text("Save"),
+                ),
+              ],
+            );
+          }
+        );
+      }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final title = widget.isCreatingFromTemplate 
+        ? "Create from Template" 
+        : (_isTemplate ? "Edit Template" : (widget.raffle == null ? "Create Raffle" : "Edit Raffle"));
+
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
-        title: Text(widget.raffle == null ? "Create Raffle" : "Edit Raffle"),
+        title: Text(title),
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(onPressed: _save, icon: const Icon(Icons.check, color: Colors.green)),
@@ -161,7 +277,24 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
               ),
               const SizedBox(height: 16),
               
-              // Date Picker
+              if (widget.isCreatingFromTemplate)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.2),
+                    border: Border.all(color: Colors.blue),
+                    borderRadius: BorderRadius.circular(8)
+                  ),
+                  child: const Row(
+                    children: [
+                       Icon(Icons.info, color: Colors.blue),
+                       SizedBox(width: 8),
+                       Expanded(child: Text("Creating a new Active Raffle from this template. Adjust the Draw Date below.", style: TextStyle(color: Colors.blue))),
+                    ],
+                  ),
+                ),
+
               InkWell(
                 onTap: _pickDateTime,
                 child: Container(
@@ -174,7 +307,7 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Draw Date & Time", style: TextStyle(color: Colors.white54, fontSize: 12)),
+                          Text(_isTemplate ? "Default Draw Time (Anchor)" : "Draw Date & Time", style: const TextStyle(color: Colors.white54, fontSize: 12)),
                           Text(TimeUtils.formatDateTime(_endsAt, ref), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                         ],
                       ),
@@ -184,7 +317,47 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Image Preset
+              if (!widget.isCreatingFromTemplate && !widget.isEditingTemplate) 
+                CheckboxListTile(
+                  title: const Text("Save as Template", style: TextStyle(color: Colors.white)),
+                  value: _isTemplate,
+                  onChanged: (v) => setState(() => _isTemplate = v ?? false),
+                  activeColor: Colors.amber,
+                  contentPadding: EdgeInsets.zero,
+                ),
+
+              if (_isTemplate)
+                InkWell(
+                  onTap: _openRecurrencePicker,
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E1E1E), 
+                      border: Border.all(color: Colors.amber.withOpacity(0.5)),
+                      borderRadius: BorderRadius.circular(8)
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.loop, color: Colors.amber),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Recurrence (Auto-Schedule)", style: TextStyle(color: Colors.white54, fontSize: 12)),
+                            Text(
+                              _recurrenceRule == null ? "None" : "${_recurrenceRule!.frequency} - ${_recurrenceRule!.daysOfWeek.isNotEmpty ? 'Days: ${_recurrenceRule!.daysOfWeek}' : ''}",
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              const SizedBox(height: 16),
+              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
