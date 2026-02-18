@@ -4,6 +4,17 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+33] - 2026-02-18 - Security Hardening (Phase 48)
+
+### Security
+- **Firestore Rules**: Hardened security rules to prevent Privilege Escalation. Users can no longer modify sensitive fields like `role` or `points`.
+- **Access Control**: Restricted write access to `raffles` and `specials` collections to Managers only.
+- **Privacy**: Implemented `PublicProfile` architecture. User search now queries a sanitized public collection, protecting private user data (email, phone).
+
+### Changed
+- **AuthService**: Implemented "Dual-Write" logic. Updating a user profile now syncs safe data (username, bio, photo) to `public_profiles`.
+- **Search**: Updated `UserSearchDelegate` to return `PublicProfile` objects instead of full `UserModel`.
+
 ## [0.0.1+32] - 2026-02-18 - Performance & Scalability (Phase 47)
 
 ### Optimized
