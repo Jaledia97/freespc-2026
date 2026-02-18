@@ -4,6 +4,15 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+34] - 2026-02-18 - Bluetooth & Beacon Support (Phase 48)
+
+### Added
+- **Bluetooth Settings**:
+    - **Beacon Management**: CMS module to scan, connect, and configure Feasycom BP101E beacons.
+    - **Security**: PIN-authenticated access to beacon settings.
+    - **UUID Sync**: One-tap rotation updates both hardware and Firestore.
+    - **Signal Control**: Custom "Heartbeat" (On/Off rhythm), TX Power, and Interval sliders.
+
 ## [0.0.1+33] - 2026-02-18 - Security Hardening (Phase 48)
 
 ### Security
