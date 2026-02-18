@@ -19,6 +19,9 @@ class _ManageTournamentsScreenState extends ConsumerState<ManageTournamentsScree
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -68,9 +71,9 @@ class _ManageTournamentsScreenState extends ConsumerState<ManageTournamentsScree
                   createTemplateMode: isTemplateMode,
                 )));
             },
-            backgroundColor: _tabController.index == 2 ? Colors.blueAccent : Colors.purple,
-            label: Text(_tabController.index == 2 ? "Create Template" : "Create Tournament"),
-            icon: Icon(_tabController.index == 2 ? Icons.post_add : Icons.emoji_events),
+            backgroundColor: Colors.blueAccent,
+            label: Text(_tabController.index == 2 ? "Create Template" : "Create Tournament", style: const TextStyle(color: Colors.white)),
+            icon: Icon(_tabController.index == 2 ? Icons.save_as : Icons.emoji_events, color: Colors.white),
           ),
           body: tournamentsAsync.when(
             data: (tournaments) {
@@ -205,6 +208,6 @@ class _ManageTournamentsScreenState extends ConsumerState<ManageTournamentsScree
       // recurrenceRule: null // Reset recurrence? Or keep it? logic suggests keeping it might be useful
     );
     
-    Navigator.push(context, MaterialPageRoute(builder: (_) => EditTournamentScreen(hallId: hallId, tournament: copy)));
+    Navigator.push(context, MaterialPageRoute(builder: (_) => EditTournamentScreen(hallId: hallId, tournament: copy, createTemplateMode: false)));
   }
 }

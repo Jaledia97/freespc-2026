@@ -173,14 +173,18 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
           ),
         ),
         
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, minimumSize: const Size.fromHeight(50)),
-            onPressed: () {
-               ref.read(raffleManagerRepositoryProvider).lockRollCall(widget.hallId);
-            },
-            child: const Text("CONFIRM & LOCK LIST"),
+        // Safe Area for button to avoid bottom clipping
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, minimumSize: const Size.fromHeight(50)),
+              onPressed: () {
+                 ref.read(raffleManagerRepositoryProvider).lockRollCall(widget.hallId);
+              },
+              child: const Text("CONFIRM & LOCK LIST"),
+            ),
           ),
         ),
       ],
@@ -189,7 +193,7 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
 
   Widget _buildLockedScreen(Map<String, dynamic> session) {
     final participants = (session['participants'] as List?) ?? [];
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

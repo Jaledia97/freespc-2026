@@ -243,7 +243,7 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
   Widget build(BuildContext context) {
     final title = widget.isCreatingFromTemplate 
         ? "Create from Template" 
-        : (_isTemplate ? "Edit Template" : (widget.raffle == null ? "Create Raffle" : "Edit Raffle"));
+        : (widget.isTemplate ? "Create Template" : (_isTemplate ? "Edit Template" : (widget.raffle == null ? "Create Raffle" : "Edit Raffle")));
 
     return Scaffold(
       backgroundColor: const Color(0xFF141414),

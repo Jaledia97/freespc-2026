@@ -7,27 +7,49 @@ import '../../../profile/presentation/widgets/profile_header.dart';
 import 'edit_raffle_screen.dart';
 import '../raffle_tool/raffle_tool_screen.dart';
 
-class ManageRafflesScreen extends ConsumerWidget {
+class ManageRafflesScreen extends ConsumerStatefulWidget {
   final String hallId;
   const ManageRafflesScreen({super.key, required this.hallId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final rafflesAsync = ref.watch(hallRafflesProvider(hallId));
+  ConsumerState<ManageRafflesScreen> createState() => _ManageRafflesScreenState();
+}
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
+class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      setState(() {}); // Rebuild FAB on tab change
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rafflesAsync = ref.watch(hallRafflesProvider(widget.hallId));
+    final isTemplateTab = _tabController.index == 2;
+
+    return Scaffold(
         backgroundColor: const Color(0xFF141414),
         appBar: AppBar(
           title: const Text('Manage Raffles'),
           backgroundColor: Colors.transparent,
           elevation: 0,
-          bottom: const TabBar(
+          bottom: TabBar(
+            controller: _tabController,
             indicatorColor: Colors.amber,
             labelColor: Colors.amber,
             unselectedLabelColor: Colors.white54,
-            tabs: [
+            tabs: const [
               Tab(text: "Active"),
               Tab(text: "Expired"),
               Tab(text: "Templates"),
@@ -36,15 +58,17 @@ class ManageRafflesScreen extends ConsumerWidget {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            // Default to creating a new Active Raffle
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: hallId)),
+              MaterialPageRoute(builder: (_) => EditRaffleScreen(
+                hallId: widget.hallId,
+                isTemplate: isTemplateTab, // Auto-check template box if on tab
+              )),
             );
           },
           backgroundColor: Colors.amber,
-          label: const Text("Create Raffle", style: TextStyle(color: Colors.black)),
-          icon: const Icon(Icons.add, color: Colors.black),
+          label: Text(isTemplateTab ? "Create Template" : "Create Raffle", style: const TextStyle(color: Colors.black)),
+          icon: Icon(isTemplateTab ? Icons.save_as : Icons.add, color: Colors.black),
         ),
         body: rafflesAsync.when(
           data: (raffles) {
@@ -58,6 +82,7 @@ class ManageRafflesScreen extends ConsumerWidget {
             final expired = raffles.where((r) => !r.isTemplate && r.endsAt.isBefore(now) && !isSameDay(r.endsAt, now)).toList();
 
             return TabBarView(
+              controller: _tabController,
               children: [
                 _buildRaffleList(context, ref, active, emptyMsg: "No Active Raffles"),
                 _buildRaffleList(context, ref, expired, emptyMsg: "No Expired Raffles"),
@@ -68,7 +93,6 @@ class ManageRafflesScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, s) => Center(child: Text("Error: $e")),
         ),
-      ),
     );
   }
 
@@ -89,7 +113,7 @@ class ManageRafflesScreen extends ConsumerWidget {
                Padding(
                  padding: const EdgeInsets.only(top: 8.0),
                  child: TextButton(
-                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: hallId, isTemplate: true))),
+                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: widget.hallId, isTemplate: true))),
                    child: const Text("Create Template"),
                  ),
                ),
@@ -164,11 +188,8 @@ class ManageRafflesScreen extends ConsumerWidget {
                 if (isPast) {
                    _showEditDialog(context, ref, raffle); // Expired -> Edit/Delete/Archive
                 } else if (isToday) {
-                   // Active Today -> Run Tool
-                   Navigator.push(
-                     context,
-                     MaterialPageRoute(builder: (_) => RaffleToolScreen(hallId: hallId, raffle: raffle)),
-                   );
+                   // Active Today -> Show Options
+                   _showActiveOptions(context, ref, raffle);
                 } else {
                    // Future -> Edit
                    _showEditDialog(context, ref, raffle);
@@ -197,7 +218,7 @@ class ManageRafflesScreen extends ConsumerWidget {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
             onPressed: () {
               Navigator.pop(ctx);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: hallId, raffle: raffle, isCreatingFromTemplate: true)));
+              Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: widget.hallId, raffle: raffle, isCreatingFromTemplate: true)));
             },
             child: const Text("Use Template", style: TextStyle(color: Colors.black)),
           ),
@@ -205,7 +226,7 @@ class ManageRafflesScreen extends ConsumerWidget {
           TextButton(
             onPressed: () {
                Navigator.pop(ctx);
-               Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: hallId, raffle: raffle, isEditingTemplate: true)));
+               Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: widget.hallId, raffle: raffle, isEditingTemplate: true)));
             },
             child: const Text("Edit Template", style: TextStyle(color: Colors.white54)),
           ),
@@ -249,11 +270,61 @@ class ManageRafflesScreen extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: hallId, raffle: raffle)));
+              Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: widget.hallId, raffle: raffle)));
             },
             child: const Text("EDIT"),
           ),
         ],
+      ),
+    );
+  }
+  void _showActiveOptions(BuildContext context, WidgetRef ref, RaffleModel raffle) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E1E1E),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(raffle.name, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text("This raffle is active today. What would you like to do?", style: TextStyle(color: Colors.white54)),
+            const SizedBox(height: 24),
+            
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                icon: const Icon(Icons.play_arrow),
+                label: const Text("LAUNCH RAFFLE TOOL"),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => RaffleToolScreen(hallId: widget.hallId, raffle: raffle)));
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(foregroundColor: Colors.blueAccent, side: const BorderSide(color: Colors.blueAccent)),
+                icon: const Icon(Icons.edit),
+                label: const Text("EDIT DETAILS"),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: widget.hallId, raffle: raffle)));
+                },
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }

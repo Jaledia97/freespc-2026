@@ -4,6 +4,13 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+31] - 2026-02-17 - CMS Improvements (Phase 44-46)
+
+### Added
+- **Context-Aware FABs**: `ManageTournamentsScreen` now shows "Create Template" when on the Templates tab, consistent with Raffles.
+- **Active Raffle Editing**: Managers can now choose to **Edit Details** or **Launch Raffle Tool** when tapping an active raffle, preventing lockout from critical last-minute changes.
+- **Photo Approval Fix**: Resolved a Firestore Index error preventing the Photo Approval queue from loading.
+
 ## [0.0.1+30] - 2026-02-17 - Tournaments & Raffle Refactor (Phase 42-43)
 
 ### Added
