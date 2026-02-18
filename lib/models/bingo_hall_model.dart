@@ -38,6 +38,8 @@ abstract class BingoHallModel with _$BingoHallModel {
     @Default([]) List<HallProgramModel> programs,
     // Charities
     @Default([]) List<HallCharityModel> charities,
+    // Loyalty Configuration
+    @Default(LoyaltySettings()) LoyaltySettings loyaltySettings,
   }) = _BingoHallModel;
 
   factory BingoHallModel.fromJson(Map<String, dynamic> json) =>
@@ -48,4 +50,22 @@ abstract class BingoHallModel with _$BingoHallModel {
     'geohash': geoHash,
     'geopoint': GeoPoint(latitude, longitude), 
   };
+}
+
+@freezed
+abstract class LoyaltySettings with _$LoyaltySettings {
+  @JsonSerializable(explicitToJson: true)
+  const factory LoyaltySettings({
+    @Default("Points") String currencyName,
+    @Default("PTS") String currencySymbol,
+    @Default("FFD700") String primaryColor, // Hex code
+    @Default(10) int checkInBonus,
+    @Default(5) int timeDropAmount,
+    @Default(30) int timeDropInterval, // in minutes
+    int? dailyEarningCap,
+    @Default(50) int birthdayBonus,
+  }) = _LoyaltySettings;
+
+  factory LoyaltySettings.fromJson(Map<String, dynamic> json) =>
+      _$LoyaltySettingsFromJson(json);
 }

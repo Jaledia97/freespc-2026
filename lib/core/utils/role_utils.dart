@@ -18,6 +18,10 @@ class RoleUtils {
     return user.role == superadmin || user.role == admin;
   }
 
+  static bool isOwner(UserModel user) {
+    return user.role == owner;
+  }
+
   // Hall-Level Permissions
   // Note: App-level admins usually have implicit access to all halls for support purposes.
   

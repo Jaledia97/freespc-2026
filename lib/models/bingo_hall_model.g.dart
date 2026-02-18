@@ -38,6 +38,11 @@ _BingoHallModel _$BingoHallModelFromJson(Map<String, dynamic> json) =>
               ?.map((e) => HallCharityModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      loyaltySettings: json['loyaltySettings'] == null
+          ? const LoyaltySettings()
+          : LoyaltySettings.fromJson(
+              json['loyaltySettings'] as Map<String, dynamic>,
+            ),
     );
 
 Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
@@ -63,4 +68,29 @@ Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
       'operatingHours': instance.operatingHours,
       'programs': instance.programs.map((e) => e.toJson()).toList(),
       'charities': instance.charities.map((e) => e.toJson()).toList(),
+      'loyaltySettings': instance.loyaltySettings.toJson(),
+    };
+
+_LoyaltySettings _$LoyaltySettingsFromJson(Map<String, dynamic> json) =>
+    _LoyaltySettings(
+      currencyName: json['currencyName'] as String? ?? "Points",
+      currencySymbol: json['currencySymbol'] as String? ?? "PTS",
+      primaryColor: json['primaryColor'] as String? ?? "FFD700",
+      checkInBonus: (json['checkInBonus'] as num?)?.toInt() ?? 10,
+      timeDropAmount: (json['timeDropAmount'] as num?)?.toInt() ?? 5,
+      timeDropInterval: (json['timeDropInterval'] as num?)?.toInt() ?? 30,
+      dailyEarningCap: (json['dailyEarningCap'] as num?)?.toInt(),
+      birthdayBonus: (json['birthdayBonus'] as num?)?.toInt() ?? 50,
+    );
+
+Map<String, dynamic> _$LoyaltySettingsToJson(_LoyaltySettings instance) =>
+    <String, dynamic>{
+      'currencyName': instance.currencyName,
+      'currencySymbol': instance.currencySymbol,
+      'primaryColor': instance.primaryColor,
+      'checkInBonus': instance.checkInBonus,
+      'timeDropAmount': instance.timeDropAmount,
+      'timeDropInterval': instance.timeDropInterval,
+      'dailyEarningCap': instance.dailyEarningCap,
+      'birthdayBonus': instance.birthdayBonus,
     };
