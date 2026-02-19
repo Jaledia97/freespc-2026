@@ -48,13 +48,22 @@ class TournamentListCard extends ConsumerWidget {
                 children: [
                   if (showHallName) ...[
                     hallAsync?.when(
-                      data: (hall) => Text(
-                        hall?.name ?? "Unknown Hall",
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      data: (hall) => Row(
+                        children: [
+                          Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              (hall?.name != null && hall!.name.isNotEmpty) ? hall.name : "Unknown Hall",
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                       loading: () => const SizedBox.shrink(),
                       error: (_,__) => const SizedBox.shrink(),

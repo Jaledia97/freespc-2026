@@ -4,7 +4,7 @@ import '../../home/repositories/hall_repository.dart';
 import 'hall_profile_screen.dart';
 import 'hall_search_screen.dart';
 import 'upcoming_games_screen.dart';
-import 'tournaments_screen.dart';
+import 'upcoming_games_screen.dart';
 import 'widgets/special_card.dart';
 import '../../../services/location_service.dart';
 
@@ -59,7 +59,7 @@ class HomeScreen extends ConsumerWidget {
                       icon: Icons.emoji_events,
                       label: 'Tournaments',
                       color: Colors.red,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TournamentsScreen())),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingGamesScreen(initialCategory: 'Tournaments'))),
                     ),
                     _QuickAction(
                       icon: Icons.people,

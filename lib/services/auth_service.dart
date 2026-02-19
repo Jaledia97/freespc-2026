@@ -266,4 +266,31 @@ class AuthService {
     await _googleSignIn.signOut();
     await _auth.signOut();
   }
+
+  Future<void> deleteAccount() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception("No user logged in");
+      
+      // 1. Delete Firestore Data (Optional: Cloud Function usually better for recursive delete)
+      // Here we just delete the main doc. Subcollections might persist unless recursive delete used.
+      // For compliance, a flag 'deleted' might be better, but strict delete requested.
+      // Deleting main doc:
+      await _firestore.collection('users').doc(user.uid).delete();
+      await _firestore.collection('public_profiles').doc(user.uid).delete();
+
+      // 2. Delete Auth Account
+      // Requires recent login. Re-authentication might be needed if old session.
+      await user.delete();
+
+    } catch (e) {
+      print("Error deleting account: $e");
+      // If error is 'requires-recent-login', generic e.code check
+      if (e is FirebaseAuthException && e.code == 'requires-recent-login') {
+         // UI should handle re-auth, but for now we rethrow
+         throw Exception("Please log out and log back in to delete your account.");
+      }
+      rethrow;
+    }
+  }
 }

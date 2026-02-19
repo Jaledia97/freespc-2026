@@ -12,10 +12,30 @@ All notable changes to the FreeSPC project will be documented in this file.
     - **Security**: PIN-authenticated access to beacon settings.
     - **UUID Sync**: One-tap rotation updates both hardware and Firestore.
     - **Signal Control**: Custom "Heartbeat" (On/Off rhythm), TX Power, and Interval sliders.
-- **Personnel Management**:
-    - **Invite System**: Deep-link based invites (`/join?hallId=`) via SMS/Share.
-    - **CMS**: New "Personnel" tile for managing staff roles (Owner, Manager, Worker).
-    - **Onboarding**: "Join Hall" flow integrated into App Launch and Auth Wrapper.
+- **Personnel Management**: Invite System, CMS integration, and Onboarding flow.
+
+## [0.0.1+36] - 2026-02-18 - UI Polish & Critical Fixes
+### Added
+- **Hall Name Visibility**: Enhanced `SpecialCard` and `TournamentListCard` to prominently display the Hall Name with a location icon.
+- **Dynamic Fallback**: Implemented robust fallback logic (`DynamicHallName`) to fetch and display hall names even if missing from the source data.
+
+### Fixed
+- **Infinite Loading**: Resolved the perpetual loading spinner on the "Tournaments" screen by refactoring `UpcomingGamesScreen` to use Riverpod `AsyncValue` caching correctly.
+- **Data Fetching**: Unified stream management for Raffles and Tournaments to prevent unnecessary re-fetches.
+
+## [0.0.1+35] - 2026-02-18
+### Added
+- **UI Consolidation**: Unified "Raffles" and "Tournaments" into a single Exploration UI.
+- **My Items**: Active Raffles & Tournaments now appear at the top of the exploration list.
+- **Account Settings**: Added "Delete Account" functionality (GDPR/App Store compliance).
+- **Wallet History**: Added Transaction History grouped by visit/date.
+- **Security**: Restricted "Developer Options" to Super Admin role only.
+
+### Fixed
+- **Raffle Navigation**: Tapping a ticket now correctly opens the "Raffles" tab.
+
+### Todo
+- [ ] Add Legal Links (Privacy Policy, Terms of Service).
 
 ## [0.0.1+33] - 2026-02-18 - Security Hardening (Phase 48)
 

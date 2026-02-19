@@ -106,14 +106,7 @@ class ManagerDashboardScreen extends ConsumerWidget {
                         desc: "Revenue, Payouts, Taxes",
                         onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Financials Dashboard coming soon"))),
                       ),
-                       _buildModuleCard(
-                        context,
-                        title: "Personnel",
-                        icon: Icons.people,
-                        color: Colors.indigo,
-                        desc: "Manage Staff & Permissions",
-                        onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Personnel Management coming soon"))),
-                      ),
+                      // REMOVED DUPLICATE PERSONNEL TILE
                     ],
 
                     // RAFFLES (Manager+)

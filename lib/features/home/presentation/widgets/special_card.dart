@@ -45,7 +45,25 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
               ),
             ),
       title: Text(widget.special.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text(widget.special.hallName),
+      subtitle: Row(
+        children: [
+          Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
+          const SizedBox(width: 4),
+          Expanded(
+            child: widget.special.hallName.isNotEmpty
+                ? Text(
+                    widget.special.hallName,
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : DynamicHallName(hallId: widget.special.hallId),
+          ),
+        ],
+      ),
       trailing: AnimatedRotation(
         turns: _isExpanded ? 0.5 : 0.0,
         duration: const Duration(milliseconds: 200),
@@ -220,6 +238,31 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
       case 3: return 'rd';
       default: return 'th';
     }
+  }
+}
+
+class DynamicHallName extends ConsumerWidget {
+  final String hallId;
+
+  const DynamicHallName({required this.hallId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hallAsync = ref.watch(hallStreamProvider(hallId));
+    
+    return hallAsync.when(
+      data: (hall) => Text(
+        hall?.name ?? "Unknown Hall",
+        style: TextStyle(
+          color: Theme.of(context).primaryColor,
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
+        overflow: TextOverflow.ellipsis,
+      ),
+      loading: () => const Text("Loading...", style: TextStyle(fontSize: 12, color: Colors.grey)),
+      error: (_, __) => const Text("Unknown Hall", style: TextStyle(fontSize: 12, color: Colors.grey)),
+    );
   }
 }
 

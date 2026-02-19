@@ -29,6 +29,10 @@ final hallRafflesProvider = StreamProvider.family<List<RaffleModel>, String>((re
   return ref.read(hallRepositoryProvider).getRaffles(hallId);
 });
 
+final specialsFeedProvider = StreamProvider<List<SpecialModel>>((ref) {
+  return ref.watch(hallRepositoryProvider).getSpecialsFeed(null);
+});
+
 class HallRepository {
   final FirebaseFirestore _firestore;
 

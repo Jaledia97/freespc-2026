@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'my_raffles_screen.dart'; // Import MyRafflesScreen
 import 'widgets/raffle_ticket_item.dart'; // Import RaffleTicketItem
+import 'widgets/transaction_history_list.dart'; // Import TransactionHistoryList
 import '../../../services/auth_service.dart';
 import '../../wallet/repositories/wallet_repository.dart';
 import '../../../models/hall_membership_model.dart';
@@ -10,6 +11,7 @@ import '../../../models/raffle_ticket_model.dart';
 import '../../../models/tournament_participation_model.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../home/presentation/hall_profile_screen.dart';
+import '../../../models/transaction_model.dart'; // Added
 import '../../home/repositories/hall_repository.dart';
 
 class WalletScreen extends ConsumerWidget {
@@ -72,6 +74,14 @@ class WalletScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 _TournamentsList(userId: userId),
+                
+                // 4. Transaction History (Grouped)
+                 Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: const Text("History", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                ),
+                const SizedBox(height: 16),
+                TransactionHistoryList(userId: userId),
               ],
             ),
           );

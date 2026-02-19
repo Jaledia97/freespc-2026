@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../models/transaction_model.dart';
 import '../../../models/hall_membership_model.dart';
 import '../../../models/raffle_ticket_model.dart';
 import '../../../models/tournament_participation_model.dart';
@@ -16,6 +17,11 @@ final myRafflesStreamProvider = StreamProvider.family<List<RaffleTicketModel>, S
 
 final myTournamentsStreamProvider = StreamProvider.family<List<TournamentParticipationModel>, String>((ref, userId) {
   return ref.watch(walletRepositoryProvider).getMyTournaments(userId);
+});
+
+// New Stream for Transactions
+final myTransactionsStreamProvider = StreamProvider.family<List<TransactionModel>, String>((ref, userId) {
+  return ref.watch(walletRepositoryProvider).getTransactions(userId);
 });
 
 class WalletRepository {
@@ -62,6 +68,19 @@ class WalletRepository {
     });
   }
 
+  Stream<List<TransactionModel>> getTransactions(String userId) {
+    return _firestore
+    .collection('users')
+    .doc(userId)
+    .collection('transactions')
+    .orderBy('timestamp', descending: true)
+    .limit(100) // Limit to recent 100
+    .snapshots()
+    .map((snapshot) {
+      return snapshot.docs.map((doc) => TransactionModel.fromJson(doc.data())).toList();
+    });
+  }
+
   // --- Seeding ---
 
   Future<void> seedWalletData(String userId) async {
@@ -70,7 +89,7 @@ class WalletRepository {
 
     // 1. Seed Memberships (Hall Cards)
     final memberships = [
-      const HallMembershipModel(
+       HallMembershipModel(
         hallId: 'mary-esther-bingo',
         hallName: 'Mary Esther Bingo',
         balance: 1250,
@@ -78,7 +97,7 @@ class WalletRepository {
         tier: 'Gold',
         bannerUrl: 'https://images.unsplash.com/photo-1518893063132-36e465be779d?auto=format&fit=crop&w=800&q=80',
       ),
-      const HallMembershipModel(
+       HallMembershipModel(
         hallId: 'grand-bingo-1',
         hallName: 'Grand Bingo Hall',
         balance: 450,
@@ -86,7 +105,7 @@ class WalletRepository {
         tier: 'Silver',
         bannerUrl: 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?auto=format&fit=crop&w=800&q=80',
       ),
-      const HallMembershipModel(
+       HallMembershipModel(
         hallId: 'beach-bingo',
         hallName: 'Beachside Bingo',
         balance: 50,
@@ -112,6 +131,51 @@ class WalletRepository {
     final existingTournaments = await userRef.collection('tournaments').get();
     for (var doc in existingTournaments.docs) {
       batch.delete(doc.reference);
+    }
+    
+    // 4. Seed Mock Transactions
+    // Clear old
+    final existingTx = await userRef.collection('transactions').get();
+    for (var doc in existingTx.docs) {
+       batch.delete(doc.reference);
+    }
+
+    // Create new transactions across a few days
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+    final twoDaysAgo = now.subtract(const Duration(days: 2));
+
+    final transactions = [
+      // Today - Mary Esther
+      TransactionModel(
+        id: 'tx_1', userId: userId, hallId: 'mary-esther-bingo', hallName: 'Mary Esther Bingo', 
+        amount: 50, description: 'Daily Check-in', timestamp: now.subtract(const Duration(hours: 1)),
+      ),
+      TransactionModel(
+        id: 'tx_2', userId: userId, hallId: 'mary-esther-bingo', hallName: 'Mary Esther Bingo', 
+        amount: -20, description: 'Raffle Ticket Purchase', timestamp: now.subtract(const Duration(hours: 2)),
+      ),
+       TransactionModel(
+        id: 'tx_3', userId: userId, hallId: 'mary-esther-bingo', hallName: 'Mary Esther Bingo', 
+        amount: 500, description: 'Jackpot Consolation', timestamp: now.subtract(const Duration(minutes: 30)),
+      ),
+      
+      // Yesterday - Grand Bingo
+      TransactionModel(
+        id: 'tx_4', userId: userId, hallId: 'grand-bingo-1', hallName: 'Grand Bingo Hall', 
+        amount: 100, description: 'Bingo Win', timestamp: yesterday.subtract(const Duration(hours: 4)),
+      ),
+      
+      // Two Days Ago - Beach Bingo (Spend)
+       TransactionModel(
+        id: 'tx_5', userId: userId, hallId: 'beach-bingo', hallName: 'Beachside Bingo', 
+        amount: -50, description: 'Snack Bar', timestamp: twoDaysAgo.subtract(const Duration(hours: 6)),
+      ),
+    ];
+    
+    for (var tx in transactions) {
+       final doc = userRef.collection('transactions').doc(tx.id);
+       batch.set(doc, tx.toJson());
     }
 
     await batch.commit();

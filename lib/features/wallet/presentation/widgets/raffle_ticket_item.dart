@@ -23,7 +23,7 @@ class RaffleTicketItem extends ConsumerWidget {
                Navigator.push(
                  context, 
                  MaterialPageRoute(
-                   builder: (_) => HallProfileScreen(hall: hall, initialTabIndex: 1) // 1 = Raffles Tab
+                   builder: (_) => HallProfileScreen(hall: hall, initialTabIndex: 2) // 2 = Raffles Tab
                  )
                );
              } else {

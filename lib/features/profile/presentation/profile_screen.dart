@@ -8,10 +8,11 @@ import 'widgets/profile_menu.dart';
 import '../../my_halls/presentation/my_halls_screen.dart';
 import '../../manager/presentation/pin_entry_screen.dart';
 import '../../settings/presentation/display_settings_screen.dart';
+import '../../settings/presentation/account_settings_screen.dart'; // Added
 import 'my_photos_screen.dart';
 import '../../../core/utils/role_utils.dart'; // Import RoleUtils
 import '../../wallet/presentation/my_raffles_screen.dart'; // Import MyRafflesScreen
-import '../../home/presentation/tournaments_screen.dart'; // Import TournamentsScreen
+import '../../home/presentation/upcoming_games_screen.dart'; // Import UpcomingGamesScreen
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -76,6 +77,15 @@ class ProfileScreen extends ConsumerWidget {
                            title: const Text('Display Settings', style: TextStyle(color: Colors.white)),
                            onTap: () {
                              Navigator.pop(context); // Close sheet
+                             Navigator.pop(context); // Close sheet
+                             Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountSettingsScreen()));
+                           },
+                         ),
+                         ListTile(
+                           leading: const Icon(Icons.settings_display, color: Colors.blueGrey),
+                           title: const Text('Display Settings', style: TextStyle(color: Colors.white)),
+                           onTap: () {
+                             Navigator.pop(context); // Close sheet
                              Navigator.push(context, MaterialPageRoute(builder: (_) => const DisplaySettingsScreen()));
                            },
                          ),
@@ -126,7 +136,7 @@ class ProfileScreen extends ConsumerWidget {
                         "Tournaments", 
                         Icons.emoji_events, 
                         Colors.purple,
-                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TournamentsScreen())),
+                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingGamesScreen(initialCategory: 'Tournaments'))),
                       ),
                       const SizedBox(width: 8),
                       _buildActionCard(
@@ -193,13 +203,14 @@ class ProfileScreen extends ConsumerWidget {
                 const Divider(color: Colors.white10),
                 const SizedBox(height: 12),
 
-                // 4. Developer Tools (Collapsible)
+                // 4. Developer Tools (Collapsible) - RESTRICTED
+                if (user.role == 'super-admin' || ref.read(roleOverrideProvider) == 'super-admin')
                 Theme(
                   data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                   child: ExpansionTile(
-                    title: const Text("Developer Options", style: TextStyle(color: Colors.grey, fontSize: 14)),
-                    iconColor: Colors.grey,
-                    collapsedIconColor: Colors.grey,
+                    title: const Text("Developer Options", style: TextStyle(color: Colors.redAccent, fontSize: 14)),
+                    iconColor: Colors.redAccent,
+                    collapsedIconColor: Colors.redAccent,
                     children: [
                       ListTile(
                         title: const Text('ADMIN: Seed Mock Hall', style: TextStyle(color: Colors.red)),
