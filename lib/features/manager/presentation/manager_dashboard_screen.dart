@@ -7,6 +7,7 @@ import 'cms/photo_approval_screen.dart';
 import 'cms/manage_tournaments_screen.dart'; // New Import
 import 'cms/loyalty_settings_screen.dart'; // New Import
 import 'cms/bluetooth_settings_screen.dart'; // New Import
+import 'cms/manage_personnel_screen.dart'; // New Import
 import '../../profile/presentation/hall_selection_screen.dart';
 // import 'raffle_tool/raffle_tool_screen.dart'; // No longer direct link
 import '../../../../services/auth_service.dart';
@@ -168,6 +169,19 @@ class ManagerDashboardScreen extends ConsumerWidget {
                         color: Colors.blueAccent,
                         desc: "Manage Beacons (BP101E)",
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BluetoothSettingsScreen(hallId: homeHallId, hall: hall))),
+                      ),
+
+                    // PERSONNEL (Owner/SuperAdmin/Manager - only limited access for manager?)
+                    // Logic: Owners can manage managers/workers. Managers can manage workers.
+                    // RoleUtils.canManagePersonnel handles this check.
+                    if (homeHallId != null && RoleUtils.canManagePersonnel(user, homeHallId) && hall != null)
+                      _buildModuleCard(
+                        context,
+                        title: "Personnel",
+                        icon: Icons.people_alt,
+                        color: Colors.pink,
+                        desc: "Manage Staff & Roles",
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ManagePersonnelScreen(hallId: homeHallId, hall: hall, currentUser: user))),
                       ),
                   ],
                 ),

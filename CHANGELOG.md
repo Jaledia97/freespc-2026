@@ -12,6 +12,10 @@ All notable changes to the FreeSPC project will be documented in this file.
     - **Security**: PIN-authenticated access to beacon settings.
     - **UUID Sync**: One-tap rotation updates both hardware and Firestore.
     - **Signal Control**: Custom "Heartbeat" (On/Off rhythm), TX Power, and Interval sliders.
+- **Personnel Management**:
+    - **Invite System**: Deep-link based invites (`/join?hallId=`) via SMS/Share.
+    - **CMS**: New "Personnel" tile for managing staff roles (Owner, Manager, Worker).
+    - **Onboarding**: "Join Hall" flow integrated into App Launch and Auth Wrapper.
 
 ## [0.0.1+33] - 2026-02-18 - Security Hardening (Phase 48)
 
