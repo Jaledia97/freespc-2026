@@ -21,7 +21,18 @@ All notable changes to the FreeSPC project will be documented in this file.
 
 ### Fixed
 - **Infinite Loading**: Resolved the perpetual loading spinner on the "Tournaments" screen by refactoring `UpcomingGamesScreen` to use Riverpod `AsyncValue` caching correctly.
-- **Data Fetching**: Unified stream management for Raffles and Tournaments to prevent unnecessary re-fetches.
+- [x] **Data Fetching**: Unified stream management for Raffles and Tournaments to prevent unnecessary re-fetches.
+
+## [0.0.1+37] - 2026-02-19 - Store Management (Phase 52-53)
+### Added
+- **Store CMS**:
+    - **Manage Store**: Full CRUD support for managing store items (Merchandise, Food, Pull Tabs, etc.).
+    - **Item Limits**: Managers can set `Person Limit` (max items per player) and `Daily Limit` (max items sold per day).
+    - **Categorization**: Items organize into tabs: Merchandise, Food & Beverage, Sessions, Pull Tabs, Electronics, Other.
+- **Storefront**:
+    - **Consumer View**: dedicated `HallStoreScreen` for players to browse and view items.
+    - **Navigation**: "Store" button added to Hall Profile header.
+    - **Visibility**: Items can be toggled Active/Inactive instantly.
 
 ## [0.0.1+35] - 2026-02-18
 ### Added

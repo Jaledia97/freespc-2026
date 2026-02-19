@@ -9,8 +9,9 @@ import 'widgets/raffle_list_card.dart';
 import 'widgets/hall_about_tab.dart';
 import 'widgets/hall_programs_tab.dart';
 import 'widgets/tournament_list_card.dart';
-import '../../manager/repositories/tournament_repository.dart'; // Ensure this matches exactly where hallTournamentsProvider is defined
+import '../../manager/repositories/tournament_repository.dart'; // Restored Import
 import 'hall_full_gallery_screen.dart';
+import 'hall_store_screen.dart'; // Import New Store Screen
 
 class HallProfileScreen extends ConsumerWidget {
   final BingoHallModel hall;
@@ -30,7 +31,7 @@ class HallProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       body: DefaultTabController(
-        length: 5,
+        length: 5, // Reverted to 5
         initialIndex: initialTabIndex,
         child: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -218,11 +219,9 @@ class HallProfileScreen extends ConsumerWidget {
                                 // Store Button
                                 Expanded(
                                   child: InkWell(
-                                    onTap: () {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text("Store coming soon!")),
-                                        );
-                                    },
+                                      onTap: () {
+                                        Navigator.push(context, MaterialPageRoute(builder: (_) => HallStoreScreen(hallId: hall.id, hallName: hall.name)));
+                                      },
                                     borderRadius: BorderRadius.circular(30),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -267,6 +266,7 @@ class HallProfileScreen extends ConsumerWidget {
                       Tab(text: "PROGRAMS"),
                       Tab(text: "RAFFLES"),
                       Tab(text: "TOURNAMENTS"),
+                      // Store Tab Removed
                       Tab(text: "ABOUT"),
                     ],
                   ),

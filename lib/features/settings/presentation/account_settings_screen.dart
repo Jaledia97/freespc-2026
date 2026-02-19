@@ -19,7 +19,7 @@ class AccountSettingsScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Spacer(),
+
              const Text(
                "Danger Zone",
                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),

@@ -213,7 +213,7 @@ class HallMembershipCard extends ConsumerWidget {
                     style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.w900, letterSpacing: -1),
                   ),
                   Text(
-                    membership.currencyName.toUpperCase(),
+                    (hall?.loyaltySettings.currencyName ?? membership.currencyName).toUpperCase(),
                     style: const TextStyle(color: Colors.white54, fontSize: 14, letterSpacing: 1.5),
                   ),
                 ],

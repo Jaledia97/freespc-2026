@@ -8,6 +8,7 @@ import 'cms/manage_tournaments_screen.dart'; // New Import
 import 'cms/loyalty_settings_screen.dart'; // New Import
 import 'cms/bluetooth_settings_screen.dart'; // New Import
 import 'cms/manage_personnel_screen.dart'; // New Import
+import 'cms/manage_store_screen.dart'; // New Import
 import '../../profile/presentation/hall_selection_screen.dart';
 // import 'raffle_tool/raffle_tool_screen.dart'; // No longer direct link
 import '../../../../services/auth_service.dart';
@@ -140,6 +141,17 @@ class ManagerDashboardScreen extends ConsumerWidget {
                       color: Colors.teal,
                       desc: "Review tagged photos",
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoApprovalScreen(hallId: homeHallId, hallName: hall?.name ?? ''))),
+                    ),
+
+                    // STORE (Manager+)
+                     if (homeHallId != null && RoleUtils.canManageGames(user, homeHallId))
+                     _buildModuleCard(
+                      context,
+                      title: "Manage Store",
+                      icon: Icons.store_mall_directory,
+                      color: Colors.orangeAccent,
+                      desc: "Redemption Items",
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ManageStoreScreen(hallId: homeHallId))),
                     ),
 
                     // LOYALTY SETTINGS (Owner Only)

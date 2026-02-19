@@ -73,10 +73,9 @@ class ProfileScreen extends ConsumerWidget {
                            ),
                          
                          ListTile(
-                           leading: const Icon(Icons.settings_display, color: Colors.blueGrey),
-                           title: const Text('Display Settings', style: TextStyle(color: Colors.white)),
+                           leading: const Icon(Icons.manage_accounts, color: Colors.blueGrey),
+                           title: const Text('Account Settings', style: TextStyle(color: Colors.white)),
                            onTap: () {
-                             Navigator.pop(context); // Close sheet
                              Navigator.pop(context); // Close sheet
                              Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountSettingsScreen()));
                            },
