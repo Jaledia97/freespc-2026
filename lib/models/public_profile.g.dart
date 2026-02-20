@@ -15,6 +15,9 @@ _PublicProfile _$PublicProfileFromJson(Map<String, dynamic> json) =>
       photoUrl: json['photoUrl'] as String?,
       bio: json['bio'] as String?,
       points: (json['points'] as num?)?.toInt() ?? 0,
+      realNameVisibility: json['realNameVisibility'] as String? ?? 'Private',
+      onlineStatus: json['onlineStatus'] as String? ?? 'Online',
+      currentCheckInHallId: json['currentCheckInHallId'] as String?,
     );
 
 Map<String, dynamic> _$PublicProfileToJson(_PublicProfile instance) =>
@@ -26,4 +29,7 @@ Map<String, dynamic> _$PublicProfileToJson(_PublicProfile instance) =>
       'photoUrl': instance.photoUrl,
       'bio': instance.bio,
       'points': instance.points,
+      'realNameVisibility': instance.realNameVisibility,
+      'onlineStatus': instance.onlineStatus,
+      'currentCheckInHallId': instance.currentCheckInHallId,
     };

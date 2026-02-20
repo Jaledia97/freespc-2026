@@ -7,6 +7,9 @@ import 'upcoming_games_screen.dart';
 import 'upcoming_games_screen.dart';
 import 'widgets/special_card.dart';
 import '../../../services/location_service.dart';
+import '../../friends/presentation/friends_screen.dart';
+import '../../friends/presentation/find_friends_screen.dart';
+import '../../messaging/presentation/messaging_hub_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -21,11 +24,19 @@ class HomeScreen extends ConsumerWidget {
       body: CustomScrollView(
         slivers: [
           // 1. Pinned App Bar
-          const SliverAppBar(
-            title: Text('FreeSpc'),
+          SliverAppBar(
+            title: const Text('FreeSpc'),
             centerTitle: true,
             floating: true,
             pinned: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.chat_bubble_outline),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const MessagingHubScreen()));
+                },
+              )
+            ],
           ),
 
           // 2. Quick Action Bar
@@ -65,13 +76,13 @@ class HomeScreen extends ConsumerWidget {
                       icon: Icons.people,
                       label: 'Friends',
                       color: Colors.teal,
-                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming Soon"))),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FriendsScreen())),
                     ),
                     _QuickAction(
                       icon: Icons.person_search,
                       label: 'Find Friend',
                       color: Colors.blue,
-                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming Soon"))),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FindFriendsScreen())),
                     ),
 
                     const SizedBox(width: 16),

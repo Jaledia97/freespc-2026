@@ -8,6 +8,8 @@ import '../../main_layout.dart';
 import '../../onboarding/presentation/onboarding_screen.dart';
 import 'login_screen.dart';
 import '../../settings/data/display_settings_repository.dart'; // Added for sharedPreferencesProvider
+import '../../friends/repositories/friends_repository.dart'; // Added
+import '../../../models/public_profile.dart'; // Added
 
 class AuthWrapper extends ConsumerWidget {
   const AuthWrapper({super.key});
@@ -87,21 +89,24 @@ class _AuthHandlerState extends ConsumerState<_AuthHandler> {
 
   Future<void> _checkPendingInvites() async {
     final prefs = ref.read(sharedPreferencesProvider);
-    final hallId = prefs.getString('pending_join_hall');
     
-    if (hallId != null) {
-       print("Found pending invite for Hall: $hallId");
-       // Clear it immediately to prevent loop, but maybe wait until dialog confirmed?
-       // Better to clear after decision.
-       
-       if (!mounted) return;
-       
-       // Show Dialog
-       // We need context.
+    // 1. Check Hall Join
+    final hallId = prefs.getString('pending_join_hall');
+    if (hallId != null && mounted) {
        showDialog(
          context: context,
          barrierDismissible: false,
          builder: (ctx) => _JoinHallDialog(hallId: hallId, prefs: prefs),
+       );
+    }
+
+    // 2. Check Friend Request
+    final friendUid = prefs.getString('pending_add_friend');
+    if (friendUid != null && mounted) {
+       showDialog(
+         context: context,
+         barrierDismissible: false,
+         builder: (ctx) => _AddFriendDialog(friendUid: friendUid, prefs: prefs),
        );
     }
   }
@@ -181,6 +186,102 @@ class _JoinHallDialog extends ConsumerWidget {
             Navigator.pop(context);
           },
           child: const Text("Accept Invite"),
+        ),
+      ],
+    );
+  }
+}
+
+class _AddFriendDialog extends ConsumerStatefulWidget {
+  final String friendUid;
+  final SharedPreferences prefs;
+
+  const _AddFriendDialog({required this.friendUid, required this.prefs});
+
+  @override
+  ConsumerState<_AddFriendDialog> createState() => _AddFriendDialogState();
+}
+
+class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
+  PublicProfile? _profile;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfile();
+  }
+
+  Future<void> _fetchProfile() async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection('public_profiles').doc(widget.friendUid).get();
+      if (doc.exists && doc.data() != null) {
+        if (mounted) {
+          setState(() {
+            _profile = PublicProfile.fromJson(doc.data()!);
+            _isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } catch(e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const AlertDialog(
+        backgroundColor: Color(0xFF2C2C2C),
+        content: SizedBox(height: 50, child: Center(child: CircularProgressIndicator())),
+      );
+    }
+
+    if (_profile == null) {
+      widget.prefs.remove('pending_add_friend');
+      return AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2C),
+        title: const Text("User Not Found", style: TextStyle(color: Colors.white)),
+        content: const Text("This friend link is invalid or the user no longer exists.", style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK", style: TextStyle(color: Colors.blueAccent))),
+        ]
+      );
+    }
+
+    return AlertDialog(
+      backgroundColor: const Color(0xFF2C2C2C),
+      title: const Text("Add Friend?", style: TextStyle(color: Colors.white)),
+      content: Text(
+        "Send friend request to @${_profile!.username}?",
+        style: const TextStyle(color: Colors.white70),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            widget.prefs.remove('pending_add_friend');
+            Navigator.pop(context);
+          },
+          child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+          onPressed: () async {
+            final user = ref.read(userProfileProvider).value;
+            if (user != null) {
+               try {
+                 await ref.read(friendsRepositoryProvider).sendFriendRequest(user.uid, widget.friendUid);
+                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Friend Request Sent!"), backgroundColor: Colors.green));
+               } catch (e) {
+                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+               }
+            }
+            widget.prefs.remove('pending_add_friend');
+            Navigator.pop(context);
+          },
+          child: const Text("Send Request", style: TextStyle(color: Colors.white)),
         ),
       ],
     );

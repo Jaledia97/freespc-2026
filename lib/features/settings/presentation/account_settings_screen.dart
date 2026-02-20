@@ -8,6 +8,8 @@ class AccountSettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProfileProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
       appBar: AppBar(
@@ -15,17 +17,71 @@ class AccountSettingsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
+      body: userAsync.when(
+        data: (user) {
+          if (user == null) return const Center(child: Text("User not found", style: TextStyle(color: Colors.white)));
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Privacy", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+                const Divider(color: Colors.blueAccent),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Real Name Visibility', style: TextStyle(color: Colors.white)),
+                  subtitle: const Text('Who can see your real name.', style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  trailing: DropdownButton<String>(
+                    value: user.realNameVisibility,
+                    dropdownColor: const Color(0xFF2C2C2C),
+                    style: const TextStyle(color: Colors.white),
+                    underline: const SizedBox(),
+                    items: const [
+                      DropdownMenuItem(value: 'Private', child: Text('Private', style: TextStyle(color: Colors.grey))),
+                      DropdownMenuItem(value: 'Friends Only', child: Text('Friends Only', style: TextStyle(color: Colors.amber))),
+                      DropdownMenuItem(value: 'Everyone', child: Text('Everyone', style: TextStyle(color: Colors.green))),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        ref.read(authServiceProvider).updateUserProfile(user.uid, realNameVisibility: val);
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                const Text("Presence", style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
+                const Divider(color: Colors.greenAccent),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Online Status', style: TextStyle(color: Colors.white)),
+                  subtitle: const Text('How others see your current status.', style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  trailing: DropdownButton<String>(
+                    value: user.onlineStatus,
+                    dropdownColor: const Color(0xFF2C2C2C),
+                    style: const TextStyle(color: Colors.white),
+                    underline: const SizedBox(),
+                    items: const [
+                      DropdownMenuItem(value: 'Online', child: Text('Online', style: TextStyle(color: Colors.green))),
+                      DropdownMenuItem(value: 'Away', child: Text('Away', style: TextStyle(color: Colors.amber))),
+                      DropdownMenuItem(value: 'Offline', child: Text('Offline', style: TextStyle(color: Colors.grey))),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        ref.read(authServiceProvider).updateUserProfile(user.uid, onlineStatus: val);
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 48),
 
-             const Text(
+                 const Text(
                "Danger Zone",
                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
              ),
              const Divider(color: Colors.redAccent),
              ListTile(
+               contentPadding: EdgeInsets.zero,
                title: const Text('Delete Account', style: TextStyle(color: Colors.red)),
                subtitle: const Text('Permanently remove your data. This cannot be undone.', style: TextStyle(color: Colors.white38, fontSize: 12)),
                leading: const Icon(Icons.delete_forever, color: Colors.red),
@@ -69,8 +125,12 @@ class AccountSettingsScreen extends ConsumerWidget {
                  }
                },
              ),
-          ],
-        ),
+              ],
+            ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, st) => Center(child: Text("Error: $e", style: const TextStyle(color: Colors.red))),
       ),
     );
   }

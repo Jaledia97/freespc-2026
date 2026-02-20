@@ -22,6 +22,9 @@ abstract class UserModel with _$UserModel {
     String? photoUrl,
     String? bannerUrl,
     @Default([]) List<String> following,
+    @Default('Private') String realNameVisibility, // 'Private', 'Friends Only', 'Everyone'
+    @Default('Online') String onlineStatus,
+    String? currentCheckInHallId,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, Object?> json) => _$UserModelFromJson(json);

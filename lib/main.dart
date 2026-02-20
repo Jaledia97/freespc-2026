@@ -72,22 +72,23 @@ class _MyAppState extends ConsumerState<MyApp> {
   }
 
   void _handleLink(Uri uri) async {
-    // Expected format: https://freespc.app/join?hallId=...
-    // Or scheme: freespc://join?hallId=...
-    // We look for 'hallId' query parameter
+    // Shared Preferences logic
+    final prefs = await SharedPreferences.getInstance();
+
     final hallId = uri.queryParameters['hallId'];
     if (hallId != null) {
       print("Deep Link Detected: Joining Hall $hallId");
-      // Store pending invite in SharedPreferences
-      final prefs = await SharedPreferences.getInstance(); // Or ref.read if available (but init is tricky)
-      // Actually, we can use the provider override we set in main() if we access it, but simpler here:
       await prefs.setString('pending_join_hall', hallId);
-      
-      // If user is already logged in and app is running, AuthWrapper might need a signal.
-      // We can invalidate a provider or just rely on AuthWrapper checking prefs on next build/resume.
-      // Ideally, we use a StateProvider for "pendingInvite".
-      // For now, let's rely on AuthWrapper checking prefs.
       ref.invalidate(pendingInviteProvider);
+      return;
+    }
+
+    final uid = uri.queryParameters['uid'];
+    if (uri.toString().contains('add_friend') && uid != null) {
+      print("Deep Link Detected: Add Friend $uid");
+      await prefs.setString('pending_add_friend', uid);
+      ref.invalidate(pendingInviteProvider);
+      return;
     }
   }
 

@@ -16,7 +16,8 @@ T _$identity<T>(T value) => value;
 mixin _$UserModel {
 
  String get uid; String get email; String get firstName; String get lastName; String get username; DateTime get birthday; String? get phoneNumber; String? get recoveryEmail; String get role;// superadmin, admin, owner, manager, worker, player
- int get currentPoints; String? get homeBaseId; String? get qrToken; String? get bio; String? get photoUrl; String? get bannerUrl; List<String> get following;
+ int get currentPoints; String? get homeBaseId; String? get qrToken; String? get bio; String? get photoUrl; String? get bannerUrl; List<String> get following; String get realNameVisibility;// 'Private', 'Friends Only', 'Everyone'
+ String get onlineStatus; String? get currentCheckInHallId;
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +30,16 @@ $UserModelCopyWith<UserModel> get copyWith => _$UserModelCopyWithImpl<UserModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.email, email) || other.email == email)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.birthday, birthday) || other.birthday == birthday)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.recoveryEmail, recoveryEmail) || other.recoveryEmail == recoveryEmail)&&(identical(other.role, role) || other.role == role)&&(identical(other.currentPoints, currentPoints) || other.currentPoints == currentPoints)&&(identical(other.homeBaseId, homeBaseId) || other.homeBaseId == homeBaseId)&&(identical(other.qrToken, qrToken) || other.qrToken == qrToken)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&const DeepCollectionEquality().equals(other.following, following));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.email, email) || other.email == email)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.birthday, birthday) || other.birthday == birthday)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.recoveryEmail, recoveryEmail) || other.recoveryEmail == recoveryEmail)&&(identical(other.role, role) || other.role == role)&&(identical(other.currentPoints, currentPoints) || other.currentPoints == currentPoints)&&(identical(other.homeBaseId, homeBaseId) || other.homeBaseId == homeBaseId)&&(identical(other.qrToken, qrToken) || other.qrToken == qrToken)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&const DeepCollectionEquality().equals(other.following, following)&&(identical(other.realNameVisibility, realNameVisibility) || other.realNameVisibility == realNameVisibility)&&(identical(other.onlineStatus, onlineStatus) || other.onlineStatus == onlineStatus)&&(identical(other.currentCheckInHallId, currentCheckInHallId) || other.currentCheckInHallId == currentCheckInHallId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uid,email,firstName,lastName,username,birthday,phoneNumber,recoveryEmail,role,currentPoints,homeBaseId,qrToken,bio,photoUrl,bannerUrl,const DeepCollectionEquality().hash(following));
+int get hashCode => Object.hashAll([runtimeType,uid,email,firstName,lastName,username,birthday,phoneNumber,recoveryEmail,role,currentPoints,homeBaseId,qrToken,bio,photoUrl,bannerUrl,const DeepCollectionEquality().hash(following),realNameVisibility,onlineStatus,currentCheckInHallId]);
 
 @override
 String toString() {
-  return 'UserModel(uid: $uid, email: $email, firstName: $firstName, lastName: $lastName, username: $username, birthday: $birthday, phoneNumber: $phoneNumber, recoveryEmail: $recoveryEmail, role: $role, currentPoints: $currentPoints, homeBaseId: $homeBaseId, qrToken: $qrToken, bio: $bio, photoUrl: $photoUrl, bannerUrl: $bannerUrl, following: $following)';
+  return 'UserModel(uid: $uid, email: $email, firstName: $firstName, lastName: $lastName, username: $username, birthday: $birthday, phoneNumber: $phoneNumber, recoveryEmail: $recoveryEmail, role: $role, currentPoints: $currentPoints, homeBaseId: $homeBaseId, qrToken: $qrToken, bio: $bio, photoUrl: $photoUrl, bannerUrl: $bannerUrl, following: $following, realNameVisibility: $realNameVisibility, onlineStatus: $onlineStatus, currentCheckInHallId: $currentCheckInHallId)';
 }
 
 
@@ -49,7 +50,7 @@ abstract mixin class $UserModelCopyWith<$Res>  {
   factory $UserModelCopyWith(UserModel value, $Res Function(UserModel) _then) = _$UserModelCopyWithImpl;
 @useResult
 $Res call({
- String uid, String email, String firstName, String lastName, String username, DateTime birthday, String? phoneNumber, String? recoveryEmail, String role, int currentPoints, String? homeBaseId, String? qrToken, String? bio, String? photoUrl, String? bannerUrl, List<String> following
+ String uid, String email, String firstName, String lastName, String username, DateTime birthday, String? phoneNumber, String? recoveryEmail, String role, int currentPoints, String? homeBaseId, String? qrToken, String? bio, String? photoUrl, String? bannerUrl, List<String> following, String realNameVisibility, String onlineStatus, String? currentCheckInHallId
 });
 
 
@@ -66,7 +67,7 @@ class _$UserModelCopyWithImpl<$Res>
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? email = null,Object? firstName = null,Object? lastName = null,Object? username = null,Object? birthday = null,Object? phoneNumber = freezed,Object? recoveryEmail = freezed,Object? role = null,Object? currentPoints = null,Object? homeBaseId = freezed,Object? qrToken = freezed,Object? bio = freezed,Object? photoUrl = freezed,Object? bannerUrl = freezed,Object? following = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? email = null,Object? firstName = null,Object? lastName = null,Object? username = null,Object? birthday = null,Object? phoneNumber = freezed,Object? recoveryEmail = freezed,Object? role = null,Object? currentPoints = null,Object? homeBaseId = freezed,Object? qrToken = freezed,Object? bio = freezed,Object? photoUrl = freezed,Object? bannerUrl = freezed,Object? following = null,Object? realNameVisibility = null,Object? onlineStatus = null,Object? currentCheckInHallId = freezed,}) {
   return _then(_self.copyWith(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -84,7 +85,10 @@ as String?,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non
 as String?,photoUrl: freezed == photoUrl ? _self.photoUrl : photoUrl // ignore: cast_nullable_to_non_nullable
 as String?,bannerUrl: freezed == bannerUrl ? _self.bannerUrl : bannerUrl // ignore: cast_nullable_to_non_nullable
 as String?,following: null == following ? _self.following : following // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,realNameVisibility: null == realNameVisibility ? _self.realNameVisibility : realNameVisibility // ignore: cast_nullable_to_non_nullable
+as String,onlineStatus: null == onlineStatus ? _self.onlineStatus : onlineStatus // ignore: cast_nullable_to_non_nullable
+as String,currentCheckInHallId: freezed == currentCheckInHallId ? _self.currentCheckInHallId : currentCheckInHallId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -169,10 +173,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  String email,  String firstName,  String lastName,  String username,  DateTime birthday,  String? phoneNumber,  String? recoveryEmail,  String role,  int currentPoints,  String? homeBaseId,  String? qrToken,  String? bio,  String? photoUrl,  String? bannerUrl,  List<String> following)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  String email,  String firstName,  String lastName,  String username,  DateTime birthday,  String? phoneNumber,  String? recoveryEmail,  String role,  int currentPoints,  String? homeBaseId,  String? qrToken,  String? bio,  String? photoUrl,  String? bannerUrl,  List<String> following,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
-return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.username,_that.birthday,_that.phoneNumber,_that.recoveryEmail,_that.role,_that.currentPoints,_that.homeBaseId,_that.qrToken,_that.bio,_that.photoUrl,_that.bannerUrl,_that.following);case _:
+return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.username,_that.birthday,_that.phoneNumber,_that.recoveryEmail,_that.role,_that.currentPoints,_that.homeBaseId,_that.qrToken,_that.bio,_that.photoUrl,_that.bannerUrl,_that.following,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId);case _:
   return orElse();
 
 }
@@ -190,10 +194,10 @@ return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.usern
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  String email,  String firstName,  String lastName,  String username,  DateTime birthday,  String? phoneNumber,  String? recoveryEmail,  String role,  int currentPoints,  String? homeBaseId,  String? qrToken,  String? bio,  String? photoUrl,  String? bannerUrl,  List<String> following)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  String email,  String firstName,  String lastName,  String username,  DateTime birthday,  String? phoneNumber,  String? recoveryEmail,  String role,  int currentPoints,  String? homeBaseId,  String? qrToken,  String? bio,  String? photoUrl,  String? bannerUrl,  List<String> following,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId)  $default,) {final _that = this;
 switch (_that) {
 case _UserModel():
-return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.username,_that.birthday,_that.phoneNumber,_that.recoveryEmail,_that.role,_that.currentPoints,_that.homeBaseId,_that.qrToken,_that.bio,_that.photoUrl,_that.bannerUrl,_that.following);case _:
+return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.username,_that.birthday,_that.phoneNumber,_that.recoveryEmail,_that.role,_that.currentPoints,_that.homeBaseId,_that.qrToken,_that.bio,_that.photoUrl,_that.bannerUrl,_that.following,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -210,10 +214,10 @@ return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.usern
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  String email,  String firstName,  String lastName,  String username,  DateTime birthday,  String? phoneNumber,  String? recoveryEmail,  String role,  int currentPoints,  String? homeBaseId,  String? qrToken,  String? bio,  String? photoUrl,  String? bannerUrl,  List<String> following)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  String email,  String firstName,  String lastName,  String username,  DateTime birthday,  String? phoneNumber,  String? recoveryEmail,  String role,  int currentPoints,  String? homeBaseId,  String? qrToken,  String? bio,  String? photoUrl,  String? bannerUrl,  List<String> following,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId)?  $default,) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
-return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.username,_that.birthday,_that.phoneNumber,_that.recoveryEmail,_that.role,_that.currentPoints,_that.homeBaseId,_that.qrToken,_that.bio,_that.photoUrl,_that.bannerUrl,_that.following);case _:
+return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.username,_that.birthday,_that.phoneNumber,_that.recoveryEmail,_that.role,_that.currentPoints,_that.homeBaseId,_that.qrToken,_that.bio,_that.photoUrl,_that.bannerUrl,_that.following,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId);case _:
   return null;
 
 }
@@ -225,7 +229,7 @@ return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.usern
 @JsonSerializable()
 
 class _UserModel implements UserModel {
-  const _UserModel({required this.uid, required this.email, required this.firstName, required this.lastName, required this.username, required this.birthday, this.phoneNumber, this.recoveryEmail, this.role = 'player', this.currentPoints = 0, this.homeBaseId, this.qrToken, this.bio, this.photoUrl, this.bannerUrl, final  List<String> following = const []}): _following = following;
+  const _UserModel({required this.uid, required this.email, required this.firstName, required this.lastName, required this.username, required this.birthday, this.phoneNumber, this.recoveryEmail, this.role = 'player', this.currentPoints = 0, this.homeBaseId, this.qrToken, this.bio, this.photoUrl, this.bannerUrl, final  List<String> following = const [], this.realNameVisibility = 'Private', this.onlineStatus = 'Online', this.currentCheckInHallId}): _following = following;
   factory _UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
 
 @override final  String uid;
@@ -251,6 +255,10 @@ class _UserModel implements UserModel {
   return EqualUnmodifiableListView(_following);
 }
 
+@override@JsonKey() final  String realNameVisibility;
+// 'Private', 'Friends Only', 'Everyone'
+@override@JsonKey() final  String onlineStatus;
+@override final  String? currentCheckInHallId;
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
@@ -265,16 +273,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.email, email) || other.email == email)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.birthday, birthday) || other.birthday == birthday)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.recoveryEmail, recoveryEmail) || other.recoveryEmail == recoveryEmail)&&(identical(other.role, role) || other.role == role)&&(identical(other.currentPoints, currentPoints) || other.currentPoints == currentPoints)&&(identical(other.homeBaseId, homeBaseId) || other.homeBaseId == homeBaseId)&&(identical(other.qrToken, qrToken) || other.qrToken == qrToken)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&const DeepCollectionEquality().equals(other._following, _following));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.email, email) || other.email == email)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.birthday, birthday) || other.birthday == birthday)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.recoveryEmail, recoveryEmail) || other.recoveryEmail == recoveryEmail)&&(identical(other.role, role) || other.role == role)&&(identical(other.currentPoints, currentPoints) || other.currentPoints == currentPoints)&&(identical(other.homeBaseId, homeBaseId) || other.homeBaseId == homeBaseId)&&(identical(other.qrToken, qrToken) || other.qrToken == qrToken)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&const DeepCollectionEquality().equals(other._following, _following)&&(identical(other.realNameVisibility, realNameVisibility) || other.realNameVisibility == realNameVisibility)&&(identical(other.onlineStatus, onlineStatus) || other.onlineStatus == onlineStatus)&&(identical(other.currentCheckInHallId, currentCheckInHallId) || other.currentCheckInHallId == currentCheckInHallId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uid,email,firstName,lastName,username,birthday,phoneNumber,recoveryEmail,role,currentPoints,homeBaseId,qrToken,bio,photoUrl,bannerUrl,const DeepCollectionEquality().hash(_following));
+int get hashCode => Object.hashAll([runtimeType,uid,email,firstName,lastName,username,birthday,phoneNumber,recoveryEmail,role,currentPoints,homeBaseId,qrToken,bio,photoUrl,bannerUrl,const DeepCollectionEquality().hash(_following),realNameVisibility,onlineStatus,currentCheckInHallId]);
 
 @override
 String toString() {
-  return 'UserModel(uid: $uid, email: $email, firstName: $firstName, lastName: $lastName, username: $username, birthday: $birthday, phoneNumber: $phoneNumber, recoveryEmail: $recoveryEmail, role: $role, currentPoints: $currentPoints, homeBaseId: $homeBaseId, qrToken: $qrToken, bio: $bio, photoUrl: $photoUrl, bannerUrl: $bannerUrl, following: $following)';
+  return 'UserModel(uid: $uid, email: $email, firstName: $firstName, lastName: $lastName, username: $username, birthday: $birthday, phoneNumber: $phoneNumber, recoveryEmail: $recoveryEmail, role: $role, currentPoints: $currentPoints, homeBaseId: $homeBaseId, qrToken: $qrToken, bio: $bio, photoUrl: $photoUrl, bannerUrl: $bannerUrl, following: $following, realNameVisibility: $realNameVisibility, onlineStatus: $onlineStatus, currentCheckInHallId: $currentCheckInHallId)';
 }
 
 
@@ -285,7 +293,7 @@ abstract mixin class _$UserModelCopyWith<$Res> implements $UserModelCopyWith<$Re
   factory _$UserModelCopyWith(_UserModel value, $Res Function(_UserModel) _then) = __$UserModelCopyWithImpl;
 @override @useResult
 $Res call({
- String uid, String email, String firstName, String lastName, String username, DateTime birthday, String? phoneNumber, String? recoveryEmail, String role, int currentPoints, String? homeBaseId, String? qrToken, String? bio, String? photoUrl, String? bannerUrl, List<String> following
+ String uid, String email, String firstName, String lastName, String username, DateTime birthday, String? phoneNumber, String? recoveryEmail, String role, int currentPoints, String? homeBaseId, String? qrToken, String? bio, String? photoUrl, String? bannerUrl, List<String> following, String realNameVisibility, String onlineStatus, String? currentCheckInHallId
 });
 
 
@@ -302,7 +310,7 @@ class __$UserModelCopyWithImpl<$Res>
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? email = null,Object? firstName = null,Object? lastName = null,Object? username = null,Object? birthday = null,Object? phoneNumber = freezed,Object? recoveryEmail = freezed,Object? role = null,Object? currentPoints = null,Object? homeBaseId = freezed,Object? qrToken = freezed,Object? bio = freezed,Object? photoUrl = freezed,Object? bannerUrl = freezed,Object? following = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? email = null,Object? firstName = null,Object? lastName = null,Object? username = null,Object? birthday = null,Object? phoneNumber = freezed,Object? recoveryEmail = freezed,Object? role = null,Object? currentPoints = null,Object? homeBaseId = freezed,Object? qrToken = freezed,Object? bio = freezed,Object? photoUrl = freezed,Object? bannerUrl = freezed,Object? following = null,Object? realNameVisibility = null,Object? onlineStatus = null,Object? currentCheckInHallId = freezed,}) {
   return _then(_UserModel(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -320,7 +328,10 @@ as String?,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non
 as String?,photoUrl: freezed == photoUrl ? _self.photoUrl : photoUrl // ignore: cast_nullable_to_non_nullable
 as String?,bannerUrl: freezed == bannerUrl ? _self.bannerUrl : bannerUrl // ignore: cast_nullable_to_non_nullable
 as String?,following: null == following ? _self._following : following // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,realNameVisibility: null == realNameVisibility ? _self.realNameVisibility : realNameVisibility // ignore: cast_nullable_to_non_nullable
+as String,onlineStatus: null == onlineStatus ? _self.onlineStatus : onlineStatus // ignore: cast_nullable_to_non_nullable
+as String,currentCheckInHallId: freezed == currentCheckInHallId ? _self.currentCheckInHallId : currentCheckInHallId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

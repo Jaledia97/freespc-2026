@@ -13,6 +13,9 @@ abstract class PublicProfile with _$PublicProfile {
     String? photoUrl,
     String? bio,
     @Default(0) int points, // syncing points for potential leaderboards? kept simple for now
+    @Default('Private') String realNameVisibility,
+    @Default('Online') String onlineStatus,
+    String? currentCheckInHallId,
   }) = _PublicProfile;
 
   factory PublicProfile.fromJson(Map<String, Object?> json) => _$PublicProfileFromJson(json);

@@ -13,6 +13,8 @@ import 'my_photos_screen.dart';
 import '../../../core/utils/role_utils.dart'; // Import RoleUtils
 import '../../wallet/presentation/my_raffles_screen.dart'; // Import MyRafflesScreen
 import '../../home/presentation/upcoming_games_screen.dart'; // Import UpcomingGamesScreen
+import '../../friends/presentation/friends_screen.dart'; // Import FriendsScreen
+import '../../messaging/presentation/messaging_hub_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -29,6 +31,12 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const MessagingHubScreen()));
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
@@ -119,31 +127,47 @@ class ProfileScreen extends ConsumerWidget {
                 
                 const SizedBox(height: 32),
 
-                // 2. Action Grid (Tournaments & Raffles)
-                  Row(
+                // 2. Action Grid (Gallery, Friends, Tournaments, Raffles)
+                  Column(
                     children: [
-                      _buildActionCard(
-                        context, 
-                        "Gallery", 
-                        Icons.photo_camera, 
-                        Colors.pinkAccent,
-                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyPhotosScreen())),
+                      Row(
+                        children: [
+                          _buildActionCard(
+                            context, 
+                            "Gallery", 
+                            Icons.photo_camera, 
+                            Colors.pinkAccent,
+                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyPhotosScreen())),
+                          ),
+                          const SizedBox(width: 8),
+                          _buildActionCard(
+                            context, 
+                            "Friends", 
+                            Icons.people, 
+                            Colors.greenAccent,
+                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FriendsScreen())),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      _buildActionCard(
-                        context, 
-                        "Tournaments", 
-                        Icons.emoji_events, 
-                        Colors.purple,
-                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingGamesScreen(initialCategory: 'Tournaments'))),
-                      ),
-                      const SizedBox(width: 8),
-                      _buildActionCard(
-                        context, 
-                        "Raffles", 
-                        Icons.local_activity, 
-                        Colors.orange,
-                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRafflesScreen())),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          _buildActionCard(
+                            context, 
+                            "Tournaments", 
+                            Icons.emoji_events, 
+                            Colors.purple,
+                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingGamesScreen(initialCategory: 'Tournaments'))),
+                          ),
+                          const SizedBox(width: 8),
+                          _buildActionCard(
+                            context, 
+                            "Raffles", 
+                            Icons.local_activity, 
+                            Colors.orange,
+                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRafflesScreen())),
+                          ),
+                        ],
                       ),
                     ],
                   ),

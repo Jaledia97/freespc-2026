@@ -7,12 +7,10 @@ import 'widgets/transaction_history_list.dart'; // Import TransactionHistoryList
 import '../../../services/auth_service.dart';
 import '../../wallet/repositories/wallet_repository.dart';
 import '../../../models/hall_membership_model.dart';
-import '../../../models/raffle_ticket_model.dart';
 import '../../../models/tournament_participation_model.dart';
 import '../../../core/widgets/glass_container.dart';
-import '../../home/presentation/hall_profile_screen.dart';
-import '../../../models/transaction_model.dart'; // Added
 import '../../home/repositories/hall_repository.dart';
+import '../../messaging/presentation/messaging_hub_screen.dart';
 
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
@@ -27,6 +25,14 @@ class WalletScreen extends ConsumerWidget {
         title: const Text('My Wallet'),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const MessagingHubScreen()));
+            },
+          ),
+        ],
       ),
       body: userAsync.when(
         data: (user) {

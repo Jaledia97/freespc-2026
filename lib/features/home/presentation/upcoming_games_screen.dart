@@ -65,7 +65,7 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
     }
 
     return PopScope(
-      canPop: _selectedCategory == null,
+      canPop: _selectedCategory == null || widget.initialCategory != null,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         setState(() {
@@ -76,7 +76,7 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(_selectedCategory ?? 'Upcoming Games'),
-          leading: _selectedCategory != null 
+          leading: (_selectedCategory != null && widget.initialCategory == null)
             ? IconButton(
                 icon: const Icon(Icons.arrow_back), 
                 onPressed: () => setState(() {

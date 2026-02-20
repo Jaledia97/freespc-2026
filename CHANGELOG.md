@@ -1,8 +1,14 @@
 # Changelog
 
-# Changelog
-
 All notable changes to the FreeSPC project will be documented in this file.
+
+## [0.0.1+57] - 2026-02-20 - Store Redemption (Phase 57)
+
+### Added
+- **Store Redemption**: Users can now spend their earned points in the Hall Store.
+- **Quantity Picker**: Added a responsive quantity picker to store items.
+- **Limit Enforcement**: `perCustomerLimit` is actively enforced on the quantity picker.
+- **Backend Transaction**: Secure Point deduction (Membership and Global) alongside a `spend` transaction log.
 
 ## [0.0.1+34] - 2026-02-18 - Bluetooth & Beacon Support (Phase 48)
 

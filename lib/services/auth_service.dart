@@ -168,12 +168,18 @@ class AuthService {
     String? username,
     String? bio,
     String? email, // Optional if we allow email changes
+    String? realNameVisibility,
+    String? onlineStatus,
+    String? currentCheckInHallId,
   }) async {
     final Map<String, dynamic> updates = {};
     if (firstName != null) updates['firstName'] = firstName;
     if (lastName != null) updates['lastName'] = lastName;
     if (username != null) updates['username'] = username;
     if (bio != null) updates['bio'] = bio;
+    if (realNameVisibility != null) updates['realNameVisibility'] = realNameVisibility;
+    if (onlineStatus != null) updates['onlineStatus'] = onlineStatus;
+    if (currentCheckInHallId != null) updates['currentCheckInHallId'] = currentCheckInHallId;
     
     // Safety check just in case
     if (updates.isEmpty) return;
@@ -189,11 +195,11 @@ class AuthService {
       if (firstName != null) publicUpdates['firstName'] = firstName;
       if (lastName != null) publicUpdates['lastName'] = lastName;
       if (bio != null) publicUpdates['bio'] = bio;
+      if (realNameVisibility != null) publicUpdates['realNameVisibility'] = realNameVisibility;
+      if (onlineStatus != null) publicUpdates['onlineStatus'] = onlineStatus;
+      if (currentCheckInHallId != null) publicUpdates['currentCheckInHallId'] = currentCheckInHallId;
       
       // If we have public updates, apply them. 
-      // Note: If the public profile doesn't exist, we might want to set it, 
-      // but 'update' will fail if doc missing. Use set with merge if uncertain, 
-      // but here we assume parity. Safe approach: set(..., SetOptions(merge: true))
       if (publicUpdates.isNotEmpty) {
          await _firestore.collection('public_profiles').doc(uid).set(publicUpdates, SetOptions(merge: true));
       }
