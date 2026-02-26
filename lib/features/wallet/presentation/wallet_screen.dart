@@ -107,10 +107,12 @@ class _HallCardsParams extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final membershipsAsync = ref.watch(myMembershipsStreamProvider((userId: userId, followingIds: followingIds)));
+    final membershipsAsync = ref.watch(myMembershipsStreamProvider(userId));
 
     return membershipsAsync.when(
-      data: (memberships) {
+      data: (allMemberships) {
+        final memberships = allMemberships.where((m) => followingIds.contains(m.hallId)).toList();
+
         if (memberships.isEmpty) {
           return Center(
             child: SizedBox(

@@ -7,8 +7,8 @@ import '../../../models/tournament_participation_model.dart';
 
 final walletRepositoryProvider = Provider((ref) => WalletRepository(FirebaseFirestore.instance));
 
-final myMembershipsStreamProvider = StreamProvider.family<List<HallMembershipModel>, ({String userId, List<String> followingIds})>((ref, args) {
-  return ref.watch(walletRepositoryProvider).getMemberships(args.userId, args.followingIds);
+final myMembershipsStreamProvider = StreamProvider.family<List<HallMembershipModel>, String>((ref, userId) {
+  return ref.watch(walletRepositoryProvider).getMemberships(userId);
 });
 
 final myRafflesStreamProvider = StreamProvider.family<List<RaffleTicketModel>, String>((ref, userId) {
@@ -31,16 +31,14 @@ class WalletRepository {
 
   // --- Streams ---
 
-  Stream<List<HallMembershipModel>> getMemberships(String userId, List<String> followingIds) {
+  Stream<List<HallMembershipModel>> getMemberships(String userId) {
     return _firestore
     .collection('users')
     .doc(userId)
     .collection('memberships')
     .snapshots()
     .map((snapshot) {
-      final allMemberships = snapshot.docs.map((doc) => HallMembershipModel.fromJson(doc.data())).toList();
-      // Only return memberships for halls the user is currently following
-      return allMemberships.where((m) => followingIds.contains(m.hallId)).toList();
+      return snapshot.docs.map((doc) => HallMembershipModel.fromJson(doc.data())).toList();
     });
   }
 

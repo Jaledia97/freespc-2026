@@ -25,6 +25,7 @@ abstract class UserModel with _$UserModel {
     @Default('Private') String realNameVisibility, // 'Private', 'Friends Only', 'Everyone'
     @Default('Online') String onlineStatus,
     String? currentCheckInHallId,
+    @Default([]) List<String> blockedUsers, // Array of User IDs this user has blocked
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, Object?> json) => _$UserModelFromJson(json);

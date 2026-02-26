@@ -40,6 +40,8 @@ abstract class BingoHallModel with _$BingoHallModel {
     @Default([]) List<HallCharityModel> charities,
     // Loyalty Configuration
     @Default(LoyaltySettings()) LoyaltySettings loyaltySettings,
+    // Store Categories
+    @Default(['Merchandise', 'Food & Beverage', 'Sessions', 'Pull Tabs', 'Electronics', 'Other']) List<String> storeCategories,
   }) = _BingoHallModel;
 
   factory BingoHallModel.fromJson(Map<String, dynamic> json) =>

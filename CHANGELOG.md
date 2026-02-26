@@ -2,6 +2,15 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+59] - 2026-02-26 - S-Tier Chat & Privacy (Phase 59)
+
+### Added
+- **Privacy Settings**: Added `BlockedUsersScreen` to manage blocked accounts (unblocking support).
+- **User Blocking**: Users can now block others directly from a 1-on-1 chat, which purges them from the Inbox feed and replaces future group messages with a placeholder.
+- **Reporting System**: Universal report functionality to flag explicit chats or abusive users globally.
+- **Chat Muting**: Users can toggle muting for any chat thread via the top right menu options.
+- **Card UI Refinements**: `SpecialCard` expansion area is now strictly locked to the text container, and the OS native Share button elegantly overlays the top right of featured images.
+
 ## [0.0.1+58] - 2026-02-25 - Stability Patch
 
 ### Fixed

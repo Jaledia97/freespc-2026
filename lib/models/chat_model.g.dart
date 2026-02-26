@@ -26,6 +26,9 @@ _ChatModel _$ChatModelFromJson(Map<String, dynamic> json) => _ChatModel(
         (k, e) => MapEntry(k, (e as num).toInt()),
       ) ??
       const {},
+  mutedBy:
+      (json['mutedBy'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$ChatModelToJson(_ChatModel instance) =>
@@ -39,4 +42,5 @@ Map<String, dynamic> _$ChatModelToJson(_ChatModel instance) =>
       'lastMessageAt': instance.lastMessageAt.toIso8601String(),
       'lastMessageSenderId': instance.lastMessageSenderId,
       'unreadCounts': instance.unreadCounts,
+      'mutedBy': instance.mutedBy,
     };

@@ -17,6 +17,7 @@ abstract class ChatModel with _$ChatModel {
     required DateTime lastMessageAt,
     @Default('') String lastMessageSenderId,
     @Default({}) Map<String, int> unreadCounts,
+    @Default([]) List<String> mutedBy, // Array of User IDs who muted this chat
   }) = _ChatModel;
 
   factory ChatModel.fromJson(Map<String, Object?> json) => _$ChatModelFromJson(json);

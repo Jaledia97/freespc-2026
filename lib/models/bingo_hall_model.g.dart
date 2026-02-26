@@ -43,6 +43,18 @@ _BingoHallModel _$BingoHallModelFromJson(Map<String, dynamic> json) =>
           : LoyaltySettings.fromJson(
               json['loyaltySettings'] as Map<String, dynamic>,
             ),
+      storeCategories:
+          (json['storeCategories'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [
+            'Merchandise',
+            'Food & Beverage',
+            'Sessions',
+            'Pull Tabs',
+            'Electronics',
+            'Other',
+          ],
     );
 
 Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
@@ -69,6 +81,7 @@ Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
       'programs': instance.programs.map((e) => e.toJson()).toList(),
       'charities': instance.charities.map((e) => e.toJson()).toList(),
       'loyaltySettings': instance.loyaltySettings.toJson(),
+      'storeCategories': instance.storeCategories,
     };
 
 _LoyaltySettings _$LoyaltySettingsFromJson(Map<String, dynamic> json) =>

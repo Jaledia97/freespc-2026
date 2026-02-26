@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:add_2_calendar/add_2_calendar.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../models/special_model.dart';
 import '../../repositories/hall_repository.dart';
 import '../hall_profile_screen.dart';
@@ -64,10 +65,27 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
           ),
         ],
       ),
-      trailing: AnimatedRotation(
-        turns: _isExpanded ? 0.5 : 0.0,
-        duration: const Duration(milliseconds: 200),
-        child: Icon(Icons.expand_more, color: Theme.of(context).primaryColor),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!widget.isFeatured)
+            IconButton(
+              icon: const Icon(Icons.share, size: 20, color: Colors.blueAccent),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () {
+                final hallName = widget.special.hallName.isNotEmpty ? widget.special.hallName : "FreeSpc";
+                // ignore: deprecated_member_use
+                Share.share("Check out ${widget.special.title} at $hallName!\n\n${widget.special.description}\n\nJoin me on FreeSpc today!");
+              },
+            ),
+          if (!widget.isFeatured) const SizedBox(width: 8),
+          AnimatedRotation(
+            turns: _isExpanded ? 0.5 : 0.0,
+            duration: const Duration(milliseconds: 200),
+            child: Icon(Icons.expand_more, color: Theme.of(context).primaryColor),
+          ),
+        ],
       ),
     );
 
@@ -76,31 +94,60 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: _toggleExpand, // Tapping anywhere toggles expansion
-        child: Column(
-          children: [
-            // Featured Banner Image (If Featured)
-            if (widget.isFeatured)
-              CachedNetworkImage(
-                imageUrl: widget.special.imageUrl,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  height: 200, 
-                  color: Colors.grey[200], 
-                  child: const Center(child: CircularProgressIndicator())
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Featured Banner Image (If Featured)
+          if (widget.isFeatured)
+            Stack(
+              children: [
+                CachedNetworkImage(
+                  imageUrl: widget.special.imageUrl,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    height: 200, 
+                    color: Colors.grey[200], 
+                    child: const Center(child: CircularProgressIndicator())
+                  ),
+                  errorWidget: (context, url, error) => 
+                    Container(height: 200, color: Colors.grey, child: const Icon(Icons.broken_image)),
                 ),
-                errorWidget: (context, url, error) => 
-                  Container(height: 200, color: Colors.grey, child: const Icon(Icons.broken_image)),
-              ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.share, size: 20, color: Colors.white),
+                      onPressed: () {
+                        final hallName = widget.special.hallName.isNotEmpty ? widget.special.hallName : "FreeSpc";
+                        // ignore: deprecated_member_use
+                        Share.share("Check out ${widget.special.title} at $hallName!\n\n${widget.special.description}\n\nJoin me on FreeSpc today!");
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
 
-            // Header Row (Title, Subtitle, Icon)
-            IgnorePointer(ignoring: true, child: headerContent),
+          // Tappable Text Area
+          InkWell(
+            onTap: _toggleExpand,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header Row (Title, Subtitle, Icon)
+                headerContent,
 
-            // Expandable Body
-            AnimatedSize(
+                // Expandable Body
+                AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               alignment: Alignment.topCenter,
@@ -139,7 +186,7 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
                           const Divider(),
                           
                           // Action Buttons
-                          Container(
+                          SizedBox(
                             width: double.infinity,
                             child: Wrap(
                               spacing: 8,
@@ -202,9 +249,11 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
                       ),
                     )
                   : const SizedBox.shrink(), // Collapsed
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -244,7 +293,7 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
 class DynamicHallName extends ConsumerWidget {
   final String hallId;
 
-  const DynamicHallName({required this.hallId});
+  const DynamicHallName({super.key, required this.hallId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -261,7 +310,7 @@ class DynamicHallName extends ConsumerWidget {
         overflow: TextOverflow.ellipsis,
       ),
       loading: () => const Text("Loading...", style: TextStyle(fontSize: 12, color: Colors.grey)),
-      error: (_, __) => const Text("Unknown Hall", style: TextStyle(fontSize: 12, color: Colors.grey)),
+      error: (error, stackTrace) => const Text("Unknown Hall", style: TextStyle(fontSize: 12, color: Colors.grey)),
     );
   }
 }

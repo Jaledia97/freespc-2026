@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../store/repositories/store_repository.dart';
 import '../../../models/store_item_model.dart';
-import '../../../../core/widgets/glass_container.dart'; // Optional usage
 import '../../../services/auth_service.dart';
 import '../../wallet/services/transaction_service.dart';
+import 'package:intl/intl.dart';
+import '../../wallet/repositories/wallet_repository.dart';
+import '../../home/repositories/hall_repository.dart';
 
 class HallStoreScreen extends ConsumerStatefulWidget {
   final String hallId;
@@ -17,41 +19,39 @@ class HallStoreScreen extends ConsumerStatefulWidget {
   ConsumerState<HallStoreScreen> createState() => _HallStoreScreenState();
 }
 
-class _HallStoreScreenState extends ConsumerState<HallStoreScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  final List<String> _categories = ['All', 'Merchandise', 'Food & Beverage', 'Sessions', 'Pull Tabs', 'Electronics', 'Other'];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: _categories.length, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
+class _HallStoreScreenState extends ConsumerState<HallStoreScreen> {
   @override
   Widget build(BuildContext context) {
     // Fetch all active items
     final activeItemsStream = ref.watch(storeRepositoryProvider).getActiveStoreItems(widget.hallId);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF141414),
+    final user = ref.watch(userProfileProvider).value;
+    final userId = user?.uid;
+
+    final hallAsync = ref.watch(hallStreamProvider(widget.hallId));
+    final baseCategories = hallAsync.value?.storeCategories ?? ['Merchandise', 'Food & Beverage', 'Sessions', 'Pull Tabs', 'Electronics', 'Other'];
+    final displayCategories = ['All', ...baseCategories];
+
+    return DefaultTabController(
+      key: ValueKey(displayCategories.length),
+      length: displayCategories.length,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
         title: Text("${widget.hallName} Store"),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          if (userId != null)
+            _BalanceDisplay(userId: userId, hallId: widget.hallId),
+        ],
         bottom: TabBar(
-          controller: _tabController,
           isScrollable: true,
           labelColor: Colors.blueAccent,
           unselectedLabelColor: Colors.grey,
           indicatorColor: Colors.blueAccent,
           tabAlignment: TabAlignment.start,
-          tabs: _categories.map((c) => Tab(text: c)).toList(),
+          tabs: displayCategories.map((c) => Tab(text: c)).toList(),
         ),
       ),
       body: StreamBuilder<List<StoreItemModel>>(
@@ -67,8 +67,7 @@ class _HallStoreScreenState extends ConsumerState<HallStoreScreen> with SingleTi
           final allItems = snapshot.data ?? [];
 
           return TabBarView(
-            controller: _tabController,
-            children: _categories.map((category) {
+            children: displayCategories.map((category) {
               // Filter items
               final filtered = category == 'All' 
                   ? allItems 
@@ -103,6 +102,7 @@ class _HallStoreScreenState extends ConsumerState<HallStoreScreen> with SingleTi
             }).toList(),
           );
         },
+      ),
       ),
     );
   }
@@ -186,7 +186,7 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard> {
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4)),
         ],
         border: Border.all(color: Colors.white10),
       ),
@@ -201,8 +201,8 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard> {
               child: CachedNetworkImage(
                 imageUrl: widget.item.imageUrl,
                 fit: BoxFit.cover,
-                placeholder: (_,__) => Container(color: Colors.grey[900]),
-                errorWidget: (_,__,___) => const Icon(Icons.broken_image, color: Colors.grey),
+                placeholder: (context, url) => Container(color: Colors.grey[900]),
+                errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.grey),
               ),
             ),
           ),
@@ -290,6 +290,59 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _BalanceDisplay extends ConsumerWidget {
+  final String userId;
+  final String hallId;
+
+  const _BalanceDisplay({required this.userId, required this.hallId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final membershipsAsync = ref.watch(myMembershipsStreamProvider(userId));
+
+    return membershipsAsync.when(
+      data: (memberships) {
+        final membership = memberships.where((m) => m.hallId == hallId).firstOrNull;
+        if (membership == null) return const SizedBox();
+        
+        return Padding(
+          padding: const EdgeInsets.only(right: 16.0),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.amber.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.stars, color: Colors.amber, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    NumberFormat.decimalPattern().format(membership.balance),
+                    style: const TextStyle(
+                      color: Colors.amber, 
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      loading: () => const Padding(
+        padding: EdgeInsets.only(right: 16.0),
+        child: Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))),
+      ),
+      error: (error, stack) => const SizedBox(),
     );
   }
 }

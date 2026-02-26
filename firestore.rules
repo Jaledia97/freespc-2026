@@ -54,6 +54,28 @@ service cloud.firestore {
       // effectively locking the "sensitive" fields.
       allow update: if isOwner(userId) 
                     && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'currentPoints', 'qrToken']));
+                    
+      // Subcollections
+      match /memberships/{hallId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId) || isManager(); 
+      }
+      match /transactions/{transactionId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId) || isManager(); 
+      }
+      match /raffle_tickets/{ticketId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId) || isManager(); 
+      }
+      match /tournaments/{tournamentId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId) || isManager(); 
+      }
+      match /my_items/{itemId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId) || isManager(); 
+      }
     }
 
     // 2.5. PUBLIC WORKERS (For Verification)

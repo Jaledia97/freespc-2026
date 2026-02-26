@@ -39,7 +39,7 @@ class DisplaySettingsScreen extends ConsumerWidget {
                   builder: (context, ref, _) {
                     final themeMode = ref.watch(themeModeProvider);
                     return DropdownButtonFormField<AppThemeMode>(
-                      value: themeMode,
+                      initialValue: themeMode,
                       dropdownColor: const Color(0xFF2C2C2C),
                       decoration: const InputDecoration(
                         filled: true,
@@ -88,7 +88,7 @@ class DisplaySettingsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 
                 DropdownButtonFormField<TimeFormat>(
-                  value: timeFormat,
+                  initialValue: timeFormat,
                   dropdownColor: const Color(0xFF2C2C2C),
                   decoration: const InputDecoration(
                     filled: true,

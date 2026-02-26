@@ -57,8 +57,8 @@ class _ManageStoreScreenState extends ConsumerState<ManageStoreScreen> with Sing
           return TabBarView(
             controller: _tabController,
             children: [
-              _ItemsList(items: activeItems, hallId: widget.hallId),
-              _ItemsList(items: inactiveItems, hallId: widget.hallId),
+              _ItemsList(items: activeItems, hallId: widget.hallId, isDraftsTab: false),
+              _ItemsList(items: inactiveItems, hallId: widget.hallId, isDraftsTab: true),
             ],
           );
         },
@@ -72,8 +72,9 @@ class _ManageStoreScreenState extends ConsumerState<ManageStoreScreen> with Sing
 class _ItemsList extends StatelessWidget {
   final List<StoreItemModel> items;
   final String hallId;
+  final bool isDraftsTab;
 
-  const _ItemsList({required this.items, required this.hallId});
+  const _ItemsList({required this.items, required this.hallId, this.isDraftsTab = false});
 
   @override
   Widget build(BuildContext context) {
@@ -84,67 +85,108 @@ class _ItemsList extends StatelessWidget {
           children: [
              const Icon(Icons.store_mall_directory, size: 64, color: Colors.white10),
              const SizedBox(height: 16),
-             Text("No Items Here", style: TextStyle(color: Colors.white.withOpacity(0.3))),
+             Text("No Items Here", style: TextStyle(color: Colors.white.withValues(alpha: 0.3))),
           ],
         ),
       );
     }
 
-    return ListView.separated(
+    // If not drafts tab, just render simple list
+    if (!isDraftsTab) {
+      return ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: items.length,
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
+        itemBuilder: (context, index) => _buildItemCard(context, items[index]),
+      );
+    }
+
+    // If Drafts tab, categorize them
+    // A draft is considered anything missing a cost, title, or image (though our model requires title/img).
+    // Let's rely on simple heuristic: If cost is 0 or title is 'New Item', etc.
+    // Actually, maybe Drafts = "Inactive and cost == 0" or something similar? 
+    // Wait, the user just wants the list visually separated if we can define Drafts vs Inactive.
+    // Let's define Draft: cost == 0 OR description is empty. Otherwise, it's just 'Inactive' (ready but paused).
+    final drafts = items.where((i) => i.cost == 0 || i.description.isEmpty).toList();
+    final inactive = items.where((i) => i.cost > 0 && i.description.isNotEmpty).toList();
+
+    return ListView(
       padding: const EdgeInsets.all(16),
-      itemCount: items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return InkWell(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditStoreItemScreen(hallId: hallId, existingItem: item))),
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
-            ),
-            child: Row(
-              children: [
-                // Thumbnail
-                 Container(
-                   width: 60, height: 60,
-                   decoration: BoxDecoration(
-                     borderRadius: BorderRadius.circular(8),
-                     image: DecorationImage(image: NetworkImage(item.imageUrl), fit: BoxFit.cover),
-                   ),
-                 ),
-                 const SizedBox(width: 16),
-                 
-                 // Details
-                 Expanded(
-                   child: Column(
-                     crossAxisAlignment: CrossAxisAlignment.start,
-                     children: [
-                        Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                       Text(item.title, style: TextStyle(color: item.isActive ? Colors.white : Colors.white54, fontWeight: FontWeight.bold, fontSize: 16)),
-                       if (item.perCustomerLimit != null)
-                         Text("Limit: ${item.perCustomerLimit}/person", style: const TextStyle(color: Colors.amber, fontSize: 10)),
-                       if (item.dailyLimit != null)
-                         Text("Daily Max: ${item.dailyLimit}", style: const TextStyle(color: Colors.amber, fontSize: 10)),
-                    ],
-                  ),
-                        const SizedBox(height: 4),
-                        Text("${item.cost} PTS", style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 12)),
-                     ],
-                   ),
-                 ),
-                 
-                 const Icon(Icons.chevron_right, color: Colors.white24),
-              ],
-            ),
+      children: [
+        if (drafts.isNotEmpty) ...[
+          const Padding(
+            padding: EdgeInsets.only(bottom: 12, left: 4),
+            child: Text("Drafts (Incomplete)", style: TextStyle(color: Colors.white54, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
           ),
-        );
-      },
+          ...drafts.map((item) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildItemCard(context, item),
+          )),
+          const SizedBox(height: 16),
+        ],
+        
+        if (inactive.isNotEmpty) ...[
+          const Padding(
+            padding: EdgeInsets.only(bottom: 12, left: 4),
+            child: Text("Inactive (Ready to Publish)", style: TextStyle(color: Colors.white54, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+          ),
+          ...inactive.map((item) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildItemCard(context, item),
+          )),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildItemCard(BuildContext context, StoreItemModel item) {
+    return InkWell(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditStoreItemScreen(hallId: hallId, existingItem: item))),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1E1E),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Row(
+          children: [
+            // Thumbnail
+             Container(
+               width: 60, height: 60,
+               decoration: BoxDecoration(
+                 borderRadius: BorderRadius.circular(8),
+                 image: DecorationImage(image: NetworkImage(item.imageUrl), fit: BoxFit.cover),
+               ),
+             ),
+             const SizedBox(width: 16),
+             
+             // Details
+             Expanded(
+               child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                    Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   Text(item.title, style: TextStyle(color: item.isActive ? Colors.white : Colors.white54, fontWeight: FontWeight.bold, fontSize: 16)),
+                   if (item.perCustomerLimit != null)
+                     Text("Limit: ${item.perCustomerLimit}/person", style: const TextStyle(color: Colors.amber, fontSize: 10)),
+                   if (item.dailyLimit != null)
+                     Text("Daily Max: ${item.dailyLimit}", style: const TextStyle(color: Colors.amber, fontSize: 10)),
+                ],
+              ),
+                    const SizedBox(height: 4),
+                    Text("${item.cost} PTS", style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                 ],
+               ),
+             ),
+             
+             const Icon(Icons.chevron_right, color: Colors.white24),
+          ],
+        ),
+      ),
     );
   }
 }

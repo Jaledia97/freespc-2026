@@ -138,7 +138,7 @@ class _NewChatScreenState extends ConsumerState<NewChatScreen> {
                         child: Chip(
                           label: Text(f.username),
                           onDeleted: () => _toggleSelection(f),
-                          backgroundColor: Colors.blueAccent.withOpacity(0.2),
+                          backgroundColor: Colors.blueAccent.withValues(alpha: 0.2),
                           deleteIconColor: Colors.blueAccent,
                         ),
                       )).toList(),

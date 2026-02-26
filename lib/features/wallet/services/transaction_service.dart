@@ -20,7 +20,7 @@ class TransactionService {
     }
     final userRef = _firestore.collection('users').doc(userId);
     final hallRef = _firestore.collection('bingo_halls').doc(hallId);
-    final transactionRef = _firestore.collection('transactions').doc();
+    final transactionRef = userRef.collection('transactions').doc();
 
     await _firestore.runTransaction((transaction) async {
       // 1. Validate Hall
@@ -78,7 +78,7 @@ class TransactionService {
     
     final userRef = _firestore.collection('users').doc(userId);
     final membershipRef = userRef.collection('memberships').doc(hallId);
-    final transactionRef = _firestore.collection('transactions').doc();
+    final transactionRef = userRef.collection('transactions').doc();
 
     await _firestore.runTransaction((transaction) async {
       // 1. Validate Membership & Balance

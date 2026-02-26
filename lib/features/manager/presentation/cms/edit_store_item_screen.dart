@@ -8,8 +8,9 @@ import 'package:path/path.dart' as path;
 
 import '../../../../models/store_item_model.dart';
 import '../../../store/repositories/store_repository.dart';
-import '../../../../core/widgets/glass_container.dart';
+import '../../../home/repositories/hall_repository.dart';
 import '../widgets/cms_asset_library_modal.dart'; // Reusing Asset Library
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditStoreItemScreen extends ConsumerStatefulWidget {
   final String hallId;
@@ -32,7 +33,6 @@ class _EditStoreItemScreenState extends ConsumerState<EditStoreItemScreen> {
   
   String? _imageUrl;
   String _category = 'Merchandise'; // Default
-  final List<String> _categories = ['Merchandise', 'Food & Beverage', 'Sessions', 'Pull Tabs', 'Electronics', 'Other'];
   bool _isActive = true;
   bool _isSaving = false;
 
@@ -172,8 +172,56 @@ class _EditStoreItemScreenState extends ConsumerState<EditStoreItemScreen> {
     }
   }
 
+  void _showNewCategoryDialog() {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2C),
+        title: const Text("New Category", style: TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: controller,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: "Enter category name",
+            hintStyle: const TextStyle(color: Colors.white38),
+            filled: true,
+            fillColor: const Color(0xFF1E1E1E),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () async {
+              final newCat = controller.text.trim();
+              if (newCat.isNotEmpty) {
+                 // Atomic update
+                 await FirebaseFirestore.instance.collection('bingo_halls').doc(widget.hallId).update({
+                   'storeCategories': FieldValue.arrayUnion([newCat])
+                 });
+                 setState(() => _category = newCat);
+                 if (ctx.mounted) Navigator.pop(ctx);
+              }
+            },
+            child: const Text("Create"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final hallAsync = ref.watch(hallStreamProvider(widget.hallId));
+    final categoriesList = hallAsync.value?.storeCategories ?? ['Merchandise', 'Food & Beverage', 'Sessions', 'Pull Tabs', 'Electronics', 'Other'];
+    
+    if (!categoriesList.contains(_category)) {
+       // Ensure current _category is valid if it was deleted or changed
+       WidgetsBinding.instance.addPostFrameCallback((_) {
+         if (mounted) setState(() => _category = categoriesList.first);
+       });
+    }
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
@@ -185,9 +233,10 @@ class _EditStoreItemScreenState extends ConsumerState<EditStoreItemScreen> {
             const Center(child: Padding(padding: EdgeInsets.only(right: 16), child: CircularProgressIndicator())),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 48),
+          child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -267,20 +316,48 @@ class _EditStoreItemScreenState extends ConsumerState<EditStoreItemScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Category Dropdown
-              DropdownButtonFormField<String>(
-                value: _category,
-                dropdownColor: const Color(0xFF1E1E1E),
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: "Category",
-                  labelStyle: const TextStyle(color: Colors.white54),
-                  filled: true,
-                  fillColor: const Color(0xFF1E1E1E),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                onChanged: (val) => setState(() => _category = val!),
+              // Category Dropdown with Add Custom Button
+              Row(
+                children: [
+                  Expanded(
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: "Category",
+                        labelStyle: const TextStyle(color: Colors.white54),
+                        filled: true,
+                        fillColor: const Color(0xFF1E1E1E),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: categoriesList.contains(_category) ? _category : null,
+                          dropdownColor: const Color(0xFF1E1E1E),
+                          style: const TextStyle(color: Colors.white),
+                          isExpanded: true,
+                          isDense: true,
+                          items: categoriesList.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                          onChanged: (val) {
+                            if (val != null) setState(() => _category = val);
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E1E1E),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.add, color: Colors.blueAccent),
+                      tooltip: "Create Custom Category",
+                      onPressed: _showNewCategoryDialog,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 
@@ -330,7 +407,7 @@ class _EditStoreItemScreenState extends ConsumerState<EditStoreItemScreen> {
                 title: const Text("Active / Published", style: TextStyle(color: Colors.white)),
                 subtitle: const Text("Item will be visible in the store", style: TextStyle(color: Colors.white54, fontSize: 12)),
                 value: _isActive,
-                activeColor: Colors.greenAccent,
+                activeThumbColor: Colors.greenAccent,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) => setState(() => _isActive = val),
               ),
@@ -367,16 +444,18 @@ class _EditStoreItemScreenState extends ConsumerState<EditStoreItemScreen> {
                      
                      if (confirm == true) {
                         await ref.read(storeRepositoryProvider).deleteStoreItem(widget.hallId, widget.existingItem!.id);
-                        if (mounted) Navigator.pop(context);
+                        if (context.mounted) Navigator.pop(context);
                      }
                   }, 
                   icon: const Icon(Icons.delete, color: Colors.red), 
                   label: const Text("Delete Item", style: TextStyle(color: Colors.red))
                 ),
               ],
+              const SizedBox(height: 48), // Prevent bottom clipping
             ],
           ),
         ),
+      ),
       ),
     );
   }

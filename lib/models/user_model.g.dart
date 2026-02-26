@@ -28,6 +28,11 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   realNameVisibility: json['realNameVisibility'] as String? ?? 'Private',
   onlineStatus: json['onlineStatus'] as String? ?? 'Online',
   currentCheckInHallId: json['currentCheckInHallId'] as String?,
+  blockedUsers:
+      (json['blockedUsers'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
@@ -51,4 +56,5 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'realNameVisibility': instance.realNameVisibility,
       'onlineStatus': instance.onlineStatus,
       'currentCheckInHallId': instance.currentCheckInHallId,
+      'blockedUsers': instance.blockedUsers,
     };

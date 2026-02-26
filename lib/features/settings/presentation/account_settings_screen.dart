@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/auth_service.dart';
+import 'blocked_users_screen.dart';
 
 class AccountSettingsScreen extends ConsumerWidget {
   const AccountSettingsScreen({super.key});
@@ -47,6 +48,15 @@ class AccountSettingsScreen extends ConsumerWidget {
                       }
                     },
                   ),
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Blocked Accounts', style: TextStyle(color: Colors.white)),
+                  subtitle: const Text('Manage users you have blocked.', style: TextStyle(color: Colors.white38, fontSize: 12)),
+                  trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const BlockedUsersScreen()));
+                  },
                 ),
                 const SizedBox(height: 24),
                 
