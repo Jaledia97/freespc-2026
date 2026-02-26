@@ -795,7 +795,8 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                     // End Date & Time (Optional)
                     CheckboxListTile(
                        contentPadding: EdgeInsets.zero,
-                       title: const Text("Add End Time?", style: TextStyle(color: Colors.white)),
+                       title: const Text("Add Event End Time?", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                       subtitle: const Text("Use this if the event crosses midnight or spans multiple days. To stop a weekly special on a certain date, use Custom Recurrence instead.", style: TextStyle(color: Colors.white54, fontSize: 12)),
                        value: _hasEndTime,
                        checkColor: Colors.black,
                        activeColor: Colors.blueAccent,

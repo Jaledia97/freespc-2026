@@ -36,5 +36,5 @@ Map<String, dynamic> _$RaffleModelToJson(_RaffleModel instance) =>
       'endsAt': instance.endsAt.toIso8601String(),
       'isTemplate': instance.isTemplate,
       'archivedAt': instance.archivedAt?.toIso8601String(),
-      'recurrenceRule': instance.recurrenceRule,
+      'recurrenceRule': instance.recurrenceRule?.toJson(),
     };

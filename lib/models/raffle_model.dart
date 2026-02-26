@@ -7,6 +7,9 @@ part 'raffle_model.g.dart';
 
 @freezed
 abstract class RaffleModel with _$RaffleModel {
+  const RaffleModel._();
+
+  @JsonSerializable(explicitToJson: true)
   const factory RaffleModel({
     required String id,
     required String hallId,

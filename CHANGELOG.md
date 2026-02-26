@@ -2,6 +2,11 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+58] - 2026-02-25 - Stability Patch
+
+### Fixed
+- **Serialization Crash**: Resolved an "Invalid Type" crash when saving Specials, Tournaments, or Raffles that included a Recurrence Schedule. Nested objects are now correctly serialized to JSON before being sent to Firestore.
+
 ## [0.0.1+57] - 2026-02-20 - Store Redemption (Phase 57)
 
 ### Added

@@ -53,7 +53,7 @@ Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
       'longitude': instance.longitude,
       'tags': instance.tags,
       'recurrence': instance.recurrence,
-      'recurrenceRule': instance.recurrenceRule,
+      'recurrenceRule': instance.recurrenceRule?.toJson(),
       'isTemplate': instance.isTemplate,
       'archivedAt': instance.archivedAt?.toIso8601String(),
     };

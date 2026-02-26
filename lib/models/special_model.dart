@@ -5,6 +5,9 @@ part 'special_model.g.dart';
 
 @freezed
 abstract class SpecialModel with _$SpecialModel {
+  const SpecialModel._();
+
+  @JsonSerializable(explicitToJson: true)
   const factory SpecialModel({
     required String id,
     required String hallId,

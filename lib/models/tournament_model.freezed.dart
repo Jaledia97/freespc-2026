@@ -228,10 +228,10 @@ return $default(_that.id,_that.hallId,_that.title,_that.imageUrl,_that.descripti
 }
 
 /// @nodoc
-@JsonSerializable()
 
-class _TournamentModel implements TournamentModel {
-  const _TournamentModel({required this.id, required this.hallId, required this.title, this.imageUrl, this.description = '', this.startTime, this.endTime, this.recurrenceRule, this.isTemplate = false, this.archivedAt, final  List<TournamentGame> games = const []}): _games = games;
+@JsonSerializable(explicitToJson: true)
+class _TournamentModel extends TournamentModel {
+  const _TournamentModel({required this.id, required this.hallId, required this.title, this.imageUrl, this.description = '', this.startTime, this.endTime, this.recurrenceRule, this.isTemplate = false, this.archivedAt, final  List<TournamentGame> games = const []}): _games = games,super._();
   factory _TournamentModel.fromJson(Map<String, dynamic> json) => _$TournamentModelFromJson(json);
 
 @override final  String id;

@@ -230,10 +230,10 @@ return $default(_that.id,_that.hallId,_that.name,_that.description,_that.imageUr
 }
 
 /// @nodoc
-@JsonSerializable()
 
-class _RaffleModel implements RaffleModel {
-  const _RaffleModel({required this.id, required this.hallId, required this.name, required this.description, required this.imageUrl, this.maxTickets = 100, this.soldTickets = 0, required this.endsAt, this.isTemplate = false, this.archivedAt, this.recurrenceRule});
+@JsonSerializable(explicitToJson: true)
+class _RaffleModel extends RaffleModel {
+  const _RaffleModel({required this.id, required this.hallId, required this.name, required this.description, required this.imageUrl, this.maxTickets = 100, this.soldTickets = 0, required this.endsAt, this.isTemplate = false, this.archivedAt, this.recurrenceRule}): super._();
   factory _RaffleModel.fromJson(Map<String, dynamic> json) => _$RaffleModelFromJson(json);
 
 @override final  String id;

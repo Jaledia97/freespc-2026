@@ -8,6 +8,9 @@ part 'tournament_model.g.dart';
 
 @freezed
 abstract class TournamentModel with _$TournamentModel {
+  const TournamentModel._();
+
+  @JsonSerializable(explicitToJson: true)
   const factory TournamentModel({
     required String id,
     required String hallId,

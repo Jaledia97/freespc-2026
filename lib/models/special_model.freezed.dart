@@ -234,10 +234,10 @@ return $default(_that.id,_that.hallId,_that.hallName,_that.title,_that.descripti
 }
 
 /// @nodoc
-@JsonSerializable()
 
-class _SpecialModel implements SpecialModel {
-  const _SpecialModel({required this.id, required this.hallId, required this.hallName, required this.title, required this.description, required this.imageUrl, required this.postedAt, this.startTime, this.endTime, this.latitude, this.longitude, final  List<String> tags = const [], this.recurrence = 'none', this.recurrenceRule, this.isTemplate = false, this.archivedAt}): _tags = tags;
+@JsonSerializable(explicitToJson: true)
+class _SpecialModel extends SpecialModel {
+  const _SpecialModel({required this.id, required this.hallId, required this.hallName, required this.title, required this.description, required this.imageUrl, required this.postedAt, this.startTime, this.endTime, this.latitude, this.longitude, final  List<String> tags = const [], this.recurrence = 'none', this.recurrenceRule, this.isTemplate = false, this.archivedAt}): _tags = tags,super._();
   factory _SpecialModel.fromJson(Map<String, dynamic> json) => _$SpecialModelFromJson(json);
 
 @override final  String id;

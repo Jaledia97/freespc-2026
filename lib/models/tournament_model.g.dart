@@ -44,10 +44,10 @@ Map<String, dynamic> _$TournamentModelToJson(_TournamentModel instance) =>
       'description': instance.description,
       'startTime': instance.startTime?.toIso8601String(),
       'endTime': instance.endTime?.toIso8601String(),
-      'recurrenceRule': instance.recurrenceRule,
+      'recurrenceRule': instance.recurrenceRule?.toJson(),
       'isTemplate': instance.isTemplate,
       'archivedAt': instance.archivedAt?.toIso8601String(),
-      'games': instance.games,
+      'games': instance.games.map((e) => e.toJson()).toList(),
     };
 
 _TournamentGame _$TournamentGameFromJson(Map<String, dynamic> json) =>
