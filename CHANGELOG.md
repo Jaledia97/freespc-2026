@@ -11,6 +11,11 @@ All notable changes to the FreeSPC project will be documented in this file.
 - **Chat Muting**: Users can toggle muting for any chat thread via the top right menu options.
 - **Card UI Refinements**: `SpecialCard` expansion area is now strictly locked to the text container, and the OS native Share button elegantly overlays the top right of featured images.
 
+### Known Issues (Pending Fixes)
+- **Notification Routing**: Tapping a photo approval notification fails to route the user to the `PhotoDetailScreen`.
+- **Notification Timestamps**: New photo approval notifications are still missing timestamps despite backend parsing fixes.
+- **Notification Badges**: The red notification badge persists on the Profile icon and Settings cog even after a Manager approves the photo post.
+
 ## [0.0.1+58] - 2026-02-25 - Stability Patch
 
 ### Fixed

@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../services/auth_service.dart';
+import '../../../../services/notification_service.dart';
 import '../models/gallery_photo_model.dart';
 
 final photoRepositoryProvider = Provider((ref) => PhotoRepository(
@@ -10,11 +12,37 @@ final photoRepositoryProvider = Provider((ref) => PhotoRepository(
   FirebaseStorage.instance
 ));
 
+final unreadPendingPhotosCountProvider = StreamProvider<int>((ref) {
+  final userAsync = ref.watch(userProfileProvider);
+  final user = userAsync.value;
+  if (user == null || user.homeBaseId == null) return Stream.value(0);
+
+  final repo = ref.watch(photoRepositoryProvider);
+  return repo.getPendingHallPhotos(user.homeBaseId!).map((photos) {
+    if (user.lastViewedPhotoApprovals == null) return photos.length;
+    return photos.where((p) => p.timestamp.isAfter(user.lastViewedPhotoApprovals!)).length;
+  });
+});
+
 class PhotoRepository {
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
 
   PhotoRepository(this._firestore, this._storage);
+
+  /// Get a single photo by ID (Useful for deep-linking from notifications)
+  Future<GalleryPhotoModel?> getPhotoById(String photoId) async {
+    try {
+      final doc = await _firestore.collection('gallery_photos').doc(photoId).get();
+      if (doc.exists && doc.data() != null) {
+        return GalleryPhotoModel.fromJson(doc.data()!);
+      }
+      return null;
+    } catch (e) {
+      print("Error fetching photo by ID $photoId: $e");
+      return null;
+    }
+  }
 
   /// Uploads a photo to Storage and creates a GalleryPhotoModel in Firestore.
   /// Halls tagged are initially added to 'pendingHallIds'.
@@ -88,7 +116,26 @@ class PhotoRepository {
         'pendingHallIds': FieldValue.arrayRemove([hallId]),
         'approvedHallIds': FieldValue.arrayUnion([hallId]),
       });
+      
+      // We also need to notify the user.
+      // But transaction can't easily trigger side effects reliably if retried.
+      // So we will do it after the transaction.
     });
+    
+    // Fetch photo to get uploader
+    final photoDoc = await docRef.get();
+    if (photoDoc.exists) {
+      final photo = GalleryPhotoModel.fromJson(photoDoc.data()!);
+      final ns = NotificationService(_firestore);
+      await ns.sendNotification(
+        userId: photo.uploaderId,
+        title: "Photo Approved! 📸",
+        body: "Your tagged photo has been approved for the gallery.",
+        type: 'photo_approval',
+        hallId: hallId,
+        metadata: {'photoId': photo.id, 'uploaderId': photo.uploaderId},
+      );
+    }
   }
 
   /// Decline a photo for a specific hall
@@ -105,6 +152,21 @@ class PhotoRepository {
         'taggedHallIds': FieldValue.arrayRemove([hallId]),
       });
     });
+    
+    // Fetch photo to get uploader
+    final photoDoc = await docRef.get();
+    if (photoDoc.exists) {
+      final photo = GalleryPhotoModel.fromJson(photoDoc.data()!);
+      final ns = NotificationService(_firestore);
+      await ns.sendNotification(
+        userId: photo.uploaderId,
+        title: "Photo Declined",
+        body: "Your photo was not approved for the hall's gallery.",
+        type: 'photo_declined',
+        hallId: hallId,
+        metadata: {'photoId': photo.id, 'uploaderId': photo.uploaderId},
+      );
+    }
   }
 
   /// Get User's Gallery (All photos they uploaded)

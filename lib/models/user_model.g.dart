@@ -33,6 +33,14 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
           ?.map((e) => e as String)
           .toList() ??
       const [],
+  customCategories:
+      (json['customCategories'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  lastViewedPhotoApprovals: const NullableTimestampConverter().fromJson(
+    json['lastViewedPhotoApprovals'],
+  ),
 );
 
 Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
@@ -57,4 +65,8 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'onlineStatus': instance.onlineStatus,
       'currentCheckInHallId': instance.currentCheckInHallId,
       'blockedUsers': instance.blockedUsers,
+      'customCategories': instance.customCategories,
+      'lastViewedPhotoApprovals': const NullableTimestampConverter().toJson(
+        instance.lastViewedPhotoApprovals,
+      ),
     };

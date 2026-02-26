@@ -6,6 +6,7 @@ import 'package:freespc/features/wallet/repositories/wallet_repository.dart';
 import 'package:freespc/services/auth_service.dart';
 import 'package:freespc/models/special_model.dart';
 import 'package:freespc/models/tournament_model.dart';
+import 'package:freespc/core/constants/default_tags.dart';
 import 'widgets/special_card.dart';
 import 'widgets/tournament_list_card.dart';
 
@@ -26,28 +27,6 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
     super.initState();
     _selectedCategory = widget.initialCategory;
   }
-
-  final List<String> _categories = [
-    'Session',
-    'Regular Program',
-    'Specials', 
-    'Pulltabs', 
-    'Progressives', 
-    'Raffles',
-    'Tournaments', // Added
-    'New Player'
-  ];
-
-  final List<Color> _categoryColors = [
-    Colors.purple[700]!,
-    Colors.blue[700]!,
-    Colors.deepOrange[700]!,
-    Colors.teal[700]!,
-    Colors.redAccent[700]!,
-    Colors.green[700]!,
-    Colors.indigo[700]!, // Color for Tournaments
-    Colors.pink[700]!,
-  ];
   
   @override
   Widget build(BuildContext context) {
@@ -63,6 +42,10 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
     } else {
       feedAsync = ref.watch(specialsFeedProvider).whenData((list) => List<dynamic>.from(list));
     }
+
+    final user = ref.watch(userProfileProvider).value;
+    final customCategories = user?.customCategories ?? [];
+    final allCategories = [...DefaultTags.categories, ...customCategories];
 
     return PopScope(
       canPop: _selectedCategory == null || widget.initialCategory != null,
@@ -85,6 +68,25 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
                 })
               ) 
             : null,
+          actions: [
+             if (_selectedCategory != null && user != null && !allCategories.contains(_selectedCategory))
+               IconButton(
+                 icon: const Icon(Icons.add_circle_outline),
+                 tooltip: "Save Category",
+                 onPressed: () async {
+                   try {
+                     await ref.read(authServiceProvider).saveCustomCategory(user.uid, _selectedCategory!);
+                     if (context.mounted) {
+                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Saved $_selectedCategory to your categories!')));
+                     }
+                   } catch (e) {
+                     if (context.mounted) {
+                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save category.')));
+                     }
+                   }
+                 },
+               )
+          ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(60),
             child: Padding(
@@ -119,17 +121,19 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
                    crossAxisSpacing: 16,
                    mainAxisSpacing: 16,
                  ),
-                 itemCount: _categories.length,
+                 itemCount: allCategories.length,
                  itemBuilder: (context, index) {
+                   final category = allCategories[index];
+                   final color = DefaultTags.getColorForTag(category);
                    return InkWell(
                      onTap: () {
-                       setState(() => _selectedCategory = _categories[index]);
+                       setState(() => _selectedCategory = category);
                      },
                      borderRadius: BorderRadius.circular(12),
                      child: Container(
                        decoration: BoxDecoration(
                          gradient: LinearGradient(
-                           colors: [_categoryColors[index % _categoryColors.length], _categoryColors[index % _categoryColors.length].withOpacity(0.7)],
+                           colors: [color, color.withOpacity(0.7)],
                            begin: Alignment.topLeft, end: Alignment.bottomRight,
                          ),
                          borderRadius: BorderRadius.circular(12),
@@ -139,7 +143,7 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
                        child: Stack(
                          children: [
                            Text(
-                             _categories[index],
+                             category,
                              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                            ),
                          ],
@@ -151,6 +155,7 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
              }
   
              // --- MODE 2: FILTERED LIST ---
+             final List<String> discoveredTags = [];
              final results = allItems.where((item) {
                String title = '';
                String hallName = '';
@@ -169,11 +174,49 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
                final matchesSearch = title.toLowerCase().contains(_searchQuery) || hallName.toLowerCase().contains(_searchQuery);
                final matchesCategory = _selectedCategory == null || tags.contains(_selectedCategory!) || (_selectedCategory == 'Tournaments' && item is TournamentModel);
                
+               // Tag Discovery
+               if (_searchQuery.isNotEmpty && _selectedCategory == null) {
+                  for (final t in tags) {
+                     if (t.toLowerCase().contains(_searchQuery) && !allCategories.contains(t) && !discoveredTags.contains(t)) {
+                         discoveredTags.add(t);
+                     }
+                  }
+               }
+               
                return matchesSearch && matchesCategory;
              }).toList();
   
              return CustomScrollView(
                slivers: [
+                 // 0. Discovered Tags from Search
+                 if (discoveredTags.isNotEmpty)
+                   SliverToBoxAdapter(
+                     child: Padding(
+                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                       child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+                           const Text("Discovered Categories", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent)),
+                           const SizedBox(height: 8),
+                           Wrap(
+                             spacing: 8,
+                             children: discoveredTags.map((tag) => ActionChip(
+                               label: Text(tag, style: const TextStyle(color: Colors.white)),
+                               backgroundColor: DefaultTags.getColorForTag(tag).withOpacity(0.2),
+                               side: BorderSide(color: DefaultTags.getColorForTag(tag)),
+                               onPressed: () {
+                                 setState(() {
+                                   _selectedCategory = tag;
+                                   _searchQuery = ''; // Clear search when selecting category
+                                 });
+                               },
+                             )).toList(),
+                           )
+                         ],
+                       ),
+                     ),
+                   ),
+
                  // 1. My Active Items Section (Only if Category Selected & User Logged In)
                  if (_selectedCategory != null)
                    _buildMyItemsSection(context, ref, _selectedCategory!),

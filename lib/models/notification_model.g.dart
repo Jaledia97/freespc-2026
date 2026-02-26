@@ -14,7 +14,8 @@ _NotificationModel _$NotificationModelFromJson(Map<String, dynamic> json) =>
       body: json['body'] as String,
       type: json['type'] as String,
       hallId: json['hallId'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      metadata: json['metadata'] as Map<String, dynamic>?,
+      createdAt: const TimestampConverter().fromJson(json['createdAt']),
       isRead: json['isRead'] as bool? ?? false,
     );
 
@@ -26,6 +27,7 @@ Map<String, dynamic> _$NotificationModelToJson(_NotificationModel instance) =>
       'body': instance.body,
       'type': instance.type,
       'hallId': instance.hallId,
-      'createdAt': instance.createdAt.toIso8601String(),
+      'metadata': instance.metadata,
+      'createdAt': const TimestampConverter().toJson(instance.createdAt),
       'isRead': instance.isRead,
     };

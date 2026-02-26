@@ -5,6 +5,7 @@ import 'scan/presentation/scan_screen.dart';
 import 'profile/presentation/profile_screen.dart';
 import 'wallet/presentation/wallet_screen.dart';
 import 'my_halls/presentation/my_halls_screen.dart';
+import '../core/widgets/notification_badge.dart';
 
 final bottomNavIndexProvider = StateProvider<int>((ref) => 0);
 
@@ -66,9 +67,11 @@ class MainLayout extends ConsumerWidget {
               onPressed: () => ref.read(bottomNavIndexProvider.notifier).state = 2,
             ),
             IconButton(
-              icon: Icon(
-                Icons.person,
-                color: currentIndex == 3 ? Theme.of(context).primaryColor : null,
+              icon: NotificationBadge(
+                child: Icon(
+                  Icons.person,
+                  color: currentIndex == 3 ? Theme.of(context).primaryColor : null,
+                ),
               ),
               onPressed: () => ref.read(bottomNavIndexProvider.notifier).state = 3,
             ),

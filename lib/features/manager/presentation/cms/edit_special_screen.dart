@@ -5,6 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../../home/repositories/hall_repository.dart';
 import '../../../../models/special_model.dart';
 import '../../../../services/storage_service.dart';
+import 'package:freespc/core/constants/default_tags.dart';
+import 'package:freespc/core/utils/tag_utils.dart';
 
 class EditSpecialScreen extends ConsumerStatefulWidget {
   final String hallId;
@@ -227,6 +229,142 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     setState(() {
       _selectedTags.remove(tag);
     });
+  }
+
+  void _showAddCustomTagDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF222222),
+              title: const Text("Create Custom Tag", style: TextStyle(color: Colors.white)),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final allTagsAsync = ref.watch(allCustomTagsProvider);
+                    
+                    return allTagsAsync.when(
+                      data: (tagsMap) {
+                        return Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text.isEmpty) {
+                              return const Iterable<String>.empty();
+                            }
+                            // Filter non-default tags matching input
+                            return tagsMap.keys.where((tag) => 
+                              !DefaultTags.categories.contains(tag) && 
+                              tag.toLowerCase().contains(textEditingValue.text.toLowerCase())
+                            );
+                          },
+                          onSelected: (String selection) {
+                            _tagCtrl.text = selection;
+                            _addTag();
+                            Navigator.pop(ctx);
+                          },
+                          fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                            // Assign the external controller to our local one so ADD button still works
+                            textEditingController.addListener(() {
+                              _tagCtrl.text = textEditingController.text;
+                            });
+                            
+                            return TextField(
+                              controller: textEditingController,
+                              focusNode: focusNode,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                hintText: "e.g. Halloween",
+                                hintStyle: const TextStyle(color: Colors.white54),
+                                filled: true,
+                                fillColor: const Color(0xFF1E1E1E),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                              ),
+                              autofocus: true,
+                              onSubmitted: (_) {
+                                _addTag();
+                                Navigator.pop(ctx);
+                              },
+                            );
+                          },
+                          optionsViewBuilder: (context, onSelected, options) {
+                            return Align(
+                              alignment: Alignment.topLeft,
+                              child: Material(
+                                elevation: 4.0,
+                                color: const Color(0xFF333333),
+                                borderRadius: BorderRadius.circular(8),
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(maxHeight: 200, maxWidth: 300),
+                                  child: ListView.builder(
+                                    padding: EdgeInsets.zero,
+                                    shrinkWrap: true,
+                                    itemCount: options.length,
+                                    itemBuilder: (BuildContext context, int index) {
+                                      final String option = options.elementAt(index);
+                                      final int count = tagsMap[option] ?? 0;
+                                      final trafficLabel = TagUtils.getTrafficLabel(count);
+                                      
+                                      return ListTile(
+                                        title: Text(option, style: const TextStyle(color: Colors.white)),
+                                        subtitle: Text(trafficLabel, style: const TextStyle(color: Colors.blueAccent, fontSize: 12)),
+                                        onTap: () {
+                                          onSelected(option);
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (_, __) => TextField(
+                        controller: _tagCtrl,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: "e.g. Halloween",
+                          hintStyle: const TextStyle(color: Colors.white54),
+                          filled: true,
+                          fillColor: const Color(0xFF1E1E1E),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                        ),
+                        autofocus: true,
+                        onSubmitted: (_) {
+                          _addTag();
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    _tagCtrl.clear();
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text("CANCEL", style: TextStyle(color: Colors.grey)),
+                ),
+                TextButton(
+                  onPressed: () {
+                    if (_tagCtrl.text.isNotEmpty) {
+                      _addTag();
+                      Navigator.pop(ctx);
+                    }
+                  },
+                  child: const Text("ADD", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          }
+        );
+      },
+    );
   }
   
   // --- Notification Warning ---
@@ -896,31 +1034,53 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
               */
 
               // Tags
-              _label("Tags"),
+              _label("Categories & Tags"),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _input("Add Tag", _tagCtrl, hint: "e.g. Bingo, Food"),
-                  ),
-                  const SizedBox(width: 12),
-                  IconButton(
-                    onPressed: _addTag, 
-                    icon: const Icon(Icons.add_circle, color: Colors.blueAccent, size: 32)
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
               Wrap(
                 spacing: 8.0,
                 runSpacing: 8.0,
-                children: _selectedTags.map((tag) => Chip(
-                  label: Text(tag, style: const TextStyle(color: Colors.white)),
-                  backgroundColor: Colors.blueAccent.withValues(alpha: 0.2),
-                  deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white54),
-                  onDeleted: () => _removeTag(tag),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
-                )).toList(),
+                children: [
+                  ...DefaultTags.categories.map((tag) {
+                    final isSelected = _selectedTags.contains(tag);
+                    return FilterChip(
+                      label: Text(tag, style: TextStyle(color: isSelected ? Colors.white : Colors.white70)),
+                      selected: isSelected,
+                      selectedColor: DefaultTags.getColorForTag(tag),
+                      backgroundColor: Colors.grey[900],
+                      checkmarkColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedTags.add(tag);
+                          } else {
+                            _selectedTags.remove(tag);
+                          }
+                        });
+                      },
+                    );
+                  }),
+                  // Custom Tags currently selected
+                  ..._selectedTags.where((t) => !DefaultTags.categories.contains(t)).map((tag) {
+                    return FilterChip(
+                      label: Text(tag, style: const TextStyle(color: Colors.white)),
+                      selected: true,
+                      selectedColor: DefaultTags.getColorForTag(tag),
+                      checkmarkColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
+                      onSelected: (selected) {
+                        if (!selected) _removeTag(tag);
+                      },
+                    );
+                  }),
+                  // Add Custom ActionChip
+                  ActionChip(
+                    label: const Icon(Icons.add, color: Colors.blueAccent, size: 20),
+                    backgroundColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.blueAccent)),
+                    onPressed: _showAddCustomTagDialog,
+                  ),
+                ],
               ),
             ],
           ),

@@ -3,19 +3,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../features/photos/repositories/photo_repository.dart';
 import '../../../../features/photos/models/gallery_photo_model.dart';
 import 'package:intl/intl.dart';
+import '../../../../services/auth_service.dart';
 
-class PhotoApprovalScreen extends ConsumerWidget {
+class PhotoApprovalScreen extends ConsumerStatefulWidget {
   final String hallId;
   final String hallName;
 
   const PhotoApprovalScreen({super.key, required this.hallId, required this.hallName});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final pendingPhotosStream = ref.watch(photoRepositoryProvider).getPendingHallPhotos(hallId);
+  ConsumerState<PhotoApprovalScreen> createState() => _PhotoApprovalScreenState();
+}
+
+class _PhotoApprovalScreenState extends ConsumerState<PhotoApprovalScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(userProfileProvider).value;
+      if (user != null) {
+        ref.read(authServiceProvider).updateLastViewedPhotoApprovals(user.uid);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pendingPhotosStream = ref.watch(photoRepositoryProvider).getPendingHallPhotos(widget.hallId);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Approvals: $hallName")),
+      appBar: AppBar(title: Text("Approvals: ${widget.hallName}")),
       body: StreamBuilder<List<GalleryPhotoModel>>(
         stream: pendingPhotosStream,
         builder: (context, snapshot) {
@@ -71,7 +88,7 @@ class PhotoApprovalScreen extends ConsumerWidget {
                            Row(
                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                              children: [
-                               Text("Uploaded: ${DateFormat.yMMMd().format(photo.timestamp)}", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                               Text("Uploaded: ${_timeAgo(photo.timestamp)}", style: const TextStyle(color: Colors.grey, fontSize: 12)),
                                // Potentially show user ID here
                              ],
                            ),
@@ -89,7 +106,7 @@ class PhotoApprovalScreen extends ConsumerWidget {
                         Expanded(
                           child: TextButton.icon(
                             onPressed: () {
-                               ref.read(photoRepositoryProvider).declinePhoto(photo.id, hallId);
+                               ref.read(photoRepositoryProvider).declinePhoto(photo.id, widget.hallId);
                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Photo Declined & Tag Removed")));
                             },
                             icon: const Icon(Icons.close, color: Colors.red),
@@ -101,7 +118,7 @@ class PhotoApprovalScreen extends ConsumerWidget {
                         Expanded(
                           child: TextButton.icon(
                             onPressed: () {
-                              ref.read(photoRepositoryProvider).approvePhoto(photo.id, hallId);
+                              ref.read(photoRepositoryProvider).approvePhoto(photo.id, widget.hallId);
                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Photo Approved!")));
                             },
                             icon: const Icon(Icons.check, color: Colors.green),
@@ -119,5 +136,21 @@ class PhotoApprovalScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  String _timeAgo(DateTime createdAt) {
+    final now = DateTime.now();
+    final difference = now.difference(createdAt);
+
+    if (difference.inHours < 1) {
+      if (difference.inMinutes == 0) return "Just now";
+      return "${difference.inMinutes} minute${difference.inMinutes == 1 ? '' : 's'} ago";
+    } else if (difference.inHours < 24) {
+      return "${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago";
+    } else if (difference.inDays < 7) {
+      return "${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago";
+    } else {
+      return DateFormat('MMM d, yyyy').add_jm().format(createdAt);
+    }
   }
 }

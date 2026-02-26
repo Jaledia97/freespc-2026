@@ -10,6 +10,7 @@ import 'cms/bluetooth_settings_screen.dart'; // New Import
 import 'cms/manage_personnel_screen.dart'; // New Import
 import 'cms/manage_store_screen.dart'; // New Import
 import '../../profile/presentation/hall_selection_screen.dart';
+import '../../../../core/widgets/notification_badge.dart'; // Import NotificationBadge
 // import 'raffle_tool/raffle_tool_screen.dart'; // No longer direct link
 import '../../../../services/auth_service.dart';
 import '../../home/repositories/hall_repository.dart';
@@ -17,11 +18,47 @@ import '../../../../models/bingo_hall_model.dart';
 
 import '../../../../core/utils/role_utils.dart';
 
-class ManagerDashboardScreen extends ConsumerWidget {
+class ManagerDashboardScreen extends ConsumerStatefulWidget {
   const ManagerDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ManagerDashboardScreen> createState() => _ManagerDashboardScreenState();
+}
+
+class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen> {
+  Future<bool> _showExitConfirmation() async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF222222),
+        title: const Text("Exit Manager Mode?", style: TextStyle(color: Colors.white)),
+        content: const Text(
+          "You will need to scan your ID or enter your PIN to access this dashboard again.",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("CANCEL", style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("EXIT", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
+  void _handleBack() async {
+    final shouldExit = await _showExitConfirmation();
+    if (shouldExit && mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userAsync = ref.watch(userProfileProvider);
     final user = userAsync.value;
     final homeHallId = user?.homeBaseId;
@@ -30,75 +67,86 @@ class ManagerDashboardScreen extends ConsumerWidget {
     final hallAsync = homeHallId != null ? ref.watch(hallStreamProvider(homeHallId)) : const AsyncValue.data(null);
     final hall = hallAsync.value;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF141414), // Darker than standard
-      appBar: AppBar(
-        title: const Text('Hall Manager'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(onPressed: (){}, icon: const Icon(Icons.notifications_none)),
-        ],
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome / Status
-              _buildStatusHeader(hall, homeHallId),
-              const SizedBox(height: 24),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        _handleBack();
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF141414), // Darker than standard
+        appBar: AppBar(
+          leading: BackButton(
+            onPressed: _handleBack,
+            color: Colors.white,
+          ),
+          title: const Text('Hall Manager'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            IconButton(onPressed: (){}, icon: const Icon(Icons.notifications_none)),
+          ],
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Welcome / Status
+                _buildStatusHeader(hall, homeHallId),
+                const SizedBox(height: 24),
 
-              // Super Admin Section
-              if (RoleUtils.isSuperAdmin(user!)) ...[
-                 const Text("Super Admin Controls", style: TextStyle(color: Colors.amber, fontSize: 14, fontWeight: FontWeight.bold)),
-                 const SizedBox(height: 12),
-                 _buildModuleCard(
-                    context, 
-                    title: "Switch Managed Hall", 
-                    icon: Icons.swap_horiz, 
-                    color: Colors.amber, 
-                    desc: "Select any hall to manage", 
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HallSelectionScreen()))
-                 ),
-                 const SizedBox(height: 32),
-              ],
-              
-              const Text("Management Modules", style: TextStyle(color: Colors.white54, fontSize: 14)),
-              const SizedBox(height: 16),
+                // Super Admin Section
+                if (RoleUtils.isSuperAdmin(user!)) ...[
+                   const Text("Super Admin Controls", style: TextStyle(color: Colors.amber, fontSize: 14, fontWeight: FontWeight.bold)),
+                   const SizedBox(height: 12),
+                   _buildModuleCard(
+                      context, 
+                      title: "Switch Managed Hall", 
+                      icon: Icons.swap_horiz, 
+                      color: Colors.amberAccent,
+                      desc: "Select a different hall to manage",
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HallSelectionScreen()))
+                   ),
+                   const SizedBox(height: 24),
+                ],
 
-              // Module Grid
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2, // 2 columns
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  children: [
-                    // HALL PROFILE (Owner/Manager/Admin)
-                    if (homeHallId != null && RoleUtils.canManageHall(user, homeHallId))
-                    _buildModuleCard(
-                      context,
-                      title: "Hall Profile",
-                      icon: Icons.storefront,
-                      color: Colors.blue,
-                      desc: "Edit details, logo, hours",
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditHallProfileScreen(hallId: homeHallId))),
-                    ),
+                const Text("Select a Module:", style: TextStyle(color: Colors.white54, fontSize: 14)),
+                const SizedBox(height: 12),
+                
+                // Modules Grid
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.95,
+                    children: [
+                      // CMS PROFILE (Manager+)
+                      if (homeHallId != null && RoleUtils.canManageGames(user, homeHallId))
+                        _buildModuleCard(
+                        context,
+                        title: "Hall Profile",
+                        icon: Icons.storefront, 
+                        color: Colors.deepPurpleAccent,
+                        desc: "Edit Logo, Banner, Name",
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditHallProfileScreen(hallId: homeHallId))),
+                      ),
 
-                    // SPECIALS (Manager+)
-                    if (homeHallId != null && RoleUtils.canManageSpecials(user, homeHallId))
-                    _buildModuleCard(
-                      context,
-                      title: "Specials",
-                      icon: Icons.local_offer,
-                      color: Colors.green,
-                      desc: "Promote food, drink, games",
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageSpecialsScreen())),
-                    ),
+                      // SPECIALS (Manager+)
+                      if (homeHallId != null && RoleUtils.canManageGames(user, homeHallId))
+                      _buildModuleCard(
+                        context,
+                        title: "Manage Events",
+                        icon: Icons.calendar_today,
+                        color: Colors.blueAccent, 
+                        desc: "Add Daily Specials",
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageSpecialsScreen())),
+                      ),
 
-                    // FINANCIALS (Owner Only)
-                    if (homeHallId != null && RoleUtils.canManageFinancials(user, homeHallId)) ...[
+                      // FINANCIALS (Owner Only - Placeholder)
+                      if (RoleUtils.isOwner(user))
                       _buildModuleCard(
                         context,
                         title: "Financials",
@@ -108,90 +156,91 @@ class ManagerDashboardScreen extends ConsumerWidget {
                         onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Financials Dashboard coming soon"))),
                       ),
                       // REMOVED DUPLICATE PERSONNEL TILE
+                      
+                      // RAFFLES (Manager+)
+                      if (homeHallId != null && RoleUtils.canManageGames(user, homeHallId))
+                       _buildModuleCard(
+                        context,
+                        title: "Manage Raffles", 
+                        icon: Icons.confirmation_number,
+                        color: Colors.amber,
+                        desc: "Create & Run Drawings", 
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ManageRafflesScreen(hallId: homeHallId))),
+                      ),
+
+                      // TOURNAMENTS (Manager+)
+                      if (homeHallId != null && RoleUtils.canManageGames(user, homeHallId))
+                       _buildModuleCard(
+                        context,
+                        title: "Tournaments", 
+                        icon: Icons.emoji_events,
+                        color: Colors.purple,
+                        desc: "Create & Run Events", 
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageTournamentsScreen())),
+                      ),
+
+                      // PHOTOS (Worker+)
+                       if (homeHallId != null && RoleUtils.canScanAndVerify(user, homeHallId))
+                       _buildModuleCard(
+                        context,
+                        title: "Photo Approvals",
+                        icon: Icons.photo_library,
+                        color: Colors.teal,
+                        desc: "Review tagged photos",
+                        useManagerBadge: true,
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoApprovalScreen(hallId: homeHallId, hallName: hall?.name ?? ''))),
+                      ),
+
+                      // STORE (Manager+)
+                       if (homeHallId != null && RoleUtils.canManageGames(user, homeHallId))
+                       _buildModuleCard(
+                        context,
+                        title: "Manage Store",
+                        icon: Icons.store_mall_directory,
+                        color: Colors.orangeAccent,
+                        desc: "Redemption Items",
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ManageStoreScreen(hallId: homeHallId))),
+                      ),
+
+                      // LOYALTY SETTINGS (Owner Only)
+                      if (homeHallId != null && (RoleUtils.isOwner(user) || RoleUtils.isSuperAdmin(user)) && hall != null)
+                        _buildModuleCard(
+                          context,
+                          title: "Loyalty Settings",
+                          icon: Icons.settings_suggest,
+                          color: Colors.cyan,
+                          desc: "Configure points & bonuses",
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => LoyaltySettingsScreen(hallId: homeHallId, hall: hall))),
+                        ),
+
+                      // BLUETOOTH SETTINGS (Owner/SuperAdmin)
+                       if (homeHallId != null && (RoleUtils.isOwner(user) || RoleUtils.isSuperAdmin(user)) && hall != null)
+                        _buildModuleCard(
+                          context,
+                          title: "Bluetooth Settings",
+                          icon: Icons.bluetooth_audio,
+                          color: Colors.blueAccent,
+                          desc: "Manage Beacons (BP101E)",
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BluetoothSettingsScreen(hallId: homeHallId, hall: hall))),
+                        ),
+
+                      // PERSONNEL (Owner/SuperAdmin/Manager - only limited access for manager?)
+                      // Logic: Owners can manage managers/workers. Managers can manage workers.
+                      // RoleUtils.canManagePersonnel handles this check.
+                      if (homeHallId != null && RoleUtils.canManagePersonnel(user, homeHallId) && hall != null)
+                        _buildModuleCard(
+                          context,
+                          title: "Personnel",
+                          icon: Icons.people_alt,
+                          color: Colors.pink,
+                          desc: "Manage Staff & Roles",
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ManagePersonnelScreen(hallId: homeHallId, hall: hall, currentUser: user))),
+                        ),
                     ],
-
-                    // RAFFLES (Manager+)
-                    if (homeHallId != null && RoleUtils.canManageGames(user, homeHallId))
-                     _buildModuleCard(
-                      context,
-                      title: "Manage Raffles", 
-                      icon: Icons.confirmation_number,
-                      color: Colors.amber,
-                      desc: "Create & Run Drawings", 
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ManageRafflesScreen(hallId: homeHallId))),
-                    ),
-
-                    // TOURNAMENTS (Manager+)
-                    if (homeHallId != null && RoleUtils.canManageGames(user, homeHallId))
-                     _buildModuleCard(
-                      context,
-                      title: "Tournaments", 
-                      icon: Icons.emoji_events,
-                      color: Colors.purple,
-                      desc: "Create & Run Events", 
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageTournamentsScreen())),
-                    ),
-
-                    // PHOTOS (Worker+)
-                     if (homeHallId != null && RoleUtils.canScanAndVerify(user, homeHallId))
-                     _buildModuleCard(
-                      context,
-                      title: "Photo Approvals",
-                      icon: Icons.photo_library,
-                      color: Colors.teal,
-                      desc: "Review tagged photos",
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoApprovalScreen(hallId: homeHallId, hallName: hall?.name ?? ''))),
-                    ),
-
-                    // STORE (Manager+)
-                     if (homeHallId != null && RoleUtils.canManageGames(user, homeHallId))
-                     _buildModuleCard(
-                      context,
-                      title: "Manage Store",
-                      icon: Icons.store_mall_directory,
-                      color: Colors.orangeAccent,
-                      desc: "Redemption Items",
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ManageStoreScreen(hallId: homeHallId))),
-                    ),
-
-                    // LOYALTY SETTINGS (Owner Only)
-                    if (homeHallId != null && (RoleUtils.isOwner(user) || RoleUtils.isSuperAdmin(user)) && hall != null)
-                      _buildModuleCard(
-                        context,
-                        title: "Loyalty Settings",
-                        icon: Icons.settings_suggest,
-                        color: Colors.cyan,
-                        desc: "Configure points & bonuses",
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => LoyaltySettingsScreen(hallId: homeHallId, hall: hall))),
-                      ),
-
-                    // BLUETOOTH SETTINGS (Owner/SuperAdmin)
-                     if (homeHallId != null && (RoleUtils.isOwner(user) || RoleUtils.isSuperAdmin(user)) && hall != null)
-                      _buildModuleCard(
-                        context,
-                        title: "Bluetooth Settings",
-                        icon: Icons.bluetooth_audio,
-                        color: Colors.blueAccent,
-                        desc: "Manage Beacons (BP101E)",
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BluetoothSettingsScreen(hallId: homeHallId, hall: hall))),
-                      ),
-
-                    // PERSONNEL (Owner/SuperAdmin/Manager - only limited access for manager?)
-                    // Logic: Owners can manage managers/workers. Managers can manage workers.
-                    // RoleUtils.canManagePersonnel handles this check.
-                    if (homeHallId != null && RoleUtils.canManagePersonnel(user, homeHallId) && hall != null)
-                      _buildModuleCard(
-                        context,
-                        title: "Personnel",
-                        icon: Icons.people_alt,
-                        color: Colors.pink,
-                        desc: "Manage Staff & Roles",
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ManagePersonnelScreen(hallId: homeHallId, hall: hall, currentUser: user))),
-                      ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -238,7 +287,7 @@ class ManagerDashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildModuleCard(BuildContext context, {
-    required String title, required IconData icon, required Color color, required String desc, required VoidCallback onTap
+    required String title, required IconData icon, required Color color, required String desc, required VoidCallback onTap, bool useManagerBadge = false,
   }) {
     return InkWell(
       onTap: onTap,
@@ -263,7 +312,9 @@ class ManagerDashboardScreen extends ConsumerWidget {
                 color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: 28),
+              child: useManagerBadge 
+                ? NotificationBadge(showForGeneral: false, showForManager: true, child: Icon(icon, color: color, size: 28))
+                : Icon(icon, color: color, size: 28),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,

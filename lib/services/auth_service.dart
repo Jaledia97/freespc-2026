@@ -234,6 +234,16 @@ class AuthService {
     }
   }
 
+  Future<void> updateLastViewedPhotoApprovals(String uid) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'lastViewedPhotoApprovals': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      print("Error updating lastViewedPhotoApprovals: $e");
+    }
+  }
+
   Future<List<PublicProfile>> searchUsers(String query) async {
     if (query.isEmpty) return [];
     try {
@@ -297,6 +307,31 @@ class AuthService {
          throw Exception("Please log out and log back in to delete your account.");
       }
       rethrow;
+    }
+  }
+
+  // --- Custom Categories Management ---
+  Future<void> saveCustomCategory(String userId, String category) async {
+    try {
+      final docRef = _firestore.collection('users').doc(userId);
+      await docRef.update({
+        'customCategories': FieldValue.arrayUnion([category])
+      });
+    } catch (e) {
+      print("Error saving custom category: $e");
+      throw Exception("Failed to save custom category.");
+    }
+  }
+
+  Future<void> removeCustomCategory(String userId, String category) async {
+    try {
+      final docRef = _firestore.collection('users').doc(userId);
+      await docRef.update({
+        'customCategories': FieldValue.arrayRemove([category])
+      });
+    } catch (e) {
+      print("Error removing custom category: $e");
+      throw Exception("Failed to remove custom category.");
     }
   }
 }

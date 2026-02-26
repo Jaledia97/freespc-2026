@@ -33,6 +33,19 @@ final specialsFeedProvider = StreamProvider<List<SpecialModel>>((ref) {
   return ref.watch(hallRepositoryProvider).getSpecialsFeed(null);
 });
 
+final allCustomTagsProvider = StreamProvider<Map<String, int>>((ref) {
+  // We can derive this from the global specials feed so it updates live
+  return ref.watch(specialsFeedProvider.stream).map((specials) {
+    final counts = <String, int>{};
+    for (final special in specials) {
+      for (final tag in special.tags) {
+        counts[tag] = (counts[tag] ?? 0) + 1;
+      }
+    }
+    return counts;
+  });
+});
+
 class HallRepository {
   final FirebaseFirestore _firestore;
 

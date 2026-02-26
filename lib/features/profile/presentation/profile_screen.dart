@@ -11,6 +11,8 @@ import '../../settings/presentation/display_settings_screen.dart';
 import '../../settings/presentation/account_settings_screen.dart'; // Added
 import 'my_photos_screen.dart';
 import '../../../core/utils/role_utils.dart'; // Import RoleUtils
+import '../../../core/widgets/notification_badge.dart'; // Import NotificationBadge
+import '../../notifications/presentation/notifications_screen.dart';
 import '../../wallet/presentation/my_raffles_screen.dart'; // Import MyRafflesScreen
 import '../../home/presentation/upcoming_games_screen.dart'; // Import UpcomingGamesScreen
 import '../../friends/presentation/friends_screen.dart'; // Import FriendsScreen
@@ -31,6 +33,7 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
+
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline),
             onPressed: () {
@@ -38,7 +41,9 @@ class ProfileScreen extends ConsumerWidget {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const NotificationBadge(
+              child: Icon(Icons.settings)
+            ),
             onPressed: () {
               // Extract values BEFORE the list
               final user = userAsync.value; // Safe
