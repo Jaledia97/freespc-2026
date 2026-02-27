@@ -4,6 +4,7 @@ import '../../../services/auth_service.dart';
 import '../../../services/notification_service.dart';
 import '../../photos/repositories/photo_repository.dart';
 import '../../photos/presentation/photo_detail_screen.dart';
+import '../../manager/presentation/cms/photo_approval_screen.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
@@ -48,49 +49,67 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               final notification = notifications[index];
               final isUnread = !notification.isRead;
 
-              return InkWell(
-                onTap: () async {
-                  if (isUnread) {
-                    final user = ref.read(userProfileProvider).value;
-                    if (user != null) {
-                      ref.read(notificationServiceProvider).markAsRead(user.uid, notification.id);
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () async {
+                    if (isUnread) {
+                      final user = ref.read(userProfileProvider).value;
+                      if (user != null) {
+                        ref.read(notificationServiceProvider).markAsRead(user.uid, notification.id);
+                      }
                     }
-                  }
 
-                  // Handle 'photo_approval' routing
-                  if (notification.type == 'photo_approval' && notification.metadata?.containsKey('photoId') == true) {
-                    final photoId = notification.metadata!['photoId'];
-                    final hallId = notification.hallId;
-                    if (hallId != null) {
-                      // Fetch the actual photo to fulfill the required PhotoDetailScreen parameter
-                      final photo = await ref.read(photoRepositoryProvider).getPhotoById(photoId);
-                      
-                      if (context.mounted) {
-                        if (photo != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PhotoDetailScreen(photo: photo),
-                            ),
-                          );
-                        } else {
-                          // Photo might have been deleted since the notification was generated
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("This photo is no longer available.")),
-                          );
+                    // Handle 'photo_approval' routing
+                    if (notification.type == 'photo_approval' && notification.metadata?.containsKey('photoId') == true) {
+                      final photoId = notification.metadata!['photoId'];
+                      final hallId = notification.hallId;
+                      if (hallId != null) {
+                        // Fetch the actual photo to fulfill the required PhotoDetailScreen parameter
+                        final photo = await ref.read(photoRepositoryProvider).getPhotoById(photoId);
+                        
+                        if (context.mounted) {
+                          if (photo != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => PhotoDetailScreen(photo: photo),
+                              ),
+                            );
+                          } else {
+                            // Photo might have been deleted since the notification was generated
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("This photo is no longer available.")),
+                            );
+                          }
                         }
                       }
                     }
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isUnread ? Colors.blue.withOpacity(0.1) : Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: isUnread ? Border.all(color: Colors.blueAccent.withOpacity(0.5)) : null,
-                ),
-                child: Row(
+
+                    // Handle 'hall_photo_pending' routing (for managers/workers)
+                    if (notification.type == 'hall_photo_pending' && notification.hallId != null) {
+                      if (context.mounted) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PhotoApprovalScreen(
+                              hallId: notification.hallId!,
+                              hallName: 'Review Photos', // Fallback name
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isUnread ? Colors.blue.withOpacity(0.1) : Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: isUnread ? Border.all(color: Colors.blueAccent.withOpacity(0.5)) : null,
+                    ),
+                    child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
@@ -126,10 +145,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   ],
                 ),
               ),
-            );
-          },
+            ),
           );
         },
+      );
+    },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text("Error: $e")),
       ),

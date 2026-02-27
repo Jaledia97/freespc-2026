@@ -47,6 +47,7 @@ abstract class UserModel with _$UserModel {
     @Default([]) List<String> blockedUsers, // Array of User IDs this user has blocked
     @Default([]) List<String> customCategories, // Array of Custom Tags/Categories the user has saved
     @NullableTimestampConverter() DateTime? lastViewedPhotoApprovals, // Track when the worker last viewed pending photos
+    @Default([]) List<String> fcmTokens, // Device tokens for push notifications
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, Object?> json) => _$UserModelFromJson(json);

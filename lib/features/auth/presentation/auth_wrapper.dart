@@ -76,7 +76,15 @@ class _AuthHandlerState extends ConsumerState<_AuthHandler> {
   void initState() {
     super.initState();
     // Check for pending invites after frame
-    WidgetsBinding.instance.addPostFrameCallback((_) => _checkPendingInvites());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkPendingInvites();
+
+      // Setup FCM Token
+      final user = ref.read(authStateChangesProvider).value;
+      if (user != null) {
+        ref.read(authServiceProvider).updateFcmToken(user.uid);
+      }
+    });
   }
 
   // Also listen for deep link updates

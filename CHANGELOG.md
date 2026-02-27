@@ -2,6 +2,15 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+60] - 2026-02-26 - Push Notifications (Phase 60)
+
+### Added
+- **Push Notification Infrastructure**: Integrated Firebase Cloud Messaging (FCM) and `flutter_local_notifications`.
+- **Cloud Functions**: Added Node.js Cloud Function to automatically dispatch FCM pushes when notifications are written to Firestore.
+- **Client Handling**: Device FCM tokens are now automatically synced to the `UserModel`, and foreground notification UI is enabled to ring/vibrate.
+- **Dependency Update**: Enabled core library desugaring in Android Gradle build (`desugar_jdk_libs:2.1.4`) to support latest Flutter plugins.
+
+
 ## [0.0.1+59] - 2026-02-26 - S-Tier Chat & Privacy (Phase 59)
 
 ### Added

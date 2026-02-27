@@ -41,6 +41,9 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   lastViewedPhotoApprovals: const NullableTimestampConverter().fromJson(
     json['lastViewedPhotoApprovals'],
   ),
+  fcmTokens:
+      (json['fcmTokens'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
@@ -69,4 +72,5 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'lastViewedPhotoApprovals': const NullableTimestampConverter().toJson(
         instance.lastViewedPhotoApprovals,
       ),
+      'fcmTokens': instance.fcmTokens,
     };

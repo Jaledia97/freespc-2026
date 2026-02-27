@@ -10,16 +10,30 @@ class TimestampConverter implements JsonConverter<DateTime, dynamic> {
   @override
   DateTime fromJson(dynamic json) {
     if (json == null) return DateTime.now();
-    if (json is Timestamp) return json.toDate();
-    if (json is String) return DateTime.tryParse(json) ?? DateTime.now();
-    
-    // Handle cases where the timestamp was serialized as a Map via cloud functions or web API
-    if (json is Map) {
-      final seconds = json['_seconds'] ?? json['seconds'];
-      final nanoseconds = json['_nanoseconds'] ?? json['nanoseconds'] ?? 0;
-      if (seconds != null) {
-        return Timestamp(seconds as int, nanoseconds as int).toDate();
+    try {
+      if (json is Timestamp) return json.toDate();
+      if (json is String) return DateTime.tryParse(json) ?? DateTime.now();
+      if (json is int) return DateTime.fromMillisecondsSinceEpoch(json);
+      
+      // Handle cases where the timestamp was serialized as a Map via cloud functions or web API
+      if (json is Map) {
+        final seconds = json['_seconds'] ?? json['seconds'];
+        final nanoseconds = json['_nanoseconds'] ?? json['nanoseconds'] ?? 0;
+        if (seconds != null) {
+          // If seconds is a string, parse it. Otherwise cast to int.
+          final sLength = seconds.toString();
+          if (sLength.length > 10) {
+              // It might actually be milliseconds secretly passed as seconds
+              return DateTime.fromMillisecondsSinceEpoch(int.parse(sLength));
+          }
+          return Timestamp(
+              int.tryParse(seconds.toString()) ?? 0, 
+              int.tryParse(nanoseconds.toString()) ?? 0
+            ).toDate();
+        }
       }
+    } catch (e) {
+      print("Error parsing timestamp in NotificationModel: $e. Falling back to now(). json was $json");
     }
     
     return DateTime.now(); // Fallback

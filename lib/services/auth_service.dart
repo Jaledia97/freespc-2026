@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
@@ -241,6 +242,28 @@ class AuthService {
       });
     } catch (e) {
       print("Error updating lastViewedPhotoApprovals: $e");
+    }
+  }
+
+  Future<void> updateFcmToken(String uid) async {
+    try {
+      // Defer import to avoid clutter if used elsewhere, or just rely on global import if we added it
+      // Actually we need to add firebase_messaging import at the top of the file
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null) {
+        await _firestore.collection('users').doc(uid).update({
+          'fcmTokens': FieldValue.arrayUnion([fcmToken])
+        });
+      }
+
+      // Also listen to token refreshes
+      FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+         await _firestore.collection('users').doc(uid).update({
+          'fcmTokens': FieldValue.arrayUnion([newToken])
+         });
+      });
+    } catch (e) {
+      print("Error updating FCM token: $e");
     }
   }
 
