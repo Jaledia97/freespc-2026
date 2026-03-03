@@ -2,6 +2,14 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+61] - 2026-03-03 - UI Polish & Bug Fixes
+
+### Fixed
+- **Notification Badges**: Added `markTypeAsRead` to `NotificationService.dart`. `PhotoApprovalScreen` now instantly clears `hall_photo_pending` notifications upon viewing.
+- **Navigation**: Added a new Notification Bell icon to the `ProfileScreen` AppBar so users can actually view and clear general system notifications.
+- **State Management**: Refactored `unreadNotificationsCountProvider` from a StreamProvider to a synchronous derived `Provider<int>` so the badge count reacts instantaneously to the underlying list state.
+- **Gradle Version**: Fast-tracked an update to `gradle-8.13-bin.zip` in the Android properties to clear IDE false-positive warning spam from the Flutter updates.
+
 ## [0.0.1+60] - 2026-02-26 - Push Notifications (Phase 60)
 
 ### Added

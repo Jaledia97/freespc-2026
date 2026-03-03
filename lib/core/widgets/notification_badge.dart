@@ -20,10 +20,8 @@ class NotificationBadge extends ConsumerWidget {
     int count = 0;
 
     if (showForGeneral) {
-      final generalAsync = ref.watch(unreadNotificationsCountProvider);
-      if (!generalAsync.hasError && generalAsync.value != null) {
-        count += generalAsync.value!;
-      }
+      final generalCount = ref.watch(unreadNotificationsCountProvider);
+      count += generalCount;
     }
 
     if (showForManager) {

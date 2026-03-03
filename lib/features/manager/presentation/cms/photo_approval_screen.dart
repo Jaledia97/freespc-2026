@@ -4,6 +4,7 @@ import '../../../../features/photos/repositories/photo_repository.dart';
 import '../../../../features/photos/models/gallery_photo_model.dart';
 import 'package:intl/intl.dart';
 import '../../../../services/auth_service.dart';
+import '../../../../services/notification_service.dart';
 
 class PhotoApprovalScreen extends ConsumerStatefulWidget {
   final String hallId;
@@ -23,6 +24,7 @@ class _PhotoApprovalScreenState extends ConsumerState<PhotoApprovalScreen> {
       final user = ref.read(userProfileProvider).value;
       if (user != null) {
         ref.read(authServiceProvider).updateLastViewedPhotoApprovals(user.uid);
+        ref.read(notificationServiceProvider).markTypeAsRead(user.uid, 'hall_photo_pending');
       }
     });
   }

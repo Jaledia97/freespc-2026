@@ -16,10 +16,9 @@ final userNotificationsProvider = StreamProvider<List<NotificationModel>>((ref) 
 });
 
 /// Provides a count of unread system notifications (doesn't include Pending Photos count)
-final unreadNotificationsCountProvider = StreamProvider<int>((ref) {
-  return ref.watch(userNotificationsProvider.stream).map((notifications) {
-    return notifications.where((n) => !n.isRead).length;
-  });
+final unreadNotificationsCountProvider = Provider<int>((ref) {
+  final notificationsAsync = ref.watch(userNotificationsProvider);
+  return notificationsAsync.value?.where((n) => !n.isRead).length ?? 0;
 });
 
 class NotificationService {
@@ -84,6 +83,24 @@ class NotificationService {
         .collection('notifications')
         .where('isRead', isEqualTo: false)
         .get();
+
+    final batch = _firestore.batch();
+    for (var doc in snapshot.docs) {
+      batch.update(doc.reference, {'isRead': true});
+    }
+    await batch.commit();
+  }
+
+  Future<void> markTypeAsRead(String userId, String type) async {
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('notifications')
+        .where('type', isEqualTo: type)
+        .where('isRead', isEqualTo: false)
+        .get();
+
+    if (snapshot.docs.isEmpty) return;
 
     final batch = _firestore.batch();
     for (var doc in snapshot.docs) {

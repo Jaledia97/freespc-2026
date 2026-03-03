@@ -35,6 +35,15 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
 
           IconButton(
+            icon: const NotificationBadge(
+              showForManager: false,
+              child: Icon(Icons.notifications_none),
+            ),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.chat_bubble_outline),
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const MessagingHubScreen()));
@@ -42,6 +51,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const NotificationBadge(
+              showForGeneral: false,
               child: Icon(Icons.settings)
             ),
             onPressed: () {
