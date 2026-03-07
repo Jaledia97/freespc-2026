@@ -563,8 +563,11 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     setState(() {
       final old = isEnd ? (_endTime ?? DateTime.now()) : _startTime;
       final newDt = DateTime(date.year, date.month, date.day, old.hour, old.minute);
-      if (isEnd) _endTime = newDt;
-      else _startTime = newDt;
+      if (isEnd) {
+        _endTime = newDt;
+      } else {
+        _startTime = newDt;
+      }
     });
   }
 
@@ -576,8 +579,11 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     setState(() {
       final old = isEnd ? (_endTime ?? DateTime.now()) : _startTime;
       final newDt = DateTime(old.year, old.month, old.day, time.hour, time.minute);
-      if (isEnd) _endTime = newDt;
-      else _startTime = newDt;
+      if (isEnd) {
+        _endTime = newDt;
+      } else {
+        _startTime = newDt;
+      }
     });
   }
 
@@ -688,7 +694,11 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                        final isSelected = days.contains(idx);
                        return GestureDetector(
                          onTap: () => setModalState(() {
-                           if (isSelected) days.remove(idx); else days.add(idx);
+                           if (isSelected) {
+                             days.remove(idx);
+                           } else {
+                             days.add(idx);
+                           }
                          }),
                          child: CircleAvatar(
                            radius: 20,
@@ -916,7 +926,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                     ],
                   ),
                   childrenPadding: const EdgeInsets.all(16),
-                  initiallyExpanded: true,
+                  initiallyExpanded: false,
                   collapsedIconColor: Colors.white54,
                   iconColor: Colors.blueAccent,
                   children: [

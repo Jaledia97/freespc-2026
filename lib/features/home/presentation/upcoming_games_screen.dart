@@ -6,9 +6,11 @@ import 'package:freespc/features/wallet/repositories/wallet_repository.dart';
 import 'package:freespc/services/auth_service.dart';
 import 'package:freespc/models/special_model.dart';
 import 'package:freespc/models/tournament_model.dart';
+import 'package:freespc/models/raffle_model.dart';
 import 'package:freespc/core/constants/default_tags.dart';
 import 'widgets/special_card.dart';
 import 'widgets/tournament_list_card.dart';
+import 'widgets/raffle_list_card.dart';
 
 class UpcomingGamesScreen extends ConsumerStatefulWidget {
   final String? initialCategory;
@@ -39,6 +41,8 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
     
     if (isTournamentMode) {
       feedAsync = ref.watch(tournamentsFeedProvider).whenData((list) => List<dynamic>.from(list));
+    } else if (_selectedCategory == 'Raffles') {
+      feedAsync = ref.watch(rafflesFeedProvider).whenData((list) => List<dynamic>.from(list));
     } else {
       feedAsync = ref.watch(specialsFeedProvider).whenData((list) => List<dynamic>.from(list));
     }
@@ -169,10 +173,13 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
                  title = item.title;
                  // As noted, TournamentModel lacks hallName currently, so search might be limited
                  tags = ['Tournaments']; 
+               } else if (item is RaffleModel) {
+                 title = item.name;
+                 tags = ['Raffles'];
                }
 
                final matchesSearch = title.toLowerCase().contains(_searchQuery) || hallName.toLowerCase().contains(_searchQuery);
-               final matchesCategory = _selectedCategory == null || tags.contains(_selectedCategory!) || (_selectedCategory == 'Tournaments' && item is TournamentModel);
+               final matchesCategory = _selectedCategory == null || tags.contains(_selectedCategory!) || (_selectedCategory == 'Tournaments' && item is TournamentModel) || (_selectedCategory == 'Raffles' && item is RaffleModel);
                
                // Tag Discovery
                if (_searchQuery.isNotEmpty && _selectedCategory == null) {
@@ -242,6 +249,8 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
                          final item = results[index];
                          if (item is TournamentModel) {
                            return TournamentListCard(tournament: item, showHallName: true);
+                         } else if (item is RaffleModel) {
+                           return RaffleListCard(raffle: item);
                          } else if (item is SpecialModel) {
                            return SpecialCard(special: item);
                          }

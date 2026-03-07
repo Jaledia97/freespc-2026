@@ -5,7 +5,6 @@ import '../../photos/repositories/photo_repository.dart';
 import '../../photos/models/gallery_photo_model.dart';
 import '../../photos/presentation/upload_photo_screen.dart';
 import '../../photos/presentation/photo_detail_screen.dart';
-import 'package:intl/intl.dart';
 
 class HallFullGalleryScreen extends ConsumerWidget {
   final String hallId;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Added
 import 'package:cloud_firestore/cloud_firestore.dart'; // Added
-import 'package:cloud_firestore/cloud_firestore.dart'; // Added
+// Added
 import '../../../services/auth_service.dart';
 import '../../main_layout.dart';
 import '../../onboarding/presentation/onboarding_screen.dart';

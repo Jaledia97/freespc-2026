@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../models/raffle_model.dart';
 import '../../../../core/utils/time_utils.dart';
 import '../../../home/repositories/hall_repository.dart';
-import '../../../profile/presentation/widgets/profile_header.dart';
 import 'edit_raffle_screen.dart';
 import '../raffle_tool/raffle_tool_screen.dart';
 

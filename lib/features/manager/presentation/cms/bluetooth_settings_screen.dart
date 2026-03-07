@@ -204,7 +204,7 @@ class _BluetoothSettingsScreenState extends ConsumerState<BluetoothSettingsScree
          setState(() => _isBroadcasting = val);
          repo.writeCommand(_connectedDevice!, val ? "AT+ADV=1" : "AT+ADV=0");
        },
-       activeColor: Colors.green,
+       activeThumbColor: Colors.green,
      );
    }
 
@@ -306,7 +306,7 @@ class _BluetoothSettingsScreenState extends ConsumerState<BluetoothSettingsScree
                  Switch(
                    value: _heartbeatEnabled, 
                    onChanged: (val) => setState(() => _heartbeatEnabled = val),
-                   activeColor: Colors.pinkAccent,
+                   activeThumbColor: Colors.pinkAccent,
                  ),
                ],
              ),

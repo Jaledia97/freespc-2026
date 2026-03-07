@@ -48,7 +48,7 @@ class PersonnelRepository {
     final usernameSnapshot = await _firestore
         .collection('users')
         .where('username', isGreaterThanOrEqualTo: query)
-        .where('username', isLessThan: query + 'z')
+        .where('username', isLessThan: '${query}z')
         .limit(10)
         .get();
 

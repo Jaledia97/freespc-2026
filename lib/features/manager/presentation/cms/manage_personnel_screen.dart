@@ -5,7 +5,6 @@ import '../../../../models/bingo_hall_model.dart';
 import '../../../../core/utils/role_utils.dart';
 import '../../repositories/personnel_repository.dart';
 import 'invite_staff_sheet.dart';
-import 'package:share_plus/share_plus.dart';
 
 class ManagePersonnelScreen extends ConsumerWidget {
   final String hallId;
@@ -80,7 +79,7 @@ class ManagePersonnelScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
         ),
-        ...users.map((user) => _buildUserTile(context, ref, user)).toList(),
+        ...users.map((user) => _buildUserTile(context, ref, user)),
         const SizedBox(height: 16),
       ],
     );

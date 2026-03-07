@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'scan_action_dialog.dart';
 
@@ -52,7 +51,7 @@ class _ScanScreenState extends State<ScanScreen> {
                 context: context,
                 barrierDismissible: false,
                 builder: (context) => ScanActionDialog(
-                  content: code!, 
+                  content: code, 
                   onResumeCamera: () { },
                 ),
               ).then((_) {

@@ -33,9 +33,13 @@ class NotificationService {
         .collection('notifications')
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => NotificationModel.fromJson(doc.data()))
-            .toList());
+        .map((snapshot) {
+           final docs = snapshot.docs
+              .map((doc) => NotificationModel.fromJson(doc.data()))
+              .toList();
+           docs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+           return docs;
+        });
   }
 
   Future<void> sendNotification({
@@ -107,5 +111,14 @@ class NotificationService {
       batch.update(doc.reference, {'isRead': true});
     }
     await batch.commit();
+  }
+
+  Future<void> deleteNotification(String userId, String notificationId) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('notifications')
+        .doc(notificationId)
+        .delete();
   }
 }

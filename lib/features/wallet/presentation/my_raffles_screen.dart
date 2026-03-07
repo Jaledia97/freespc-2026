@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../wallet/repositories/wallet_repository.dart';
-import '../../../core/widgets/glass_container.dart';
 import 'widgets/raffle_ticket_item.dart';
 import '../../../services/auth_service.dart';
 

@@ -7,6 +7,7 @@ import '../../../services/auth_service.dart';
 import '../../scan/presentation/scan_screen.dart'; // Ensure this path is correct, might be lib/features/scan/presentation/scan_screen.dart
 import '../repositories/friends_repository.dart';
 import '../../../models/public_profile.dart';
+import '../../profile/presentation/public_profile_screen.dart';
 
 class FindFriendsScreen extends ConsumerWidget {
   const FindFriendsScreen({super.key});
@@ -135,15 +136,33 @@ class _ManualSearchSection extends ConsumerStatefulWidget {
 class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
   final TextEditingController _searchController = TextEditingController();
   List<PublicProfile> _searchResults = [];
+  List<PublicProfile> _suggestedResults = [];
   bool _isSearching = false;
   bool _hasSearched = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadSuggestions();
+  }
+
+  Future<void> _loadSuggestions() async {
+    final results = await ref.read(authServiceProvider).getSuggestedUsers();
+    if (mounted) {
+      setState(() {
+        _suggestedResults = results;
+      });
+    }
+  }
+
   Future<void> _performSearch(String query) async {
     if (query.trim().isEmpty) {
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _searchResults = [];
         _hasSearched = false;
       });
+      }
       return;
     }
     
@@ -163,17 +182,7 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
     }
   }
 
-  void _sendRequest(PublicProfile profile) async {
-    final user = ref.read(userProfileProvider).value;
-    if (user == null) return;
-    
-    try {
-      await ref.read(friendsRepositoryProvider).sendFriendRequest(user.uid, profile.uid);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Request sent to @${profile.username}!"), backgroundColor: Colors.green));
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
-    }
-  }
+
 
   @override
   void dispose() {
@@ -183,6 +192,8 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUserId = ref.watch(userProfileProvider).value?.uid;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -216,7 +227,52 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
             child: Center(child: Text("No users found.", style: TextStyle(color: Colors.white54))),
           ),
           
-        if (!_isSearching && _searchResults.isNotEmpty)
+        if (!_isSearching && !_hasSearched && currentUserId != null)
+          _PendingRequestsSection(currentUserId: currentUserId),
+
+        if (!_isSearching && !_hasSearched && _suggestedResults.isNotEmpty)
+          Container(
+            margin: const EdgeInsets.only(top: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(left: 8, bottom: 8),
+                  child: Text("Suggested Friends", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2C2C2C),
+                    borderRadius: BorderRadius.circular(12)
+                  ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _suggestedResults.length > 5 ? 5 : _suggestedResults.length, // Limit visible results
+                    separatorBuilder: (context, index) => const Divider(color: Colors.white12, height: 1),
+                    itemBuilder: (context, index) {
+                      final result = _suggestedResults[index];
+                      return ListTile(
+                        leading: const CircleAvatar(child: Icon(Icons.person)),
+                        title: Text(result.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        subtitle: result.realNameVisibility == 'Everyone' || result.realNameVisibility == 'Friends Only'
+                          ? Text("${result.firstName} ${result.lastName}", style: const TextStyle(color: Colors.white54))
+                          : null,
+                        trailing: currentUserId != null 
+                            ? _FriendshipStatusIcon(currentUserId: currentUserId, targetUser: result)
+                            : null,
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(profile: result)));
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+        if (!_isSearching && _hasSearched && _searchResults.isNotEmpty)
           Container(
             margin: const EdgeInsets.only(top: 16),
             decoration: BoxDecoration(
@@ -236,10 +292,12 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
                   subtitle: result.realNameVisibility == 'Everyone' || result.realNameVisibility == 'Friends Only'
                     ? Text("${result.firstName} ${result.lastName}", style: const TextStyle(color: Colors.white54))
                     : null,
-                  trailing: IconButton(
-                    icon: const Icon(Icons.person_add, color: Colors.blueAccent),
-                    onPressed: () => _sendRequest(result),
-                  ),
+                  trailing: currentUserId != null 
+                      ? _FriendshipStatusIcon(currentUserId: currentUserId, targetUser: result)
+                      : null,
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(profile: result)));
+                  },
                 );
               },
             ),
@@ -248,3 +306,217 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
     );
   }
 }
+
+class _PendingRequestsSection extends ConsumerWidget {
+  final String currentUserId;
+
+  const _PendingRequestsSection({required this.currentUserId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final friendsStream = ref.watch(friendsStreamProvider(currentUserId));
+
+    return friendsStream.when(
+      data: (friendsList) {
+        // Filter for requests where WE are the receiver and the status is 'received'
+        final pendingRequests = friendsList.where((f) => f.status == 'received').toList();
+
+        if (pendingRequests.isEmpty) return const SizedBox.shrink();
+
+        return Container(
+          margin: const EdgeInsets.only(top: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(left: 8, bottom: 8),
+                child: Text("Pending Requests", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent)),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2C2C2C),
+                  borderRadius: BorderRadius.circular(12)
+                ),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: pendingRequests.length,
+                  separatorBuilder: (context, index) => const Divider(color: Colors.white12, height: 1),
+                  itemBuilder: (context, index) {
+                    final request = pendingRequests[index];
+                    // The sender's ID is the one that differs from currentUserId
+                    final senderId = request.user1Id == currentUserId ? request.user2Id : request.user1Id;
+
+                    return _PendingRequestTile(senderId: senderId, currentUserId: currentUserId);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+}
+
+class _PendingRequestTile extends ConsumerWidget {
+  final String senderId;
+  final String currentUserId;
+
+  const _PendingRequestTile({required this.senderId, required this.currentUserId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // We need to fetch the sender's profile to display their info
+    return FutureBuilder<PublicProfile?>(
+      future: ref.read(authServiceProvider).getPublicProfile(senderId),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const ListTile(
+            leading: CircleAvatar(child: Icon(Icons.person)),
+            title: Text("Loading...", style: TextStyle(color: Colors.white54)),
+          );
+        }
+
+        final sender = snapshot.data!;
+
+        return ListTile(
+          leading: const CircleAvatar(child: Icon(Icons.person)),
+          title: Text(sender.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          subtitle: const Text("Sent you a friend request", style: TextStyle(color: Colors.white54)),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.check_circle, color: Colors.greenAccent),
+                onPressed: () async {
+                  try {
+                    await ref.read(friendsRepositoryProvider).acceptFriendRequest(currentUserId, sender.uid);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("You are now friends with @\${sender.username}!"), backgroundColor: Colors.green));
+                    }
+                  } catch (e) {
+                    if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: \$e"), backgroundColor: Colors.red));
+                  }
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.cancel, color: Colors.redAccent),
+                onPressed: () async {
+                  await ref.read(friendsRepositoryProvider).removeFriend(currentUserId, sender.uid);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Request declined."), backgroundColor: Colors.white30));
+                  }
+                },
+              ),
+            ],
+          ),
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(profile: sender)));
+          },
+        );
+      },
+    );
+  }
+}
+
+class _FriendshipStatusIcon extends ConsumerWidget {
+  final String currentUserId;
+  final PublicProfile targetUser;
+
+  const _FriendshipStatusIcon({
+    required this.currentUserId,
+    required this.targetUser,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (currentUserId == targetUser.uid) {
+      return const SizedBox.shrink(); // No icon for self
+    }
+
+    final friendsStream = ref.watch(friendsStreamProvider(currentUserId));
+
+    return friendsStream.when(
+      data: (friendsList) {
+        final friendRecord = friendsList.where((f) => f.user2Id == targetUser.uid || f.user1Id == targetUser.uid).firstOrNull;
+
+        if (friendRecord == null) {
+          // Not friends
+          return IconButton(
+            icon: const Icon(Icons.person_add, color: Colors.blueAccent),
+            onPressed: () async {
+              try {
+                await ref.read(friendsRepositoryProvider).sendFriendRequest(currentUserId, targetUser.uid);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Request sent to @\${targetUser.username}!"), backgroundColor: Colors.green));
+                }
+              } catch (e) {
+                if (context.mounted) {
+                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: \$e"), backgroundColor: Colors.red));
+                }
+              }
+            },
+          );
+        } else if (friendRecord.status == 'sent') {
+          // Pending request sent by current user
+          return IconButton(
+            icon: const Icon(Icons.hourglass_empty, color: Colors.white54),
+            onPressed: () async {
+               // Confirm dialog
+               final confirm = await showDialog<bool>(
+                 context: context,
+                 builder: (context) => AlertDialog(
+                   backgroundColor: const Color(0xFF2C2C2C),
+                   title: const Text("Cancel Friend Request?", style: TextStyle(color: Colors.white)),
+                   content: Text("Are you sure you want to cancel the friend request to @\${targetUser.username}?", style: const TextStyle(color: Colors.white70)),
+                   actions: [
+                     TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("No")),
+                     TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Yes, Cancel", style: TextStyle(color: Colors.redAccent))),
+                   ],
+                 )
+               );
+               
+               if (confirm == true) {
+                 await ref.read(friendsRepositoryProvider).removeFriend(currentUserId, targetUser.uid);
+                 if (context.mounted) {
+                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Friend request canceled."), backgroundColor: Colors.white30));
+                 }
+               }
+            },
+          );
+        } else if (friendRecord.status == 'received') {
+          // Received a request from this user
+          return IconButton(
+            icon: const Icon(Icons.check_circle_outline, color: Colors.greenAccent),
+            onPressed: () async {
+              try {
+                await ref.read(friendsRepositoryProvider).acceptFriendRequest(currentUserId, targetUser.uid);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("You are now friends with @\${targetUser.username}!"), backgroundColor: Colors.green));
+                }
+              } catch (e) {
+                if (context.mounted) {
+                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: \$e"), backgroundColor: Colors.red));
+                }
+              }
+            },
+          );
+        } else {
+          // Already friends
+          return IconButton(
+            icon: const Icon(Icons.people, color: Colors.greenAccent),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(profile: targetUser)));
+            },
+          );
+        }
+      },
+      loading: () => const SizedBox(width: 48, height: 48, child: Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)))),
+      error: (e, st) => const Icon(Icons.error, color: Colors.red),
+    );
+  }
+}
+

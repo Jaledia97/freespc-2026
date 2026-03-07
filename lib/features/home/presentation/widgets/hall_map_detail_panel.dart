@@ -4,7 +4,6 @@ import '../../../../models/bingo_hall_model.dart';
 import '../../repositories/hall_repository.dart';
 import '../../../../models/special_model.dart';
 import '../hall_profile_screen.dart';
-import 'package:intl/intl.dart';
 
 class HallMapDetailPanel extends ConsumerWidget {
   final BingoHallModel hall;
@@ -170,13 +169,9 @@ class _CompactSpecialCard extends StatelessWidget {
              decoration: BoxDecoration(
                color: Colors.blue[100],
                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-               image: special.imageUrl != null 
-                 ? DecorationImage(image: NetworkImage(special.imageUrl!), fit: BoxFit.cover)
-                 : null
+               image: DecorationImage(image: NetworkImage(special.imageUrl), fit: BoxFit.cover)
              ),
-             child: special.imageUrl == null 
-               ? const Center(child: Icon(Icons.event, color: Colors.blue))
-               : null,
+             child: null,
           ),
           Padding(
             padding: const EdgeInsets.all(10),

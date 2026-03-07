@@ -240,8 +240,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       builder: (context, child) {
         return Theme(
           data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(primary: Colors.amber, onPrimary: Colors.black, surface: Color(0xFF222222)),
-            dialogBackgroundColor: const Color(0xFF222222),
+            colorScheme: const ColorScheme.dark(primary: Colors.amber, onPrimary: Colors.black, surface: Color(0xFF222222)), dialogTheme: DialogThemeData(backgroundColor: const Color(0xFF222222)),
           ),
           child: child!,
         );

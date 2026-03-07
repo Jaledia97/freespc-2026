@@ -2,8 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../models/friendship_model.dart';
+import '../../../models/notification_model.dart';
 
 final friendsRepositoryProvider = Provider((ref) => FriendsRepository());
+
+final friendsStreamProvider = StreamProvider.family<List<FriendshipModel>, String>((ref, userId) {
+  return ref.read(friendsRepositoryProvider).streamFriends(userId);
+});
 
 class FriendsRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -46,7 +51,7 @@ class FriendsRepository {
       id: id,
       user1Id: currentUserId,
       user2Id: targetUserId,
-      status: 'pending', // could be 'sent' here and 'pending' on the other
+      status: 'sent', // The sender initiated
       createdAt: now,
     );
 
@@ -55,13 +60,36 @@ class FriendsRepository {
       id: id,
       user1Id: targetUserId, // They are user1 in their own subcollection
       user2Id: currentUserId, // Sender is user2
-      status: 'pending',
+      status: 'received', // They received it
       createdAt: now,
     );
 
     final batch = _firestore.batch();
     batch.set(_firestore.collection('users').doc(currentUserId).collection('friends').doc(targetUserId), senderRecord.toJson());
     batch.set(_firestore.collection('users').doc(targetUserId).collection('friends').doc(currentUserId), receiverRecord.toJson());
+    
+    // Create the notification
+    String senderUsername = 'Someone';
+    try {
+      final senderProfile = await _firestore.collection('public_profiles').doc(currentUserId).get();
+      if (senderProfile.exists) {
+        senderUsername = senderProfile.data()?['username'] ?? 'Someone';
+      }
+    } catch (_) {}
+
+    final notifId = const Uuid().v4();
+    final notif = NotificationModel(
+      id: notifId,
+      userId: targetUserId,
+      title: 'New Friend Request',
+      body: '@$senderUsername sent you a friend request!',
+      type: 'friend_request',
+      createdAt: now,
+      metadata: {'senderId': currentUserId},
+    );
+
+    batch.set(_firestore.collection('users').doc(targetUserId).collection('notifications').doc(notifId), notif.toJson());
+    
     await batch.commit();
   }
 

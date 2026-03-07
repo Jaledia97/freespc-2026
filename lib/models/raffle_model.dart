@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'special_model.dart'; // For RecurrenceRule
 
 part 'raffle_model.freezed.dart';

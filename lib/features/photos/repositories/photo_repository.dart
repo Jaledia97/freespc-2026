@@ -94,31 +94,8 @@ class PhotoRepository {
       metadata: {'photoId': photoId},
     );
 
-    // Notify Workers/Managers of Tagged Halls
-    if (taggedHallIds.isNotEmpty) {
-      for (final hallId in taggedHallIds) {
-        // Find workers/managers for this hall
-        final snapshot = await _firestore
-            .collection('users')
-            .where('homeBaseId', isEqualTo: hallId)
-            .where('role', whereIn: ['manager', 'worker', 'owner', 'superadmin', 'admin'])
-            .get();
-
-        for (final doc in snapshot.docs) {
-          final workerId = doc.id;
-          if (workerId == uploaderId) continue; // Skip uploader
-
-          await ns.sendNotification(
-            userId: workerId,
-            title: "New Photo Awaiting Approval",
-            body: "A user has uploaded a photo tagged to your hall. Please review it.",
-            type: 'hall_photo_pending',
-            hallId: hallId,
-            metadata: {'photoId': photoId},
-          );
-        }
-      }
-    }
+    // Note: Notifying managers via push requires a Cloud Function to securely query managers
+    // without violating Firestore rules. For now, managers will see pending photos in their dashboard.
   }
 
   /// Get Public Photos for a Hall (Must be APPROVED)

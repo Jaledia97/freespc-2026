@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../home/repositories/hall_repository.dart';
-import 'hall_profile_screen.dart';
 import 'hall_search_screen.dart';
 import 'upcoming_games_screen.dart';
-import 'upcoming_games_screen.dart';
 import 'widgets/special_card.dart';
+import 'widgets/raffle_feed_card.dart';
+import 'widgets/tournament_feed_card.dart';
+import '../../../models/raffle_model.dart';
+import '../../../models/tournament_model.dart';
 import '../../../services/location_service.dart';
 import '../../friends/presentation/friends_screen.dart';
 import '../../friends/presentation/find_friends_screen.dart';
@@ -19,6 +21,8 @@ class HomeScreen extends ConsumerWidget {
     // In a real implementation this would be a stream from the repository
     final userLocation = ref.watch(userLocationStreamProvider).valueOrNull;
     final specialsStream = ref.watch(hallRepositoryProvider).getSpecialsFeed(userLocation); 
+    final rafflesStream = ref.watch(hallRepositoryProvider).getActiveRafflesFeed(userLocation);
+    final tournamentsStream = ref.watch(hallRepositoryProvider).getActiveTournamentsFeed(userLocation);
 
     return Scaffold(
       body: CustomScrollView(
@@ -88,6 +92,89 @@ class HomeScreen extends ConsumerWidget {
                     const SizedBox(width: 16),
                   ],
                 ),
+              ),
+            ),
+          ),
+
+          // Active Raffles Carousel
+          StreamBuilder<List<RaffleModel>>(
+            stream: rafflesStream,
+            builder: (context, snapshot) {
+              final raffles = snapshot.data ?? [];
+              if (raffles.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
+              return SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16, top: 8, bottom: 12),
+                      child: Text(
+                        'Active Raffles',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 250,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.only(left: 16),
+                        itemCount: raffles.length,
+                        itemBuilder: (context, index) {
+                          return RaffleFeedCard(raffle: raffles[index]);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          // Upcoming Tournaments Carousel
+          StreamBuilder<List<TournamentModel>>(
+            stream: tournamentsStream,
+            builder: (context, snapshot) {
+              final tourneys = snapshot.data ?? [];
+              if (tourneys.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
+              return SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16, top: 8, bottom: 12),
+                      child: Text(
+                        'Upcoming Tournaments',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 160,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.only(left: 16),
+                        itemCount: tourneys.length,
+                        itemBuilder: (context, index) {
+                          return TournamentFeedCard(tournament: tourneys[index]);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          // Daily Specials Header
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16, top: 8, bottom: 12),
+              child: Text(
+                'Daily Events & Specials',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
           ),

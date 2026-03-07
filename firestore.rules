@@ -60,6 +60,10 @@ service cloud.firestore {
         allow read: if isOwner(userId);
         allow write: if isOwner(userId) || isManager(); 
       }
+      match /friends/{friendId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId) || isManager() || (request.auth != null && friendId == request.auth.uid);
+      }
       match /transactions/{transactionId} {
         allow read: if isOwner(userId);
         allow write: if isOwner(userId) || isManager(); 
@@ -78,7 +82,8 @@ service cloud.firestore {
       }
       match /notifications/{notificationId} {
         allow read: if isOwner(userId);
-        allow write: if isOwner(userId) || isManager(); 
+        allow create: if request.auth != null;
+        allow update, delete: if isOwner(userId) || isManager(); 
       }
     }
 
@@ -97,6 +102,12 @@ service cloud.firestore {
       
       // Tournaments Subcollection
       match /tournaments/{tournamentId} {
+        allow read: if true;
+        allow write: if isManager();
+      }
+
+      // Store Items Subcollection
+      match /store_items/{itemId} {
         allow read: if true;
         allow write: if isManager();
       }

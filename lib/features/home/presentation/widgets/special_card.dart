@@ -40,7 +40,7 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 image: DecorationImage(
-                  image: CachedNetworkImageProvider(widget.special.imageUrl), 
+                  image: CachedNetworkImageProvider(widget.special.imageUrl, maxHeight: 150), 
                   fit: BoxFit.cover
                 ),
               ),
@@ -107,6 +107,7 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
                   height: 200,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  memCacheHeight: 600, // ~200 logical pixels * 3.0 devicePixelRatio
                   placeholder: (context, url) => Container(
                     height: 200, 
                     color: Colors.grey[200], 

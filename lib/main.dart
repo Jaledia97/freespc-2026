@@ -13,6 +13,7 @@ import 'dart:async'; // Added
 import 'package:app_links/app_links.dart'; // Added
 import 'package:firebase_messaging/firebase_messaging.dart'; // Added
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Added
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -36,8 +37,8 @@ void main() async {
   );
   
   await FirebaseAppCheck.instance.activate(
-    androidProvider: AndroidProvider.playIntegrity,
-    appleProvider: AppleProvider.deviceCheck,
+    androidProvider: AndroidProvider.debug,
+    appleProvider: AppleProvider.debug,
   );
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

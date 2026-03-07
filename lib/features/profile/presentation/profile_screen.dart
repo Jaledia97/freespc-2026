@@ -4,8 +4,6 @@ import '../../../services/auth_service.dart';
 import '../../home/repositories/hall_repository.dart';
 import '../../wallet/repositories/wallet_repository.dart';
 import 'widgets/profile_header.dart';
-import 'widgets/profile_menu.dart';
-import '../../my_halls/presentation/my_halls_screen.dart';
 import '../../manager/presentation/pin_entry_screen.dart';
 import '../../settings/presentation/display_settings_screen.dart';
 import '../../settings/presentation/account_settings_screen.dart'; // Added
@@ -37,14 +35,8 @@ class ProfileScreen extends ConsumerWidget {
           IconButton(
             icon: const NotificationBadge(
               showForManager: false,
-              child: Icon(Icons.notifications_none),
+              child: Icon(Icons.chat_bubble_outline),
             ),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.chat_bubble_outline),
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const MessagingHubScreen()));
             },
@@ -81,7 +73,7 @@ class ProfileScreen extends ConsumerWidget {
                          
 
                          // Super Admin: View As
-                         if (role == 'super-admin' || overrideRole != null) 
+                         if (role == 'super-admin' || role == 'superadmin' || overrideRole != null) 
                            ExpansionTile(
                              leading: const Icon(Icons.visibility, color: Colors.purpleAccent),
                              title: Text(overrideRole != null ? 'Viewing as: $overrideRole' : 'View As...', style: const TextStyle(color: Colors.purpleAccent)),
@@ -242,7 +234,7 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
 
                 // 4. Developer Tools (Collapsible) - RESTRICTED
-                if (user.role == 'super-admin' || ref.read(roleOverrideProvider) == 'super-admin')
+                if (user.role == 'super-admin' || user.role == 'superadmin' || ref.read(roleOverrideProvider) == 'super-admin' || ref.read(roleOverrideProvider) == 'superadmin')
                 Theme(
                   data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                   child: ExpansionTile(
@@ -293,6 +285,18 @@ class ProfileScreen extends ConsumerWidget {
                              const SnackBar(content: Text('Specials Seeded!')),
                            );
                           // Force refresh of map might be needed
+                        },
+                      ),
+                      ListTile(
+                        title: const Text('ADMIN: Seed Carousels (Tourneys/Raffles)', style: TextStyle(color: Colors.blueAccent)),
+                        trailing: const Icon(Icons.view_carousel, color: Colors.white54),
+                        onTap: () async {
+                           await ref.read(hallRepositoryProvider).seedCarouselEvents();
+                           if (context.mounted) {
+                             ScaffoldMessenger.of(context).showSnackBar(
+                               const SnackBar(content: Text('Carousels Seeded! Check Home Screen.')),
+                             );
+                           }
                         },
                       ),
                       ListTile(

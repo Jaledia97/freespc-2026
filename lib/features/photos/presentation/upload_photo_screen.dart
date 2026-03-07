@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../services/auth_service.dart';
 import '../repositories/photo_repository.dart';
-import '../../home/repositories/hall_repository.dart';
 import 'tagging_delegates.dart';
 import '../../../models/bingo_hall_model.dart';
 import '../../../models/public_profile.dart';

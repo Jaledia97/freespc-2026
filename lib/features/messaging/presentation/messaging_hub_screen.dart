@@ -4,6 +4,7 @@ import '../../../services/auth_service.dart';
 import '../repositories/messaging_repository.dart';
 import 'chat_screen.dart';
 import 'new_chat_screen.dart';
+import '../../notifications/presentation/notifications_screen.dart';
 
 final userChatsProvider = StreamProvider((ref) {
   final user = ref.watch(userProfileProvider).value;
@@ -60,7 +61,7 @@ class _MessagingHubScreenState extends ConsumerState<MessagingHubScreen> with Si
         controller: _tabController,
         children: const [
           _MessagesTab(),
-          _NotificationsTab(),
+          NotificationsScreen(),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -136,39 +137,5 @@ class _MessagesTab extends ConsumerWidget {
       return "${date.hour}:${date.minute.toString().padLeft(2, '0')}";
     }
     return "${date.month}/${date.day}";
-  }
-}
-
-class _NotificationsTab extends ConsumerWidget {
-  const _NotificationsTab();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notesAsync = ref.watch(userNotificationsProvider);
-
-    return notesAsync.when(
-      data: (notes) {
-        if (notes.isEmpty) {
-          return const Center(
-            child: Text("No notifications.", style: TextStyle(color: Colors.white54)),
-          );
-        }
-
-        return ListView.builder(
-          itemCount: notes.length,
-          itemBuilder: (context, index) {
-            final note = notes[index];
-            return ListTile(
-              leading: const Icon(Icons.notifications, color: Colors.blueAccent),
-              title: Text(note.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              subtitle: Text(note.body, style: const TextStyle(color: Colors.white70)),
-              trailing: note.isRead ? null : const Icon(Icons.circle, color: Colors.redAccent, size: 10),
-            );
-          },
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Center(child: Text("Error: $e", style: const TextStyle(color: Colors.red))),
-    );
   }
 }

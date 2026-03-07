@@ -6,7 +6,7 @@ import '../../../models/bingo_hall_model.dart';
 import '../../../models/user_model.dart'; // Import UserModel
 import '../../../models/special_model.dart';
 import '../../../models/raffle_model.dart';
-import '../../../models/raffle_model.dart';
+import '../../../models/tournament_model.dart';
 import 'special_projection_logic.dart'; // Isolate Logic
 import 'dart:math';
 import 'package:flutter/foundation.dart'; // For compute
@@ -31,6 +31,10 @@ final hallRafflesProvider = StreamProvider.family<List<RaffleModel>, String>((re
 
 final specialsFeedProvider = StreamProvider<List<SpecialModel>>((ref) {
   return ref.watch(hallRepositoryProvider).getSpecialsFeed(null);
+});
+
+final rafflesFeedProvider = StreamProvider<List<RaffleModel>>((ref) {
+  return ref.watch(hallRepositoryProvider).getActiveRafflesFeed(null);
 });
 
 final allCustomTagsProvider = StreamProvider<Map<String, int>>((ref) {
@@ -131,7 +135,30 @@ class HallRepository {
         });
   }
 
+  // --- Active Event Feeds ---
+  Stream<List<RaffleModel>> getActiveRafflesFeed(Position? userLocation) {
+    return _firestore
+        .collection('raffles')
+        .where('isTemplate', isEqualTo: false)
+        .snapshots()
+        .map((snapshot) {
+           final now = DateTime.now();
+           final raffles = snapshot.docs.map((doc) => RaffleModel.fromJson(doc.data())).toList();
+           return raffles.where((r) => r.endsAt.isAfter(now)).toList();
+        });
+  }
 
+  Stream<List<TournamentModel>> getActiveTournamentsFeed(Position? userLocation) {
+    return _firestore
+        .collection('tournaments')
+        .where('isTemplate', isEqualTo: false)
+        .snapshots()
+        .map((snapshot) {
+           final now = DateTime.now();
+           final tourneys = snapshot.docs.map((doc) => TournamentModel.fromJson(doc.data())).toList();
+           return tourneys.where((t) => t.endTime == null || t.endTime!.isAfter(now)).toList();
+        });
+  }
 
   // --- Specials Management (CMS) ---
   Future<void> addSpecial(SpecialModel special, {bool sendNotification = false}) async {
@@ -702,7 +729,7 @@ class HallRepository {
 
     final raffles = [
       RaffleModel(
-        id: 'raffle-${hallId}-1',
+        id: 'raffle-$hallId-1',
         hallId: hallId,
         name: 'Weekly Cash Pot',
         description: 'Win \$500 Cash! Winner drawn Friday night.',
@@ -712,7 +739,7 @@ class HallRepository {
         endsAt: now.add(const Duration(days: 4)),
       ),
       RaffleModel(
-        id: 'raffle-${hallId}-2',
+        id: 'raffle-$hallId-2',
         hallId: hallId,
         name: 'Luxury Spa Day',
         description: 'Full day package at Serenity Spa.',
@@ -722,7 +749,7 @@ class HallRepository {
         endsAt: now.add(const Duration(days: 10)),
       ),
        RaffleModel(
-        id: 'raffle-${hallId}-3',
+        id: 'raffle-$hallId-3',
         hallId: hallId,
         name: '65" 4K TV',
         description: 'Upgrade your living room!',
@@ -737,6 +764,72 @@ class HallRepository {
       await collection.doc(r.id).set(r.toJson());
     }
   }
+
+  Future<void> seedCarouselEvents() async {
+    final now = DateTime.now();
+
+    // 1. Seed Raffles at non-Mary Esther halls
+    final rafflesCollection = _firestore.collection('raffles');
+    final raffles = [
+      RaffleModel(
+        id: 'seed-raffle-grand-1',
+        hallId: 'grand-bingo-1',
+        name: 'Grand Cash Bonanza',
+        description: 'Win \$2,500 cash! Drawing at the end of the month.',
+        imageUrl: 'https://images.unsplash.com/photo-1559825481-12a05cc00344?auto=format&fit=crop&w=800&q=80', // Cash/Casino vibe
+        maxTickets: 1000,
+        soldTickets: 250,
+        endsAt: now.add(const Duration(days: 20)),
+      ),
+      RaffleModel(
+        id: 'seed-raffle-beach-1',
+        hallId: 'beach-bingo',
+        name: 'Beach Getaway Package',
+        description: 'A weekend stay at the resort + \$500 spending money.',
+        imageUrl: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80', // Beach house
+        maxTickets: 500,
+        soldTickets: 490,
+        endsAt: now.add(const Duration(days: 2)),
+      ),
+    ];
+
+    for (var r in raffles) {
+      await rafflesCollection.doc(r.id).set(r.toJson());
+    }
+
+    // 2. Seed Tournaments at non-Mary Esther halls
+    final tournamentsCollection = _firestore.collection('tournaments');
+    final tournaments = [
+      TournamentModel(
+        id: 'seed-tourney-grand-1',
+        hallId: 'grand-bingo-1',
+        title: 'Spring Fling Slots Tournament',
+        description: 'Compete across all slot machines. Top 10 players win a share of \$5,000!',
+        startTime: now.add(const Duration(days: 5)),
+        endTime: now.add(const Duration(days: 12)),
+        games: [
+          const TournamentGame(id: 'g1', title: 'Lucky 7s', value: 100),
+          const TournamentGame(id: 'g2', title: 'Mega Wheel', value: 250),
+        ],
+      ),
+      TournamentModel(
+        id: 'seed-tourney-downtown-1',
+        hallId: 'downtown-hall',
+        title: 'Downtown Master Series',
+        description: 'A month-long bingo elimination tournament.',
+        startTime: now.add(const Duration(days: 1)),
+        endTime: now.add(const Duration(days: 28)),
+        games: [
+          const TournamentGame(id: 'g1', title: 'Coverall', value: 500),
+        ],
+      )
+    ];
+
+    for (var t in tournaments) {
+      await tournamentsCollection.doc(t.id).set(t.toJson());
+    }
+  }
+
   // --- Asset Library ---
   Future<void> addToAssetLibrary(String hallId, String url, String type) async {
     await _firestore.collection('bingo_halls').doc(hallId).collection('assets').add({

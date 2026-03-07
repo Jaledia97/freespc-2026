@@ -215,7 +215,7 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
                // End Time Toggle
                SwitchListTile(
                  contentPadding: EdgeInsets.zero,
-                 activeColor: Colors.blueAccent,
+                 activeThumbColor: Colors.blueAccent,
                  title: const Text("Set End Time", style: TextStyle(color: Colors.white)),
                  value: _hasEndTime,
                  onChanged: (val) {

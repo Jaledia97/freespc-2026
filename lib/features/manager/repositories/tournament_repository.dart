@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/tournament_model.dart';
-import '../../../models/special_model.dart'; // For RecurrenceRule logic
+// For RecurrenceRule logic
 
 final tournamentRepositoryProvider = Provider((ref) => TournamentRepository(FirebaseFirestore.instance));
 

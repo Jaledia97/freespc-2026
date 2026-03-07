@@ -260,7 +260,7 @@ class HallProfileScreen extends ConsumerWidget {
                     isScrollable: true,
                     tabAlignment: TabAlignment.start, // Align to left edge
                     padding: EdgeInsets.zero,
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                    labelPadding: EdgeInsets.symmetric(horizontal: 20),
                     tabs: [
                       Tab(text: "EVENTS"),
                       Tab(text: "PROGRAMS"),

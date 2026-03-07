@@ -2,6 +2,21 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+62] - 2026-03-07 - Friend Requests & Public Profiles
+
+### Added
+- **Public Profiles**: Created `PublicProfileScreen` displaying user details, stats, bio, and dynamic friendship action buttons.
+- **Improved Friend Requests**: Differentiated friend requests into `sent` and `received` statuses, rather than a generic `pending`.
+- **Search UI Refinement**: The `FindFriendsScreen` now dynamically displays icons based on relationship status (Add Friend, Cancel Pending Request, Already Friends).
+- **Pending Inbox**: Added a dedicated "Pending Requests" inbox to the top of the Search page to formally view and accept incoming requests.
+- **Friend Request Notifications**: Users now receive a `friend_request` notification when invited.
+- **Inline Notification Actions**: Injected immediate 'Accept', 'Decline', and 'Ignore' buttons directly into the notification tile to streamline request management.
+
+### Fixed
+- **Friend List Permission Denied**: Corrected Firestore security rules that were blocking the display of friends lists.
+- **Hall Gallery Upload Permission**: Adjusted rules so users can properly upload photos to a hall gallery.
+- **Notification Username Interpolation**: Fixed a bug where friend requests displayed the literal string `@$senderUsername` instead of the user's handle.
+
 ## [0.0.1+61] - 2026-03-03 - UI Polish & Bug Fixes
 
 ### Fixed

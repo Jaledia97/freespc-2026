@@ -172,7 +172,7 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
 
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              activeColor: Colors.amber,
+              activeThumbColor: Colors.amber,
               title: const Text("Daily Earning Cap", style: TextStyle(color: Colors.white)),
               subtitle: const Text("Limit the total points a user can earn per day.", style: TextStyle(color: Colors.white54, fontSize: 12)),
               value: _isCapEnabled,

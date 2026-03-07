@@ -196,7 +196,9 @@ class MessagingRepository {
         .limit(30)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => NotificationModel.fromJson(doc.data())).toList();
+      final docs = snapshot.docs.map((doc) => NotificationModel.fromJson(doc.data())).toList();
+      docs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return docs;
     });
   }
 }

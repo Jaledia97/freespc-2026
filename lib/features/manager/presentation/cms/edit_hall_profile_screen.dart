@@ -397,7 +397,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                         // General Info (Includes Contact & Location)
                         _buildSection(
                           title: "General Information",
-                          initiallyExpanded: true,
+                          initiallyExpanded: false,
                           children: [
                             _input("Hall Name", _nameCtrl),
                             const SizedBox(height: 12),
@@ -450,7 +450,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                                 style: TextStyle(color: Colors.white54, fontSize: 13, fontStyle: FontStyle.italic),
                               ),
                             ),
-                            ..._days.map((day) => _buildDayRow(day)).toList(),
+                            ..._days.map((day) => _buildDayRow(day)),
                           ],
                         ),
 
@@ -529,7 +529,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                                     ),
                                   ),
                                 );
-                              }).toList(),
+                              }),
 
                             const SizedBox(height: 12),
                             SizedBox(
@@ -786,7 +786,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     TimeOfDay? selectedEndTime;
 
     // Helper to parse "6:00 PM" back to TimeOfDay
-    TimeOfDay? _parseTime(String? timeStr) {
+    TimeOfDay? parseTime(String? timeStr) {
       if (timeStr == null || !timeStr.contains(":")) return null;
       try {
         final parts = timeStr.split(" ");
@@ -802,8 +802,8 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     }
 
     if (existing != null) {
-      selectedStartTime = _parseTime(existing.startTime);
-      selectedEndTime = _parseTime(existing.endTime);
+      selectedStartTime = parseTime(existing.startTime);
+      selectedEndTime = parseTime(existing.endTime);
     }
     
     showDialog(

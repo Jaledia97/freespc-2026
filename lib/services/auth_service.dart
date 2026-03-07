@@ -23,7 +23,7 @@ final userProfileProvider = StreamProvider<UserModel?>((ref) {
   
   final overrideRole = ref.watch(roleOverrideProvider);
   return ref.watch(authServiceProvider).getUserStream(user.uid).map((userData) {
-    if (userData != null && userData.role == 'super-admin' && overrideRole != null) {
+    if (userData != null && (userData.role == 'super-admin' || userData.role == 'superadmin') && overrideRole != null) {
       return userData.copyWith(role: overrideRole);
     }
     return userData;
@@ -44,6 +44,18 @@ class AuthService {
       }
       return null;
     });
+  }
+
+  Future<PublicProfile?> getPublicProfile(String uid) async {
+    try {
+      final doc = await _firestore.collection('public_profiles').doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        return PublicProfile.fromJson(doc.data()!);
+      }
+    } catch (e) {
+      print("Error fetching public profile: \$e");
+    }
+    return null;
   }
 
   Future<UserCredential?> signInWithGoogle() async {
@@ -279,7 +291,7 @@ class AuthService {
       // For now, retaining the "download recent/limit 50 and filter" approach 
       // but effectively safe because we are reading public data.
 
-      final snapshot = await _firestore.collection('public_profiles').limit(50).get();
+      final snapshot = await _firestore.collection('public_profiles').limit(500).get();
       
       return snapshot.docs.map((doc) {
         // Handle potential malformed data gracefully
@@ -297,6 +309,24 @@ class AuthService {
 
     } catch (e) {
       print("Error searching users: $e");
+      return [];
+    }
+  }
+
+  Future<List<PublicProfile>> getSuggestedUsers() async {
+    try {
+      final String? currentUid = _auth.currentUser?.uid;
+      final snapshot = await _firestore.collection('public_profiles').limit(20).get();
+      
+      return snapshot.docs.map((doc) {
+        try {
+          return PublicProfile.fromJson(doc.data());
+        } catch (e) {
+          return null; 
+        }
+      }).where((profile) => profile != null && profile.uid != currentUid).cast<PublicProfile>().toList();
+    } catch (e) {
+      print("Error getting suggested users: $e");
       return [];
     }
   }
