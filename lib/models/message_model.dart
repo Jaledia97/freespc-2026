@@ -13,6 +13,10 @@ abstract class MessageModel with _$MessageModel {
     required String senderId,
     required String text,
     required DateTime createdAt,
+    // Reply data
+    String? replyToMessageId,
+    String? replyToText,
+    String? replyToSenderName,
   }) = _MessageModel;
 
   factory MessageModel.fromJson(Map<String, Object?> json) => _$MessageModelFromJson(json);

@@ -11,6 +11,26 @@ final messagingRepositoryProvider = Provider<MessagingRepository>((ref) {
   return MessagingRepository(FirebaseFirestore.instance, ref);
 });
 
+/// Provides a stream of all chats for the current user (Inbox)
+final userChatsProvider = StreamProvider<List<ChatModel>>((ref) {
+  final user = ref.watch(userProfileProvider).value;
+  if (user == null) return Stream.value([]);
+  return ref.watch(messagingRepositoryProvider).streamUserChats(user.uid);
+});
+
+/// Provides a count of all unread messages across all active chats
+final unreadMessagesCountProvider = Provider<int>((ref) {
+  final chatsAsync = ref.watch(userChatsProvider);
+  final user = ref.watch(userProfileProvider).value;
+  if (user == null || chatsAsync.value == null) return 0;
+  
+  int count = 0;
+  for (var chat in chatsAsync.value!) {
+    count += (chat.unreadCounts[user.uid] ?? 0);
+  }
+  return count;
+});
+
 class MessagingRepository {
   final FirebaseFirestore _firestore;
   final Ref _ref;
@@ -33,8 +53,10 @@ class MessagingRepository {
         .map((snapshot) {
       final chats = snapshot.docs.map((doc) => ChatModel.fromJson(doc.data())).toList();
       
-      // Filter out 1-on-1 chats with blocked users
+      // Filter out 1-on-1 chats with blocked users and chats deleted by the user
       return chats.where((chat) {
+        if (chat.deletedBy.contains(userId)) return false; // Hidden from this user's Inbox
+        
         if (chat.isGroup) return true; // Keep groups, but we'll mask messages later
         
         final otherUserId = chat.participantIds.firstWhere((id) => id != userId, orElse: () => '');
@@ -70,7 +92,16 @@ class MessagingRepository {
   }
 
   /// Sends a message and performs a batched write to update the parent chat's `lastMessage` metadata.
-  Future<void> sendMessage(String chatId, String text, String senderId) async {
+  Future<void> sendMessage(
+      String chatId, String text, String senderId, {
+      String? replyToMessageId,
+      String? replyToText,
+      String? replyToSenderName,
+  }) async {
+    final chatDoc = await _firestore.collection('chats').doc(chatId).get();
+    if (!chatDoc.exists) return;
+    final chat = ChatModel.fromJson(chatDoc.data()!);
+
     final batch = _firestore.batch();
     
     final messageRef = _firestore.collection('chats').doc(chatId).collection('messages').doc();
@@ -84,22 +115,47 @@ class MessagingRepository {
       senderId: senderId,
       text: text,
       createdAt: now,
+      replyToMessageId: replyToMessageId,
+      replyToText: replyToText,
+      replyToSenderName: replyToSenderName,
     );
 
     // 1. Write the message
     batch.set(messageRef, message.toJson());
     
-    // 2. Update the Chat metadata
+    // 2. Increment unreadCounts for all other participants
+    Map<String, int> updatedUnreadCounts = Map.from(chat.unreadCounts);
+    for (String participantId in chat.participantIds) {
+      if (participantId != senderId) {
+        updatedUnreadCounts[participantId] = (updatedUnreadCounts[participantId] ?? 0) + 1;
+      }
+    }
+
+    // 3. Update the Chat metadata and clear deletedBy so it reappears for both users
     batch.update(chatRef, {
       'lastMessage': text,
       'lastMessageAt': now.toIso8601String(),
       'lastMessageSenderId': senderId,
-      // Note: A cloud function would be ideal to iterate `unreadCounts` securely, 
-      // but for client-side we'd either transaction it or calculate it on load.
-      // We will leave unreadCounts to a cloud function or simple read-state for this scale.
+      'unreadCounts': updatedUnreadCounts,
+      'deletedBy': [], 
     });
 
     await batch.commit();
+  }
+
+  /// Marks a chat as read for a specific user by setting their unread count to 0.
+  Future<void> markChatAsRead(String chatId, String userId) async {
+    await _firestore.collection('chats').doc(chatId).update({
+      'unreadCounts.$userId': 0,
+    });
+  }
+
+  /// Hides a chat from the user's inbox by adding them to the 'deletedBy' array.
+  /// If the other person sends a new message, the chat will reappear because 'deletedBy' gets cleared.
+  Future<void> hideChat(String chatId, String userId) async {
+    await _firestore.collection('chats').doc(chatId).update({
+      'deletedBy': FieldValue.arrayUnion([userId])
+    });
   }
 
   /// Creates a new Chat or Group Chat.
@@ -121,12 +177,15 @@ class MessagingRepository {
 
     final id = const Uuid().v4();
     final now = DateTime.now();
+    final isGroup = participantIds.length > 2;
 
     final chat = ChatModel(
       id: id,
       name: groupName,
-      isGroup: participantIds.length > 2,
+      isGroup: isGroup,
+      ownerId: isGroup ? participantIds.first : null, // The creator is the owner
       participantIds: participantIds,
+      pendingParticipantIds: [],
       participantNames: participantNames,
       lastMessage: 'Chat created',
       lastMessageAt: now,
@@ -134,6 +193,111 @@ class MessagingRepository {
 
     await _firestore.collection('chats').doc(id).set(chat.toJson());
     return chat;
+  }
+
+  /// Updates the typing status for a user in a chat
+  Future<void> setTypingStatus(String chatId, String userId, bool isTyping) async {
+    final chatRef = _firestore.collection('chats').doc(chatId);
+    
+    // We use arrayUnion / arrayRemove so multiple people can type at once
+    await chatRef.update({
+      'isTyping': isTyping 
+          ? FieldValue.arrayUnion([userId]) 
+          : FieldValue.arrayRemove([userId])
+    });
+  }
+
+  /// Invites a user to a group chat. Enforces friendship and owner rules.
+  Future<void> inviteToGroupChat(String chatId, String inviterId, String targetUserId, String targetUsername) async {
+    // 1. Verify Friendship
+    final friendshipDoc = await _firestore
+        .collection('users').doc(inviterId)
+        .collection('friends').doc(targetUserId)
+        .get();
+
+    if (!friendshipDoc.exists || friendshipDoc.data()?['status'] != 'accepted') {
+      throw Exception("You can only invite accepted friends to a group chat.");
+    }
+
+    // 2. Enforce Ownership rules
+    final chatDoc = await _firestore.collection('chats').doc(chatId).get();
+    if (!chatDoc.exists) throw Exception("Chat not found.");
+    
+    final chat = ChatModel.fromJson(chatDoc.data()!);
+    if (!chat.isGroup) throw Exception("Cannot invite members to a 1-on-1 chat.");
+    
+    if (chat.participantIds.contains(targetUserId)) {
+      throw Exception("User is already in this chat.");
+    }
+    
+    if (chat.pendingParticipantIds.contains(targetUserId)) {
+      throw Exception("User has already been invited and is awaiting owner approval.");
+    }
+
+    final batch = _firestore.batch();
+    final chatRef = _firestore.collection('chats').doc(chatId);
+
+    if (chat.ownerId == inviterId) {
+      // Owner can instantly add
+      batch.update(chatRef, {
+        'participantIds': FieldValue.arrayUnion([targetUserId]),
+        'participantNames.$targetUserId': targetUsername,
+      });
+
+      // Send System Message indicating they joined
+      final msgRef = chatRef.collection('messages').doc();
+      batch.set(msgRef, {
+        'id': msgRef.id,
+        'chatId': chatId,
+        'senderId': 'system',
+        'text': '@${targetUsername} was added to the group by the owner.',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } else {
+      // Non-owner must request addition
+      batch.update(chatRef, {
+        'pendingParticipantIds': FieldValue.arrayUnion([targetUserId]),
+        'participantNames.$targetUserId': targetUsername, // Prep their name for the approval UI
+      });
+      
+      // Optionally create a notification for the owner here
+      if (chat.ownerId != null) {
+        final notifRef = _firestore.collection('users').doc(chat.ownerId).collection('notifications').doc();
+        batch.set(notifRef, {
+          'id': notifRef.id,
+          'userId': chat.ownerId,
+          'title': 'Group Chat Request',
+          'body': 'A member wants to add @${targetUsername} to ${chat.name ?? "your group"}.',
+          'type': 'group_invite_request',
+          'createdAt': FieldValue.serverTimestamp(),
+          'metadata': {'chatId': chatId, 'targetUserId': targetUserId},
+        });
+      }
+    }
+
+    await batch.commit();
+  }
+
+  /// Owner approves a pending invite
+  Future<void> approveGroupInvite(String chatId, String targetUserId, String targetUsername) async {
+    final chatRef = _firestore.collection('chats').doc(chatId);
+    final batch = _firestore.batch();
+
+    batch.update(chatRef, {
+      'pendingParticipantIds': FieldValue.arrayRemove([targetUserId]),
+      'participantIds': FieldValue.arrayUnion([targetUserId]),
+    });
+
+    final msgRef = chatRef.collection('messages').doc();
+    batch.set(msgRef, {
+      'id': msgRef.id,
+      'chatId': chatId,
+      'senderId': 'system',
+      'text': '@$targetUsername was approved to join the group.',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    await batch.commit();
   }
 
   /// Renames an existing Group Chat

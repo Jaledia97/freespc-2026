@@ -72,12 +72,22 @@ class FriendsRepository {
     String senderUsername = 'Someone';
     try {
       final senderProfile = await _firestore.collection('public_profiles').doc(currentUserId).get();
-      if (senderProfile.exists) {
-        senderUsername = senderProfile.data()?['username'] ?? 'Someone';
+      if (senderProfile.exists && senderProfile.data()?['username'] != null) {
+        senderUsername = senderProfile.data()!['username'];
+      } else {
+        // Fallback to the private users collection if the public profile is incomplete
+        final privateProfile = await _firestore.collection('users').doc(currentUserId).get();
+        if (privateProfile.exists && privateProfile.data()?['username'] != null) {
+          senderUsername = privateProfile.data()!['username'];
+        }
       }
-    } catch (_) {}
+    } catch (e) {
+      print("Error fetching sender username for notification: $e");
+    }
 
-    final notifId = const Uuid().v4();
+    // Use a deterministic ID so that resending a request OVERWRITES the old notification 
+    // instead of creating endless duplicates.
+    final notifId = 'friend_req_$currentUserId';
     final notif = NotificationModel(
       id: notifId,
       userId: targetUserId,
@@ -113,6 +123,10 @@ class FriendsRepository {
     
     batch.delete(_firestore.collection('users').doc(currentUserId).collection('friends').doc(targetUserId));
     batch.delete(_firestore.collection('users').doc(targetUserId).collection('friends').doc(currentUserId));
+
+    // Cleanup potential friend request notifications on both sides to prevent ghost/duplicate notifications
+    batch.delete(_firestore.collection('users').doc(targetUserId).collection('notifications').doc('friend_req_$currentUserId'));
+    batch.delete(_firestore.collection('users').doc(currentUserId).collection('notifications').doc('friend_req_$targetUserId'));
 
     await batch.commit();
   }

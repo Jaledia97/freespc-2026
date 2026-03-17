@@ -2,6 +2,18 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+63] - 2026-03-16 - AAA Chat Experience & Onboarding Flow
+
+### Added
+- **Swipe-to-Reply**: Chat messages now feature native iOS-like dismissible physics when swiping right, locking into a "Reply" state with a smart preview bar anchored above the keyboard.
+- **Swipe-to-Delete**: Inbox chats can now be elegantly hidden by swiping left-to-right to reveal a native Trash background. This leverages a `deletedBy` soft-delete approach so chat histories are preserved if the other participant replies.
+- **Grouped Timestamps**: Upgraded chat timelines to use a Facebook Messenger aesthetic—merging messages and strictly displaying a centered timestamp header only when 60+ minutes pass between messages.
+- **Onboarding Formatting**: Enforced strict auto-capitalization for Real Names and a 20-character limit counter for Usernames on the Onboarding Screen.
+- **Robust Searching**: Converted system usernames to natively preserve upper/lowercase structure for distinct custom branding, while stealthily indexing a lowercase `.searchName` in Firebase to maintain robust prefix-based fast searches without bugs.
+- **SafeArea Scaling**: Anchored the chat input textfield inside a dynamically expanding `SafeArea` widget to prevent the iOS Home indicator from clipping the user's typing.
+- **Friend Loop Integration**: Hot-swapped the 'Pending' and 'Add Friend' buttons into instant 'Message' buttons across `find_friends_screen` and `public_profile_screen` when a relationship is verified.
+
+
 ## [0.0.1+62] - 2026-03-07 - Friend Requests & Public Profiles
 
 ### Added

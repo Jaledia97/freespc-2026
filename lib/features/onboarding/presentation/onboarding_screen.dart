@@ -98,9 +98,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         subtitle: "Let's start with your real name for ID verification.",
                         content: Column(
                           children: [
-                            _buildTextField(_firstNameController, "First Name"),
+                            _buildTextField(_firstNameController, "First Name", textCapitalization: TextCapitalization.words),
                             const SizedBox(height: 16),
-                            _buildTextField(_lastNameController, "Last Name"),
+                            _buildTextField(_lastNameController, "Last Name", textCapitalization: TextCapitalization.words),
                           ],
                         ),
                         onNext: () {
@@ -116,7 +116,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       _buildStep(
                         title: "Pick your Handle",
                         subtitle: "This is how you'll appear on leaderboards and to friends.",
-                        content: _buildTextField(_usernameController, "Username / Handle", icon: Icons.alternate_email),
+                        content: _buildTextField(_usernameController, "Username / Handle", icon: Icons.alternate_email, textCapitalization: TextCapitalization.none, maxLength: 20),
                         onNext: () {
                           if (_usernameController.text.isNotEmpty) {
                             _nextPage();
@@ -213,9 +213,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, {IconData? icon}) {
+  Widget _buildTextField(TextEditingController controller, String hint, {IconData? icon, TextCapitalization textCapitalization = TextCapitalization.sentences, int? maxLength}) {
     return TextField(
-      controller: controller, // Fixed: passing controller
+      controller: controller,
+      textCapitalization: textCapitalization,
+      maxLength: maxLength,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: hint,
@@ -223,6 +225,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         prefixIcon: icon != null ? Icon(icon, color: Colors.white70) : null,
         enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
         focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.amber)),
+        counterStyle: const TextStyle(color: Colors.white54),
       ),
     );
   }
@@ -257,25 +260,73 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       return;
     }
 
+    final proposedUsername = _usernameController.text.trim().replaceAll(RegExp(r'\s+'), '');
+    final proposedSearchName = proposedUsername.toLowerCase();
+    
+    if (proposedUsername.isEmpty) {
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter a valid username without spaces")));
+       return;
+    }
+
     setState(() => _isContributing = true);
 
     try {
       final user = ref.read(authStateChangesProvider).value;
       if (user != null) {
+        
+        // Check uniqueness in public_profiles (case-insensitive)
+        final usernameCheck = await FirebaseFirestore.instance
+            .collection('public_profiles')
+            .where('searchName', isEqualTo: proposedSearchName)
+            .get();
+            
+        bool isTaken = false;
+        for (var doc in usernameCheck.docs) {
+           if (doc.id != user.uid) {
+               isTaken = true;
+               break;
+           }
+        }
+
+        if (isTaken) {
+           throw Exception("This username is already taken. Please choose another.");
+        }
+
         final newUser = UserModel(
           uid: user.uid,
           email: user.email ?? '',
           firstName: _firstNameController.text.trim(),
           lastName: _lastNameController.text.trim(),
-          username: _usernameController.text.trim(),
+          username: proposedUsername,
           birthday: _selectedBirthday!,
         );
 
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set(newUser.toJson());
+        final batch = FirebaseFirestore.instance.batch();
+        batch.set(FirebaseFirestore.instance.collection('users').doc(user.uid), newUser.toJson());
+        
+        batch.set(
+          FirebaseFirestore.instance.collection('public_profiles').doc(user.uid), 
+          {
+            'uid': user.uid,
+            'username': proposedUsername,
+            'searchName': proposedSearchName,
+            'firstName': _firstNameController.text.trim(),
+            'lastName': _lastNameController.text.trim(),
+            'points': 0, // Default properties
+            'realNameVisibility': 'Everyone', 
+            'onlineStatus': 'Online',
+            'lastSeen': FieldValue.serverTimestamp(),
+          },
+          SetOptions(merge: true)
+        );
+
+        await batch.commit();
+
         // Navigation is handled by AuthWrapper
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      final errorMsg = e.toString().replaceAll('Exception: ', '');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMsg), backgroundColor: Colors.red));
     } finally {
       if (mounted) setState(() => _isContributing = false);
     }

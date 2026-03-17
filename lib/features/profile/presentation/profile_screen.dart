@@ -44,6 +44,7 @@ class ProfileScreen extends ConsumerWidget {
           IconButton(
             icon: const NotificationBadge(
               showForGeneral: false,
+              showForMessages: false, // Don't show personal chat badges on the manager settings
               child: Icon(Icons.settings)
             ),
             onPressed: () {

@@ -14,6 +14,7 @@ import 'package:app_links/app_links.dart'; // Added
 import 'package:firebase_messaging/firebase_messaging.dart'; // Added
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Added
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -60,6 +61,47 @@ void main() async {
   ]);
   
   final prefs = await SharedPreferences.getInstance();
+
+  // Temporary Migration Script for Main Account
+  try {
+    print("Running Temp Account Migration...");
+    final auth = FirebaseAuth.instance;
+    await Future.delayed(const Duration(milliseconds: 1500)); // wait for auth state
+    final user = auth.currentUser;
+    if (user != null) {
+      final db = FirebaseFirestore.instance;
+      final doc = await db.collection("users").doc(user.uid).get();
+      final data = doc.data() ?? {};
+      
+      final currentUsername = data['username'] ?? 'admin';
+      
+      await db.collection("users").doc(user.uid).set({
+        'uid': user.uid,
+        'email': user.email ?? data['email'] ?? '',
+        'username': currentUsername,
+        'firstName': data['firstName'] ?? 'Admin',
+        'lastName': data['lastName'] ?? '',
+        'currentPoints': data['currentPoints'] ?? 0,
+        'role': data['role'] ?? 'superadmin',
+      }, SetOptions(merge: true));
+
+      await db.collection("public_profiles").doc(user.uid).set({
+        'uid': user.uid,
+        'username': currentUsername,
+        'firstName': data['firstName'] ?? 'Admin',
+        'lastName': data['lastName'] ?? '',
+        'points': data['currentPoints'] ?? 0,
+        'realNameVisibility': data['realNameVisibility'] ?? 'Everyone',
+        'onlineStatus': 'Online',
+        'lastSeen': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      print("Migration complete for ${user.uid}");
+    } else {
+      print("No user logged in for migration.");
+    }
+  } catch(e) {
+    print("Error during migration: $e");
+  }
 
   runApp(ProviderScope(
     overrides: [

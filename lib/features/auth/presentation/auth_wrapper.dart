@@ -11,24 +11,62 @@ import '../../settings/data/display_settings_repository.dart'; // Added for shar
 import '../../friends/repositories/friends_repository.dart'; // Added
 import '../../../models/public_profile.dart'; // Added
 
-class AuthWrapper extends ConsumerWidget {
+class AuthWrapper extends ConsumerStatefulWidget {
   const AuthWrapper({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends ConsumerState<AuthWrapper> {
+  // A local cache so we only run the self-healing check ONCE per boot
+  bool _profileChecked = false;
+
+  Future<void> _ensurePublicProfile(String uid) async {
+    try {
+      final pubDoc = await FirebaseFirestore.instance.collection('public_profiles').doc(uid).get();
+      if (!pubDoc.exists) {
+        // Self-heal: Create it from the private users collection if possible
+        final privDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        if (privDoc.exists && privDoc.data() != null) {
+          final data = privDoc.data()!;
+          await FirebaseFirestore.instance.collection('public_profiles').doc(uid).set({
+            'uid': uid,
+            'username': data['username'] ?? 'user_${uid.substring(0, 5)}',
+            'firstName': data['firstName'] ?? 'Hidden',
+            'lastName': data['lastName'] ?? '',
+            'points': data['currentPoints'] ?? 0,
+            'realNameVisibility': data['realNameVisibility'] ?? 'Everyone',
+            'onlineStatus': data['onlineStatus'] ?? 'Online',
+            'lastSeen': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        }
+      }
+    } catch (e) {
+      // Silently fail if there's an issue
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authStateChangesProvider);
     
     // PERFORMANCE OPTIMIZATION: 
-    // We only care if the profile *exists* to decide routing.
-    // We do NOT want to rebuild the entire AuthWrapper (and thus the App)
-    // every time the user gets 10 points. 
-    // So we select only the 'hasValue' state essentially.
+    // We select only the 'hasValue' state essentially.
     final hasProfileAsync = ref.watch(userProfileProvider.select((value) => value.whenData((profile) => profile != null)));
 
     return authState.when(
       data: (user) {
         if (user == null) {
           return const LoginScreen();
+        }
+
+        // The user is logged in. Before we even check `hasProfileAsync`, 
+        // silently trigger the Self-Healing public_profile routine in the background 
+        // to guarantee this account is discoverable to other users.
+        if (!_profileChecked) {
+          _profileChecked = true;
+          _ensurePublicProfile(user.uid);
         }
 
         // Authenticated, check profile existence
@@ -38,11 +76,6 @@ class AuthWrapper extends ConsumerWidget {
               return const OnboardingScreen();
             }
             // Once we have a profile, we mount the MainLayout.
-            // MainLayout can then listen to the specific user streams it needs deeper down.
-            
-            // CHECK FOR PENDING INVITES
-            // We use a FutureBuilder here or a side-effect, but since we are in build(),
-            // it's safer to have a small wrapper widget that checks on mount.
             return _AuthHandler(child: const MainLayout());
           },
           loading: () => const Scaffold(
@@ -62,6 +95,7 @@ class AuthWrapper extends ConsumerWidget {
     );
   }
 }
+
 
 class _AuthHandler extends ConsumerStatefulWidget {
   final Widget child;

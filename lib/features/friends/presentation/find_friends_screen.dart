@@ -6,6 +6,8 @@ import 'package:share_plus/share_plus.dart';
 import '../../../services/auth_service.dart';
 import '../../scan/presentation/scan_screen.dart'; // Ensure this path is correct, might be lib/features/scan/presentation/scan_screen.dart
 import '../repositories/friends_repository.dart';
+import '../../messaging/repositories/messaging_repository.dart';
+import '../../messaging/presentation/chat_screen.dart';
 import '../../../models/public_profile.dart';
 import '../../profile/presentation/public_profile_screen.dart';
 
@@ -254,7 +256,7 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
                       final result = _suggestedResults[index];
                       return ListTile(
                         leading: const CircleAvatar(child: Icon(Icons.person)),
-                        title: Text(result.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        title: Text("@${result.username}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                         subtitle: result.realNameVisibility == 'Everyone' || result.realNameVisibility == 'Friends Only'
                           ? Text("${result.firstName} ${result.lastName}", style: const TextStyle(color: Colors.white54))
                           : null,
@@ -288,7 +290,7 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
                 final result = _searchResults[index];
                 return ListTile(
                   leading: const CircleAvatar(child: Icon(Icons.person)),
-                  title: Text(result.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  title: Text("@${result.username}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   subtitle: result.realNameVisibility == 'Everyone' || result.realNameVisibility == 'Friends Only'
                     ? Text("${result.firstName} ${result.lastName}", style: const TextStyle(color: Colors.white54))
                     : null,
@@ -373,10 +375,27 @@ class _PendingRequestTile extends ConsumerWidget {
     return FutureBuilder<PublicProfile?>(
       future: ref.read(authServiceProvider).getPublicProfile(senderId),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const ListTile(
-            leading: CircleAvatar(child: Icon(Icons.person)),
-            title: Text("Loading...", style: TextStyle(color: Colors.white54)),
+            leading: CircleAvatar(child: CircularProgressIndicator(strokeWidth: 2)),
+            title: Text("Loading profile...", style: TextStyle(color: Colors.white54)),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+          return ListTile(
+            leading: const CircleAvatar(child: Icon(Icons.error, color: Colors.redAccent)),
+            title: const Text("Unknown User", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            subtitle: const Text("Profile missing or deleted", style: TextStyle(color: Colors.white54)),
+            trailing: IconButton(
+              icon: const Icon(Icons.cancel, color: Colors.white54),
+              onPressed: () async {
+                await ref.read(friendsRepositoryProvider).removeFriend(currentUserId, senderId);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invalid request cleared."), backgroundColor: Colors.white30));
+                }
+              },
+            ),
           );
         }
 
@@ -384,7 +403,7 @@ class _PendingRequestTile extends ConsumerWidget {
 
         return ListTile(
           leading: const CircleAvatar(child: Icon(Icons.person)),
-          title: Text(sender.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          title: Text("@${sender.username}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           subtitle: const Text("Sent you a friend request", style: TextStyle(color: Colors.white54)),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
@@ -395,10 +414,10 @@ class _PendingRequestTile extends ConsumerWidget {
                   try {
                     await ref.read(friendsRepositoryProvider).acceptFriendRequest(currentUserId, sender.uid);
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("You are now friends with @\${sender.username}!"), backgroundColor: Colors.green));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("You are now friends with @${sender.username}!"), backgroundColor: Colors.green));
                     }
                   } catch (e) {
-                    if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: \$e"), backgroundColor: Colors.red));
+                    if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
                   }
                 },
               ),
@@ -451,11 +470,11 @@ class _FriendshipStatusIcon extends ConsumerWidget {
               try {
                 await ref.read(friendsRepositoryProvider).sendFriendRequest(currentUserId, targetUser.uid);
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Request sent to @\${targetUser.username}!"), backgroundColor: Colors.green));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Request sent to @${targetUser.username}!"), backgroundColor: Colors.green));
                 }
               } catch (e) {
                 if (context.mounted) {
-                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: \$e"), backgroundColor: Colors.red));
+                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
                 }
               }
             },
@@ -471,7 +490,7 @@ class _FriendshipStatusIcon extends ConsumerWidget {
                  builder: (context) => AlertDialog(
                    backgroundColor: const Color(0xFF2C2C2C),
                    title: const Text("Cancel Friend Request?", style: TextStyle(color: Colors.white)),
-                   content: Text("Are you sure you want to cancel the friend request to @\${targetUser.username}?", style: const TextStyle(color: Colors.white70)),
+                   content: Text("Are you sure you want to cancel the friend request to @${targetUser.username}?", style: const TextStyle(color: Colors.white70)),
                    actions: [
                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("No")),
                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Yes, Cancel", style: TextStyle(color: Colors.redAccent))),
@@ -495,21 +514,37 @@ class _FriendshipStatusIcon extends ConsumerWidget {
               try {
                 await ref.read(friendsRepositoryProvider).acceptFriendRequest(currentUserId, targetUser.uid);
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("You are now friends with @\${targetUser.username}!"), backgroundColor: Colors.green));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("You are now friends with @${targetUser.username}!"), backgroundColor: Colors.green));
                 }
               } catch (e) {
                 if (context.mounted) {
-                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: \$e"), backgroundColor: Colors.red));
+                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
                 }
               }
             },
           );
         } else {
-          // Already friends
+          // Already friends - Message button
           return IconButton(
-            icon: const Icon(Icons.people, color: Colors.greenAccent),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(profile: targetUser)));
+            icon: const Icon(Icons.chat_bubble_rounded, color: Colors.blueAccent),
+            padding: const EdgeInsets.all(8),
+            constraints: const BoxConstraints(),
+            onPressed: () async {
+              try {
+                final chat = await ref.read(messagingRepositoryProvider).createChat(
+                  [currentUserId, targetUser.uid],
+                  {
+                    currentUserId: ref.read(userProfileProvider).value?.username ?? "User",
+                    targetUser.uid: targetUser.username,
+                  }
+                );
+                
+                if (context.mounted) {
+                   Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(chatId: chat.id, chatName: targetUser.username)));
+                }
+              } catch (e) {
+                 if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+              }
             },
           );
         }

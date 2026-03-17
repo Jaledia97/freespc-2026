@@ -10,9 +10,15 @@ _ChatModel _$ChatModelFromJson(Map<String, dynamic> json) => _ChatModel(
   id: json['id'] as String,
   name: json['name'] as String?,
   isGroup: json['isGroup'] as bool,
+  ownerId: json['ownerId'] as String?,
   participantIds: (json['participantIds'] as List<dynamic>)
       .map((e) => e as String)
       .toList(),
+  pendingParticipantIds:
+      (json['pendingParticipantIds'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
   participantNames:
       (json['participantNames'] as Map<String, dynamic>?)?.map(
         (k, e) => MapEntry(k, e as String),
@@ -29,6 +35,12 @@ _ChatModel _$ChatModelFromJson(Map<String, dynamic> json) => _ChatModel(
   mutedBy:
       (json['mutedBy'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
+  deletedBy:
+      (json['deletedBy'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
+  isTyping:
+      (json['isTyping'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$ChatModelToJson(_ChatModel instance) =>
@@ -36,11 +48,15 @@ Map<String, dynamic> _$ChatModelToJson(_ChatModel instance) =>
       'id': instance.id,
       'name': instance.name,
       'isGroup': instance.isGroup,
+      'ownerId': instance.ownerId,
       'participantIds': instance.participantIds,
+      'pendingParticipantIds': instance.pendingParticipantIds,
       'participantNames': instance.participantNames,
       'lastMessage': instance.lastMessage,
       'lastMessageAt': instance.lastMessageAt.toIso8601String(),
       'lastMessageSenderId': instance.lastMessageSenderId,
       'unreadCounts': instance.unreadCounts,
       'mutedBy': instance.mutedBy,
+      'deletedBy': instance.deletedBy,
+      'isTyping': instance.isTyping,
     };

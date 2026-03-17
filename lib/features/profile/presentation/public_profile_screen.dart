@@ -4,6 +4,8 @@ import 'package:freespc/models/public_profile.dart';
 import 'package:freespc/models/friendship_model.dart';
 import 'package:freespc/features/friends/repositories/friends_repository.dart';
 import 'package:freespc/services/auth_service.dart';
+import '../../messaging/repositories/messaging_repository.dart';
+import '../../messaging/presentation/chat_screen.dart';
 
 class PublicProfileScreen extends ConsumerWidget {
   final PublicProfile profile;
@@ -107,7 +109,7 @@ class PublicProfileScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(child: Text("Error: \$e", style: const TextStyle(color: Colors.red))),
+        error: (e, st) => Center(child: Text("Error: $e", style: const TextStyle(color: Colors.red))),
       ),
     );
   }
@@ -158,11 +160,11 @@ class _FriendshipActionButton extends ConsumerWidget {
                 try {
                   await ref.read(friendsRepositoryProvider).sendFriendRequest(currentUserId, targetUser.uid);
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Request sent to @\${targetUser.username}!"), backgroundColor: Colors.green));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Request sent to @${targetUser.username}!"), backgroundColor: Colors.green));
                   }
                 } catch (e) {
                   if (context.mounted) {
-                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: \$e"), backgroundColor: Colors.red));
+                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
                   }
                 }
               },
@@ -187,7 +189,7 @@ class _FriendshipActionButton extends ConsumerWidget {
                    builder: (context) => AlertDialog(
                      backgroundColor: const Color(0xFF2C2C2C),
                      title: const Text("Cancel Friend Request?", style: TextStyle(color: Colors.white)),
-                     content: Text("Are you sure you want to cancel the friend request to @\${targetUser.username}?", style: const TextStyle(color: Colors.white70)),
+                     content: Text("Are you sure you want to cancel the friend request to @${targetUser.username}?", style: const TextStyle(color: Colors.white70)),
                      actions: [
                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("No")),
                        TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Yes, Cancel", style: TextStyle(color: Colors.redAccent))),
@@ -222,11 +224,11 @@ class _FriendshipActionButton extends ConsumerWidget {
                       try {
                         await ref.read(friendsRepositoryProvider).acceptFriendRequest(currentUserId, targetUser.uid);
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("You are now friends with @\${targetUser.username}!"), backgroundColor: Colors.green));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("You are now friends with @${targetUser.username}!"), backgroundColor: Colors.green));
                         }
                       } catch (e) {
                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: \$e"), backgroundColor: Colors.red));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
                          }
                       }
                     },
@@ -257,41 +259,76 @@ class _FriendshipActionButton extends ConsumerWidget {
           );
         } else {
           // Already friends
-          return SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.redAccent),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          return Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 56,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.chat_bubble_rounded, color: Colors.white),
+                    label: const Text("Message", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    onPressed: () async {
+                      try {
+                        final chat = await ref.read(messagingRepositoryProvider).createChat(
+                          [currentUserId, targetUser.uid],
+                          {
+                            currentUserId: ref.read(userProfileProvider).value?.username ?? "User",
+                            targetUser.uid: targetUser.username,
+                          }
+                        );
+                        if (context.mounted) {
+                           Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(chatId: chat.id, chatName: targetUser.username)));
+                        }
+                      } catch (e) {
+                         if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+                      }
+                    },
+                  ),
+                ),
               ),
-              icon: const Icon(Icons.person_remove, color: Colors.redAccent),
-              label: const Text("Remove Friend", style: TextStyle(color: Colors.redAccent, fontSize: 16, fontWeight: FontWeight.bold)),
-              onPressed: () async {
-                 // Confirm dialog
-                 final confirm = await showDialog<bool>(
-                   context: context,
-                   builder: (context) => AlertDialog(
-                     backgroundColor: const Color(0xFF2C2C2C),
-                     title: const Text("Remove Friend?", style: TextStyle(color: Colors.white)),
-                     content: Text("Are you sure you want to remove @\${targetUser.username}?", style: const TextStyle(color: Colors.white70)),
-                     actions: [
-                       TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-                       TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Remove", style: TextStyle(color: Colors.redAccent))),
-                     ],
-                   )
-                 );
-                 
-                 if (confirm == true) {
-                   await ref.read(friendsRepositoryProvider).removeFriend(currentUserId, targetUser.uid);
-                 }
-              },
-            ),
+              const SizedBox(width: 12),
+              // Smaller remove friend button
+              SizedBox(
+                height: 56,
+                width: 56,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    side: const BorderSide(color: Colors.white24),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Icon(Icons.person_remove, color: Colors.white54),
+                  onPressed: () async {
+                     // Confirm dialog
+                     final confirm = await showDialog<bool>(
+                       context: context,
+                       builder: (context) => AlertDialog(
+                         backgroundColor: const Color(0xFF2C2C2C),
+                         title: const Text("Remove Friend?", style: TextStyle(color: Colors.white)),
+                         content: Text("Are you sure you want to remove @${targetUser.username}?", style: const TextStyle(color: Colors.white70)),
+                         actions: [
+                           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+                           TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Remove", style: TextStyle(color: Colors.redAccent))),
+                         ],
+                       )
+                     );
+                     
+                     if (confirm == true) {
+                       await ref.read(friendsRepositoryProvider).removeFriend(currentUserId, targetUser.uid);
+                     }
+                  },
+                ),
+              ),
+            ],
           );
         }
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Text("Error checking friend status: \$e", style: const TextStyle(color: Colors.red)),
+      error: (e, st) => Text("Error checking friend status: $e", style: const TextStyle(color: Colors.red)),
     );
   }
 }

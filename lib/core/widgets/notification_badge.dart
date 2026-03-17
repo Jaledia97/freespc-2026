@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/photos/repositories/photo_repository.dart';
 import '../../services/notification_service.dart';
+import '../../features/messaging/repositories/messaging_repository.dart';
 
 class NotificationBadge extends ConsumerWidget {
   final Widget child;
   final bool showForGeneral;
   final bool showForManager;
+  final bool showForMessages;
 
   const NotificationBadge({
     super.key,
     required this.child,
     this.showForGeneral = true,
     this.showForManager = true,
+    this.showForMessages = true,
   });
 
   @override
@@ -29,6 +32,11 @@ class NotificationBadge extends ConsumerWidget {
       if (!managerAsync.hasError && managerAsync.value != null) {
         count += managerAsync.value!;
       }
+    }
+
+    if (showForMessages) {
+      final messagesCount = ref.watch(unreadMessagesCountProvider);
+      count += messagesCount;
     }
 
     if (count == 0) {

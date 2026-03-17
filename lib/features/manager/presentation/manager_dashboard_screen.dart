@@ -313,7 +313,7 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
                 shape: BoxShape.circle,
               ),
               child: useManagerBadge 
-                ? NotificationBadge(showForGeneral: false, showForManager: true, child: Icon(icon, color: color, size: 28))
+                ? NotificationBadge(showForGeneral: false, showForManager: true, showForMessages: false, child: Icon(icon, color: color, size: 28))
                 : Icon(icon, color: color, size: 28),
             ),
             Column(

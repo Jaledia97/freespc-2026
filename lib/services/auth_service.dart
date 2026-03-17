@@ -52,8 +52,24 @@ class AuthService {
       if (doc.exists && doc.data() != null) {
         return PublicProfile.fromJson(doc.data()!);
       }
+      
+      // Fallback: If older test accounts don't have a public profile, read their private user profile
+      final privateDoc = await _firestore.collection('users').doc(uid).get();
+      if (privateDoc.exists && privateDoc.data() != null) {
+         final data = privateDoc.data()!;
+         // Synthesize a PublicProfile from the private data
+         return PublicProfile(
+            uid: uid,
+            username: data['username'] ?? 'unknown',
+            firstName: data['firstName'] ?? 'Hidden',
+            lastName: data['lastName'] ?? '',
+            points: data['currentPoints'] ?? 0,
+            realNameVisibility: 'Everyone',
+            onlineStatus: 'Offline',
+         );
+      }
     } catch (e) {
-      print("Error fetching public profile: \$e");
+      print("Error fetching public profile: $e");
     }
     return null;
   }
@@ -204,7 +220,10 @@ class AuthService {
       // 2. Update Public Profile (Dual-Write)
       // We only update fields that exist in PublicProfile
       final publicUpdates = <String, dynamic>{};
-      if (username != null) publicUpdates['username'] = username;
+      if (username != null) {
+        publicUpdates['username'] = username;
+        publicUpdates['searchName'] = username.toLowerCase();
+      }
       if (firstName != null) publicUpdates['firstName'] = firstName;
       if (lastName != null) publicUpdates['lastName'] = lastName;
       if (bio != null) publicUpdates['bio'] = bio;
@@ -234,6 +253,9 @@ class AuthService {
       for (var key in publicKeys) {
         if (data.containsKey(key)) {
           publicUpdates[key] = data[key];
+          if (key == 'username') {
+             publicUpdates['searchName'] = data[key].toString().toLowerCase();
+          }
         }
       }
 
@@ -280,32 +302,26 @@ class AuthService {
   }
 
   Future<List<PublicProfile>> searchUsers(String query) async {
-    if (query.isEmpty) return [];
+    if (query.trim().isEmpty) return [];
     try {
-      final term = query.toLowerCase();
+      // Force format for identical matching
+      final term = query.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '');
       
-      // SECURE SEARCH: Query 'public_profiles' instead of 'users'
-      // Note: Firestore doesn't support native partial text search (LIKE %term%).
-      // We continue with the client-side filtering approach on a limited set, 
-      // OR we rely on a specific 'keywords' array if we implemented that.
-      // For now, retaining the "download recent/limit 50 and filter" approach 
-      // but effectively safe because we are reading public data.
-
-      final snapshot = await _firestore.collection('public_profiles').limit(500).get();
+      // SECURE & PERFORMANT SEARCH: Natively index query public_profiles by searchName
+      final snapshot = await _firestore
+          .collection('public_profiles')
+          .where('searchName', isGreaterThanOrEqualTo: term)
+          .where('searchName', isLessThanOrEqualTo: '$term\uf8ff')
+          .limit(50)
+          .get();
       
       return snapshot.docs.map((doc) {
-        // Handle potential malformed data gracefully
         try {
           return PublicProfile.fromJson(doc.data());
         } catch (e) {
           return null; 
         }
-      }).where((profile) {
-        if (profile == null) return false;
-        final name = "${profile.firstName} ${profile.lastName}".toLowerCase();
-        final username = profile.username.toLowerCase();
-        return name.contains(term) || username.contains(term);
-      }).cast<PublicProfile>().toList();
+      }).where((profile) => profile != null).cast<PublicProfile>().toList();
 
     } catch (e) {
       print("Error searching users: $e");
