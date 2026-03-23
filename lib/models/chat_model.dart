@@ -22,6 +22,7 @@ abstract class ChatModel with _$ChatModel {
     @Default([]) List<String> mutedBy, // Array of User IDs who muted this chat
     @Default([]) List<String> deletedBy, // Array of User IDs who deleted/hid this chat
     @Default([]) List<String> isTyping, // Array of User IDs currently typing
+    @Default({}) Map<String, String> clearedAt, // UserID to ISO8601 deletion timestamp
   }) = _ChatModel;
 
   factory ChatModel.fromJson(Map<String, Object?> json) => _$ChatModelFromJson(json);

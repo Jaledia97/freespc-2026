@@ -23,6 +23,10 @@ abstract class TournamentModel with _$TournamentModel {
     @Default(false) bool isTemplate,
     DateTime? archivedAt,
     @Default([]) List<TournamentGame> games,
+    @Default([]) List<String> reactionUserIds,
+    @Default([]) List<String> interestedUserIds,
+    @Default(0) int commentCount,
+    String? latestComment,
   }) = _TournamentModel;
 
   factory TournamentModel.fromJson(Map<String, dynamic> json) => _$TournamentModelFromJson(json);

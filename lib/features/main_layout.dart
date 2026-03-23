@@ -17,10 +17,10 @@ class MainLayout extends ConsumerWidget {
     final currentIndex = ref.watch(bottomNavIndexProvider);
 
     final screens = const [
-      HomeScreen(),     // 0
-      WalletScreen(),   // 1
-      MyHallsScreen(),  // 2
-      ProfileScreen(),  // 3
+      HomeScreen(), // 0
+      WalletScreen(), // 1
+      MyHallsScreen(), // 2
+      ProfileScreen(), // 3
     ];
 
     return Scaffold(
@@ -47,33 +47,43 @@ class MainLayout extends ConsumerWidget {
             IconButton(
               icon: Icon(
                 Icons.home,
-                color: currentIndex == 0 ? Theme.of(context).primaryColor : null,
+                color: currentIndex == 0
+                    ? Theme.of(context).primaryColor
+                    : null,
               ),
-              onPressed: () => ref.read(bottomNavIndexProvider.notifier).state = 0,
+              onPressed: () =>
+                  ref.read(bottomNavIndexProvider.notifier).state = 0,
             ),
             IconButton(
               icon: Icon(
                 Icons.account_balance_wallet,
-                color: currentIndex == 1 ? Theme.of(context).primaryColor : null,
+                color: currentIndex == 1
+                    ? Theme.of(context).primaryColor
+                    : null,
               ),
-              onPressed: () => ref.read(bottomNavIndexProvider.notifier).state = 1,
+              onPressed: () =>
+                  ref.read(bottomNavIndexProvider.notifier).state = 1,
             ),
             const SizedBox(width: 48), // Spacer for FAB
             IconButton(
               icon: Icon(
                 Icons.favorite,
-                color: currentIndex == 2 ? Theme.of(context).primaryColor : null,
+                color: currentIndex == 2
+                    ? Theme.of(context).primaryColor
+                    : null,
               ),
-              onPressed: () => ref.read(bottomNavIndexProvider.notifier).state = 2,
+              onPressed: () =>
+                  ref.read(bottomNavIndexProvider.notifier).state = 2,
             ),
             IconButton(
-              icon: NotificationBadge(
-                child: Icon(
-                  Icons.person,
-                  color: currentIndex == 3 ? Theme.of(context).primaryColor : null,
-                ),
+              icon: Icon(
+                Icons.person,
+                color: currentIndex == 3
+                    ? Theme.of(context).primaryColor
+                    : null,
               ),
-              onPressed: () => ref.read(bottomNavIndexProvider.notifier).state = 3,
+              onPressed: () =>
+                  ref.read(bottomNavIndexProvider.notifier).state = 3,
             ),
           ],
         ),

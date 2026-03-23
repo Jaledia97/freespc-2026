@@ -29,6 +29,12 @@ service cloud.firestore {
       return request.auth != null && role == 'superadmin';
     }
 
+    // Allow authenticated users to interact seamlessly with public feed posts
+    function isInteractionUpdate() {
+      let affected = request.resource.data.diff(resource.data).affectedKeys();
+      return affected.hasOnly(['commentCount', 'latestComment', 'interestedUserIds', 'reactionUserIds', 'attendeeIds']);
+    }
+
     // =========================================================================
     // COLLECTIONS
     // =========================================================================
@@ -61,7 +67,7 @@ service cloud.firestore {
         allow write: if isOwner(userId) || isManager(); 
       }
       match /friends/{friendId} {
-        allow read: if isOwner(userId);
+        allow read: if request.auth != null;
         allow write: if isOwner(userId) || isManager() || (request.auth != null && friendId == request.auth.uid);
       }
       match /transactions/{transactionId} {
@@ -128,14 +134,21 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // 5. RAFFLES & SPECIALS
-    // Policy: Public Read, Manager Write ONLY.
+    // 5. RAFFLES & SPECIALS (And Root Tournaments)
+    // Policy: Public Read, Manager Write, Auth User Interaction
+    match /tournaments/{tournamentId} {
+      allow read: if true;
+      allow update: if request.auth != null && isInteractionUpdate();
+      allow write: if isManager();
+    }
     match /raffles/{raffleId} {
       allow read: if true;
+      allow update: if request.auth != null && isInteractionUpdate();
       allow write: if isManager();
     }
     match /specials/{specialId} {
       allow read: if true;
+      allow update: if request.auth != null && isInteractionUpdate();
       allow write: if isManager();
     }
 
@@ -176,6 +189,34 @@ service cloud.firestore {
     match /reports/{reportId} {
       allow create: if request.auth != null;
       allow read: if isManager();
+    }
+
+    // 10. USER GENERATED CONTENT
+    match /win_posts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isOwner(resource.data.userId) || isManager();
+    }
+    
+    match /check_ins/{checkInId} {
+      allow read: if true;
+      allow update: if request.auth != null && isInteractionUpdate();
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow delete: if isOwner(resource.data.userId) || isManager();
+    }
+    
+    match /text_posts/{postId} {
+      allow read: if true;
+      allow update: if request.auth != null && isInteractionUpdate();
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow delete: if isOwner(resource.data.userId) || isManager();
+    }
+
+    // 11. GLOBAL COMMENTS SUBCOLLECTIONS
+    match /{path=**}/comments/{commentId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if isOwner(resource.data.authorId) || isManager();
     }
   }
 }

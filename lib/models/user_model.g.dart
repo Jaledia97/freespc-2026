@@ -44,6 +44,9 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   fcmTokens:
       (json['fcmTokens'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
+  squadIds:
+      (json['squadIds'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
@@ -73,4 +76,5 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
         instance.lastViewedPhotoApprovals,
       ),
       'fcmTokens': instance.fcmTokens,
+      'squadIds': instance.squadIds,
     };

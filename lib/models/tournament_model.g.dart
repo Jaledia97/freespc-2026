@@ -33,6 +33,18 @@ _TournamentModel _$TournamentModelFromJson(Map<String, dynamic> json) =>
               ?.map((e) => TournamentGame.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      reactionUserIds:
+          (json['reactionUserIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      interestedUserIds:
+          (json['interestedUserIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      commentCount: (json['commentCount'] as num?)?.toInt() ?? 0,
+      latestComment: json['latestComment'] as String?,
     );
 
 Map<String, dynamic> _$TournamentModelToJson(_TournamentModel instance) =>
@@ -48,6 +60,10 @@ Map<String, dynamic> _$TournamentModelToJson(_TournamentModel instance) =>
       'isTemplate': instance.isTemplate,
       'archivedAt': instance.archivedAt?.toIso8601String(),
       'games': instance.games.map((e) => e.toJson()).toList(),
+      'reactionUserIds': instance.reactionUserIds,
+      'interestedUserIds': instance.interestedUserIds,
+      'commentCount': instance.commentCount,
+      'latestComment': instance.latestComment,
     };
 
 _TournamentGame _$TournamentGameFromJson(Map<String, dynamic> json) =>

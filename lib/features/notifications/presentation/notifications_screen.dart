@@ -32,19 +32,27 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   Widget build(BuildContext context) {
     final notificationsAsync = ref.watch(userNotificationsProvider);
 
-    return Container(
-      color: const Color(0xFF141414),
-      child: notificationsAsync.when(
+    return Scaffold(
+      backgroundColor: const Color(0xFF141414),
+      appBar: AppBar(
+        title: const Text("Notifications"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: notificationsAsync.when(
         data: (notifications) {
-          if (notifications.isEmpty) {
+          // Filter out chat push receipts so they aggressively vibrate the phone but don't clutter the UI Feed
+          final displayNotifs = notifications.where((n) => n.type != 'new_message').toList();
+          
+          if (displayNotifs.isEmpty) {
             return const Center(child: Text("No notifications yet.", style: TextStyle(color: Colors.white54)));
           }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
-            itemCount: notifications.length,
+            itemCount: displayNotifs.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final notification = notifications[index];
+              final notification = displayNotifs[index];
               final isUnread = !notification.isRead;
 
               return Material(

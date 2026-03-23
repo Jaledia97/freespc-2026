@@ -6,6 +6,8 @@ import '../../../../models/user_model.dart';
 import '../../../../services/auth_service.dart';
 import '../../../../services/storage_service.dart';
 import 'edit_profile_dialog.dart';
+import '../public_profile_screen.dart';
+import '../../../home/repositories/hall_repository.dart';
 
 class ProfileHeader extends ConsumerStatefulWidget {
   final UserModel user;
@@ -19,7 +21,7 @@ class ProfileHeader extends ConsumerStatefulWidget {
 class _ProfileHeaderState extends ConsumerState<ProfileHeader> {
   bool _isLoading = false;
 
-  void _handleImageUpload(BuildContext context, bool isBanner) {
+  void _handleImageUpload(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1E1E1E),
@@ -30,12 +32,12 @@ class _ProfileHeaderState extends ConsumerState<ProfileHeader> {
             ListTile(
               leading: const Icon(Icons.photo_library, color: Colors.white),
               title: const Text('Gallery', style: TextStyle(color: Colors.white)),
-              onTap: () => _pickAndUpload(isBanner, ImageSource.gallery),
+              onTap: () => _pickAndUpload(ImageSource.gallery),
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt, color: Colors.white),
               title: const Text('Camera', style: TextStyle(color: Colors.white)),
-              onTap: () => _pickAndUpload(isBanner, ImageSource.camera),
+              onTap: () => _pickAndUpload(ImageSource.camera),
             ),
           ],
         ),
@@ -43,7 +45,7 @@ class _ProfileHeaderState extends ConsumerState<ProfileHeader> {
     );
   }
 
-  Future<void> _pickAndUpload(bool isBanner, ImageSource source) async {
+  Future<void> _pickAndUpload(ImageSource source) async {
     Navigator.pop(context); // Close bottom sheet
     
     final storage = ref.read(storageServiceProvider);
@@ -57,22 +59,14 @@ class _ProfileHeaderState extends ConsumerState<ProfileHeader> {
       final file = File(xFile.path);
       final uid = widget.user.uid;
 
-      String downloadUrl;
-      if (isBanner) {
-        downloadUrl = await storage.uploadBannerImage(file, uid);
-      } else {
-        downloadUrl = await storage.uploadProfileImage(file, uid);
-      }
+      final downloadUrl = await storage.uploadProfileImage(file, uid);
 
       // Update User Profile
-      await ref.read(authServiceProvider).updateUserFields(
-        uid, 
-        isBanner ? {'bannerUrl': downloadUrl} : {'photoUrl': downloadUrl}
-      );
+      await ref.read(authServiceProvider).updateUserFields(uid, {'photoUrl': downloadUrl});
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Image updated successfully!"), backgroundColor: Colors.green),
+          const SnackBar(content: Text("Profile image updated!"), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
@@ -82,7 +76,7 @@ class _ProfileHeaderState extends ConsumerState<ProfileHeader> {
             content: Text("Upload Error: $e"), 
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 5),
-            action: SnackBarAction(label: 'Retry', onPressed: () => _pickAndUpload(isBanner, source)),
+            action: SnackBarAction(label: 'Retry', onPressed: () => _pickAndUpload(source)),
           ),
         );
       }
@@ -93,152 +87,200 @@ class _ProfileHeaderState extends ConsumerState<ProfileHeader> {
     }
   }
 
+  Widget _buildStatCol(String label, String value) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 13)),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = widget.user;
     
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Container wrapping Banner + Avatar to ensure size includes both
-        SizedBox(
-          height: 210, // 160 Banner + 50 Avatar Overflow
-          child: Stack(
-            alignment: Alignment.topCenter,
-            children: [
-              // 1. Banner
-              Container(
-                height: 160,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.grey[900],
-                  borderRadius: BorderRadius.circular(16),
-                  image: user.bannerUrl != null
-                      ? DecorationImage(image: NetworkImage(user.bannerUrl!), fit: BoxFit.cover)
-                      : null,
-                ),
-                child: Stack(
-                  children: [
-                    if (user.bannerUrl == null)
-                      Center(child: Icon(Icons.image, size: 48, color: Colors.white.withOpacity(0.1))),
-                    
-                    // Loading Indicator Overlay
-                    if (_isLoading)
-                       Container(
-                         decoration: BoxDecoration(
-                           color: Colors.black45,
-                           borderRadius: BorderRadius.circular(16),
-                         ),
-                         child: const Center(child: CircularProgressIndicator(color: Colors.white)),
-                       ),
-                  ],
-                ),
-              ),
-              
-              // Banner Edit Button
-              if (!_isLoading)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: GestureDetector(
-                  onTap: () => _handleImageUpload(context, true), // true = banner
-                  child: Container(
-                    padding: const EdgeInsets.all(8), // Larger hit target
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.edit, size: 18, color: Colors.white),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Hero(
+              tag: 'avatar_${user.uid}',
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  CircleAvatar(
+                    radius: 45,
+                    backgroundColor: Colors.white10,
+                    backgroundImage: user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
+                    child: _isLoading 
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : (user.photoUrl == null
+                            ? const Icon(Icons.person, size: 45, color: Colors.white54)
+                            : null),
                   ),
-                ),
-              ),
-
-              // 2. Profile Picture
-              // Align to bottom center of the *SizedBox*, which is 210 high.
-              // Banner is 160. Avatar radius is 50 (diameter 100).
-              // We want center of avatar at y=160.
-              // So bottom of avatar is at 160 + 50 = 210.
-              // Layout: aligned to bottomCenter of the 210-height stack.
-              Positioned(
-                bottom: 0, 
-                child: Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF121212), width: 4), // Match bg
-                      ),
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Theme.of(context).primaryColor,
-                        backgroundImage: user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
-                        child: _isLoading 
-                            ? const SizedBox() // Don't show text if loading banner (global loading)
-                            : (user.photoUrl == null
-                                ? Text(
-                                    (user.firstName.isNotEmpty ? user.firstName[0] : '').toUpperCase(),
-                                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-                                  )
-                                : null),
-                      ),
-                    ),
-                    
-                    // Profile Edit Button
-                    if (!_isLoading)
+                  if (!_isLoading)
                     GestureDetector(
-                      onTap: () {
-                         print("Profile Edit Tapped"); // Debug print just in case
-                         _handleImageUpload(context, false);
-                      },
-                      behavior: HitTestBehavior.opaque, // Ensure hit test works
+                      onTap: () => _handleImageUpload(context),
                       child: Container(
-                        padding: const EdgeInsets.all(8), // Larger hit target
+                        padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.primary,
                           shape: BoxShape.circle,
                           border: Border.all(color: const Color(0xFF121212), width: 3),
                         ),
-                        child: const Icon(Icons.edit, size: 18, color: Colors.white),
+                        child: const Icon(Icons.edit, size: 14, color: Colors.white),
                       ),
                     ),
-                  ],
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Consumer(builder: (context, ref, _) {
+                    final postsAsync = ref.watch(profilePostsCountProvider(user.uid));
+                    return _buildStatCol("Posts", (postsAsync.valueOrNull ?? 0).toString());
+                  }),
+                  Consumer(builder: (context, ref, _) {
+                    final friendsAsync = ref.watch(profileFriendsCountProvider(user.uid));
+                    return _buildStatCol("Friends", (friendsAsync.valueOrNull ?? 0).toString());
+                  }),
+                  _buildStatCol("Points", user.currentPoints.toString()),
+                ],
+              ),
+            ),
+          ],
         ),
         
-        // 3. User Info (No Spacing needed as SizedBox covers it)
-        const SizedBox(height: 10),
-
+        const SizedBox(height: 12),
+        
         Text(
           "${user.firstName} ${user.lastName}",
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         Text(
           "@${user.username}",
           style: const TextStyle(fontSize: 14, color: Colors.white54),
         ),
         
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         
-        // Edit Text Profile
-        OutlinedButton.icon(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => EditProfileDialog(user: user),
-            );
-          },
-          icon: const Icon(Icons.edit, size: 16),
-          label: const Text("Edit Profile Info"),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.white,
-            side: const BorderSide(color: Colors.white24),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        // About Me Section
+        if (user.bio != null && user.bio!.isNotEmpty) ...[
+          Text(
+            user.bio!,
+            style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.4),
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        // Home Hall Section
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "Home Hall",
+              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            if (user.homeBaseId != null)
+              GestureDetector(
+                onTap: () {
+                  ref.read(hallRepositoryProvider).toggleHomeBase(user.uid, user.homeBaseId!, user.homeBaseId);
+                },
+                child: const Text("UNSET", style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        _HomeBaseDisplay(homeBaseId: user.homeBaseId),
+
+        const SizedBox(height: 16),
+        
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () {
+               showDialog(context: context, builder: (context) => EditProfileDialog(user: user));
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Colors.white24),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text("Edit Profile Info", style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ),
+        
+        if (user.squadIds.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Icon(Icons.shield, size: 14, color: Colors.amber),
+              const SizedBox(width: 4),
+              Text("Captain of ${user.squadIds.length} Squads", style: const TextStyle(color: Colors.white54, fontSize: 13, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ]
       ],
+    );
+  }
+}
+
+class _HomeBaseDisplay extends ConsumerWidget {
+  final String? homeBaseId;
+
+  const _HomeBaseDisplay({required this.homeBaseId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (homeBaseId == null) {
+      return const Text(
+        "No Home Base Set",
+        style: TextStyle(
+          color: Colors.white38,
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+        ),
+      );
+    }
+
+    final hallAsync = ref.watch(hallStreamProvider(homeBaseId!));
+
+    return hallAsync.when(
+      data: (hall) {
+        if (hall == null) {
+          return const Text(
+            "Unknown Hall",
+            style: TextStyle(
+              color: Colors.redAccent,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          );
+        }
+        return Text(
+          hall.name,
+          style: const TextStyle(
+            color: Colors.blueAccent,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        );
+      },
+      loading: () => const SizedBox(
+        width: 14,
+        height: 14,
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blueGrey),
+      ),
+      error: (_, __) => const Text(
+        "Error loading hall",
+        style: TextStyle(color: Colors.red, fontSize: 12),
+      ),
     );
   }
 }

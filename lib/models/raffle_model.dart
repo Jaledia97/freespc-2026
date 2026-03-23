@@ -21,6 +21,10 @@ abstract class RaffleModel with _$RaffleModel {
     @Default(false) bool isTemplate,
     DateTime? archivedAt,
     RecurrenceRule? recurrenceRule, // For templates to auto-schedule
+    @Default([]) List<String> reactionUserIds,
+    @Default([]) List<String> interestedUserIds,
+    @Default(0) int commentCount,
+    String? latestComment,
   }) = _RaffleModel;
 
   factory RaffleModel.fromJson(Map<String, dynamic> json) =>

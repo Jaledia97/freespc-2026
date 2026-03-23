@@ -21,52 +21,19 @@ final userNotificationsProvider = StreamProvider((ref) {
   return ref.watch(messagingRepositoryProvider).streamNotifications(user.uid);
 });
 
-class MessagingHubScreen extends ConsumerStatefulWidget {
+class MessagingHubScreen extends ConsumerWidget {
   const MessagingHubScreen({super.key});
 
   @override
-  ConsumerState<MessagingHubScreen> createState() => _MessagingHubScreenState();
-}
-
-class _MessagingHubScreenState extends ConsumerState<MessagingHubScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
       appBar: AppBar(
-        title: const Text("Inbox"),
+        title: const Text("Messages"),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.blueAccent,
-          tabs: const [
-            Tab(text: "Messages"),
-            Tab(text: "Notifications"),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
-          _MessagesTab(),
-          NotificationsScreen(),
-        ],
-      ),
+      body: const _MessagesTab(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blueAccent,
         child: const Icon(Icons.add, color: Colors.white),

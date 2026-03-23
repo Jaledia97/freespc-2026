@@ -25,6 +25,11 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
   late TextEditingController _capController;
   late TextEditingController _birthdayBonusController;
 
+  bool _isSquadBonusActive = false;
+  late TextEditingController _squadMultiplierController;
+  DateTime? _squadStartTime;
+  DateTime? _squadEndTime;
+
   bool _isCapEnabled = false;
   bool _isSaving = false;
 
@@ -43,6 +48,12 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
     
     _isCapEnabled = settings.dailyEarningCap != null;
     _capController = TextEditingController(text: settings.dailyEarningCap?.toString() ?? "100");
+
+    final squadConfig = widget.hall.squadBonusConfig;
+    _isSquadBonusActive = squadConfig.isSquadBonusActive;
+    _squadMultiplierController = TextEditingController(text: squadConfig.squadBonusMultiplier.toString());
+    _squadStartTime = squadConfig.startTime;
+    _squadEndTime = squadConfig.endTime;
   }
 
   @override
@@ -55,6 +66,7 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
     _timeDropIntervalController.dispose();
     _capController.dispose();
     _birthdayBonusController.dispose();
+    _squadMultiplierController.dispose();
     super.dispose();
   }
 
@@ -75,7 +87,17 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
         dailyEarningCap: _isCapEnabled ? int.parse(_capController.text.trim()) : null,
       );
 
-      final updatedHall = widget.hall.copyWith(loyaltySettings: updatedSettings);
+      final updatedSquadConfig = SquadBonusConfig(
+        isSquadBonusActive: _isSquadBonusActive,
+        squadBonusMultiplier: double.tryParse(_squadMultiplierController.text.trim()) ?? 1.5,
+        startTime: _squadStartTime,
+        endTime: _squadEndTime,
+      );
+
+      final updatedHall = widget.hall.copyWith(
+        loyaltySettings: updatedSettings,
+        squadBonusConfig: updatedSquadConfig,
+      );
       
       await ref.read(hallRepositoryProvider).updateHall(updatedHall);
 
@@ -196,6 +218,30 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
               suffix: "pts",
               desc: "Points awarded on the user's birthday.",
             ),
+
+            const SizedBox(height: 16),
+            _buildSectionHeader("Squad Bonuses (The 51%)"),
+            
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              activeThumbColor: Colors.amber,
+              title: const Text("Enable Squad Bonus", style: TextStyle(color: Colors.white)),
+              subtitle: const Text("Grant a multiplier if >50% of an active Squad is checked in.", style: TextStyle(color: Colors.white54, fontSize: 12)),
+              value: _isSquadBonusActive,
+              onChanged: (val) => setState(() => _isSquadBonusActive = val),
+            ),
+            
+            if (_isSquadBonusActive)
+              Padding(
+                padding: const EdgeInsets.only(left: 16, bottom: 16),
+                child: _buildNumberField(
+                  controller: _squadMultiplierController,
+                  label: "Bonus Multiplier",
+                  suffix: "x",
+                  desc: "ex: 1.5 for a 50% point boost.",
+                  isDouble: true,
+                ),
+              ),
           ],
         ),
       ),
@@ -259,6 +305,7 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
     required String label,
     required String suffix,
     required String desc,
+    bool isDouble = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -281,8 +328,13 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
             ),
             validator: (val) {
               if (val == null || val.isEmpty) return "Required";
-              if (int.tryParse(val) == null) return "Must be a number";
-              if (int.parse(val) < 0) return "Cannot be negative";
+              if (isDouble) {
+                if (double.tryParse(val) == null) return "Must be a decimal number";
+                if (double.parse(val) < 0) return "Cannot be negative";
+              } else {
+                if (int.tryParse(val) == null) return "Must be a number";
+                if (int.parse(val) < 0) return "Cannot be negative";
+              }
               return null;
             },
           ),

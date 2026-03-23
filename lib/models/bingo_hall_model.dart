@@ -42,6 +42,8 @@ abstract class BingoHallModel with _$BingoHallModel {
     @Default(LoyaltySettings()) LoyaltySettings loyaltySettings,
     // Store Categories
     @Default(['Merchandise', 'Food & Beverage', 'Sessions', 'Pull Tabs', 'Electronics', 'Other']) List<String> storeCategories,
+    @Default('bingo') String venueType,
+    @Default(SquadBonusConfig()) SquadBonusConfig squadBonusConfig,
   }) = _BingoHallModel;
 
   factory BingoHallModel.fromJson(Map<String, dynamic> json) =>
@@ -70,4 +72,18 @@ abstract class LoyaltySettings with _$LoyaltySettings {
 
   factory LoyaltySettings.fromJson(Map<String, dynamic> json) =>
       _$LoyaltySettingsFromJson(json);
+}
+
+@freezed
+abstract class SquadBonusConfig with _$SquadBonusConfig {
+  @JsonSerializable(explicitToJson: true)
+  const factory SquadBonusConfig({
+    @Default(false) bool isSquadBonusActive,
+    @Default(1.5) double squadBonusMultiplier,
+    DateTime? startTime,
+    DateTime? endTime,
+  }) = _SquadBonusConfig;
+
+  factory SquadBonusConfig.fromJson(Map<String, dynamic> json) =>
+      _$SquadBonusConfigFromJson(json);
 }

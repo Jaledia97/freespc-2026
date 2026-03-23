@@ -25,6 +25,10 @@ abstract class SpecialModel with _$SpecialModel {
     RecurrenceRule? recurrenceRule,
     @Default(false) bool isTemplate,
     DateTime? archivedAt,
+    @Default([]) List<String> reactionUserIds,
+    @Default([]) List<String> interestedUserIds,
+    @Default(0) int commentCount,
+    String? latestComment,
   }) = _SpecialModel;
 
   factory SpecialModel.fromJson(Map<String, Object?> json) => _$SpecialModelFromJson(json);

@@ -16,6 +16,7 @@ abstract class PublicProfile with _$PublicProfile {
     @Default('Private') String realNameVisibility,
     @Default('Online') String onlineStatus,
     String? currentCheckInHallId,
+    @Default([]) List<String> squadIds,
   }) = _PublicProfile;
 
   factory PublicProfile.fromJson(Map<String, Object?> json) => _$PublicProfileFromJson(json);

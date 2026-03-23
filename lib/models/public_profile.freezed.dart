@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$PublicProfile {
 
  String get uid; String get username; String get firstName; String get lastName; String? get photoUrl; String? get bio; int get points;// syncing points for potential leaderboards? kept simple for now
- String get realNameVisibility; String get onlineStatus; String? get currentCheckInHallId;
+ String get realNameVisibility; String get onlineStatus; String? get currentCheckInHallId; List<String> get squadIds;
 /// Create a copy of PublicProfile
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $PublicProfileCopyWith<PublicProfile> get copyWith => _$PublicProfileCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PublicProfile&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.username, username) || other.username == username)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.points, points) || other.points == points)&&(identical(other.realNameVisibility, realNameVisibility) || other.realNameVisibility == realNameVisibility)&&(identical(other.onlineStatus, onlineStatus) || other.onlineStatus == onlineStatus)&&(identical(other.currentCheckInHallId, currentCheckInHallId) || other.currentCheckInHallId == currentCheckInHallId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PublicProfile&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.username, username) || other.username == username)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.points, points) || other.points == points)&&(identical(other.realNameVisibility, realNameVisibility) || other.realNameVisibility == realNameVisibility)&&(identical(other.onlineStatus, onlineStatus) || other.onlineStatus == onlineStatus)&&(identical(other.currentCheckInHallId, currentCheckInHallId) || other.currentCheckInHallId == currentCheckInHallId)&&const DeepCollectionEquality().equals(other.squadIds, squadIds));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uid,username,firstName,lastName,photoUrl,bio,points,realNameVisibility,onlineStatus,currentCheckInHallId);
+int get hashCode => Object.hash(runtimeType,uid,username,firstName,lastName,photoUrl,bio,points,realNameVisibility,onlineStatus,currentCheckInHallId,const DeepCollectionEquality().hash(squadIds));
 
 @override
 String toString() {
-  return 'PublicProfile(uid: $uid, username: $username, firstName: $firstName, lastName: $lastName, photoUrl: $photoUrl, bio: $bio, points: $points, realNameVisibility: $realNameVisibility, onlineStatus: $onlineStatus, currentCheckInHallId: $currentCheckInHallId)';
+  return 'PublicProfile(uid: $uid, username: $username, firstName: $firstName, lastName: $lastName, photoUrl: $photoUrl, bio: $bio, points: $points, realNameVisibility: $realNameVisibility, onlineStatus: $onlineStatus, currentCheckInHallId: $currentCheckInHallId, squadIds: $squadIds)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $PublicProfileCopyWith<$Res>  {
   factory $PublicProfileCopyWith(PublicProfile value, $Res Function(PublicProfile) _then) = _$PublicProfileCopyWithImpl;
 @useResult
 $Res call({
- String uid, String username, String firstName, String lastName, String? photoUrl, String? bio, int points, String realNameVisibility, String onlineStatus, String? currentCheckInHallId
+ String uid, String username, String firstName, String lastName, String? photoUrl, String? bio, int points, String realNameVisibility, String onlineStatus, String? currentCheckInHallId, List<String> squadIds
 });
 
 
@@ -66,7 +66,7 @@ class _$PublicProfileCopyWithImpl<$Res>
 
 /// Create a copy of PublicProfile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? username = null,Object? firstName = null,Object? lastName = null,Object? photoUrl = freezed,Object? bio = freezed,Object? points = null,Object? realNameVisibility = null,Object? onlineStatus = null,Object? currentCheckInHallId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? username = null,Object? firstName = null,Object? lastName = null,Object? photoUrl = freezed,Object? bio = freezed,Object? points = null,Object? realNameVisibility = null,Object? onlineStatus = null,Object? currentCheckInHallId = freezed,Object? squadIds = null,}) {
   return _then(_self.copyWith(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
@@ -78,7 +78,8 @@ as String?,points: null == points ? _self.points : points // ignore: cast_nullab
 as int,realNameVisibility: null == realNameVisibility ? _self.realNameVisibility : realNameVisibility // ignore: cast_nullable_to_non_nullable
 as String,onlineStatus: null == onlineStatus ? _self.onlineStatus : onlineStatus // ignore: cast_nullable_to_non_nullable
 as String,currentCheckInHallId: freezed == currentCheckInHallId ? _self.currentCheckInHallId : currentCheckInHallId // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,squadIds: null == squadIds ? _self.squadIds : squadIds // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 
@@ -163,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  String username,  String firstName,  String lastName,  String? photoUrl,  String? bio,  int points,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  String username,  String firstName,  String lastName,  String? photoUrl,  String? bio,  int points,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId,  List<String> squadIds)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PublicProfile() when $default != null:
-return $default(_that.uid,_that.username,_that.firstName,_that.lastName,_that.photoUrl,_that.bio,_that.points,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId);case _:
+return $default(_that.uid,_that.username,_that.firstName,_that.lastName,_that.photoUrl,_that.bio,_that.points,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId,_that.squadIds);case _:
   return orElse();
 
 }
@@ -184,10 +185,10 @@ return $default(_that.uid,_that.username,_that.firstName,_that.lastName,_that.ph
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  String username,  String firstName,  String lastName,  String? photoUrl,  String? bio,  int points,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  String username,  String firstName,  String lastName,  String? photoUrl,  String? bio,  int points,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId,  List<String> squadIds)  $default,) {final _that = this;
 switch (_that) {
 case _PublicProfile():
-return $default(_that.uid,_that.username,_that.firstName,_that.lastName,_that.photoUrl,_that.bio,_that.points,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId);case _:
+return $default(_that.uid,_that.username,_that.firstName,_that.lastName,_that.photoUrl,_that.bio,_that.points,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId,_that.squadIds);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +205,10 @@ return $default(_that.uid,_that.username,_that.firstName,_that.lastName,_that.ph
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  String username,  String firstName,  String lastName,  String? photoUrl,  String? bio,  int points,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  String username,  String firstName,  String lastName,  String? photoUrl,  String? bio,  int points,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId,  List<String> squadIds)?  $default,) {final _that = this;
 switch (_that) {
 case _PublicProfile() when $default != null:
-return $default(_that.uid,_that.username,_that.firstName,_that.lastName,_that.photoUrl,_that.bio,_that.points,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId);case _:
+return $default(_that.uid,_that.username,_that.firstName,_that.lastName,_that.photoUrl,_that.bio,_that.points,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId,_that.squadIds);case _:
   return null;
 
 }
@@ -219,7 +220,7 @@ return $default(_that.uid,_that.username,_that.firstName,_that.lastName,_that.ph
 @JsonSerializable()
 
 class _PublicProfile implements PublicProfile {
-  const _PublicProfile({required this.uid, required this.username, required this.firstName, required this.lastName, this.photoUrl, this.bio, this.points = 0, this.realNameVisibility = 'Private', this.onlineStatus = 'Online', this.currentCheckInHallId});
+  const _PublicProfile({required this.uid, required this.username, required this.firstName, required this.lastName, this.photoUrl, this.bio, this.points = 0, this.realNameVisibility = 'Private', this.onlineStatus = 'Online', this.currentCheckInHallId, final  List<String> squadIds = const []}): _squadIds = squadIds;
   factory _PublicProfile.fromJson(Map<String, dynamic> json) => _$PublicProfileFromJson(json);
 
 @override final  String uid;
@@ -233,6 +234,13 @@ class _PublicProfile implements PublicProfile {
 @override@JsonKey() final  String realNameVisibility;
 @override@JsonKey() final  String onlineStatus;
 @override final  String? currentCheckInHallId;
+ final  List<String> _squadIds;
+@override@JsonKey() List<String> get squadIds {
+  if (_squadIds is EqualUnmodifiableListView) return _squadIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_squadIds);
+}
+
 
 /// Create a copy of PublicProfile
 /// with the given fields replaced by the non-null parameter values.
@@ -247,16 +255,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PublicProfile&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.username, username) || other.username == username)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.points, points) || other.points == points)&&(identical(other.realNameVisibility, realNameVisibility) || other.realNameVisibility == realNameVisibility)&&(identical(other.onlineStatus, onlineStatus) || other.onlineStatus == onlineStatus)&&(identical(other.currentCheckInHallId, currentCheckInHallId) || other.currentCheckInHallId == currentCheckInHallId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PublicProfile&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.username, username) || other.username == username)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.points, points) || other.points == points)&&(identical(other.realNameVisibility, realNameVisibility) || other.realNameVisibility == realNameVisibility)&&(identical(other.onlineStatus, onlineStatus) || other.onlineStatus == onlineStatus)&&(identical(other.currentCheckInHallId, currentCheckInHallId) || other.currentCheckInHallId == currentCheckInHallId)&&const DeepCollectionEquality().equals(other._squadIds, _squadIds));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uid,username,firstName,lastName,photoUrl,bio,points,realNameVisibility,onlineStatus,currentCheckInHallId);
+int get hashCode => Object.hash(runtimeType,uid,username,firstName,lastName,photoUrl,bio,points,realNameVisibility,onlineStatus,currentCheckInHallId,const DeepCollectionEquality().hash(_squadIds));
 
 @override
 String toString() {
-  return 'PublicProfile(uid: $uid, username: $username, firstName: $firstName, lastName: $lastName, photoUrl: $photoUrl, bio: $bio, points: $points, realNameVisibility: $realNameVisibility, onlineStatus: $onlineStatus, currentCheckInHallId: $currentCheckInHallId)';
+  return 'PublicProfile(uid: $uid, username: $username, firstName: $firstName, lastName: $lastName, photoUrl: $photoUrl, bio: $bio, points: $points, realNameVisibility: $realNameVisibility, onlineStatus: $onlineStatus, currentCheckInHallId: $currentCheckInHallId, squadIds: $squadIds)';
 }
 
 
@@ -267,7 +275,7 @@ abstract mixin class _$PublicProfileCopyWith<$Res> implements $PublicProfileCopy
   factory _$PublicProfileCopyWith(_PublicProfile value, $Res Function(_PublicProfile) _then) = __$PublicProfileCopyWithImpl;
 @override @useResult
 $Res call({
- String uid, String username, String firstName, String lastName, String? photoUrl, String? bio, int points, String realNameVisibility, String onlineStatus, String? currentCheckInHallId
+ String uid, String username, String firstName, String lastName, String? photoUrl, String? bio, int points, String realNameVisibility, String onlineStatus, String? currentCheckInHallId, List<String> squadIds
 });
 
 
@@ -284,7 +292,7 @@ class __$PublicProfileCopyWithImpl<$Res>
 
 /// Create a copy of PublicProfile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? username = null,Object? firstName = null,Object? lastName = null,Object? photoUrl = freezed,Object? bio = freezed,Object? points = null,Object? realNameVisibility = null,Object? onlineStatus = null,Object? currentCheckInHallId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? username = null,Object? firstName = null,Object? lastName = null,Object? photoUrl = freezed,Object? bio = freezed,Object? points = null,Object? realNameVisibility = null,Object? onlineStatus = null,Object? currentCheckInHallId = freezed,Object? squadIds = null,}) {
   return _then(_PublicProfile(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
@@ -296,7 +304,8 @@ as String?,points: null == points ? _self.points : points // ignore: cast_nullab
 as int,realNameVisibility: null == realNameVisibility ? _self.realNameVisibility : realNameVisibility // ignore: cast_nullable_to_non_nullable
 as String,onlineStatus: null == onlineStatus ? _self.onlineStatus : onlineStatus // ignore: cast_nullable_to_non_nullable
 as String,currentCheckInHallId: freezed == currentCheckInHallId ? _self.currentCheckInHallId : currentCheckInHallId // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,squadIds: null == squadIds ? _self._squadIds : squadIds // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 

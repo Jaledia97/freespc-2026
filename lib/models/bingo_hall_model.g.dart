@@ -55,6 +55,12 @@ _BingoHallModel _$BingoHallModelFromJson(Map<String, dynamic> json) =>
             'Electronics',
             'Other',
           ],
+      venueType: json['venueType'] as String? ?? 'bingo',
+      squadBonusConfig: json['squadBonusConfig'] == null
+          ? const SquadBonusConfig()
+          : SquadBonusConfig.fromJson(
+              json['squadBonusConfig'] as Map<String, dynamic>,
+            ),
     );
 
 Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
@@ -82,6 +88,8 @@ Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
       'charities': instance.charities.map((e) => e.toJson()).toList(),
       'loyaltySettings': instance.loyaltySettings.toJson(),
       'storeCategories': instance.storeCategories,
+      'venueType': instance.venueType,
+      'squadBonusConfig': instance.squadBonusConfig.toJson(),
     };
 
 _LoyaltySettings _$LoyaltySettingsFromJson(Map<String, dynamic> json) =>
@@ -106,4 +114,25 @@ Map<String, dynamic> _$LoyaltySettingsToJson(_LoyaltySettings instance) =>
       'timeDropInterval': instance.timeDropInterval,
       'dailyEarningCap': instance.dailyEarningCap,
       'birthdayBonus': instance.birthdayBonus,
+    };
+
+_SquadBonusConfig _$SquadBonusConfigFromJson(Map<String, dynamic> json) =>
+    _SquadBonusConfig(
+      isSquadBonusActive: json['isSquadBonusActive'] as bool? ?? false,
+      squadBonusMultiplier:
+          (json['squadBonusMultiplier'] as num?)?.toDouble() ?? 1.5,
+      startTime: json['startTime'] == null
+          ? null
+          : DateTime.parse(json['startTime'] as String),
+      endTime: json['endTime'] == null
+          ? null
+          : DateTime.parse(json['endTime'] as String),
+    );
+
+Map<String, dynamic> _$SquadBonusConfigToJson(_SquadBonusConfig instance) =>
+    <String, dynamic>{
+      'isSquadBonusActive': instance.isSquadBonusActive,
+      'squadBonusMultiplier': instance.squadBonusMultiplier,
+      'startTime': instance.startTime?.toIso8601String(),
+      'endTime': instance.endTime?.toIso8601String(),
     };

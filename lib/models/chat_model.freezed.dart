@@ -21,7 +21,8 @@ mixin _$ChatModel {
  Map<String, String> get participantNames;// Denormalized for 0-read UI
  String get lastMessage; DateTime get lastMessageAt; String get lastMessageSenderId; Map<String, int> get unreadCounts; List<String> get mutedBy;// Array of User IDs who muted this chat
  List<String> get deletedBy;// Array of User IDs who deleted/hid this chat
- List<String> get isTyping;
+ List<String> get isTyping;// Array of User IDs currently typing
+ Map<String, String> get clearedAt;
 /// Create a copy of ChatModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -34,16 +35,16 @@ $ChatModelCopyWith<ChatModel> get copyWith => _$ChatModelCopyWithImpl<ChatModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.isGroup, isGroup) || other.isGroup == isGroup)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&const DeepCollectionEquality().equals(other.participantIds, participantIds)&&const DeepCollectionEquality().equals(other.pendingParticipantIds, pendingParticipantIds)&&const DeepCollectionEquality().equals(other.participantNames, participantNames)&&(identical(other.lastMessage, lastMessage) || other.lastMessage == lastMessage)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.lastMessageSenderId, lastMessageSenderId) || other.lastMessageSenderId == lastMessageSenderId)&&const DeepCollectionEquality().equals(other.unreadCounts, unreadCounts)&&const DeepCollectionEquality().equals(other.mutedBy, mutedBy)&&const DeepCollectionEquality().equals(other.deletedBy, deletedBy)&&const DeepCollectionEquality().equals(other.isTyping, isTyping));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.isGroup, isGroup) || other.isGroup == isGroup)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&const DeepCollectionEquality().equals(other.participantIds, participantIds)&&const DeepCollectionEquality().equals(other.pendingParticipantIds, pendingParticipantIds)&&const DeepCollectionEquality().equals(other.participantNames, participantNames)&&(identical(other.lastMessage, lastMessage) || other.lastMessage == lastMessage)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.lastMessageSenderId, lastMessageSenderId) || other.lastMessageSenderId == lastMessageSenderId)&&const DeepCollectionEquality().equals(other.unreadCounts, unreadCounts)&&const DeepCollectionEquality().equals(other.mutedBy, mutedBy)&&const DeepCollectionEquality().equals(other.deletedBy, deletedBy)&&const DeepCollectionEquality().equals(other.isTyping, isTyping)&&const DeepCollectionEquality().equals(other.clearedAt, clearedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,isGroup,ownerId,const DeepCollectionEquality().hash(participantIds),const DeepCollectionEquality().hash(pendingParticipantIds),const DeepCollectionEquality().hash(participantNames),lastMessage,lastMessageAt,lastMessageSenderId,const DeepCollectionEquality().hash(unreadCounts),const DeepCollectionEquality().hash(mutedBy),const DeepCollectionEquality().hash(deletedBy),const DeepCollectionEquality().hash(isTyping));
+int get hashCode => Object.hash(runtimeType,id,name,isGroup,ownerId,const DeepCollectionEquality().hash(participantIds),const DeepCollectionEquality().hash(pendingParticipantIds),const DeepCollectionEquality().hash(participantNames),lastMessage,lastMessageAt,lastMessageSenderId,const DeepCollectionEquality().hash(unreadCounts),const DeepCollectionEquality().hash(mutedBy),const DeepCollectionEquality().hash(deletedBy),const DeepCollectionEquality().hash(isTyping),const DeepCollectionEquality().hash(clearedAt));
 
 @override
 String toString() {
-  return 'ChatModel(id: $id, name: $name, isGroup: $isGroup, ownerId: $ownerId, participantIds: $participantIds, pendingParticipantIds: $pendingParticipantIds, participantNames: $participantNames, lastMessage: $lastMessage, lastMessageAt: $lastMessageAt, lastMessageSenderId: $lastMessageSenderId, unreadCounts: $unreadCounts, mutedBy: $mutedBy, deletedBy: $deletedBy, isTyping: $isTyping)';
+  return 'ChatModel(id: $id, name: $name, isGroup: $isGroup, ownerId: $ownerId, participantIds: $participantIds, pendingParticipantIds: $pendingParticipantIds, participantNames: $participantNames, lastMessage: $lastMessage, lastMessageAt: $lastMessageAt, lastMessageSenderId: $lastMessageSenderId, unreadCounts: $unreadCounts, mutedBy: $mutedBy, deletedBy: $deletedBy, isTyping: $isTyping, clearedAt: $clearedAt)';
 }
 
 
@@ -54,7 +55,7 @@ abstract mixin class $ChatModelCopyWith<$Res>  {
   factory $ChatModelCopyWith(ChatModel value, $Res Function(ChatModel) _then) = _$ChatModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String? name, bool isGroup, String? ownerId, List<String> participantIds, List<String> pendingParticipantIds, Map<String, String> participantNames, String lastMessage, DateTime lastMessageAt, String lastMessageSenderId, Map<String, int> unreadCounts, List<String> mutedBy, List<String> deletedBy, List<String> isTyping
+ String id, String? name, bool isGroup, String? ownerId, List<String> participantIds, List<String> pendingParticipantIds, Map<String, String> participantNames, String lastMessage, DateTime lastMessageAt, String lastMessageSenderId, Map<String, int> unreadCounts, List<String> mutedBy, List<String> deletedBy, List<String> isTyping, Map<String, String> clearedAt
 });
 
 
@@ -71,7 +72,7 @@ class _$ChatModelCopyWithImpl<$Res>
 
 /// Create a copy of ChatModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = freezed,Object? isGroup = null,Object? ownerId = freezed,Object? participantIds = null,Object? pendingParticipantIds = null,Object? participantNames = null,Object? lastMessage = null,Object? lastMessageAt = null,Object? lastMessageSenderId = null,Object? unreadCounts = null,Object? mutedBy = null,Object? deletedBy = null,Object? isTyping = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = freezed,Object? isGroup = null,Object? ownerId = freezed,Object? participantIds = null,Object? pendingParticipantIds = null,Object? participantNames = null,Object? lastMessage = null,Object? lastMessageAt = null,Object? lastMessageSenderId = null,Object? unreadCounts = null,Object? mutedBy = null,Object? deletedBy = null,Object? isTyping = null,Object? clearedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -87,7 +88,8 @@ as String,unreadCounts: null == unreadCounts ? _self.unreadCounts : unreadCounts
 as Map<String, int>,mutedBy: null == mutedBy ? _self.mutedBy : mutedBy // ignore: cast_nullable_to_non_nullable
 as List<String>,deletedBy: null == deletedBy ? _self.deletedBy : deletedBy // ignore: cast_nullable_to_non_nullable
 as List<String>,isTyping: null == isTyping ? _self.isTyping : isTyping // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,clearedAt: null == clearedAt ? _self.clearedAt : clearedAt // ignore: cast_nullable_to_non_nullable
+as Map<String, String>,
   ));
 }
 
@@ -172,10 +174,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? name,  bool isGroup,  String? ownerId,  List<String> participantIds,  List<String> pendingParticipantIds,  Map<String, String> participantNames,  String lastMessage,  DateTime lastMessageAt,  String lastMessageSenderId,  Map<String, int> unreadCounts,  List<String> mutedBy,  List<String> deletedBy,  List<String> isTyping)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? name,  bool isGroup,  String? ownerId,  List<String> participantIds,  List<String> pendingParticipantIds,  Map<String, String> participantNames,  String lastMessage,  DateTime lastMessageAt,  String lastMessageSenderId,  Map<String, int> unreadCounts,  List<String> mutedBy,  List<String> deletedBy,  List<String> isTyping,  Map<String, String> clearedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ChatModel() when $default != null:
-return $default(_that.id,_that.name,_that.isGroup,_that.ownerId,_that.participantIds,_that.pendingParticipantIds,_that.participantNames,_that.lastMessage,_that.lastMessageAt,_that.lastMessageSenderId,_that.unreadCounts,_that.mutedBy,_that.deletedBy,_that.isTyping);case _:
+return $default(_that.id,_that.name,_that.isGroup,_that.ownerId,_that.participantIds,_that.pendingParticipantIds,_that.participantNames,_that.lastMessage,_that.lastMessageAt,_that.lastMessageSenderId,_that.unreadCounts,_that.mutedBy,_that.deletedBy,_that.isTyping,_that.clearedAt);case _:
   return orElse();
 
 }
@@ -193,10 +195,10 @@ return $default(_that.id,_that.name,_that.isGroup,_that.ownerId,_that.participan
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? name,  bool isGroup,  String? ownerId,  List<String> participantIds,  List<String> pendingParticipantIds,  Map<String, String> participantNames,  String lastMessage,  DateTime lastMessageAt,  String lastMessageSenderId,  Map<String, int> unreadCounts,  List<String> mutedBy,  List<String> deletedBy,  List<String> isTyping)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? name,  bool isGroup,  String? ownerId,  List<String> participantIds,  List<String> pendingParticipantIds,  Map<String, String> participantNames,  String lastMessage,  DateTime lastMessageAt,  String lastMessageSenderId,  Map<String, int> unreadCounts,  List<String> mutedBy,  List<String> deletedBy,  List<String> isTyping,  Map<String, String> clearedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ChatModel():
-return $default(_that.id,_that.name,_that.isGroup,_that.ownerId,_that.participantIds,_that.pendingParticipantIds,_that.participantNames,_that.lastMessage,_that.lastMessageAt,_that.lastMessageSenderId,_that.unreadCounts,_that.mutedBy,_that.deletedBy,_that.isTyping);case _:
+return $default(_that.id,_that.name,_that.isGroup,_that.ownerId,_that.participantIds,_that.pendingParticipantIds,_that.participantNames,_that.lastMessage,_that.lastMessageAt,_that.lastMessageSenderId,_that.unreadCounts,_that.mutedBy,_that.deletedBy,_that.isTyping,_that.clearedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -213,10 +215,10 @@ return $default(_that.id,_that.name,_that.isGroup,_that.ownerId,_that.participan
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? name,  bool isGroup,  String? ownerId,  List<String> participantIds,  List<String> pendingParticipantIds,  Map<String, String> participantNames,  String lastMessage,  DateTime lastMessageAt,  String lastMessageSenderId,  Map<String, int> unreadCounts,  List<String> mutedBy,  List<String> deletedBy,  List<String> isTyping)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? name,  bool isGroup,  String? ownerId,  List<String> participantIds,  List<String> pendingParticipantIds,  Map<String, String> participantNames,  String lastMessage,  DateTime lastMessageAt,  String lastMessageSenderId,  Map<String, int> unreadCounts,  List<String> mutedBy,  List<String> deletedBy,  List<String> isTyping,  Map<String, String> clearedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ChatModel() when $default != null:
-return $default(_that.id,_that.name,_that.isGroup,_that.ownerId,_that.participantIds,_that.pendingParticipantIds,_that.participantNames,_that.lastMessage,_that.lastMessageAt,_that.lastMessageSenderId,_that.unreadCounts,_that.mutedBy,_that.deletedBy,_that.isTyping);case _:
+return $default(_that.id,_that.name,_that.isGroup,_that.ownerId,_that.participantIds,_that.pendingParticipantIds,_that.participantNames,_that.lastMessage,_that.lastMessageAt,_that.lastMessageSenderId,_that.unreadCounts,_that.mutedBy,_that.deletedBy,_that.isTyping,_that.clearedAt);case _:
   return null;
 
 }
@@ -228,7 +230,7 @@ return $default(_that.id,_that.name,_that.isGroup,_that.ownerId,_that.participan
 @JsonSerializable()
 
 class _ChatModel extends ChatModel {
-  const _ChatModel({required this.id, this.name, required this.isGroup, this.ownerId, required final  List<String> participantIds, final  List<String> pendingParticipantIds = const [], final  Map<String, String> participantNames = const {}, this.lastMessage = '', required this.lastMessageAt, this.lastMessageSenderId = '', final  Map<String, int> unreadCounts = const {}, final  List<String> mutedBy = const [], final  List<String> deletedBy = const [], final  List<String> isTyping = const []}): _participantIds = participantIds,_pendingParticipantIds = pendingParticipantIds,_participantNames = participantNames,_unreadCounts = unreadCounts,_mutedBy = mutedBy,_deletedBy = deletedBy,_isTyping = isTyping,super._();
+  const _ChatModel({required this.id, this.name, required this.isGroup, this.ownerId, required final  List<String> participantIds, final  List<String> pendingParticipantIds = const [], final  Map<String, String> participantNames = const {}, this.lastMessage = '', required this.lastMessageAt, this.lastMessageSenderId = '', final  Map<String, int> unreadCounts = const {}, final  List<String> mutedBy = const [], final  List<String> deletedBy = const [], final  List<String> isTyping = const [], final  Map<String, String> clearedAt = const {}}): _participantIds = participantIds,_pendingParticipantIds = pendingParticipantIds,_participantNames = participantNames,_unreadCounts = unreadCounts,_mutedBy = mutedBy,_deletedBy = deletedBy,_isTyping = isTyping,_clearedAt = clearedAt,super._();
   factory _ChatModel.fromJson(Map<String, dynamic> json) => _$ChatModelFromJson(json);
 
 @override final  String id;
@@ -297,6 +299,15 @@ class _ChatModel extends ChatModel {
   return EqualUnmodifiableListView(_isTyping);
 }
 
+// Array of User IDs currently typing
+ final  Map<String, String> _clearedAt;
+// Array of User IDs currently typing
+@override@JsonKey() Map<String, String> get clearedAt {
+  if (_clearedAt is EqualUnmodifiableMapView) return _clearedAt;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_clearedAt);
+}
+
 
 /// Create a copy of ChatModel
 /// with the given fields replaced by the non-null parameter values.
@@ -311,16 +322,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.isGroup, isGroup) || other.isGroup == isGroup)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&const DeepCollectionEquality().equals(other._participantIds, _participantIds)&&const DeepCollectionEquality().equals(other._pendingParticipantIds, _pendingParticipantIds)&&const DeepCollectionEquality().equals(other._participantNames, _participantNames)&&(identical(other.lastMessage, lastMessage) || other.lastMessage == lastMessage)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.lastMessageSenderId, lastMessageSenderId) || other.lastMessageSenderId == lastMessageSenderId)&&const DeepCollectionEquality().equals(other._unreadCounts, _unreadCounts)&&const DeepCollectionEquality().equals(other._mutedBy, _mutedBy)&&const DeepCollectionEquality().equals(other._deletedBy, _deletedBy)&&const DeepCollectionEquality().equals(other._isTyping, _isTyping));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.isGroup, isGroup) || other.isGroup == isGroup)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&const DeepCollectionEquality().equals(other._participantIds, _participantIds)&&const DeepCollectionEquality().equals(other._pendingParticipantIds, _pendingParticipantIds)&&const DeepCollectionEquality().equals(other._participantNames, _participantNames)&&(identical(other.lastMessage, lastMessage) || other.lastMessage == lastMessage)&&(identical(other.lastMessageAt, lastMessageAt) || other.lastMessageAt == lastMessageAt)&&(identical(other.lastMessageSenderId, lastMessageSenderId) || other.lastMessageSenderId == lastMessageSenderId)&&const DeepCollectionEquality().equals(other._unreadCounts, _unreadCounts)&&const DeepCollectionEquality().equals(other._mutedBy, _mutedBy)&&const DeepCollectionEquality().equals(other._deletedBy, _deletedBy)&&const DeepCollectionEquality().equals(other._isTyping, _isTyping)&&const DeepCollectionEquality().equals(other._clearedAt, _clearedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,isGroup,ownerId,const DeepCollectionEquality().hash(_participantIds),const DeepCollectionEquality().hash(_pendingParticipantIds),const DeepCollectionEquality().hash(_participantNames),lastMessage,lastMessageAt,lastMessageSenderId,const DeepCollectionEquality().hash(_unreadCounts),const DeepCollectionEquality().hash(_mutedBy),const DeepCollectionEquality().hash(_deletedBy),const DeepCollectionEquality().hash(_isTyping));
+int get hashCode => Object.hash(runtimeType,id,name,isGroup,ownerId,const DeepCollectionEquality().hash(_participantIds),const DeepCollectionEquality().hash(_pendingParticipantIds),const DeepCollectionEquality().hash(_participantNames),lastMessage,lastMessageAt,lastMessageSenderId,const DeepCollectionEquality().hash(_unreadCounts),const DeepCollectionEquality().hash(_mutedBy),const DeepCollectionEquality().hash(_deletedBy),const DeepCollectionEquality().hash(_isTyping),const DeepCollectionEquality().hash(_clearedAt));
 
 @override
 String toString() {
-  return 'ChatModel(id: $id, name: $name, isGroup: $isGroup, ownerId: $ownerId, participantIds: $participantIds, pendingParticipantIds: $pendingParticipantIds, participantNames: $participantNames, lastMessage: $lastMessage, lastMessageAt: $lastMessageAt, lastMessageSenderId: $lastMessageSenderId, unreadCounts: $unreadCounts, mutedBy: $mutedBy, deletedBy: $deletedBy, isTyping: $isTyping)';
+  return 'ChatModel(id: $id, name: $name, isGroup: $isGroup, ownerId: $ownerId, participantIds: $participantIds, pendingParticipantIds: $pendingParticipantIds, participantNames: $participantNames, lastMessage: $lastMessage, lastMessageAt: $lastMessageAt, lastMessageSenderId: $lastMessageSenderId, unreadCounts: $unreadCounts, mutedBy: $mutedBy, deletedBy: $deletedBy, isTyping: $isTyping, clearedAt: $clearedAt)';
 }
 
 
@@ -331,7 +342,7 @@ abstract mixin class _$ChatModelCopyWith<$Res> implements $ChatModelCopyWith<$Re
   factory _$ChatModelCopyWith(_ChatModel value, $Res Function(_ChatModel) _then) = __$ChatModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String? name, bool isGroup, String? ownerId, List<String> participantIds, List<String> pendingParticipantIds, Map<String, String> participantNames, String lastMessage, DateTime lastMessageAt, String lastMessageSenderId, Map<String, int> unreadCounts, List<String> mutedBy, List<String> deletedBy, List<String> isTyping
+ String id, String? name, bool isGroup, String? ownerId, List<String> participantIds, List<String> pendingParticipantIds, Map<String, String> participantNames, String lastMessage, DateTime lastMessageAt, String lastMessageSenderId, Map<String, int> unreadCounts, List<String> mutedBy, List<String> deletedBy, List<String> isTyping, Map<String, String> clearedAt
 });
 
 
@@ -348,7 +359,7 @@ class __$ChatModelCopyWithImpl<$Res>
 
 /// Create a copy of ChatModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? isGroup = null,Object? ownerId = freezed,Object? participantIds = null,Object? pendingParticipantIds = null,Object? participantNames = null,Object? lastMessage = null,Object? lastMessageAt = null,Object? lastMessageSenderId = null,Object? unreadCounts = null,Object? mutedBy = null,Object? deletedBy = null,Object? isTyping = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? isGroup = null,Object? ownerId = freezed,Object? participantIds = null,Object? pendingParticipantIds = null,Object? participantNames = null,Object? lastMessage = null,Object? lastMessageAt = null,Object? lastMessageSenderId = null,Object? unreadCounts = null,Object? mutedBy = null,Object? deletedBy = null,Object? isTyping = null,Object? clearedAt = null,}) {
   return _then(_ChatModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -364,7 +375,8 @@ as String,unreadCounts: null == unreadCounts ? _self._unreadCounts : unreadCount
 as Map<String, int>,mutedBy: null == mutedBy ? _self._mutedBy : mutedBy // ignore: cast_nullable_to_non_nullable
 as List<String>,deletedBy: null == deletedBy ? _self._deletedBy : deletedBy // ignore: cast_nullable_to_non_nullable
 as List<String>,isTyping: null == isTyping ? _self._isTyping : isTyping // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,clearedAt: null == clearedAt ? _self._clearedAt : clearedAt // ignore: cast_nullable_to_non_nullable
+as Map<String, String>,
   ));
 }
 

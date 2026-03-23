@@ -123,11 +123,28 @@ class MessagingRepository {
     // 1. Write the message
     batch.set(messageRef, message.toJson());
     
-    // 2. Increment unreadCounts for all other participants
+    final String senderProfileName = chat.participantNames[senderId] ?? 'Someone';
+
+    // 2. Increment unreadCounts for all other participants and dispatch Push Notifications
     Map<String, int> updatedUnreadCounts = Map.from(chat.unreadCounts);
     for (String participantId in chat.participantIds) {
       if (participantId != senderId) {
         updatedUnreadCounts[participantId] = (updatedUnreadCounts[participantId] ?? 0) + 1;
+
+        // Dispatch Push Notification (only if not muted)
+        if (!chat.mutedBy.contains(participantId)) {
+           final notifRef = _firestore.collection('users').doc(participantId).collection('notifications').doc();
+           batch.set(notifRef, {
+             'id': notifRef.id,
+             'userId': participantId,
+             'title': chat.isGroup ? "${chat.name ?? "Group"} ($senderProfileName)" : senderProfileName,
+             'body': text,
+             'createdAt': FieldValue.serverTimestamp(),
+             'isRead': false,
+             'type': 'new_message',
+             'metadata': {'chatId': chatId},
+           });
+        }
       }
     }
 
@@ -154,7 +171,8 @@ class MessagingRepository {
   /// If the other person sends a new message, the chat will reappear because 'deletedBy' gets cleared.
   Future<void> hideChat(String chatId, String userId) async {
     await _firestore.collection('chats').doc(chatId).update({
-      'deletedBy': FieldValue.arrayUnion([userId])
+      'deletedBy': FieldValue.arrayUnion([userId]),
+      'clearedAt.$userId': DateTime.now().toIso8601String(),
     });
   }
 

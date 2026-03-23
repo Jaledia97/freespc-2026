@@ -22,6 +22,18 @@ _RaffleModel _$RaffleModelFromJson(Map<String, dynamic> json) => _RaffleModel(
   recurrenceRule: json['recurrenceRule'] == null
       ? null
       : RecurrenceRule.fromJson(json['recurrenceRule'] as Map<String, dynamic>),
+  reactionUserIds:
+      (json['reactionUserIds'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  interestedUserIds:
+      (json['interestedUserIds'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  commentCount: (json['commentCount'] as num?)?.toInt() ?? 0,
+  latestComment: json['latestComment'] as String?,
 );
 
 Map<String, dynamic> _$RaffleModelToJson(_RaffleModel instance) =>
@@ -37,4 +49,8 @@ Map<String, dynamic> _$RaffleModelToJson(_RaffleModel instance) =>
       'isTemplate': instance.isTemplate,
       'archivedAt': instance.archivedAt?.toIso8601String(),
       'recurrenceRule': instance.recurrenceRule?.toJson(),
+      'reactionUserIds': instance.reactionUserIds,
+      'interestedUserIds': instance.interestedUserIds,
+      'commentCount': instance.commentCount,
+      'latestComment': instance.latestComment,
     };

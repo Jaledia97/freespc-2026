@@ -18,6 +18,11 @@ _PublicProfile _$PublicProfileFromJson(Map<String, dynamic> json) =>
       realNameVisibility: json['realNameVisibility'] as String? ?? 'Private',
       onlineStatus: json['onlineStatus'] as String? ?? 'Online',
       currentCheckInHallId: json['currentCheckInHallId'] as String?,
+      squadIds:
+          (json['squadIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$PublicProfileToJson(_PublicProfile instance) =>
@@ -32,4 +37,5 @@ Map<String, dynamic> _$PublicProfileToJson(_PublicProfile instance) =>
       'realNameVisibility': instance.realNameVisibility,
       'onlineStatus': instance.onlineStatus,
       'currentCheckInHallId': instance.currentCheckInHallId,
+      'squadIds': instance.squadIds,
     };

@@ -36,6 +36,18 @@ _SpecialModel _$SpecialModelFromJson(Map<String, dynamic> json) =>
       archivedAt: json['archivedAt'] == null
           ? null
           : DateTime.parse(json['archivedAt'] as String),
+      reactionUserIds:
+          (json['reactionUserIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      interestedUserIds:
+          (json['interestedUserIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      commentCount: (json['commentCount'] as num?)?.toInt() ?? 0,
+      latestComment: json['latestComment'] as String?,
     );
 
 Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
@@ -56,6 +68,10 @@ Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
       'recurrenceRule': instance.recurrenceRule?.toJson(),
       'isTemplate': instance.isTemplate,
       'archivedAt': instance.archivedAt?.toIso8601String(),
+      'reactionUserIds': instance.reactionUserIds,
+      'interestedUserIds': instance.interestedUserIds,
+      'commentCount': instance.commentCount,
+      'latestComment': instance.latestComment,
     };
 
 _RecurrenceRule _$RecurrenceRuleFromJson(Map<String, dynamic> json) =>

@@ -2,6 +2,32 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+65] - 2026-03-23 - Messaging Haptics & Permanence
+
+### Added
+- **Chat Haptic Feedback**: Engineered native `HapticFeedback.vibrate()` triggers directly into the messaging dispatch pipelines. Send-events instantly vibrate the local device, and Foreign message intercepts trigger haptics when natively rendering onto an active Chat Screen.
+- **Push Notification Dispatch**: Wired `sendMessage` to passively generate raw `new_message` documents inside the recipient's secure `notifications` subcollection, allowing backend Cloud Functions to natively loop FCM Push notifications to offline devices.
+- **Thread Permanence (Hard Clear)**: Rebuilt the "Hide Chat" logic to stamp a rigid `clearedAt` DateTime override onto the ChatModel. Initiating a new chat with the same user now definitively hides all legacy payload history sent prior to the clear stamp.
+
+### Changed
+- **Badge Isolation**: Striped the global bottom-navigation bar of all Chat Notification UI badges. Message unread bubbles now strictly only overlay explicit Messenger action icons (AppBars), keeping the primary UI feed uncluttered.
+- **Username Hook Integrity**: Patched `find_friends_screen` to strictly map Firebase `username` variables into new chat metadata layers instead of occasionally falling back to `firstName` entries.
+
+## [0.0.1+64] - 2026-03-19 - S-Tier Social Feed & Profile Alignment
+
+### Added
+- **Algorithmic Feed**: Replaced disjointed carousels with a unified `SliverList` feed wrapper, laying groundwork for `hypeScore` sorting logic.
+- **Squad Infrastructure**: Integrated `SquadModel` mapping to enable loyalty logic scaling ("51% Rule" multipliers) for verified squads.
+- **Feed Interactions**: Built a universal `SocialInteractionBar` with reactive Hype, Comment, RSVP, and native OS Share actions.
+- **Advanced Hypes**: Engineered a long-press generic reaction overlay mimicking Facebook's (Hype, Haha, Love, Sad, Angry) and implemented Double-Tap-to-Hype gestures on feed cards.
+- **RSVP Live Syncing**: Hardwired `toggleInteraction` array payloads strictly to Firestore so RSVP filter pills update users' custom feed flows in realtime.
+- **Profile Parity**: Reconstructed the Private Profile explicitly to mirror the new Public layout. Switched to `CustomScrollView`, injected a native `SliverGrid` for user photos, and consolidated Bio and Stats symmetrically.
+- **UGC Wrappers**: Built `WinPostModel` and `CheckInModel` wrappers to inject User-Generated Content cleanly into the global feed parser.
+
+### Fixed
+- **Friend List Visibility**: Corrected a rigorous `firestore.rules` constraint that inadvertently threw `PERMISSION_DENIED` errors when loading accepted friends.
+- **Gallery Grid Population**: Repaired Firestore permissions authorizing `win_posts` and `check_ins` reads so they can natively populate the new profile grid architecture.
+
 ## [0.0.1+63] - 2026-03-16 - AAA Chat Experience & Onboarding Flow
 
 ### Added

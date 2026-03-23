@@ -1,7 +1,8 @@
 import 'dart:async'; // ensure dart:async is imported
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart'; // Added intl
+import 'package:intl/intl.dart'; 
+import 'package:flutter/services.dart';
 
 import '../../../services/auth_service.dart';
 import '../repositories/messaging_repository.dart';
@@ -25,6 +26,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _msgController = TextEditingController();
   final FocusNode _msgFocusNode = FocusNode();
   bool _isSending = false;
+  String? _lastSeenMessageId; // Hook to rigidly track stream yields against array limitations
   
   // Tracking the message we are actively replying to
   MessageModel? _replyToMessage;
@@ -132,6 +134,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
       _msgController.clear();
       _cancelReply();
+      HapticFeedback.vibrate();
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
@@ -377,7 +380,33 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       return Center(child: Text("Error: ${snapshot.error}", style: const TextStyle(color: Colors.red)));
                     }
 
-                    final messages = snapshot.data ?? [];
+                    List<MessageModel> messages = snapshot.data ?? [];
+
+                    if (chat != null && currentUser != null && chat.clearedAt.containsKey(currentUser.uid)) {
+                       final clearedAtLimit = DateTime.parse(chat.clearedAt[currentUser.uid]!);
+                       messages = messages.where((m) => m.createdAt.isAfter(clearedAtLimit)).toList();
+                    }
+
+                    // Background Haptic hook triggers when foreign messages push the array
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (messages.isNotEmpty) {
+                        final latestMessage = messages.first; 
+                        
+                        // If we haven't tracked anything yet, initialize the anchor
+                        if (_lastSeenMessageId == null) {
+                           if (mounted) _lastSeenMessageId = latestMessage.id;
+                           return;
+                        }
+
+                        // If a new payload arrives beyond our active anchor
+                        if (_lastSeenMessageId != latestMessage.id) {
+                          if (latestMessage.senderId != currentUser?.uid) {
+                            HapticFeedback.vibrate(); 
+                          }
+                          if (mounted) _lastSeenMessageId = latestMessage.id;
+                        }
+                      }
+                    });
                     
                     if (messages.isEmpty) {
                       return const Center(child: Text("Send a message to start the chat.", style: TextStyle(color: Colors.white54)));

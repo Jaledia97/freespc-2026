@@ -7,20 +7,39 @@ import 'widgets/profile_header.dart';
 import '../../manager/presentation/pin_entry_screen.dart';
 import '../../settings/presentation/display_settings_screen.dart';
 import '../../settings/presentation/account_settings_screen.dart'; // Added
-import 'my_photos_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'public_profile_screen.dart';
 import '../../../core/utils/role_utils.dart'; // Import RoleUtils
 import '../../../core/widgets/notification_badge.dart'; // Import NotificationBadge
-import '../../notifications/presentation/notifications_screen.dart';
 import '../../wallet/presentation/my_raffles_screen.dart'; // Import MyRafflesScreen
 import '../../home/presentation/upcoming_games_screen.dart'; // Import UpcomingGamesScreen
 import '../../friends/presentation/friends_screen.dart'; // Import FriendsScreen
 import '../../messaging/presentation/messaging_hub_screen.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Watch real user data
     final userAsync = ref.watch(userProfileProvider);
 
@@ -126,214 +145,218 @@ class ProfileScreen extends ConsumerWidget {
           if (user == null) {
             return const Center(child: Text("User not found"));
           }
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            child: Column(
-              children: [
-                // 1. Header (Avatar, Name, Edit)
-                ProfileHeader(user: user),
-                
-                const SizedBox(height: 32),
-
-                // 2. Action Grid (Gallery, Friends, Tournaments, Raffles)
-                  Column(
-                    children: [
-                      Row(
-                        children: [
-                          _buildActionCard(
-                            context, 
-                            "Gallery", 
-                            Icons.photo_camera, 
-                            Colors.pinkAccent,
-                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyPhotosScreen())),
-                          ),
-                          const SizedBox(width: 8),
-                          _buildActionCard(
-                            context, 
-                            "Friends", 
-                            Icons.people, 
-                            Colors.greenAccent,
-                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FriendsScreen())),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          _buildActionCard(
-                            context, 
-                            "Tournaments", 
-                            Icons.emoji_events, 
-                            Colors.purple,
-                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingGamesScreen(initialCategory: 'Tournaments'))),
-                          ),
-                          const SizedBox(width: 8),
-                          _buildActionCard(
-                            context, 
-                            "Raffles", 
-                            Icons.local_activity, 
-                            Colors.orange,
-                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRafflesScreen())),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                
-                const SizedBox(height: 24),
-
-                // 3. Bio & Home Hall Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+          return CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // About Me Section
-                      if (user.bio != null && user.bio!.isNotEmpty) ...[
-                        const Text(
-                          "About Me",
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        const Divider(color: Colors.white24, height: 24),
-                        Text(
-                          user.bio!,
-                          style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
+                      // 1. Header (Avatar, Name, Edit)
+                      ProfileHeader(user: user),
 
-                      // Home Hall Section
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Home Hall",
-                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      const SizedBox(height: 24),
+
+                      // 2. Action Row (Friends, Tournaments, Raffles)
+                      SizedBox(
+                        height: 48,
+                        child: Row(
+                          children: [
+                            Expanded(child: _buildActionBtn(context, "Friends", Icons.people, Colors.greenAccent, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FriendsScreen())))),
+                            const SizedBox(width: 8),
+                            Expanded(child: _buildActionBtn(context, "Tournaments", Icons.emoji_events, Colors.purpleAccent, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingGamesScreen(initialCategory: 'Tournaments'))))),
+                            const SizedBox(width: 8),
+                            Expanded(child: _buildActionBtn(context, "Raffles", Icons.local_activity, Colors.orangeAccent, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRafflesScreen())))),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+              
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _SliverAppBarDelegate(
+                  TabBar(
+                    controller: _tabController,
+                    indicatorColor: Colors.purpleAccent,
+                    labelColor: Colors.purpleAccent,
+                    unselectedLabelColor: Colors.white54,
+                    onTap: (index) {
+                      setState(() {});
+                    },
+                    tabs: const [
+                      Tab(text: "THE WALL", icon: Icon(Icons.list_alt)),
+                      Tab(text: "PHOTOS", icon: Icon(Icons.grid_on)),
+                    ],
+                  ),
+                ),
+              ),
+
+              if (_tabController.index == 0) ...[
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 300,
+                    child: Center(
+                      child: Text("The Wall Component Coming Soon", style: TextStyle(color: Colors.white54)),
+                    ),
+                  ),
+                )
+              ] else ...[
+                // 4. Gallery Grid
+                Consumer(
+                builder: (context, ref, _) {
+                  final galleryAsync = ref.watch(profileGalleryProvider(user.uid));
+                  
+                  return galleryAsync.when(
+                    data: (images) {
+                      if (images.isEmpty) {
+                        return const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.all(32.0),
+                            child: Center(child: Text("No photos yet.", style: TextStyle(color: Colors.white54))),
+                          )
+                        );
+                      }
+                      
+                      return SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 1),
+                        sliver: SliverGrid(
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 2,
+                            mainAxisSpacing: 2,
+                            childAspectRatio: 1.0,
                           ),
-                          if (user.homeBaseId != null)
-                            GestureDetector(
-                              onTap: () {
-                                ref.read(hallRepositoryProvider).toggleHomeBase(user.uid, user.homeBaseId!, user.homeBaseId);
-                              },
-                              child: const Text("UNSET", style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
-                            ),
-                        ],
-                      ),
-                      const Divider(color: Colors.white24, height: 24),
-                      _HomeBaseDisplay(homeBaseId: user.homeBaseId),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-                const Divider(color: Colors.white10),
-                const SizedBox(height: 12),
-
-                // 4. Developer Tools (Collapsible) - RESTRICTED
-                if (user.role == 'super-admin' || user.role == 'superadmin' || ref.read(roleOverrideProvider) == 'super-admin' || ref.read(roleOverrideProvider) == 'superadmin')
-                Theme(
-                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                  child: ExpansionTile(
-                    title: const Text("Developer Options", style: TextStyle(color: Colors.redAccent, fontSize: 14)),
-                    iconColor: Colors.redAccent,
-                    collapsedIconColor: Colors.redAccent,
-                    children: [
-                      ListTile(
-                        title: const Text('ADMIN: Seed Mock Hall', style: TextStyle(color: Colors.red)),
-                        trailing: const Icon(Icons.add_box, color: Colors.white54),
-                        onTap: () {
-                           ref.read(hallRepositoryProvider).createMockHall();
-                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mock Hall Created')));
-                        },
-                      ),
-                      ListTile(
-                        title: const Text('ADMIN: Seed Mary Esther Env', style: TextStyle(color: Colors.blue)),
-                        subtitle: const Text('Sets You as Owner + Resets Data'),
-                        trailing: const Icon(Icons.build, color: Colors.white54),
-                        onTap: () async {
-                           try {
-                             final repo = ref.read(hallRepositoryProvider);
-                             // 1. Reset Hall & User
-                             await repo.seedMaryEstherEnv(user.uid);
-                             // 2. Reset Raffles (Sync with Wallet)
-                             await repo.seedRaffles('mary-esther-bingo');
-                             // 3. Reset Wallet Data
-                             await ref.read(walletRepositoryProvider).seedWalletData(user.uid);
-
-                             if (context.mounted) {
-                               ScaffoldMessenger.of(context).showSnackBar(
-                                 const SnackBar(content: Text('Master Reset Complete! (User, Hall, Raffles, Wallet)')),
-                               );
-                             }
-                           } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
-                              }
-                           }
-                        },
-                      ),
-                      ListTile(
-                        title: const Text('ADMIN: Seed Specials (5 items)', style: TextStyle(color: Colors.green)),
-                        trailing: const Icon(Icons.cloud_upload, color: Colors.white54),
-                        onTap: () async {
-                           await ref.read(hallRepositoryProvider).seedSpecials();
-                           ScaffoldMessenger.of(context).showSnackBar(
-                             const SnackBar(content: Text('Specials Seeded!')),
-                           );
-                          // Force refresh of map might be needed
-                        },
-                      ),
-                      ListTile(
-                        title: const Text('ADMIN: Seed Carousels (Tourneys/Raffles)', style: TextStyle(color: Colors.blueAccent)),
-                        trailing: const Icon(Icons.view_carousel, color: Colors.white54),
-                        onTap: () async {
-                           await ref.read(hallRepositoryProvider).seedCarouselEvents();
-                           if (context.mounted) {
-                             ScaffoldMessenger.of(context).showSnackBar(
-                               const SnackBar(content: Text('Carousels Seeded! Check Home Screen.')),
-                             );
-                           }
-                        },
-                      ),
-                      ListTile(
-                        title: const Text('ADMIN: Seed Wallet Data', style: TextStyle(color: Colors.amber)),
-                        trailing: const Icon(Icons.account_balance_wallet, color: Colors.white54),
-                        onTap: () async {
-                           try {
-                             await ref.read(walletRepositoryProvider).seedWalletData(user.uid);
-                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wallet Data Seeded!')));
-                           } catch (e) {
-                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                           }
-                        },
-                      ),
-                      ListTile(
-                        title: const Text('ADMIN: Promote to Super Admin', style: TextStyle(color: Colors.purpleAccent)),
-                        subtitle: const Text('Grants full access without resetting data'),
-                        trailing: const Icon(Icons.security, color: Colors.white54),
-                        onTap: () async {
-                           await ref.read(hallRepositoryProvider).promoteToSuperAdmin(user.uid);
-                           if (context.mounted) {
-                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You are now a Super Admin!')));
-                           }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-                
-                // 5. Logout
-                const SizedBox(height: 48),
-                const SizedBox(height: 48),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              return CachedNetworkImage(
+                                imageUrl: images[index],
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(color: Colors.white10),
+                                errorWidget: (context, url, error) => Container(color: Colors.white10, child: const Icon(Icons.error, color: Colors.white24)),
+                              );
+                            },
+                            childCount: images.length,
+                          ),
+                        ),
+                      );
+                    },
+                    loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
+                    error: (e, st) => const SliverToBoxAdapter(child: Center(child: Text("Failed to load gallery."))),
+                  );
+                }
+              ),
               ],
-            ),
+
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+                  child: Column(
+                    children: [
+                      // 5. Developer Tools (Collapsible) - RESTRICTED
+                      if (user.role == 'super-admin' || user.role == 'superadmin' || ref.read(roleOverrideProvider) == 'super-admin' || ref.read(roleOverrideProvider) == 'superadmin')
+                      Theme(
+                        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                        child: ExpansionTile(
+                          title: const Text("Developer Options", style: TextStyle(color: Colors.redAccent, fontSize: 14)),
+                          iconColor: Colors.redAccent,
+                          collapsedIconColor: Colors.redAccent,
+                          children: [
+                            ListTile(
+                              title: const Text('ADMIN: Seed Mock Hall', style: TextStyle(color: Colors.red)),
+                              trailing: const Icon(Icons.add_box, color: Colors.white54),
+                              onTap: () {
+                                 ref.read(hallRepositoryProvider).createMockHall();
+                                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mock Hall Created')));
+                              },
+                            ),
+                            ListTile(
+                              title: const Text('ADMIN: Seed Mary Esther Env', style: TextStyle(color: Colors.blue)),
+                              subtitle: const Text('Sets You as Owner + Resets Data'),
+                              trailing: const Icon(Icons.build, color: Colors.white54),
+                              onTap: () async {
+                                 try {
+                                   final repo = ref.read(hallRepositoryProvider);
+                                   // 1. Reset Hall & User
+                                   await repo.seedMaryEstherEnv(user.uid);
+                                   // 2. Reset Raffles (Sync with Wallet)
+                                   await repo.seedRaffles('mary-esther-bingo');
+                                   // 3. Reset Wallet Data
+                                   await ref.read(walletRepositoryProvider).seedWalletData(user.uid);
+
+                                   if (context.mounted) {
+                                     ScaffoldMessenger.of(context).showSnackBar(
+                                       const SnackBar(content: Text('Master Reset Complete! (User, Hall, Raffles, Wallet)')),
+                                     );
+                                   }
+                                 } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+                                    }
+                                 }
+                              },
+                            ),
+                            ListTile(
+                              title: const Text('ADMIN: Seed Specials (5 items)', style: TextStyle(color: Colors.green)),
+                              trailing: const Icon(Icons.cloud_upload, color: Colors.white54),
+                              onTap: () async {
+                                 await ref.read(hallRepositoryProvider).seedSpecials();
+                                 ScaffoldMessenger.of(context).showSnackBar(
+                                   const SnackBar(content: Text('Specials Seeded!')),
+                                 );
+                                // Force refresh of map might be needed
+                              },
+                            ),
+                            ListTile(
+                              title: const Text('ADMIN: Seed Carousels (Tourneys/Raffles)', style: TextStyle(color: Colors.blueAccent)),
+                              trailing: const Icon(Icons.view_carousel, color: Colors.white54),
+                              onTap: () async {
+                                 await ref.read(hallRepositoryProvider).seedCarouselEvents();
+                                 if (context.mounted) {
+                                   ScaffoldMessenger.of(context).showSnackBar(
+                                     const SnackBar(content: Text('Carousels Seeded! Check Home Screen.')),
+                                   );
+                                 }
+                              },
+                            ),
+                            ListTile(
+                              title: const Text('ADMIN: Seed Wallet Data', style: TextStyle(color: Colors.amber)),
+                              trailing: const Icon(Icons.account_balance_wallet, color: Colors.white54),
+                              onTap: () async {
+                                 try {
+                                   await ref.read(walletRepositoryProvider).seedWalletData(user.uid);
+                                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wallet Data Seeded!')));
+                                 } catch (e) {
+                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                                 }
+                              },
+                            ),
+                            ListTile(
+                              title: const Text('ADMIN: Promote to Super Admin', style: TextStyle(color: Colors.purpleAccent)),
+                              subtitle: const Text('Grants full access without resetting data'),
+                              trailing: const Icon(Icons.security, color: Colors.white54),
+                              onTap: () async {
+                                 await ref.read(hallRepositoryProvider).promoteToSuperAdmin(user.uid);
+                                 if (context.mounted) {
+                                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You are now a Super Admin!')));
+                                 }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 80),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -342,108 +365,63 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionCard(BuildContext context, String label, IconData icon, Color color, VoidCallback onTap) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 12),
-              Text(
-                label, 
-                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+  Widget _buildActionBtn(BuildContext context, String title, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 4),
+            Text(title, style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+          ],
         ),
       ),
     );
   }
 
-  Widget _roleOption(BuildContext context, WidgetRef ref, String role, String label) {
-    return ListTile(
-      title: Text(label, style: const TextStyle(color: Colors.white70)),
+  PopupMenuItem<String> _roleOption(BuildContext context, WidgetRef ref, String role, String label) {
+    return PopupMenuItem<String>(
+      child: Text(label),
       onTap: () {
         if (role == 'super-admin') {
-          // Reset
           ref.read(roleOverrideProvider.notifier).state = null;
         } else {
           ref.read(roleOverrideProvider.notifier).state = role;
         }
-        Navigator.pop(context); // Close sheet
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Now viewing as $label")));
+        // Cannot cleanly pop and snackbar from here without using a post-frame callback, but basic assignment is fine
       },
     );
   }
 }
 
-class _HomeBaseDisplay extends ConsumerWidget {
-  final String? homeBaseId;
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar _tabBar;
 
-  const _HomeBaseDisplay({required this.homeBaseId});
+  _SliverAppBarDelegate(this._tabBar);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (homeBaseId == null) {
-      return const Text(
-        "No Home Base Set",
-        style: TextStyle(
-          color: Colors.white38,
-          fontSize: 14,
-          fontWeight: FontWeight.normal,
-        ),
-      );
-    }
+  double get minExtent => _tabBar.preferredSize.height;
+  @override
+  double get maxExtent => _tabBar.preferredSize.height;
 
-    final hallAsync = ref.watch(hallStreamProvider(homeBaseId!));
-
-    return hallAsync.when(
-      data: (hall) {
-        if (hall == null) {
-          return const Text(
-            "Unknown Hall",
-            style: TextStyle(
-              color: Colors.redAccent,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          );
-        }
-        return Text(
-          hall.name,
-          style: const TextStyle(
-            color: Colors.blueAccent,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        );
-      },
-      loading: () => const SizedBox(
-        width: 14,
-        height: 14,
-        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blueGrey),
-      ),
-      error: (_, __) => const Text(
-        "Error loading hall",
-        style: TextStyle(color: Colors.red, fontSize: 12),
-      ),
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: const Color(0xFF121212),
+      child: _tabBar,
     );
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
   }
 }

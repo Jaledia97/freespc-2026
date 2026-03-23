@@ -304,14 +304,14 @@ class AuthService {
   Future<List<PublicProfile>> searchUsers(String query) async {
     if (query.trim().isEmpty) return [];
     try {
-      // Force format for identical matching
-      final term = query.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '');
+      // Force format for identical matching and strip @ just in case
+      final term = query.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '').replaceAll('@', '');
       
-      // SECURE & PERFORMANT SEARCH: Natively index query public_profiles by searchName
+      // SECURE & PERFORMANT SEARCH: Natively index query public_profiles by username
       final snapshot = await _firestore
           .collection('public_profiles')
-          .where('searchName', isGreaterThanOrEqualTo: term)
-          .where('searchName', isLessThanOrEqualTo: '$term\uf8ff')
+          .where('username', isGreaterThanOrEqualTo: term)
+          .where('username', isLessThanOrEqualTo: '$term\uf8ff')
           .limit(50)
           .get();
       
@@ -319,6 +319,7 @@ class AuthService {
         try {
           return PublicProfile.fromJson(doc.data());
         } catch (e) {
+          print("Error parsing public profile ${doc.id}: $e");
           return null; 
         }
       }).where((profile) => profile != null).cast<PublicProfile>().toList();

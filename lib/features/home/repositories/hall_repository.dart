@@ -7,6 +7,8 @@ import '../../../models/user_model.dart'; // Import UserModel
 import '../../../models/special_model.dart';
 import '../../../models/raffle_model.dart';
 import '../../../models/tournament_model.dart';
+import '../../../models/comment_model.dart';
+import 'dart:convert';
 import 'special_projection_logic.dart'; // Isolate Logic
 import 'dart:math';
 import 'package:flutter/foundation.dart'; // For compute
@@ -602,7 +604,63 @@ class HallRepository {
     });
   }
 
+  // --- Generic Interactions ---
+  Future<void> toggleInteraction(String collectionName, String docId, String arrayField, String userId, bool isAdding) async {
+    try {
+      final docRef = _firestore.collection(collectionName).doc(docId);
+      if (isAdding) {
+        await docRef.update({
+          arrayField: FieldValue.arrayUnion([userId])
+        });
+      } else {
+        await docRef.update({
+          arrayField: FieldValue.arrayRemove([userId])
+        });
+      }
+    } catch (e) {
+      print("Error toggling interaction: $e");
+    }
+  }
+  // --- Comments ---
+  Stream<List<CommentModel>> getComments(String collectionName, String docId) {
+    return _firestore
+        .collection(collectionName)
+        .doc(docId)
+        .collection('comments')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => CommentModel.fromFirestore(doc)).toList());
+  }
 
+  Future<void> addComment(String collectionName, String docId, CommentModel comment) async {
+    final commentRef = _firestore.collection(collectionName).doc(docId).collection('comments').doc();
+    await commentRef.set(comment.toJson());
+
+    // Serialize payload for the Feed Snippet
+    final snippetPayload = jsonEncode({
+      'authorName': comment.authorName,
+      'authorAvatarUrl': comment.authorAvatarUrl ?? '',
+      'text': comment.text,
+    });
+
+    await _firestore.collection(collectionName).doc(docId).update({
+      'commentCount': FieldValue.increment(1),
+      'latestComment': snippetPayload,
+    });
+  }
+
+  Future<void> updateComment(String collectionName, String docId, String commentId, String text) async {
+    await _firestore.collection(collectionName).doc(docId).collection('comments').doc(commentId).update({
+      'text': text,
+    });
+  }
+
+  Future<void> deleteComment(String collectionName, String docId, String commentId) async {
+    await _firestore.collection(collectionName).doc(docId).collection('comments').doc(commentId).delete();
+    await _firestore.collection(collectionName).doc(docId).update({
+      'commentCount': FieldValue.increment(-1),
+    });
+  }
   Future<UserModel?> getWorkerFromQr(String qrToken) async {
     try {
       print('Scanning for Token: $qrToken');
