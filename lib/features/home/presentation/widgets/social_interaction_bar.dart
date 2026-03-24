@@ -7,6 +7,7 @@ import 'dart:convert';
 import '../../../../models/feed_item.dart';
 import '../../../../services/auth_service.dart';
 import '../../repositories/hall_repository.dart';
+import '../../controllers/feed_pagination_controller.dart';
 import 'comments_bottom_sheet.dart';
 
 class SocialInteractionBar extends ConsumerStatefulWidget {
