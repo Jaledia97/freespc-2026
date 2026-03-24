@@ -42,6 +42,7 @@ exports.sendNotificationOnCreate = onDocumentCreated(
             data: {
                 type: notificationData.type || "system",
                 notificationId: event.params.notificationId,
+                ...(notificationData.metadata || {}), // Spread custom payload (e.g. chatId)
             },
             tokens: tokens, // sendEachForMulticast uses an array of tokens
         };
