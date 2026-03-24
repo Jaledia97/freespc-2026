@@ -182,7 +182,7 @@ class PostHeader extends ConsumerWidget {
                   Navigator.pop(context);
                   ref
                       .read(feedPaginationControllerProvider.notifier)
-                      .hidePost(postId);
+                      .hidePost(postId, title);
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(const SnackBar(content: Text('Post hidden.')));
@@ -205,7 +205,7 @@ class PostHeader extends ConsumerWidget {
                   Navigator.pop(context);
                   ref
                       .read(feedPaginationControllerProvider.notifier)
-                      .blockUser(authorId);
+                      .blockUser(authorId, title);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('User blocked.')),
                   );

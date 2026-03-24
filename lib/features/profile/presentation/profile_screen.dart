@@ -7,6 +7,7 @@ import 'widgets/profile_header.dart';
 import '../../manager/presentation/pin_entry_screen.dart';
 import '../../settings/presentation/display_settings_screen.dart';
 import '../../settings/presentation/account_settings_screen.dart'; // Added
+import '../../settings/presentation/privacy_settings_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'public_profile_screen.dart';
 import '../../../core/utils/role_utils.dart'; // Import RoleUtils
@@ -172,6 +173,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const DisplaySettingsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(
+                            Icons.security,
+                            color: Colors.blueGrey,
+                          ),
+                          title: const Text(
+                            'Privacy & Safety',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onTap: () {
+                            Navigator.pop(context); // Close sheet
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PrivacySettingsScreen(),
                               ),
                             );
                           },

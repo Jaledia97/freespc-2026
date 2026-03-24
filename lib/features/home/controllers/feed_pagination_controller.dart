@@ -7,6 +7,7 @@ import '../../../../services/location_service.dart';
 import '../../home/repositories/hall_repository.dart';
 import '../../home/repositories/feed_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class FeedPaginationState {
   final List<FeedItem> items;
@@ -168,17 +169,24 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
 
       // --- UGC MODERATION FILTERS ---
       final prefs = await SharedPreferences.getInstance();
-      final List<String> hiddenPosts = prefs.getStringList('hidden_posts') ?? [];
-      final List<String> blockedUsers = prefs.getStringList('blocked_users') ?? [];
+      final List<String> hiddenRaw = prefs.getStringList('hidden_posts') ?? [];
+      final List<String> hiddenIds = hiddenRaw.map((e) {
+         try { return jsonDecode(e)['id'] as String; } catch (_) { return e; }
+      }).toList();
+      
+      final List<String> blockedRaw = prefs.getStringList('blocked_users') ?? [];
+      final List<String> blockedIds = blockedRaw.map((e) {
+         try { return jsonDecode(e)['id'] as String; } catch (_) { return e; }
+      }).toList();
 
       final List<FeedItem> filteredItems = state.items.where((item) {
         final String authorId = item.map(
-          tournament: (t) => t.data.authorId ?? '',
-          raffle: (r) => r.data.authorId ?? '',
-          special: (s) => s.data.authorId ?? '',
+          tournament: (t) => t.data.hallId,
+          raffle: (r) => r.data.hallId,
+          special: (s) => s.data.hallId,
           checkIn: (c) => c.data.userId,
           winPost: (w) => w.data.userId,
-          textPost: (tp) => tp.data.authorId,
+          textPost: (tp) => tp.data.userId,
         );
 
         final String docId = item.map(
@@ -190,13 +198,13 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
           textPost: (tp) => tp.data.id,
         );
 
-        if (blockedUsers.contains(authorId)) return false;
-        if (hiddenPosts.contains(docId)) return false;
+        if (blockedIds.contains(authorId)) return false;
+        if (hiddenIds.contains(docId)) return false;
         return true;
       }).toList();
 
       // 2. Sort the aggregate pool using standard algorithms
-      final currentUser = ref.read(authStateChangesProvider).value;
+      final currentUser = ref.read(userProfileProvider).value;
       
       final sortedItems = feedRepo.sortFeedByHype(
         filteredItems,
@@ -221,12 +229,17 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
   }
 
   /// Instantly strips a post from the feed and cascades the ID locally
-  Future<void> hidePost(String postId) async {
+  Future<void> hidePost(String postId, String title) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> hidden = prefs.getStringList('hidden_posts') ?? [];
-    if (!hidden.contains(postId)) {
-      hidden.add(postId);
-      await prefs.setStringList('hidden_posts', hidden);
+    List<String> hiddenRaw = prefs.getStringList('hidden_posts') ?? [];
+    
+    bool exists = hiddenRaw.any((e) {
+       try { return jsonDecode(e)['id'] == postId; } catch (_) { return e == postId; }
+    });
+
+    if (!exists) {
+      hiddenRaw.add(jsonEncode({"id": postId, "title": title}));
+      await prefs.setStringList('hidden_posts', hiddenRaw);
     }
 
     // Instantly wipe from active UI array
@@ -246,27 +259,50 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
   }
 
   /// Instantly shreds an entire user's history from the feed locally
-  Future<void> blockUser(String authorId) async {
+  Future<void> blockUser(String authorId, String name) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> blocked = prefs.getStringList('blocked_users') ?? [];
-    if (!blocked.contains(authorId)) {
-      blocked.add(authorId);
-      await prefs.setStringList('blocked_users', blocked);
+    List<String> blockedRaw = prefs.getStringList('blocked_users') ?? [];
+    
+    bool exists = blockedRaw.any((e) {
+       try { return jsonDecode(e)['id'] == authorId; } catch (_) { return e == authorId; }
+    });
+    
+    if (!exists) {
+      blockedRaw.add(jsonEncode({"id": authorId, "name": name}));
+      await prefs.setStringList('blocked_users', blockedRaw);
     }
 
     // Instantly wipe from active UI array
     final newItems = state.items.where((item) {
       final String aId = item.map(
-        tournament: (t) => t.data.authorId ?? '',
-        raffle: (r) => r.data.authorId ?? '',
-        special: (s) => s.data.authorId ?? '',
+        tournament: (t) => t.data.hallId,
+        raffle: (r) => r.data.hallId,
+        special: (s) => s.data.hallId,
         checkIn: (c) => c.data.userId,
         winPost: (w) => w.data.userId,
-        textPost: (tp) => tp.data.authorId,
+        textPost: (tp) => tp.data.userId,
       );
       return aId != authorId;
     }).toList();
 
     state = state.copyWith(items: newItems);
+  }
+
+  Future<void> unhidePost(String postId) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> hiddenRaw = prefs.getStringList('hidden_posts') ?? [];
+    hiddenRaw.removeWhere((e) {
+      try { return jsonDecode(e)['id'] == postId; } catch (_) { return e == postId; }
+    });
+    await prefs.setStringList('hidden_posts', hiddenRaw);
+  }
+
+  Future<void> unblockUser(String authorId) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> blockedRaw = prefs.getStringList('blocked_users') ?? [];
+    blockedRaw.removeWhere((e) {
+      try { return jsonDecode(e)['id'] == authorId; } catch (_) { return e == authorId; }
+    });
+    await prefs.setStringList('blocked_users', blockedRaw);
   }
 }

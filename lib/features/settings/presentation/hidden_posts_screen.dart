@@ -4,66 +4,50 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 import 'dart:convert';
 import '../../home/controllers/feed_pagination_controller.dart';
-import '../../../services/auth_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-class BlockedUsersScreen extends ConsumerStatefulWidget {
-  const BlockedUsersScreen({super.key});
+class HiddenPostsScreen extends ConsumerStatefulWidget {
+  const HiddenPostsScreen({super.key});
 
   @override
-  ConsumerState<BlockedUsersScreen> createState() => _BlockedUsersScreenState();
+  ConsumerState<HiddenPostsScreen> createState() => _HiddenPostsScreenState();
 }
 
-class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
-  List<Map<String, dynamic>> _blockedUsers = [];
+class _HiddenPostsScreenState extends ConsumerState<HiddenPostsScreen> {
+  List<Map<String, dynamic>> _hiddenPosts = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadBlockedUsers();
+    _loadHiddenPosts();
   }
 
-  Future<void> _loadBlockedUsers() async {
+  Future<void> _loadHiddenPosts() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList('blocked_users') ?? [];
+    final raw = prefs.getStringList('hidden_posts') ?? [];
     List<Map<String, dynamic>> parsed = [];
-    for (String block in raw) {
+    for (String post in raw) {
       try {
-        parsed.add(jsonDecode(block) as Map<String, dynamic>);
+        parsed.add(jsonDecode(post) as Map<String, dynamic>);
       } catch (e) {
-        parsed.add({'id': block, 'name': 'Unknown User'});
+        parsed.add({'id': post, 'title': 'Hidden Post'});
       }
     }
     setState(() {
-      _blockedUsers = parsed;
+      _hiddenPosts = parsed;
       _isLoading = false;
     });
   }
 
-  void _unblock(String id) async {
-    // Unblock Locally
-    ref.read(feedPaginationControllerProvider.notifier).unblockUser(id);
-
-    // Attempt fallback unblock from legacy backend array if exists
-    final currentUser = ref.read(authStateChangesProvider).value;
-    if (currentUser != null) {
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.uid)
-          .update({
-            'blockedUsers': FieldValue.arrayRemove([id]),
-          })
-          .catchError((_) {});
-    }
-
+  void _unhide(String id) async {
+    ref.read(feedPaginationControllerProvider.notifier).unhidePost(id);
     Vibration.vibrate(duration: 40);
     setState(() {
-      _blockedUsers.removeWhere((u) => u['id'] == id);
+      _hiddenPosts.removeWhere((p) => p['id'] == id);
     });
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Unblocked successfully.')));
+    ).showSnackBar(const SnackBar(content: Text('Post restored.')));
   }
 
   @override
@@ -72,7 +56,7 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text(
-          'Blocked Accounts',
+          'Hidden Content',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
@@ -83,21 +67,19 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Colors.redAccent),
-            )
-          : _blockedUsers.isEmpty
+          ? const Center(child: CircularProgressIndicator(color: Colors.white))
+          : _hiddenPosts.isEmpty
           ? const Center(
               child: Text(
-                'No blocked accounts.',
+                'No hidden posts.',
                 style: TextStyle(color: Colors.white54),
               ),
             )
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: _blockedUsers.length,
+              itemCount: _hiddenPosts.length,
               itemBuilder: (context, index) {
-                final user = _blockedUsers[index];
+                final post = _hiddenPosts[index];
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12.0),
                   child: Container(
@@ -108,30 +90,32 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
                     ),
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: Colors.redAccent.withOpacity(0.2),
+                        backgroundColor: Colors.white12,
                         child: const Icon(
-                          Icons.person_off,
-                          color: Colors.redAccent,
+                          Icons.visibility_off,
+                          color: Colors.white54,
                         ),
                       ),
                       title: Text(
-                        user['name'] ?? 'Unknown User',
+                        post['title'] ?? 'Hidden Post',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       trailing: TextButton(
-                        onPressed: () => _unblock(user['id']!),
+                        onPressed: () => _unhide(post['id']!),
                         style: TextButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Colors.white12,
+                          foregroundColor: Colors.black,
+                          backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
                         child: const Text(
-                          'Unblock',
+                          'Unhide',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
