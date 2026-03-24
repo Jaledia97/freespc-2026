@@ -171,12 +171,21 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
       final prefs = await SharedPreferences.getInstance();
       final List<String> hiddenRaw = prefs.getStringList('hidden_posts') ?? [];
       final List<String> hiddenIds = hiddenRaw.map((e) {
-         try { return jsonDecode(e)['id'] as String; } catch (_) { return e; }
+        try {
+          return jsonDecode(e)['id'] as String;
+        } catch (_) {
+          return e;
+        }
       }).toList();
-      
-      final List<String> blockedRaw = prefs.getStringList('blocked_users') ?? [];
+
+      final List<String> blockedRaw =
+          prefs.getStringList('blocked_users') ?? [];
       final List<String> blockedIds = blockedRaw.map((e) {
-         try { return jsonDecode(e)['id'] as String; } catch (_) { return e; }
+        try {
+          return jsonDecode(e)['id'] as String;
+        } catch (_) {
+          return e;
+        }
       }).toList();
 
       final List<FeedItem> filteredItems = state.items.where((item) {
@@ -205,7 +214,7 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
 
       // 2. Sort the aggregate pool using standard algorithms
       final currentUser = ref.read(userProfileProvider).value;
-      
+
       final sortedItems = feedRepo.sortFeedByHype(
         filteredItems,
         currentUser,
@@ -232,9 +241,13 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
   Future<void> hidePost(String postId, String title) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> hiddenRaw = prefs.getStringList('hidden_posts') ?? [];
-    
+
     bool exists = hiddenRaw.any((e) {
-       try { return jsonDecode(e)['id'] == postId; } catch (_) { return e == postId; }
+      try {
+        return jsonDecode(e)['id'] == postId;
+      } catch (_) {
+        return e == postId;
+      }
     });
 
     if (!exists) {
@@ -261,7 +274,7 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
   /// Instantly shreds an entire user's history from the feed locally
   Future<void> blockUser(String authorId, String name) async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     // ENFORCE 24-HOUR COOLDOWN
     final cooldowns = prefs.getStringList('unblock_cooldowns') ?? [];
     for (String cd in cooldowns) {
@@ -279,11 +292,15 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
     }
 
     List<String> blockedRaw = prefs.getStringList('blocked_users') ?? [];
-    
+
     bool exists = blockedRaw.any((e) {
-       try { return jsonDecode(e)['id'] == authorId; } catch (_) { return e == authorId; }
+      try {
+        return jsonDecode(e)['id'] == authorId;
+      } catch (_) {
+        return e == authorId;
+      }
     });
-    
+
     if (!exists) {
       blockedRaw.add(jsonEncode({"id": authorId, "name": name}));
       await prefs.setStringList('blocked_users', blockedRaw);
@@ -309,7 +326,11 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
     final prefs = await SharedPreferences.getInstance();
     List<String> hiddenRaw = prefs.getStringList('hidden_posts') ?? [];
     hiddenRaw.removeWhere((e) {
-      try { return jsonDecode(e)['id'] == postId; } catch (_) { return e == postId; }
+      try {
+        return jsonDecode(e)['id'] == postId;
+      } catch (_) {
+        return e == postId;
+      }
     });
     await prefs.setStringList('hidden_posts', hiddenRaw);
   }
@@ -318,19 +339,71 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
     final prefs = await SharedPreferences.getInstance();
     List<String> blockedRaw = prefs.getStringList('blocked_users') ?? [];
     blockedRaw.removeWhere((e) {
-      try { return jsonDecode(e)['id'] == authorId; } catch (_) { return e == authorId; }
+      try {
+        return jsonDecode(e)['id'] == authorId;
+      } catch (_) {
+        return e == authorId;
+      }
     });
     await prefs.setStringList('blocked_users', blockedRaw);
 
     // Apply 24H Cooldown record
     List<String> cooldowns = prefs.getStringList('unblock_cooldowns') ?? [];
     cooldowns.removeWhere((e) {
-       try { return jsonDecode(e)['id'] == authorId; } catch (_) { return false; }
+      try {
+        return jsonDecode(e)['id'] == authorId;
+      } catch (_) {
+        return false;
+      }
     });
-    cooldowns.add(jsonEncode({
-       "id": authorId,
-       "timestamp": DateTime.now().millisecondsSinceEpoch
-    }));
+    cooldowns.add(
+      jsonEncode({
+        "id": authorId,
+        "timestamp": DateTime.now().millisecondsSinceEpoch,
+      }),
+    );
     await prefs.setStringList('unblock_cooldowns', cooldowns);
   }
-}
+
+  /// Mutates the local state machine optimistically so UI filter pills stay cleanly synced
+  void toggleLocalRsvp(String postId, String userId, bool isAdding) {
+    final updatedItems = state.items.map((item) {
+      final docId = item.map(
+        tournament: (t) => t.data.id,
+        raffle: (r) => r.data.id,
+        special: (s) => s.data.id,
+        checkIn: (c) => c.data.id,
+        winPost: (w) => w.data.id,
+        textPost: (tp) => tp.data.id,
+      );
+
+      if (docId == postId) {
+        return item.map(
+          tournament: (t) {
+            final List<String> list = List.from(t.data.interestedUserIds);
+            isAdding ? list.add(userId) : list.remove(userId);
+            return FeedItem.tournament(
+              t.data.copyWith(interestedUserIds: list),
+            );
+          },
+          raffle: (r) {
+            final List<String> list = List.from(r.data.interestedUserIds);
+            isAdding ? list.add(userId) : list.remove(userId);
+            return FeedItem.raffle(r.data.copyWith(interestedUserIds: list));
+          },
+          special: (s) {
+            final List<String> list = List.from(s.data.interestedUserIds);
+            isAdding ? list.add(userId) : list.remove(userId);
+            return FeedItem.special(s.data.copyWith(interestedUserIds: list));
+          },
+          checkIn: (c) => c,
+          winPost: (w) => w,
+          textPost: (tp) => tp,
+        );
+      }
+      return item;
+    }).toList();
+
+    state = state.copyWith(items: updatedItems);
+  }
+} // End Controller

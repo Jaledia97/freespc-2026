@@ -142,6 +142,13 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
           currentUser.uid,
           isAdding,
         );
+
+    // Synchronize the local Pagination machine instantly
+    if (field == 'interestedUserIds') {
+      ref
+          .read(feedPaginationControllerProvider.notifier)
+          .toggleLocalRsvp(docId, currentUser.uid, isAdding);
+    }
   }
 
   void _handleRsvp(bool currentlyRsvpd) {
