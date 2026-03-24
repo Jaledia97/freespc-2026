@@ -41,7 +41,48 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
     });
   }
 
-  void _unblock(String id) async {
+  void _showUnblockDialog(String id, String name) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          title: const Text(
+            'Unblock User?',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Are you sure you want to unblock $name?\n\nIf you unblock them, you will NOT be able to block them again for 24 hours.',
+            style: const TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white54),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _executeUnblock(id);
+              },
+              child: const Text(
+                'Confirm Unblock',
+                style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _executeUnblock(String id) async {
     // Unblock Locally
     ref.read(feedPaginationControllerProvider.notifier).unblockUser(id);
 
@@ -122,7 +163,10 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
                         ),
                       ),
                       trailing: TextButton(
-                        onPressed: () => _unblock(user['id']!),
+                        onPressed: () => _showUnblockDialog(
+                          user['id']!,
+                          user['name'] ?? 'Unknown User',
+                        ),
                         style: TextButton.styleFrom(
                           foregroundColor: Colors.white,
                           backgroundColor: Colors.white12,

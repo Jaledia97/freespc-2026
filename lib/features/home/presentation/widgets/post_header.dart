@@ -213,16 +213,8 @@ class PostHeader extends ConsumerWidget {
                       );
                     }
                   } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            e.toString().replaceAll('Exception: ', ''),
-                          ),
-                          backgroundColor: Colors.redAccent,
-                        ),
-                      );
-                    }
+                    // Fail silently per user UX requirements
+                    // The user was already warned via Dialog prior to unblocking.
                   }
                 },
               ),
