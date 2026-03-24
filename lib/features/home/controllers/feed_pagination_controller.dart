@@ -261,6 +261,23 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
   /// Instantly shreds an entire user's history from the feed locally
   Future<void> blockUser(String authorId, String name) async {
     final prefs = await SharedPreferences.getInstance();
+    
+    // ENFORCE 24-HOUR COOLDOWN
+    final cooldowns = prefs.getStringList('unblock_cooldowns') ?? [];
+    for (String cd in cooldowns) {
+      try {
+        final decoded = jsonDecode(cd);
+        if (decoded['id'] == authorId) {
+          final int unblockedAt = decoded['timestamp'];
+          final int now = DateTime.now().millisecondsSinceEpoch;
+          final int delta = now - unblockedAt;
+          if (delta < 24 * 60 * 60 * 1000) {
+            throw Exception('You cannot re-block this user for 24 hours.');
+          }
+        }
+      } catch (_) {}
+    }
+
     List<String> blockedRaw = prefs.getStringList('blocked_users') ?? [];
     
     bool exists = blockedRaw.any((e) {
@@ -304,5 +321,16 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
       try { return jsonDecode(e)['id'] == authorId; } catch (_) { return e == authorId; }
     });
     await prefs.setStringList('blocked_users', blockedRaw);
+
+    // Apply 24H Cooldown record
+    List<String> cooldowns = prefs.getStringList('unblock_cooldowns') ?? [];
+    cooldowns.removeWhere((e) {
+       try { return jsonDecode(e)['id'] == authorId; } catch (_) { return false; }
+    });
+    cooldowns.add(jsonEncode({
+       "id": authorId,
+       "timestamp": DateTime.now().millisecondsSinceEpoch
+    }));
+    await prefs.setStringList('unblock_cooldowns', cooldowns);
   }
 }

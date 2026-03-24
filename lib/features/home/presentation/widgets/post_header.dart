@@ -201,14 +201,29 @@ class PostHeader extends ConsumerWidget {
                   'You will no longer see content from this user.',
                   style: TextStyle(color: Colors.white54, fontSize: 12),
                 ),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  ref
-                      .read(feedPaginationControllerProvider.notifier)
-                      .blockUser(authorId, title);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('User blocked.')),
-                  );
+                  try {
+                    await ref
+                        .read(feedPaginationControllerProvider.notifier)
+                        .blockUser(authorId, title);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('User blocked.')),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            e.toString().replaceAll('Exception: ', ''),
+                          ),
+                          backgroundColor: Colors.redAccent,
+                        ),
+                      );
+                    }
+                  }
                 },
               ),
               const SizedBox(height: 16),
