@@ -11,6 +11,7 @@ import 'features/settings/data/display_settings_repository.dart';
 import 'features/messaging/presentation/chat_screen.dart';
 
 import 'dart:async'; // Added
+import 'dart:convert'; // Added
 import 'package:app_links/app_links.dart'; // Added
 import 'package:firebase_messaging/firebase_messaging.dart'; // Added
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Added
@@ -66,7 +67,7 @@ void main() async {
       ?.createNotificationChannel(channel);
 
   await flutterLocalNotificationsPlugin.initialize(
-    const InitializationSettings(
+    initializationSettings: const InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(),
     ),
