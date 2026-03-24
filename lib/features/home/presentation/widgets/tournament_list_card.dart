@@ -9,12 +9,18 @@ class TournamentListCard extends ConsumerWidget {
   final TournamentModel tournament;
   final bool showHallName;
 
-  const TournamentListCard({super.key, required this.tournament, this.showHallName = false});
+  const TournamentListCard({
+    super.key,
+    required this.tournament,
+    this.showHallName = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dateFormat = DateFormat('MMM d, h:mm a');
-    final hallAsync = showHallName ? ref.watch(hallStreamProvider(tournament.hallId)) : null;
+    final hallAsync = showHallName
+        ? ref.watch(hallStreamProvider(tournament.hallId))
+        : null;
 
     return Card(
       elevation: 2,
@@ -25,21 +31,29 @@ class TournamentListCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              if (tournament.imageUrl != null && tournament.imageUrl!.isNotEmpty)
+            if (tournament.imageUrl != null && tournament.imageUrl!.isNotEmpty)
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
                 child: CachedNetworkImage(
                   imageUrl: tournament.imageUrl!,
                   height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => 
-                      const SizedBox(height: 150, child: Center(child: CircularProgressIndicator())),
-                  errorWidget: (context, url, error) =>
-                      const SizedBox(height: 150, child: Center(child: Icon(Icons.broken_image, color: Colors.grey))),
+                  placeholder: (context, url) => const SizedBox(
+                    height: 150,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  errorWidget: (context, url, error) => const SizedBox(
+                    height: 150,
+                    child: Center(
+                      child: Icon(Icons.broken_image, color: Colors.grey),
+                    ),
+                  ),
                 ),
               ),
-            
+
             // Content Section
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -48,26 +62,33 @@ class TournamentListCard extends ConsumerWidget {
                 children: [
                   if (showHallName) ...[
                     hallAsync?.when(
-                      data: (hall) => Row(
-                        children: [
-                          Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              (hall?.name != null && hall!.name.isNotEmpty) ? hall.name : "Unknown Hall",
-                              style: TextStyle(
+                          data: (hall) => Row(
+                            children: [
+                              Icon(
+                                Icons.location_on,
+                                size: 14,
                                 color: Theme.of(context).primaryColor,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
                               ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  (hall?.name != null && hall!.name.isNotEmpty)
+                                      ? hall.name
+                                      : "Unknown Hall",
+                                  style: TextStyle(
+                                    color: Theme.of(context).primaryColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      loading: () => const SizedBox.shrink(),
-                      error: (_,__) => const SizedBox.shrink(),
-                    ) ?? const SizedBox.shrink(),
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ) ??
+                        const SizedBox.shrink(),
                     const SizedBox(height: 4),
                   ],
                   Row(
@@ -85,8 +106,10 @@ class TournamentListCard extends ConsumerWidget {
                       if (tournament.startTime != null &&
                           tournament.startTime!.isAfter(DateTime.now()))
                         Container(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.blueAccent.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
@@ -94,9 +117,10 @@ class TournamentListCard extends ConsumerWidget {
                           child: Text(
                             "UPCOMING",
                             style: const TextStyle(
-                                color: Colors.blueAccent,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12),
+                              color: Colors.blueAccent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                     ],
@@ -111,7 +135,11 @@ class TournamentListCard extends ConsumerWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                      const Icon(
+                        Icons.calendar_today,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(width: 4),
                       if (tournament.startTime != null)
                         Text(
@@ -141,15 +169,20 @@ class TournamentListCard extends ConsumerWidget {
                     runSpacing: 8,
                     children: tournament.games.take(3).map((game) {
                       return Container(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey[200],
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           "${game.title} (${game.value}pts)",
-                          style: TextStyle(color: Colors.grey[800], fontSize: 12),
+                          style: TextStyle(
+                            color: Colors.grey[800],
+                            fontSize: 12,
+                          ),
                         ),
                       );
                     }).toList(),
@@ -159,7 +192,10 @@ class TournamentListCard extends ConsumerWidget {
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
                         "+ ${tournament.games.length - 3} more",
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                 ], // Close Inner Children

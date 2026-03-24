@@ -19,13 +19,19 @@ class SpecialCard extends ConsumerStatefulWidget {
   final bool isFeatured;
   final bool fullWidth;
 
-  const SpecialCard({super.key, required this.special, this.isFeatured = false, this.fullWidth = false});
+  const SpecialCard({
+    super.key,
+    required this.special,
+    this.isFeatured = false,
+    this.fullWidth = false,
+  });
 
   @override
   ConsumerState<SpecialCard> createState() => _SpecialCardState();
 }
 
-class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProviderStateMixin {
+class _SpecialCardState extends ConsumerState<SpecialCard>
+    with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
 
   void _toggleExpand() {
@@ -39,7 +45,9 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
     final theme = Theme.of(context);
 
     // Filter out internal system tags so UI is clean
-    final displayTags = widget.special.tags.where((t) => t.toLowerCase() != 'featured').toList();
+    final displayTags = widget.special.tags
+        .where((t) => t.toLowerCase() != 'featured')
+        .toList();
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -53,14 +61,20 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
           if (widget.fullWidth || widget.isFeatured)
             DynamicHallHeader(
               hallId: widget.special.hallId,
-              fallbackName: widget.special.hallName.isNotEmpty ? widget.special.hallName : "FreeSpc",
+              fallbackName: widget.special.hallName.isNotEmpty
+                  ? widget.special.hallName
+                  : "FreeSpc",
               subtitle: "Special Offer",
-              createdAt: (widget.special.recurrence == 'none' && widget.special.recurrenceRule == null) ? widget.special.postedAt : null,
+              createdAt:
+                  (widget.special.recurrence == 'none' &&
+                      widget.special.recurrenceRule == null)
+                  ? widget.special.postedAt
+                  : null,
             ),
-          
+
           // Post Content
           GestureDetector(
-            onDoubleTap: () => HapticFeedback.lightImpact(),
+            onDoubleTap: () => HapticFeedback.vibrate(),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
@@ -69,18 +83,28 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.local_fire_department, size: 14, color: Colors.redAccent),
+                      const Icon(
+                        Icons.local_fire_department,
+                        size: 14,
+                        color: Colors.redAccent,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         _formattedDate(widget.special),
-                        style: theme.textTheme.labelSmall?.copyWith(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
                     widget.special.title,
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   if (widget.special.description.isNotEmpty) ...[
@@ -91,13 +115,25 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
                     Wrap(
                       spacing: 8.0,
                       runSpacing: 4.0,
-                      children: displayTags.map((tag) => Chip(
-                        label: Text(tag, style: const TextStyle(fontSize: 10)),
-                        backgroundColor: Colors.grey[850], // Dark mode chip background
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: Colors.grey[800]!)),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                      )).toList(),
+                      children: displayTags
+                          .map(
+                            (tag) => Chip(
+                              label: Text(
+                                tag,
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                              backgroundColor:
+                                  Colors.grey[850], // Dark mode chip background
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                                side: BorderSide(color: Colors.grey[800]!),
+                              ),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          )
+                          .toList(),
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -109,37 +145,41 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
           // Edge-to-Edge Image
           if (widget.special.imageUrl.isNotEmpty)
             GestureDetector(
-              onDoubleTap: () => HapticFeedback.lightImpact(),
+              onDoubleTap: () => HapticFeedback.vibrate(),
               child: CachedNetworkImage(
                 imageUrl: widget.special.imageUrl,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                memCacheHeight: 600, // ~200 logical pixels * 3.0 devicePixelRatio
+                memCacheHeight:
+                    600, // ~200 logical pixels * 3.0 devicePixelRatio
                 placeholder: (context, url) => Container(
-                  height: 200, 
-                  color: theme.colorScheme.surfaceContainerHighest, 
-                  child: const Center(child: CircularProgressIndicator())
+                  height: 200,
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  child: const Center(child: CircularProgressIndicator()),
                 ),
-                errorWidget: (context, url, error) => 
-                  Container(height: 200, color: theme.colorScheme.surfaceContainerHighest, child: const Icon(Icons.broken_image)),
+                errorWidget: (context, url, error) => Container(
+                  height: 200,
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  child: const Icon(Icons.broken_image),
+                ),
               ),
             ),
 
           if (widget.fullWidth) ...[
-            SocialInteractionBar(
-              feedItem: FeedItem.special(widget.special),
-            ),
-          ]
+            SocialInteractionBar(feedItem: FeedItem.special(widget.special)),
+          ],
         ],
       ),
     );
   }
+
   String _formattedDate(SpecialModel special) {
     if (special.startTime == null) return "Check Hall for Time";
-    
+
     final dt = special.startTime!;
-    final timeStr = "${dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour)}:${dt.minute.toString().padLeft(2, '0')} ${dt.hour >= 12 ? 'PM' : 'AM'}";
-    
+    final timeStr =
+        "${dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour)}:${dt.minute.toString().padLeft(2, '0')} ${dt.hour >= 12 ? 'PM' : 'AM'}";
+
     if (special.recurrence == 'daily') {
       return "Every Day at $timeStr";
     } else if (special.recurrence == 'weekly') {
@@ -150,7 +190,20 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
       return "Monthly on the ${dt.day}${_ordinal(dt.day)} at $timeStr";
     } else {
       // One time event
-      final months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      final months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
       final dateStr = "${months[dt.month - 1]} ${dt.day}";
       return "$dateStr at $timeStr";
     }
@@ -159,10 +212,14 @@ class _SpecialCardState extends ConsumerState<SpecialCard> with SingleTickerProv
   String _ordinal(int n) {
     if (n >= 11 && n <= 13) return 'th';
     switch (n % 10) {
-      case 1: return 'st';
-      case 2: return 'nd';
-      case 3: return 'rd';
-      default: return 'th';
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
     }
   }
 }
@@ -175,7 +232,7 @@ class DynamicHallName extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hallAsync = ref.watch(hallStreamProvider(hallId));
-    
+
     return hallAsync.when(
       data: (hall) => Text(
         hall?.name ?? "Unknown Hall",
@@ -186,8 +243,14 @@ class DynamicHallName extends ConsumerWidget {
         ),
         overflow: TextOverflow.ellipsis,
       ),
-      loading: () => const Text("Loading...", style: TextStyle(fontSize: 12, color: Colors.grey)),
-      error: (error, stackTrace) => const Text("Unknown Hall", style: TextStyle(fontSize: 12, color: Colors.grey)),
+      loading: () => const Text(
+        "Loading...",
+        style: TextStyle(fontSize: 12, color: Colors.grey),
+      ),
+      error: (error, stackTrace) => const Text(
+        "Unknown Hall",
+        style: TextStyle(fontSize: 12, color: Colors.grey),
+      ),
     );
   }
 }
@@ -197,14 +260,18 @@ class _ActionButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _ActionButton({required this.icon, required this.label, required this.onTap});
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     // Ensuring High Contrast for Accessibility
     final iconColor = Theme.of(context).colorScheme.primary;
     final textColor = Theme.of(context).colorScheme.onSurface;
-    
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -214,7 +281,14 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(icon, color: iconColor, size: 28),
             const SizedBox(height: 4),
-            Text(label, style: TextStyle(fontSize: 12, color: textColor, fontWeight: FontWeight.bold)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: textColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),

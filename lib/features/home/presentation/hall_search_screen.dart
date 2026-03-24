@@ -22,9 +22,9 @@ class HallSearchScreen extends ConsumerStatefulWidget {
 class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final PanelController _panelController = PanelController();
-  
+
   GoogleMapController? _mapController;
-  
+
   // Search State
   final _searchSubject = BehaviorSubject<SearchCriteria>();
   late Stream<List<BingoHallModel>> _hallsStream;
@@ -32,13 +32,13 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
   List<BingoHallModel> _currentHalls = []; // Visible filtered halls
   Set<Marker> _markers = {};
   // Removed _circles as per user request
-  
+
   // Viewport State
   LatLngBounds? _currentBounds;
   bool _isProgrammaticMove = false; // Prevent feedback loops
 
   // Default bounds
-  LatLng _currentCenter = const LatLng(39.8283, -98.5795); 
+  LatLng _currentCenter = const LatLng(39.8283, -98.5795);
   double _currentRadius = 10.0;
 
   @override
@@ -52,38 +52,43 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
     _hallsStream = _searchSubject
         .debounceTime(const Duration(milliseconds: 100))
         .switchMap((criteria) {
-          return ref.read(hallRepositoryProvider).getHallsInRadius(
-            latitude: criteria.center.latitude,
-            longitude: criteria.center.longitude,
-            radiusInMiles: criteria.radius,
-          );
+          return ref
+              .read(hallRepositoryProvider)
+              .getHallsInRadius(
+                latitude: criteria.center.latitude,
+                longitude: criteria.center.longitude,
+                radiusInMiles: criteria.radius,
+              );
         });
-        
+
     // Listen to update local state
     _hallsStream.listen((halls) {
-        if (mounted) {
-          setState(() {
-            _allFetchedHalls = halls;
-            _filterVisibleHalls(); // Filter immediately upon new data
-          });
-        }
+      if (mounted) {
+        setState(() {
+          _allFetchedHalls = halls;
+          _filterVisibleHalls(); // Filter immediately upon new data
+        });
+      }
     });
 
     _searchSubject.add(SearchCriteria(_currentCenter, _currentRadius));
   }
-  
+
   void _filterVisibleHalls() {
     List<BingoHallModel> filtered;
-    
+
     if (_currentBounds == null) {
       // Fallback if bounds aren't ready (e.g. initial load before map idle)
       filtered = _allFetchedHalls;
     } else {
       filtered = _allFetchedHalls.where((hall) {
-        return _contains(_currentBounds!, LatLng(hall.latitude, hall.longitude));
+        return _contains(
+          _currentBounds!,
+          LatLng(hall.latitude, hall.longitude),
+        );
       }).toList();
     }
-    
+
     setState(() {
       _currentHalls = filtered;
       _markers = filtered.map((hall) {
@@ -96,12 +101,12 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
       }).toSet();
     });
   }
-  
+
   bool _contains(LatLngBounds bounds, LatLng point) {
     return point.latitude >= bounds.southwest.latitude &&
-           point.latitude <= bounds.northeast.latitude &&
-           point.longitude >= bounds.southwest.longitude &&
-           point.longitude <= bounds.northeast.longitude;
+        point.latitude <= bounds.northeast.latitude &&
+        point.longitude >= bounds.southwest.longitude &&
+        point.longitude <= bounds.northeast.longitude;
   }
 
   Future<void> _initializeLocation() async {
@@ -115,27 +120,29 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
     setState(() => _currentCenter = newCenter);
     _searchSubject.add(SearchCriteria(newCenter, _currentRadius));
   }
-  
+
   void _animateTo(LatLng dest, double radius) {
     setState(() {
       _currentCenter = dest;
       _currentRadius = radius;
       _isProgrammaticMove = true;
     });
-    
-    _mapController?.animateCamera(
-      CameraUpdate.newLatLngZoom(dest, _getZoomLevel(radius))
-    ).then((_) => Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) setState(() => _isProgrammaticMove = false);
-    }));
+
+    _mapController
+        ?.animateCamera(CameraUpdate.newLatLngZoom(dest, _getZoomLevel(radius)))
+        .then(
+          (_) => Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) setState(() => _isProgrammaticMove = false);
+          }),
+        );
 
     _searchSubject.add(SearchCriteria(dest, radius));
   }
-  
+
   // Helper: Zoom -> Radius (Approximate)
   // Zoom 10 ~= 25mi radius visible vertically
   // Zoom 11 ~= 12mi
-  // Formula: Radius = 40000 / (2^zoom) * adjustment? 
+  // Formula: Radius = 40000 / (2^zoom) * adjustment?
   // Simplified Log Model:  Radius = 2^(15.5 - zoom)
   // Zoom 12 -> 2^(3.5) = 11.3mi
   // Zoom 10 -> 2^(5.5) = 45mi
@@ -152,10 +159,10 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
 
   Future<void> _onSearchSubmitted(String query) async {
     if (query.isEmpty) return;
-    
+
     // Clean query
     String effectiveQuery = query.trim();
-    
+
     // Heuristic: If 5 digits, assumes US Zip Code
     final isZip = RegExp(r'^\d{5}$').hasMatch(effectiveQuery);
     if (isZip) {
@@ -169,11 +176,17 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
         _animateTo(LatLng(loc.latitude, loc.longitude), _currentRadius);
       } else {
         // Retry without suffix if it was zip? Or just show error.
-         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Location not found")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Location not found")));
       }
     } catch (e) {
       print("Geocoding Error for '$effectiveQuery': $e");
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error finding location. Try adding State/Country.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Error finding location. Try adding State/Country."),
+        ),
+      );
     }
   }
 
@@ -184,7 +197,10 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
     // Center map on hall with slightly higher zoom + offset for panel
     // Offset logic: Center is usually obscured by panel. Shift slightly North?
     // For MVP, just center without offset.
-    _animateTo(LatLng(hall.latitude, hall.longitude), 5.0); // 5 mile radius view
+    _animateTo(
+      LatLng(hall.latitude, hall.longitude),
+      5.0,
+    ); // 5 mile radius view
     _panelController.open();
   }
 
@@ -192,7 +208,7 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
     setState(() => _selectedHall = null);
     _panelController.animatePanelToPosition(0.0); // Collapse to min height
     // Optionally zoom out slightly?
-    _animateTo(_currentCenter, 10.0); 
+    _animateTo(_currentCenter, 10.0);
   }
 
   @override
@@ -218,38 +234,48 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
           maxHeight: MediaQuery.of(context).size.height * 0.7,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           color: const Color(0xFF1A1A1A),
-          panel: _selectedHall == null ? _buildListView() : HallMapDetailPanel(hall: _selectedHall!, onClose: _onBackFromDetail),
+          panel: _selectedHall == null
+              ? _buildListView()
+              : HallMapDetailPanel(
+                  hall: _selectedHall!,
+                  onClose: _onBackFromDetail,
+                ),
           body: Stack(
             children: [
               GoogleMap(
                 minMaxZoomPreference: const MinMaxZoomPreference(8.5, null),
-                initialCameraPosition: CameraPosition(target: _currentCenter, zoom: _getZoomLevel(_currentRadius)),
+                initialCameraPosition: CameraPosition(
+                  target: _currentCenter,
+                  zoom: _getZoomLevel(_currentRadius),
+                ),
                 onMapCreated: (controller) {
                   _mapController = controller;
                 },
                 onCameraMove: (position) {
-                   if (!_isProgrammaticMove) {
-                     // User is pinching/panning manually (only update if no hall selected to avoid jumping)
-                     if (_selectedHall == null) {
-                       final newRadius = _getRadiusFromZoom(position.zoom);
-                       setState(() {
-                         _currentCenter = position.target;
-                         _currentRadius = newRadius;
-                       });
-                       // Push debounced search
-                       _searchSubject.add(SearchCriteria(position.target, newRadius));
-                     }
-                   }
+                  if (!_isProgrammaticMove) {
+                    // User is pinching/panning manually (only update if no hall selected to avoid jumping)
+                    if (_selectedHall == null) {
+                      final newRadius = _getRadiusFromZoom(position.zoom);
+                      setState(() {
+                        _currentCenter = position.target;
+                        _currentRadius = newRadius;
+                      });
+                      // Push debounced search
+                      _searchSubject.add(
+                        SearchCriteria(position.target, newRadius),
+                      );
+                    }
+                  }
                 },
                 onCameraIdle: () async {
-                   // Update bounds and filter list only if no hall selected (keep pins stable in detail view)
-                   if (_mapController != null && _selectedHall == null) {
-                     final bounds = await _mapController!.getVisibleRegion();
-                     setState(() {
-                       _currentBounds = bounds;
-                     });
-                     _filterVisibleHalls();
-                   }
+                  // Update bounds and filter list only if no hall selected (keep pins stable in detail view)
+                  if (_mapController != null && _selectedHall == null) {
+                    final bounds = await _mapController!.getVisibleRegion();
+                    setState(() {
+                      _currentBounds = bounds;
+                    });
+                    _filterVisibleHalls();
+                  }
                 },
                 markers: _markers,
                 myLocationEnabled: true,
@@ -257,79 +283,98 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
                 mapType: MapType.normal,
                 style: _darkMapStyle,
               ),
-          
+
               // Top Overlay (Search + Radius) - Hide when detail view active? Or keep?
               // User said "scrollable panel should pop halfway up... underneath it should JUST show that hall's next 5 events"
               // implies complete focus. Let's hide search bar when detail is open to clean UI.
               if (_selectedHall == null)
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      // Search Bar
-                      GlassContainer(
-                        blur: 10,
-                        opacity: 0.8,
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(30),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: TextField(
-                          controller: _searchController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            icon: const Icon(Icons.search, color: Colors.amber),
-                            hintText: "Search City or Zip",
-                            hintStyle: const TextStyle(color: Colors.white54),
-                            border: InputBorder.none,
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.arrow_forward, color: Colors.white),
-                              onPressed: () => _onSearchSubmitted(_searchController.text),
-                            ),
-                          ),
-                          onSubmitted: _onSearchSubmitted,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      
-                      // Radius Slider
-                      GlassContainer(
-                        blur: 10,
-                        opacity: 0.8,
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(20),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: Row(
-                          children: [
-                            const Text("Radius:", style: TextStyle(color: Colors.white70)),
-                            Expanded(
-                              child: Slider(
-                                value: _currentRadius,
-                                min: 1,
-                                max: 100,
-                                activeColor: Colors.amber,
-                                inactiveColor: Colors.white24,
-                                label: "${_currentRadius.round()} mi",
-                                divisions: 99,
-                                onChanged: (val) {
-                                  // Programmatic update from slider
-                                  _animateTo(_currentCenter, val);
-                                },
-                                onChangeEnd: (val) {
-                                  // Refresh bounds filtering if needed? 
-                                  // Stream update handles it.
-                                },
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        // Search Bar
+                        GlassContainer(
+                          blur: 10,
+                          opacity: 0.8,
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(30),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: TextField(
+                            controller: _searchController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              icon: const Icon(
+                                Icons.search,
+                                color: Colors.amber,
+                              ),
+                              hintText: "Search City or Zip",
+                              hintStyle: const TextStyle(color: Colors.white54),
+                              border: InputBorder.none,
+                              suffixIcon: IconButton(
+                                icon: const Icon(
+                                  Icons.arrow_forward,
+                                  color: Colors.white,
+                                ),
+                                onPressed: () =>
+                                    _onSearchSubmitted(_searchController.text),
                               ),
                             ),
-                            Text("${_currentRadius.round()} mi", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-                          ],
+                            onSubmitted: _onSearchSubmitted,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+
+                        // Radius Slider
+                        GlassContainer(
+                          blur: 10,
+                          opacity: 0.8,
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(20),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            children: [
+                              const Text(
+                                "Radius:",
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                              Expanded(
+                                child: Slider(
+                                  value: _currentRadius,
+                                  min: 1,
+                                  max: 100,
+                                  activeColor: Colors.amber,
+                                  inactiveColor: Colors.white24,
+                                  label: "${_currentRadius.round()} mi",
+                                  divisions: 99,
+                                  onChanged: (val) {
+                                    // Programmatic update from slider
+                                    _animateTo(_currentCenter, val);
+                                  },
+                                  onChangeEnd: (val) {
+                                    // Refresh bounds filtering if needed?
+                                    // Stream update handles it.
+                                  },
+                                ),
+                              ),
+                              Text(
+                                "${_currentRadius.round()} mi",
+                                style: const TextStyle(
+                                  color: Colors.amber,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              
+
               // Back Button Overlay (When Detail Open)
               if (_selectedHall != null)
                 Positioned(
@@ -339,7 +384,10 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
                     onTap: _onBackFromDetail,
                     child: Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
                       child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
                   ),
@@ -352,12 +400,15 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
   }
 
   Widget _buildPanelHandle() {
-     return Center(
+    return Center(
       child: Container(
         margin: const EdgeInsets.only(top: 12, bottom: 12),
         width: 40,
         height: 4,
-        decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+        decoration: BoxDecoration(
+          color: Colors.white24,
+          borderRadius: BorderRadius.circular(2),
+        ),
       ),
     );
   }
@@ -371,17 +422,27 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Text(
             "${_currentHalls.length} Halls Nearby",
-            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
-        
+
         Expanded(
-          child: _currentHalls.isEmpty 
-              ? const Center(child: Text("No halls in this area", style: TextStyle(color: Colors.white54)))
+          child: _currentHalls.isEmpty
+              ? const Center(
+                  child: Text(
+                    "No halls in this area",
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                )
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _currentHalls.length,
-                  separatorBuilder: (c, i) => const Divider(color: Colors.white12),
+                  separatorBuilder: (c, i) =>
+                      const Divider(color: Colors.white12),
                   itemBuilder: (context, index) {
                     final hall = _currentHalls[index];
                     return ListTile(
@@ -398,20 +459,31 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
                                   fit: BoxFit.cover,
                                 )
                               : const DecorationImage(
-                                  image: NetworkImage("https://loremflickr.com/200/200/bingo"), // Placeholder
+                                  image: NetworkImage(
+                                    "https://loremflickr.com/200/200/bingo",
+                                  ), // Placeholder
                                   fit: BoxFit.cover,
                                 ),
                         ),
-                        child: hall.logoUrl == null 
+                        child: hall.logoUrl == null
                             ? const Icon(Icons.store, color: Colors.amber)
                             : null,
                       ),
-                      title: Text(hall.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      title: Text(
+                        hall.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       subtitle: Text(
                         "${hall.city}, ${hall.state}",
                         style: const TextStyle(color: Colors.white70),
                       ),
-                      trailing: const Icon(Icons.chevron_right, color: Colors.white24),
+                      trailing: const Icon(
+                        Icons.chevron_right,
+                        color: Colors.white24,
+                      ),
                       onTap: () => _onHallSelected(hall),
                     );
                   },
@@ -423,10 +495,22 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
 
   // _buildDetailView removed in favor of HallMapDetailPanel
 
-
   String _month(DateTime? d) {
     if (d == null) return "JAN";
-    const m = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    const m = [
+      "JAN",
+      "FEB",
+      "MAR",
+      "APR",
+      "MAY",
+      "JUN",
+      "JUL",
+      "AUG",
+      "SEP",
+      "OCT",
+      "NOV",
+      "DEC",
+    ];
     return m[d.month - 1];
   }
 
@@ -440,13 +524,13 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
 
   // Placeholder for old _buildPanel
   Widget _buildPanel() {
-     // This method signature is required by the SlidingUpPanel's panel property in the original code,
-     // but we are dynamically switching contents inside body parameter of Scaffold above (wait, no).
-     // The SlidingUpPanel 'panel' param takes a Widget. Detailed logic moved to _buildDetailView/_buildListView.
-     // This is just a redirector now, or we can inline the ternary in the build method.
-     // Oh, I updated the build method to use ternary directly. Implementation is inside class.
-     return const SizedBox(); 
-     // Use the methods defined above.
+    // This method signature is required by the SlidingUpPanel's panel property in the original code,
+    // but we are dynamically switching contents inside body parameter of Scaffold above (wait, no).
+    // The SlidingUpPanel 'panel' param takes a Widget. Detailed logic moved to _buildDetailView/_buildListView.
+    // This is just a redirector now, or we can inline the ternary in the build method.
+    // Oh, I updated the build method to use ternary directly. Implementation is inside class.
+    return const SizedBox();
+    // Use the methods defined above.
   }
 
   @override

@@ -5,17 +5,22 @@ import '../../../../models/bingo_hall_model.dart';
 import '../hall_profile_screen.dart';
 import 'post_header.dart';
 
-final singleHallHeaderProvider = FutureProvider.family<BingoHallModel?, String>((ref, hallId) async {
-  try {
-    final snap = await FirebaseFirestore.instance.collection('bingo_halls').doc(hallId).get();
-    if (snap.exists && snap.data() != null) {
-      return BingoHallModel.fromJson({'id': snap.id, ...snap.data()!});
+final singleHallHeaderProvider = FutureProvider.family<BingoHallModel?, String>(
+  (ref, hallId) async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('bingo_halls')
+          .doc(hallId)
+          .get();
+      if (snap.exists && snap.data() != null) {
+        return BingoHallModel.fromJson({'id': snap.id, ...snap.data()!});
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
-    return null;
-  } catch (e) {
-    return null;
-  }
-});
+  },
+);
 
 class DynamicHallHeader extends ConsumerWidget {
   final String hallId;
@@ -44,21 +49,20 @@ class DynamicHallHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hallAsync = ref.watch(singleHallHeaderProvider(hallId));
-    final String timeAgoStr = createdAt != null ? " • ${_timeAgo(createdAt!)}" : "";
+    final String timeAgoStr = createdAt != null
+        ? " • ${_timeAgo(createdAt!)}"
+        : "";
     final String fullSubtitle = "$subtitle$timeAgoStr";
 
     return hallAsync.when(
       data: (hall) {
         if (hall == null) {
-          return PostHeader(
-            title: fallbackName,
-            subtitle: fullSubtitle,
-          );
+          return PostHeader(title: fallbackName, subtitle: fullSubtitle);
         }
         return PostHeader(
           title: hall.name,
           subtitle: fullSubtitle,
-          avatarUrl: hall.logoUrl ?? hall.bannerUrl, 
+          avatarUrl: hall.logoUrl ?? hall.bannerUrl,
           onTap: () {
             Navigator.push(
               context,
@@ -69,14 +73,8 @@ class DynamicHallHeader extends ConsumerWidget {
           },
         );
       },
-      loading: () => PostHeader(
-        title: fallbackName,
-        subtitle: fullSubtitle,
-      ),
-      error: (e, st) => PostHeader(
-        title: fallbackName,
-        subtitle: fullSubtitle,
-      ),
+      loading: () => PostHeader(title: fallbackName, subtitle: fullSubtitle),
+      error: (e, st) => PostHeader(title: fallbackName, subtitle: fullSubtitle),
     );
   }
 }

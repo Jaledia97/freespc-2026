@@ -4,11 +4,7 @@ class ExpandablePostText extends StatefulWidget {
   final String text;
   final int maxLines;
 
-  const ExpandablePostText({
-    super.key,
-    required this.text,
-    this.maxLines = 3,
-  });
+  const ExpandablePostText({super.key, required this.text, this.maxLines = 3});
 
   @override
   State<ExpandablePostText> createState() => _ExpandablePostTextState();
@@ -23,7 +19,12 @@ class _ExpandablePostTextState extends State<ExpandablePostText> {
 
     return LayoutBuilder(
       builder: (context, size) {
-        final span = TextSpan(text: widget.text, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70));
+        final span = TextSpan(
+          text: widget.text,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+        );
         final tp = TextPainter(
           maxLines: widget.maxLines,
           textAlign: TextAlign.left,
@@ -41,9 +42,13 @@ class _ExpandablePostTextState extends State<ExpandablePostText> {
                 alignment: Alignment.topCenter,
                 child: Text(
                   widget.text,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
                   maxLines: _isExpanded ? null : widget.maxLines,
-                  overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                  overflow: _isExpanded
+                      ? TextOverflow.visible
+                      : TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(height: 4),
@@ -60,7 +65,12 @@ class _ExpandablePostTextState extends State<ExpandablePostText> {
             ],
           );
         } else {
-          return Text(widget.text, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70));
+          return Text(
+            widget.text,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+          );
         }
       },
     );

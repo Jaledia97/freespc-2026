@@ -28,9 +28,11 @@ class HallAboutTab extends ConsumerWidget {
       throw Exception('Could not launch $uri');
     }
   }
-  
+
   Future<void> _openMap() async {
-    final uri = Uri.parse("https://www.google.com/maps/search/?api=1&query=${hall.latitude},${hall.longitude}");
+    final uri = Uri.parse(
+      "https://www.google.com/maps/search/?api=1&query=${hall.latitude},${hall.longitude}",
+    );
     if (!await launchUrl(uri)) {
       throw Exception('Could not launch map');
     }
@@ -38,7 +40,9 @@ class HallAboutTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final photosStream = ref.watch(photoRepositoryProvider).getHallPhotos(hall.id);
+    final photosStream = ref
+        .watch(photoRepositoryProvider)
+        .getHallPhotos(hall.id);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -46,11 +50,22 @@ class HallAboutTab extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Bio Section
-          const Text("About Us", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          const Text(
+            "About Us",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
           const SizedBox(height: 12),
           Text(
             hall.description ?? "No description available.",
-            style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.white70),
+            style: const TextStyle(
+              fontSize: 16,
+              height: 1.5,
+              color: Colors.white70,
+            ),
           ),
           const SizedBox(height: 32),
 
@@ -58,29 +73,50 @@ class HallAboutTab extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Photo Gallery", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+              const Text(
+                "Photo Gallery",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
               TextButton(
                 onPressed: () {
-                   Navigator.push(context, MaterialPageRoute(builder: (_) => HallFullGalleryScreen(hallId: hall.id, hallName: hall.name)));
-                }, 
-                child: const Text("See All", style: TextStyle(color: Colors.blueAccent)),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => HallFullGalleryScreen(
+                        hallId: hall.id,
+                        hallName: hall.name,
+                      ),
+                    ),
+                  );
+                },
+                child: const Text(
+                  "See All",
+                  style: TextStyle(color: Colors.blueAccent),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          
+
           StreamBuilder<List<GalleryPhotoModel>>(
             stream: photosStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()));
+                return const SizedBox(
+                  height: 100,
+                  child: Center(child: CircularProgressIndicator()),
+                );
               }
-              
+
               final allPhotos = snapshot.data ?? [];
               // Determine display count: Max 11 photos + 1 add button = 12 slots (3 columns * 4 rows)
               final displayPhotos = allPhotos.take(11).toList();
               final itemCount = displayPhotos.length + 1;
-              
+
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -94,34 +130,61 @@ class HallAboutTab extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   // Check if this is the "Add Photo" slot (Last item)
                   if (index == itemCount - 1) {
-                     return InkWell(
-                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => UploadPhotoScreen(preSelectedHallId: hall.id))),
-                       child: Container(
-                         decoration: BoxDecoration(
-                           color: const Color(0xFF2C2C2C),
-                           borderRadius: BorderRadius.circular(4),
-                         ),
-                         child: const Column(
-                           mainAxisAlignment: MainAxisAlignment.center,
-                           children: [
-                             Icon(Icons.add_a_photo, size: 28, color: Colors.white54),
-                             SizedBox(height: 4),
-                             Text("Add", style: TextStyle(color: Colors.white54, fontSize: 12)),
-                           ],
-                         ),
-                       ),
-                     );
+                    return InkWell(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              UploadPhotoScreen(preSelectedHallId: hall.id),
+                        ),
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2C2C2C),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.add_a_photo,
+                              size: 28,
+                              color: Colors.white54,
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Add",
+                              style: TextStyle(
+                                color: Colors.white54,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
                   }
-                  
+
                   final photo = displayPhotos[index];
                   return GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoDetailScreen(photo: photo))),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PhotoDetailScreen(photo: photo),
+                      ),
+                    ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: Image.network(
                         photo.imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_,__,___) => Container(color: Colors.grey[800], child: const Icon(Icons.broken_image, color: Colors.white24)),
+                        errorBuilder: (_, __, ___) => Container(
+                          color: Colors.grey[800],
+                          child: const Icon(
+                            Icons.broken_image,
+                            color: Colors.white24,
+                          ),
+                        ),
                       ),
                     ),
                   );
@@ -133,33 +196,45 @@ class HallAboutTab extends ConsumerWidget {
 
           // Operating Hours Section
           if (hall.operatingHours.isNotEmpty) ...[
-             const Text("Operating Hours", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-             const SizedBox(height: 12),
-             _buildOperatingHours(),
-             const SizedBox(height: 32),
+            const Text(
+              "Operating Hours",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildOperatingHours(),
+            const SizedBox(height: 32),
           ],
- 
 
- 
           // Contact Actions
-          const Text("Contact & Location", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          const Text(
+            "Contact & Location",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
           const SizedBox(height: 16),
-          
+
           _contactRow(
-            Icons.location_on, 
+            Icons.location_on,
             "${hall.street}${(hall.unitNumber != null && hall.unitNumber!.isNotEmpty) ? ' ${hall.unitNumber}' : ''}\n${hall.city}, ${hall.state} ${hall.zipCode}",
             onTap: _openMap,
           ),
           const Divider(height: 32),
           _contactRow(
-            Icons.phone, 
+            Icons.phone,
             hall.phone ?? "No phone listed",
             onTap: () => _callPhone(hall.phone),
             isLink: hall.phone != null,
           ),
           const Divider(height: 32),
           _contactRow(
-            Icons.language, 
+            Icons.language,
             hall.websiteUrl ?? "No website listed",
             onTap: () => _launchUrl(hall.websiteUrl),
             isLink: hall.websiteUrl != null,
@@ -170,17 +245,25 @@ class HallAboutTab extends ConsumerWidget {
   }
 
   Widget _buildOperatingHours() {
-    final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    
+    final days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+
     return Column(
       children: days.map((day) {
         final times = hall.operatingHours[day] as Map<String, dynamic>?;
         String timeString = "Closed";
-        
+
         if (times != null) {
           final open = times['open'];
           final close = times['close'];
-          
+
           if (open != null && open.isNotEmpty) {
             if (close != null && close.isNotEmpty) {
               timeString = "$open - $close";
@@ -193,18 +276,37 @@ class HallAboutTab extends ConsumerWidget {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Row(
-             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-             children: [
-               Text(day, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white54)),
-               Text(timeString, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
-             ],
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                day,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white54,
+                ),
+              ),
+              Text(
+                timeString,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
         );
       }).toList(),
     );
   }
 
-  Widget _contactRow(IconData icon, String text, {VoidCallback? onTap, bool isLink = true}) {
+  Widget _contactRow(
+    IconData icon,
+    String text, {
+    VoidCallback? onTap,
+    bool isLink = true,
+  }) {
     return InkWell(
       onTap: isLink ? onTap : null,
       borderRadius: BorderRadius.circular(12),
@@ -243,7 +345,11 @@ class HallAboutTab extends ConsumerWidget {
             if (isLink)
               const Padding(
                 padding: EdgeInsets.only(top: 10, left: 8),
-                child: Icon(Icons.arrow_outward, size: 16, color: Colors.white54),
+                child: Icon(
+                  Icons.arrow_outward,
+                  size: 16,
+                  color: Colors.white54,
+                ),
               ),
           ],
         ),

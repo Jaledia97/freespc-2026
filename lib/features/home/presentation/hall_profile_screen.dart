@@ -41,54 +41,78 @@ class HallProfileScreen extends ConsumerWidget {
                 floating: false,
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
-                  title: Text(hall.name, style: const TextStyle(shadows: [Shadow(blurRadius: 2, color: Colors.black)])),
+                  title: Text(
+                    hall.name,
+                    style: const TextStyle(
+                      shadows: [Shadow(blurRadius: 2, color: Colors.black)],
+                    ),
+                  ),
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                       // Banner Image
-                       hall.bannerUrl != null 
-                         ? CachedNetworkImage(
-                             imageUrl: hall.bannerUrl!, 
-                             fit: BoxFit.cover,
-                             placeholder: (context, url) => Container(color: Colors.grey[800]),
-                             errorWidget: (context, url, error) => const Icon(Icons.error),
-                           )
-                         : Container(
-                             color: Colors.grey[800],
-                             child: const Center(child: Icon(Icons.casino, size: 80, color: Colors.white24)),
-                           ),
-                       
-                       // Gradient Overlay (for text readability)
-                       Container(
-                         decoration: BoxDecoration(
-                           gradient: LinearGradient(
-                             begin: Alignment.topCenter,
-                             end: Alignment.bottomCenter,
-                             colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
-                             stops: const [0.4, 1.0],
-                           ),
-                         ),
-                       ),
+                      // Banner Image
+                      hall.bannerUrl != null
+                          ? CachedNetworkImage(
+                              imageUrl: hall.bannerUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) =>
+                                  Container(color: Colors.grey[800]),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                            )
+                          : Container(
+                              color: Colors.grey[800],
+                              child: const Center(
+                                child: Icon(
+                                  Icons.casino,
+                                  size: 80,
+                                  color: Colors.white24,
+                                ),
+                              ),
+                            ),
 
-                       // Logo Overlay (Bottom Left)
-                       if (hall.logoUrl != null)
-                         Positioned(
-                           bottom: 10, // Adjust based on collapse behavior if needed
-                           left: 16,
-                           child: Container(
-                             width: 80, 
-                             height: 80,
-                             decoration: BoxDecoration(
-                               shape: BoxShape.circle,
-                               border: Border.all(color: Colors.white, width: 2),
-                               boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8)],
-                               image: DecorationImage(
-                                 image: CachedNetworkImageProvider(hall.logoUrl!),
-                                 fit: BoxFit.cover,
-                               ),
-                             ),
-                           ),
-                         ),
+                      // Gradient Overlay (for text readability)
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.8),
+                            ],
+                            stops: const [0.4, 1.0],
+                          ),
+                        ),
+                      ),
+
+                      // Logo Overlay (Bottom Left)
+                      if (hall.logoUrl != null)
+                        Positioned(
+                          bottom:
+                              10, // Adjust based on collapse behavior if needed
+                          left: 16,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 8,
+                                ),
+                              ],
+                              image: DecorationImage(
+                                image: CachedNetworkImageProvider(
+                                  hall.logoUrl!,
+                                ),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -98,160 +122,254 @@ class HallProfileScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                        // Distance & Beacon
-                        Row(
-                          children: [
-                             if (distanceInMeters != null)
-                             Container(
-                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                               decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(8)),
-                               child: Text(
+                      // Distance & Beacon
+                      Row(
+                        children: [
+                          if (distanceInMeters != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue[50],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
                                 "${(distanceInMeters! * 0.000621371).toStringAsFixed(1)} mi",
-                                style: TextStyle(color: Colors.blue[800], fontWeight: FontWeight.bold),
-                               ),
-                             ),
-                             const SizedBox(width: 8),
-                             Expanded(
-                               child: Row(
-                                 children: [
-                                   const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                                   const SizedBox(width: 4),
-                                   Text("${hall.city}, ${hall.state}", style: const TextStyle(color: Colors.grey), overflow: TextOverflow.ellipsis),
-                                 ],
-                               ),
-                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        // Action Buttons (Follow/Home)
-                        userProfileAsync.when(
-                          data: (user) {
-                            if (user == null) return const SizedBox.shrink();
-                            final isFollowing = user.following.contains(hall.id);
-                            final isHome = user.homeBaseId == hall.id;
-
-                            return Row(
+                                style: TextStyle(
+                                  color: Colors.blue[800],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Row(
                               children: [
-                                // Follow / Home Button
-                                Expanded(
-                                  child: InkWell(
-                                    onTap: () {
-                                      ref.read(hallRepositoryProvider).toggleFollow(
-                                        user.uid,
-                                        hall.id,
-                                        isFollowing,
-                                        hall.name, 
-                                      );
-                                    },
-                                    onLongPress: () {
-                                        ref.read(hallRepositoryProvider).toggleHomeBase(
+                                const Icon(
+                                  Icons.location_on,
+                                  size: 16,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  "${hall.city}, ${hall.state}",
+                                  style: const TextStyle(color: Colors.grey),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Action Buttons (Follow/Home)
+                      userProfileAsync.when(
+                        data: (user) {
+                          if (user == null) return const SizedBox.shrink();
+                          final isFollowing = user.following.contains(hall.id);
+                          final isHome = user.homeBaseId == hall.id;
+
+                          return Row(
+                            children: [
+                              // Follow / Home Button
+                              Expanded(
+                                child: InkWell(
+                                  onTap: () {
+                                    ref
+                                        .read(hallRepositoryProvider)
+                                        .toggleFollow(
+                                          user.uid,
+                                          hall.id,
+                                          isFollowing,
+                                          hall.name,
+                                        );
+                                  },
+                                  onLongPress: () {
+                                    ref
+                                        .read(hallRepositoryProvider)
+                                        .toggleHomeBase(
                                           user.uid,
                                           hall.id,
                                           user.homeBaseId,
                                         );
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text(isHome ? "Home Base Removed" : "Home Base Set!")),
-                                        );
-                                    },
-                                    borderRadius: BorderRadius.circular(30),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      decoration: BoxDecoration(
-                                        color: isHome 
-                                            ? Colors.deepPurple.withOpacity(0.1) 
-                                            : (isFollowing ? Colors.red.withOpacity(0.1) : Colors.grey[100]),
-                                        borderRadius: BorderRadius.circular(30),
-                                        border: isHome ? Border.all(color: Colors.deepPurple.withOpacity(0.3)) : null,
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          isHome
+                                              ? "Home Base Removed"
+                                              : "Home Base Set!",
+                                        ),
                                       ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            isHome 
-                                                ? Icons.home 
-                                                : (isFollowing ? Icons.favorite : Icons.favorite_border),
-                                            color: isHome 
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(30),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isHome
+                                          ? Colors.deepPurple.withOpacity(0.1)
+                                          : (isFollowing
+                                                ? Colors.red.withOpacity(0.1)
+                                                : Colors.grey[100]),
+                                      borderRadius: BorderRadius.circular(30),
+                                      border: isHome
+                                          ? Border.all(
+                                              color: Colors.deepPurple
+                                                  .withOpacity(0.3),
+                                            )
+                                          : null,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          isHome
+                                              ? Icons.home
+                                              : (isFollowing
+                                                    ? Icons.favorite
+                                                    : Icons.favorite_border),
+                                          color: isHome
+                                              ? Colors.deepPurple
+                                              : (isFollowing
+                                                    ? Colors.red
+                                                    : Colors.grey),
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          isHome
+                                              ? "Home Hall"
+                                              : (isFollowing
+                                                    ? "Following"
+                                                    : "Follow"),
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: isHome
                                                 ? Colors.deepPurple
-                                                : (isFollowing ? Colors.red : Colors.grey),
-                                            size: 20,
+                                                : Colors.black87,
                                           ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            isHome ? "Home Hall" : (isFollowing ? "Following" : "Follow"), 
-                                            style: TextStyle(
-                                              fontSize: 14, 
-                                              fontWeight: FontWeight.bold,
-                                              color: isHome ? Colors.deepPurple : Colors.black87
-                                            ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Gallery Button
+                              Expanded(
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => HallFullGalleryScreen(
+                                          hallId: hall.id,
+                                          hallName: hall.name,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(30),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.pinkAccent.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    child: const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.photo_library,
+                                          color: Colors.pinkAccent,
+                                          size: 20,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          "Gallery",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                                // Gallery Button
-                                Expanded(
-                                  child: InkWell(
-                                    onTap: () {
-                                       Navigator.push(context, MaterialPageRoute(builder: (_) => HallFullGalleryScreen(hallId: hall.id, hallName: hall.name)));
-                                    },
-                                    borderRadius: BorderRadius.circular(30),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.pinkAccent.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(30),
+                              ),
+                              const SizedBox(width: 8),
+
+                              // Store Button
+                              Expanded(
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => HallStoreScreen(
+                                          hallId: hall.id,
+                                          hallName: hall.name,
+                                        ),
                                       ),
-                                      child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.photo_library, color: Colors.pinkAccent, size: 20),
-                                          SizedBox(width: 8),
-                                          Text("Gallery", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
-                                        ],
-                                      ),
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(30),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    child: const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.store_mall_directory,
+                                          color: Colors.green,
+                                          size: 20,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          "Store",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                
-                                // Store Button
-                                Expanded(
-                                  child: InkWell(
-                                      onTap: () {
-                                        Navigator.push(context, MaterialPageRoute(builder: (_) => HallStoreScreen(hallId: hall.id, hallName: hall.name)));
-                                      },
-                                    borderRadius: BorderRadius.circular(30),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(30),
-                                      ),
-                                      child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.store_mall_directory, color: Colors.green, size: 20),
-                                          SizedBox(width: 8),
-                                          Text("Store", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                          loading: () => const SizedBox(height: 60, child: Center(child: CircularProgressIndicator())),
-                          error: (e, _) => const SizedBox.shrink(),
+                              ),
+                            ],
+                          );
+                        },
+                        loading: () => const SizedBox(
+                          height: 60,
+                          child: Center(child: CircularProgressIndicator()),
                         ),
+                        error: (e, _) => const SizedBox.shrink(),
+                      ),
                     ],
                   ),
                 ),
               ),
               // Pinned Tab Bar
-               SliverPersistentHeader(
+              SliverPersistentHeader(
                 delegate: _SliverAppBarDelegate(
                   const TabBar(
                     labelColor: Colors.black87,
@@ -280,61 +398,85 @@ class HallProfileScreen extends ConsumerWidget {
               // 1. Events Tab
               Consumer(
                 builder: (context, ref, _) {
-                  final specialsAsync = ref.watch(hallSpecialsProvider(hall.id));
+                  final specialsAsync = ref.watch(
+                    hallSpecialsProvider(hall.id),
+                  );
                   return specialsAsync.when(
                     data: (specials) {
                       if (specials.isEmpty) {
-                         return const Center(child: Text("No upcoming events scheduled."));
+                        return const Center(
+                          child: Text("No upcoming events scheduled."),
+                        );
                       }
                       return ListView.builder(
                         padding: EdgeInsets.zero,
                         itemCount: specials.length,
-                        itemBuilder: (context, index) => SpecialCard(special: specials[index]),
+                        itemBuilder: (context, index) =>
+                            SpecialCard(special: specials[index]),
                       );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (e, _) => Center(child: Text("Error: $e")),
                   );
                 },
               ),
-              
+
               // 2. Programs Tab
               HallProgramsTab(programs: hall.programs),
-              
+
               // 2. Raffles Tab
               Consumer(
-                 builder: (context, ref, _) {
+                builder: (context, ref, _) {
                   final rafflesAsync = ref.watch(hallRafflesProvider(hall.id));
                   return rafflesAsync.when(
                     data: (raffles) {
-                       // Filter out templates
-                       final visibleRaffles = raffles.where((r) => !r.isTemplate).toList();
+                      // Filter out templates
+                      final visibleRaffles = raffles
+                          .where((r) => !r.isTemplate)
+                          .toList();
 
-                       if (visibleRaffles.isEmpty) {
-                         return Center(
-                           child: Column(
-                             mainAxisAlignment: MainAxisAlignment.center,
-                             children: [
-                               const Text("No active raffles."),
-                               // Dev Tool: Seed Hint
-                               TextButton(
-                                 onPressed: () async {
-                                    try {
-                                      await ref.read(hallRepositoryProvider).seedRaffles(hall.id);
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Success! Raffles seeded.")));
-                                      }
-                                    } catch (e) {
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error seeding: $e")));
-                                      }
+                      if (visibleRaffles.isEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text("No active raffles."),
+                              // Dev Tool: Seed Hint
+                              TextButton(
+                                onPressed: () async {
+                                  try {
+                                    await ref
+                                        .read(hallRepositoryProvider)
+                                        .seedRaffles(hall.id);
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            "Success! Raffles seeded.",
+                                          ),
+                                        ),
+                                      );
                                     }
-                                 }, 
-                                 child: const Text("Dev: Seed Raffles")
-                               ),
-                             ],
-                           ),
-                         );
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text("Error seeding: $e"),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                child: const Text("Dev: Seed Raffles"),
+                              ),
+                            ],
+                          ),
+                        );
                       }
                       return ListView.separated(
                         padding: const EdgeInsets.all(16),
@@ -345,36 +487,45 @@ class HallProfileScreen extends ConsumerWidget {
                         },
                       );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (e, _) => Center(child: Text("Error: $e")),
                   );
-                 },
+                },
               ),
-
 
               // 3. Tournaments Tab
               // 3. Tournaments Tab
               Consumer(
                 builder: (context, ref, _) {
-                  final tournamentsAsync = ref.watch(hallTournamentsProvider(hall.id));
+                  final tournamentsAsync = ref.watch(
+                    hallTournamentsProvider(hall.id),
+                  );
                   return tournamentsAsync.when(
                     data: (tournaments) {
                       // Filter out templates/archived if needed
-                      final visibleTournaments = tournaments.where((t) => !t.isTemplate).toList();
-                      
+                      final visibleTournaments = tournaments
+                          .where((t) => !t.isTemplate)
+                          .toList();
+
                       if (visibleTournaments.isEmpty) {
-                        return const Center(child: Text("No upcoming tournaments."));
+                        return const Center(
+                          child: Text("No upcoming tournaments."),
+                        );
                       }
-                      
+
                       return ListView.builder(
                         padding: EdgeInsets.zero,
                         itemCount: visibleTournaments.length,
                         itemBuilder: (context, index) {
-                          return TournamentListCard(tournament: visibleTournaments[index]);
+                          return TournamentListCard(
+                            tournament: visibleTournaments[index],
+                          );
                         },
                       );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (e, stack) => Center(child: Text("Error: $e")),
                   );
                 },
@@ -401,15 +552,14 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => _tabBar.preferredSize.height + 1;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: Colors.white, // Background of pinned tab bar
-      child: Column(
-        children: [
-          _tabBar,
-          const Divider(height: 1),
-        ],
-      )
+      child: Column(children: [_tabBar, const Divider(height: 1)]),
     );
   }
 

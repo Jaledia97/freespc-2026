@@ -24,17 +24,29 @@ class PostHeader extends StatelessWidget {
       leading: CircleAvatar(
         radius: 20,
         backgroundColor: Colors.white12,
-        backgroundImage: avatarUrl != null ? CachedNetworkImageProvider(avatarUrl!) : null,
-        child: avatarUrl == null ? const Icon(Icons.person, color: Colors.white54) : null,
+        backgroundImage: avatarUrl != null
+            ? CachedNetworkImageProvider(avatarUrl!)
+            : null,
+        child: avatarUrl == null
+            ? const Icon(Icons.person, color: Colors.white54)
+            : null,
       ),
       title: UsernameRouter(
         text: title,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+          color: Colors.white,
+        ),
       ),
       subtitle: subtitle != null && subtitle!.isNotEmpty
           ? Text(
               subtitle!,
-              style: const TextStyle(color: Colors.white54, fontSize: 13, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                color: Colors.white54,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             )

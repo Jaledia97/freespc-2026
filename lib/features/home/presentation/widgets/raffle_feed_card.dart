@@ -12,7 +12,11 @@ class RaffleFeedCard extends StatelessWidget {
   final RaffleModel raffle;
   final bool fullWidth;
 
-  const RaffleFeedCard({super.key, required this.raffle, this.fullWidth = false});
+  const RaffleFeedCard({
+    super.key,
+    required this.raffle,
+    this.fullWidth = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +26,16 @@ class RaffleFeedCard extends StatelessWidget {
 
     return Container(
       width: fullWidth ? double.infinity : 240,
-      margin: fullWidth ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8) : const EdgeInsets.only(right: 16),
+      margin: fullWidth
+          ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
+          : const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.purpleAccent.withOpacity(0.3), width: 1),
+        border: Border.all(
+          color: Colors.purpleAccent.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -38,10 +47,10 @@ class RaffleFeedCard extends StatelessWidget {
               fallbackName: "Raffle Event",
               subtitle: "Raffle",
             ),
-          
+
           // Post Content
           GestureDetector(
-            onDoubleTap: () => HapticFeedback.lightImpact(),
+            onDoubleTap: () => HapticFeedback.vibrate(),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
@@ -50,18 +59,28 @@ class RaffleFeedCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.local_activity, color: Colors.purpleAccent, size: 14),
+                      const Icon(
+                        Icons.local_activity,
+                        color: Colors.purpleAccent,
+                        size: 14,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         timeText,
-                        style: theme.textTheme.labelSmall?.copyWith(color: Colors.purpleAccent, fontWeight: FontWeight.bold),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: Colors.purpleAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
                     raffle.name,
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   if (raffle.description.isNotEmpty) ...[
@@ -76,7 +95,7 @@ class RaffleFeedCard extends StatelessWidget {
           // Edge-to-Edge Image
           if (raffle.imageUrl.isNotEmpty)
             GestureDetector(
-              onDoubleTap: () => HapticFeedback.lightImpact(),
+              onDoubleTap: () => HapticFeedback.vibrate(),
               child: CachedNetworkImage(
                 imageUrl: raffle.imageUrl,
                 width: double.infinity,
@@ -85,23 +104,26 @@ class RaffleFeedCard extends StatelessWidget {
                 placeholder: (context, url) => Container(
                   height: 200,
                   color: theme.colorScheme.surfaceContainerHighest,
-                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
                 errorWidget: (context, url, error) => Container(
                   height: 200,
                   color: theme.colorScheme.surfaceContainerHighest,
-                  child: const Icon(Icons.loyalty, color: Colors.white54, size: 40),
+                  child: const Icon(
+                    Icons.loyalty,
+                    color: Colors.white54,
+                    size: 40,
+                  ),
                 ),
               ),
             ),
           if (fullWidth) ...[
-            SocialInteractionBar(
-              feedItem: FeedItem.raffle(raffle),
-            ),
-          ]
+            SocialInteractionBar(feedItem: FeedItem.raffle(raffle)),
+          ],
         ],
       ),
     );
   }
 }
-

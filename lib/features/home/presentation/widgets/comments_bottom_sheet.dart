@@ -6,7 +6,10 @@ import '../../repositories/hall_repository.dart';
 import '../../../../models/comment_model.dart';
 import 'package:intl/intl.dart';
 
-final commentsProvider = StreamProvider.family<List<CommentModel>, String>((ref, comboId) {
+final commentsProvider = StreamProvider.family<List<CommentModel>, String>((
+  ref,
+  comboId,
+) {
   final parts = comboId.split('|');
   return ref.watch(hallRepositoryProvider).getComments(parts[0], parts[1]);
 });
@@ -24,7 +27,8 @@ class CommentsBottomSheet extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<CommentsBottomSheet> createState() => _CommentsBottomSheetState();
+  ConsumerState<CommentsBottomSheet> createState() =>
+      _CommentsBottomSheetState();
 }
 
 class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
@@ -33,7 +37,7 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
   bool _isSubmitting = false;
   String? _replyingToCommentId;
   String? _replyingToAuthorName;
-  
+
   // Moderation state
   final Set<String> _hiddenCommentIds = {};
   String? _editingCommentId;
@@ -59,7 +63,9 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1E1E1E),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
         return SafeArea(
           child: Column(
@@ -67,12 +73,20 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
             children: [
               Container(
                 margin: const EdgeInsets.only(top: 8, bottom: 8),
-                width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
               if (comment.authorId == widget.currentUser.uid) ...[
                 ListTile(
                   leading: const Icon(Icons.edit, color: Colors.white),
-                  title: const Text('Edit Comment', style: TextStyle(color: Colors.white)),
+                  title: const Text(
+                    'Edit Comment',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     _editComment(comment);
@@ -80,16 +94,31 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.redAccent),
-                  title: const Text('Delete Comment', style: TextStyle(color: Colors.redAccent)),
+                  title: const Text(
+                    'Delete Comment',
+                    style: TextStyle(color: Colors.redAccent),
+                  ),
                   onTap: () async {
                     Navigator.pop(context);
-                    await ref.read(hallRepositoryProvider).deleteComment(widget.collectionName, widget.docId, comment.id);
+                    await ref
+                        .read(hallRepositoryProvider)
+                        .deleteComment(
+                          widget.collectionName,
+                          widget.docId,
+                          comment.id,
+                        );
                   },
                 ),
               ] else ...[
                 ListTile(
-                  leading: const Icon(Icons.visibility_off, color: Colors.white),
-                  title: const Text('Hide Comment', style: TextStyle(color: Colors.white)),
+                  leading: const Icon(
+                    Icons.visibility_off,
+                    color: Colors.white,
+                  ),
+                  title: const Text(
+                    'Hide Comment',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     setState(() => _hiddenCommentIds.add(comment.id));
@@ -97,26 +126,42 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.flag, color: Colors.orangeAccent),
-                  title: const Text('Report Comment', style: TextStyle(color: Colors.orangeAccent)),
+                  title: const Text(
+                    'Report Comment',
+                    style: TextStyle(color: Colors.orangeAccent),
+                  ),
                   onTap: () {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Comment reported to moderators.")));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Comment reported to moderators."),
+                      ),
+                    );
                   },
                 ),
                 ListTile(
                   leading: const Icon(Icons.block, color: Colors.red),
-                  title: Text('Block @${comment.authorName}', style: const TextStyle(color: Colors.red)),
+                  title: Text(
+                    'Block @${comment.authorName}',
+                    style: const TextStyle(color: Colors.red),
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     setState(() => _hiddenCommentIds.add(comment.id));
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("@${comment.authorName} has been blocked locally.")));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          "@${comment.authorName} has been blocked locally.",
+                        ),
+                      ),
+                    );
                   },
                 ),
               ],
             ],
           ),
         );
-      }
+      },
     );
   }
 
@@ -144,20 +189,26 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
 
     try {
       if (_editingCommentId != null) {
-        await ref.read(hallRepositoryProvider).updateComment(
-          widget.collectionName,
-          widget.docId,
-          _editingCommentId!,
-          text,
-        );
+        await ref
+            .read(hallRepositoryProvider)
+            .updateComment(
+              widget.collectionName,
+              widget.docId,
+              _editingCommentId!,
+              text,
+            );
         _controller.clear();
         _cancelEdit();
         return;
       }
 
-      final userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.currentUser.uid).get();
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.currentUser.uid)
+          .get();
       final userData = userDoc.data() ?? {};
-      final String name = userData['username'] ?? userData['firstName'] ?? 'User';
+      final String name =
+          userData['username'] ?? userData['firstName'] ?? 'User';
       final String? avatar = userData['photoUrl'];
 
       final comment = CommentModel(
@@ -170,17 +221,18 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
         parentId: _replyingToCommentId,
       );
 
-      await ref.read(hallRepositoryProvider).addComment(
-        widget.collectionName,
-        widget.docId,
-        comment,
-      );
+      await ref
+          .read(hallRepositoryProvider)
+          .addComment(widget.collectionName, widget.docId, comment);
 
       _controller.clear();
       _cancelReply();
       _focusNode.unfocus();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to post comment: $e")));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed to post comment: $e")));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -203,7 +255,9 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final commentsAsync = ref.watch(commentsProvider('${widget.collectionName}|${widget.docId}'));
+    final commentsAsync = ref.watch(
+      commentsProvider('${widget.collectionName}|${widget.docId}'),
+    );
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
@@ -215,28 +269,53 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
         children: [
           Container(
             margin: const EdgeInsets.only(top: 8, bottom: 16),
-            width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-          const Text("Comments", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            "Comments",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const Divider(color: Colors.white24, height: 16),
-          
+
           Expanded(
             child: commentsAsync.when(
               data: (allComments) {
                 if (allComments.isEmpty) {
-                  return const Center(child: Text("No comments yet. Be the first!", style: TextStyle(color: Colors.white54)));
+                  return const Center(
+                    child: Text(
+                      "No comments yet. Be the first!",
+                      style: TextStyle(color: Colors.white54),
+                    ),
+                  );
                 }
 
                 // Group Comments
-                final filteredComments = allComments.where((c) => !_hiddenCommentIds.contains(c.id)).toList();
-                final topLevel = filteredComments.where((c) => c.parentId == null).toList();
+                final filteredComments = allComments
+                    .where((c) => !_hiddenCommentIds.contains(c.id))
+                    .toList();
+                final topLevel = filteredComments
+                    .where((c) => c.parentId == null)
+                    .toList();
                 final childrenMap = <String, List<CommentModel>>{};
-                for (var c in filteredComments.where((c) => c.parentId != null)) {
+                for (var c in filteredComments.where(
+                  (c) => c.parentId != null,
+                )) {
                   childrenMap.putIfAbsent(c.parentId!, () => []).add(c);
                 }
 
                 for (var key in childrenMap.keys) {
-                  childrenMap[key]!.sort((a, b) => a.createdAt.compareTo(b.createdAt)); // Oldest nested first
+                  childrenMap[key]!.sort(
+                    (a, b) => a.createdAt.compareTo(b.createdAt),
+                  ); // Oldest nested first
                 }
 
                 return ListView.builder(
@@ -255,34 +334,52 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                           if (children.isNotEmpty) ...[
                             const SizedBox(height: 12),
                             Padding(
-                              padding: const EdgeInsets.only(left: 42), // Indent for nested
+                              padding: const EdgeInsets.only(
+                                left: 42,
+                              ), // Indent for nested
                               child: Column(
-                                children: children.map((child) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 12.0),
-                                  child: _buildCommentRow(child, isChild: true),
-                                )).toList(),
+                                children: children
+                                    .map(
+                                      (child) => Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 12.0,
+                                        ),
+                                        child: _buildCommentRow(
+                                          child,
+                                          isChild: true,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
                               ),
-                            )
-                          ]
+                            ),
+                          ],
                         ],
                       ),
                     );
                   },
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
-              error: (e, st) => Center(child: Text("Error loading comments: $e", style: const TextStyle(color: Colors.red))),
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: Colors.blueAccent),
+              ),
+              error: (e, st) => Center(
+                child: Text(
+                  "Error loading comments: $e",
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
             ),
           ),
-          
+
           SafeArea(
             child: Container(
               color: const Color(0xFF1E1E1E),
               padding: EdgeInsets.only(
-                left: 16, 
-                right: 16, 
-                bottom: MediaQuery.of(context).viewInsets.bottom + 8, 
-                top: 8
+                left: 16,
+                right: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 8,
+                top: 8,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -292,14 +389,28 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                       padding: const EdgeInsets.only(bottom: 8.0, left: 4),
                       child: Row(
                         children: [
-                          const Icon(Icons.edit, size: 16, color: Colors.blueAccent),
+                          const Icon(
+                            Icons.edit,
+                            size: 16,
+                            color: Colors.blueAccent,
+                          ),
                           const SizedBox(width: 8),
-                          const Text("Editing Comment", style: TextStyle(color: Colors.white70, fontSize: 13)),
+                          const Text(
+                            "Editing Comment",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                          ),
                           const Spacer(),
                           GestureDetector(
                             onTap: _cancelEdit,
-                            child: const Icon(Icons.close, size: 16, color: Colors.white54),
-                          )
+                            child: const Icon(
+                              Icons.close,
+                              size: 16,
+                              color: Colors.white54,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -308,14 +419,28 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                       padding: const EdgeInsets.only(bottom: 8.0, left: 4),
                       child: Row(
                         children: [
-                          const Icon(Icons.reply, size: 16, color: Colors.blueAccent),
+                          const Icon(
+                            Icons.reply,
+                            size: 16,
+                            color: Colors.blueAccent,
+                          ),
                           const SizedBox(width: 8),
-                          Text("Replying to @$_replyingToAuthorName", style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                          Text(
+                            "Replying to @$_replyingToAuthorName",
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                          ),
                           const Spacer(),
                           GestureDetector(
                             onTap: _cancelReply,
-                            child: const Icon(Icons.close, size: 16, color: Colors.white54),
-                          )
+                            child: const Icon(
+                              Icons.close,
+                              size: 16,
+                              color: Colors.white54,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -329,10 +454,18 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                           decoration: const InputDecoration(
                             hintText: "Add a comment...",
                             hintStyle: TextStyle(color: Colors.white54),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(30)), borderSide: BorderSide.none),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(30),
+                              ),
+                              borderSide: BorderSide.none,
+                            ),
                             filled: true,
                             fillColor: Colors.black26,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
                           ),
                           textInputAction: TextInputAction.send,
                           onSubmitted: (_) => _submitComment(),
@@ -344,17 +477,28 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                         child: CircleAvatar(
                           radius: 20,
                           backgroundColor: Colors.blueAccent,
-                          child: _isSubmitting 
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                              : const Icon(Icons.send, color: Colors.white, size: 20),
+                          child: _isSubmitting
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.send,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -364,54 +508,81 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
     return GestureDetector(
       onLongPress: () => _showCommentOptions(comment),
       child: Container(
-        color: Colors.transparent, // Ensures the entire row area captures gestures
+        color:
+            Colors.transparent, // Ensures the entire row area captures gestures
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-        CircleAvatar(
-          radius: isChild ? 12 : 16,
-          backgroundColor: Colors.white12,
-          backgroundImage: comment.authorAvatarUrl != null && comment.authorAvatarUrl!.isNotEmpty 
-              ? NetworkImage(comment.authorAvatarUrl!) 
-              : null,
-          child: comment.authorAvatarUrl == null || comment.authorAvatarUrl!.isEmpty 
-              ? Icon(Icons.person, size: isChild ? 12 : 16, color: Colors.white54) 
-              : null,
-        ),
-        SizedBox(width: isChild ? 8 : 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+            CircleAvatar(
+              radius: isChild ? 12 : 16,
+              backgroundColor: Colors.white12,
+              backgroundImage:
+                  comment.authorAvatarUrl != null &&
+                      comment.authorAvatarUrl!.isNotEmpty
+                  ? NetworkImage(comment.authorAvatarUrl!)
+                  : null,
+              child:
+                  comment.authorAvatarUrl == null ||
+                      comment.authorAvatarUrl!.isEmpty
+                  ? Icon(
+                      Icons.person,
+                      size: isChild ? 12 : 16,
+                      color: Colors.white54,
+                    )
+                  : null,
+            ),
+            SizedBox(width: isChild ? 8 : 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    comment.authorName,
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: isChild ? 12 : 13),
+                  Row(
+                    children: [
+                      Text(
+                        comment.authorName,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: isChild ? 12 : 13,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _formatDate(comment.createdAt),
+                        style: TextStyle(
+                          color: Colors.white38,
+                          fontSize: isChild ? 11 : 12,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(height: 4),
                   Text(
-                    _formatDate(comment.createdAt),
-                    style: TextStyle(color: Colors.white38, fontSize: isChild ? 11 : 12),
+                    comment.text,
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: isChild ? 13 : 14,
+                    ),
                   ),
+                  if (!isChild) ...[
+                    const SizedBox(height: 6),
+                    GestureDetector(
+                      onTap: () =>
+                          _initiateReply(comment.id, comment.authorName),
+                      child: const Text(
+                        "Reply",
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                comment.text,
-                style: TextStyle(color: Colors.white70, fontSize: isChild ? 13 : 14),
-              ),
-              if (!isChild) ...[
-                const SizedBox(height: 6),
-                GestureDetector(
-                  onTap: () => _initiateReply(comment.id, comment.authorName),
-                  child: const Text("Reply", style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
-                ),
-              ]
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
         ),
       ),
     );

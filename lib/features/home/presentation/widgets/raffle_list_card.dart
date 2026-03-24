@@ -12,7 +12,8 @@ class RaffleListCard extends StatefulWidget {
   State<RaffleListCard> createState() => _RaffleListCardState();
 }
 
-class _RaffleListCardState extends State<RaffleListCard> with SingleTickerProviderStateMixin {
+class _RaffleListCardState extends State<RaffleListCard>
+    with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
 
   void _toggle() {
@@ -45,14 +46,20 @@ class _RaffleListCardState extends State<RaffleListCard> with SingleTickerProvid
                   Image.network(
                     raffle.imageUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_,__,___) => Container(color: Colors.grey[300], child: const Icon(Icons.broken_image)),
+                    errorBuilder: (_, __, ___) => Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image),
+                    ),
                   ),
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.8),
+                        ],
                       ),
                     ),
                   ),
@@ -69,17 +76,26 @@ class _RaffleListCardState extends State<RaffleListCard> with SingleTickerProvid
                             color: Colors.white,
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                            shadows: [
+                              Shadow(blurRadius: 4, color: Colors.black),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.confirmation_number, color: Colors.amber, size: 16),
+                            const Icon(
+                              Icons.confirmation_number,
+                              color: Colors.amber,
+                              size: 16,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               "${raffle.soldTickets} / ${raffle.maxTickets} tickets claimed",
-                              style: const TextStyle(color: Colors.white70, fontSize: 13),
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
                             ),
                           ],
                         ),
@@ -90,15 +106,24 @@ class _RaffleListCardState extends State<RaffleListCard> with SingleTickerProvid
                     top: 12,
                     right: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.green,
                         borderRadius: BorderRadius.circular(20),
-                        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black26, blurRadius: 4),
+                        ],
                       ),
                       child: const Text(
                         "FREE ENTRY",
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ),
@@ -111,15 +136,20 @@ class _RaffleListCardState extends State<RaffleListCard> with SingleTickerProvid
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
-                   Expanded(
-                     child: Text(
-                       raffle.description,
-                       style: TextStyle(color: Colors.grey[800], fontSize: 14),
-                       maxLines: _isExpanded ? 10 : 1,
-                       overflow: TextOverflow.ellipsis,
-                     ),
-                   ),
-                   Icon(_isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: Colors.grey),
+                  Expanded(
+                    child: Text(
+                      raffle.description,
+                      style: TextStyle(color: Colors.grey[800], fontSize: 14),
+                      maxLines: _isExpanded ? 10 : 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Icon(
+                    _isExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: Colors.grey,
+                  ),
                 ],
               ),
             ),
@@ -135,25 +165,44 @@ class _RaffleListCardState extends State<RaffleListCard> with SingleTickerProvid
                     const Divider(),
                     Consumer(
                       builder: (context, ref, _) {
-                        return _buildDetailRow(Icons.calendar_today, "Draw Date", TimeUtils.formatDateTime(raffle.endsAt, ref));
-                      }
+                        return _buildDetailRow(
+                          Icons.calendar_today,
+                          "Draw Date",
+                          TimeUtils.formatDateTime(raffle.endsAt, ref),
+                        );
+                      },
                     ),
                     const SizedBox(height: 12),
-                    _buildDetailRow(Icons.info_outline, "Details", "Physical presence required for Roll Call."),
+                    _buildDetailRow(
+                      Icons.info_outline,
+                      "Details",
+                      "Physical presence required for Roll Call.",
+                    ),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                           backgroundColor: Colors.blueAccent,
-                           padding: const EdgeInsets.symmetric(vertical: 14),
-                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          backgroundColor: Colors.blueAccent,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                         onPressed: () {
-                           // Action is limited in MVP (View Only)
-                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Visit the Hall to enter this raffle!")));
+                          // Action is limited in MVP (View Only)
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Visit the Hall to enter this raffle!",
+                              ),
+                            ),
+                          );
                         },
-                        child: const Text("HOW TO ENTER", style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          "HOW TO ENTER",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ],
@@ -174,8 +223,18 @@ class _RaffleListCardState extends State<RaffleListCard> with SingleTickerProvid
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
-            Text(value, style: const TextStyle(fontSize: 14, color: Colors.black87)),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
+            ),
           ],
         ),
       ],

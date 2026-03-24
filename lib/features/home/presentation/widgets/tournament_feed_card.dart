@@ -12,23 +12,32 @@ class TournamentFeedCard extends StatelessWidget {
   final TournamentModel tournament;
   final bool fullWidth;
 
-  const TournamentFeedCard({super.key, required this.tournament, this.fullWidth = false});
+  const TournamentFeedCard({
+    super.key,
+    required this.tournament,
+    this.fullWidth = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final dateFormat = DateFormat('MMM d');
-    final dateStr = tournament.startTime != null 
+    final dateStr = tournament.startTime != null
         ? '${dateFormat.format(tournament.startTime!)}${tournament.endTime != null ? ' - ${dateFormat.format(tournament.endTime!)}' : ''}'
         : 'TBA';
 
     return Container(
       width: fullWidth ? double.infinity : 240,
-      margin: fullWidth ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8) : const EdgeInsets.only(right: 16),
+      margin: fullWidth
+          ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
+          : const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.orangeAccent.withOpacity(0.3), width: 1),
+        border: Border.all(
+          color: Colors.orangeAccent.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -37,14 +46,16 @@ class TournamentFeedCard extends StatelessWidget {
           if (fullWidth)
             DynamicHallHeader(
               hallId: tournament.hallId,
-              fallbackName: "Tournament Event", 
+              fallbackName: "Tournament Event",
               subtitle: "Tournament",
-              createdAt: tournament.recurrenceRule == null ? tournament.startTime : null,
+              createdAt: tournament.recurrenceRule == null
+                  ? tournament.startTime
+                  : null,
             ),
-          
+
           // Post Content
           GestureDetector(
-            onDoubleTap: () => HapticFeedback.lightImpact(),
+            onDoubleTap: () => HapticFeedback.vibrate(),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
@@ -53,18 +64,29 @@ class TournamentFeedCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.emoji_events, color: Colors.orangeAccent, size: 16),
+                      const Icon(
+                        Icons.emoji_events,
+                        color: Colors.orangeAccent,
+                        size: 16,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         'TOURNAMENT',
-                        style: theme.textTheme.labelSmall?.copyWith(color: Colors.orangeAccent, fontWeight: FontWeight.w900, letterSpacing: 1),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: Colors.orangeAccent,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
                     tournament.title,
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   if (tournament.description.isNotEmpty) ...[
@@ -73,11 +95,17 @@ class TournamentFeedCard extends StatelessWidget {
                   ],
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 14, color: Colors.white54),
+                      const Icon(
+                        Icons.calendar_today,
+                        size: 14,
+                        color: Colors.white54,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         dateStr,
-                        style: theme.textTheme.labelMedium?.copyWith(color: Colors.white70),
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: Colors.white70,
+                        ),
                       ),
                     ],
                   ),
@@ -89,7 +117,7 @@ class TournamentFeedCard extends StatelessWidget {
           // Edge-to-Edge Image if it exists
           if (tournament.imageUrl != null && tournament.imageUrl!.isNotEmpty)
             GestureDetector(
-              onDoubleTap: () => HapticFeedback.lightImpact(),
+              onDoubleTap: () => HapticFeedback.vibrate(),
               child: CachedNetworkImage(
                 imageUrl: tournament.imageUrl!,
                 width: double.infinity,
@@ -98,24 +126,27 @@ class TournamentFeedCard extends StatelessWidget {
                 placeholder: (context, url) => Container(
                   height: 200,
                   color: theme.colorScheme.surfaceContainerHighest,
-                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
                 errorWidget: (context, url, error) => Container(
                   height: 200,
                   color: theme.colorScheme.surfaceContainerHighest,
-                  child: const Icon(Icons.broken_image, color: Colors.white54, size: 40),
+                  child: const Icon(
+                    Icons.broken_image,
+                    color: Colors.white54,
+                    size: 40,
+                  ),
                 ),
               ),
             ),
 
           if (fullWidth) ...[
-            SocialInteractionBar(
-              feedItem: FeedItem.tournament(tournament),
-            ),
-          ]
+            SocialInteractionBar(feedItem: FeedItem.tournament(tournament)),
+          ],
         ],
       ),
     );
   }
 }
-

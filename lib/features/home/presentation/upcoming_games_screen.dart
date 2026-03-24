@@ -17,34 +17,41 @@ class UpcomingGamesScreen extends ConsumerStatefulWidget {
   const UpcomingGamesScreen({super.key, this.initialCategory});
 
   @override
-  ConsumerState<UpcomingGamesScreen> createState() => _UpcomingGamesScreenState();
+  ConsumerState<UpcomingGamesScreen> createState() =>
+      _UpcomingGamesScreenState();
 }
 
 class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
   String _searchQuery = '';
-  String? _selectedCategory; 
+  String? _selectedCategory;
 
   @override
   void initState() {
     super.initState();
     _selectedCategory = widget.initialCategory;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     // Determine streams based on category
     final isTournamentMode = _selectedCategory == 'Tournaments';
-    
+
     // Unified Data Logic using AsyncValue
     // This prevents stream re-creation on every build
     final AsyncValue<List<dynamic>> feedAsync;
-    
+
     if (isTournamentMode) {
-      feedAsync = ref.watch(tournamentsFeedProvider).whenData((list) => List<dynamic>.from(list));
+      feedAsync = ref
+          .watch(tournamentsFeedProvider)
+          .whenData((list) => List<dynamic>.from(list));
     } else if (_selectedCategory == 'Raffles') {
-      feedAsync = ref.watch(rafflesFeedProvider).whenData((list) => List<dynamic>.from(list));
+      feedAsync = ref
+          .watch(rafflesFeedProvider)
+          .whenData((list) => List<dynamic>.from(list));
     } else {
-      feedAsync = ref.watch(specialsFeedProvider).whenData((list) => List<dynamic>.from(list));
+      feedAsync = ref
+          .watch(specialsFeedProvider)
+          .whenData((list) => List<dynamic>.from(list));
     }
 
     final user = ref.watch(userProfileProvider).value;
@@ -64,32 +71,46 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
         appBar: AppBar(
           title: Text(_selectedCategory ?? 'Upcoming Games'),
           leading: (_selectedCategory != null && widget.initialCategory == null)
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back), 
-                onPressed: () => setState(() {
-                  _selectedCategory = null;
-                  _searchQuery = ''; 
-                })
-              ) 
-            : null,
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => setState(() {
+                    _selectedCategory = null;
+                    _searchQuery = '';
+                  }),
+                )
+              : null,
           actions: [
-             if (_selectedCategory != null && user != null && !allCategories.contains(_selectedCategory))
-               IconButton(
-                 icon: const Icon(Icons.add_circle_outline),
-                 tooltip: "Save Category",
-                 onPressed: () async {
-                   try {
-                     await ref.read(authServiceProvider).saveCustomCategory(user.uid, _selectedCategory!);
-                     if (context.mounted) {
-                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Saved $_selectedCategory to your categories!')));
-                     }
-                   } catch (e) {
-                     if (context.mounted) {
-                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save category.')));
-                     }
-                   }
-                 },
-               )
+            if (_selectedCategory != null &&
+                user != null &&
+                !allCategories.contains(_selectedCategory))
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline),
+                tooltip: "Save Category",
+                onPressed: () async {
+                  try {
+                    await ref
+                        .read(authServiceProvider)
+                        .saveCustomCategory(user.uid, _selectedCategory!);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Saved $_selectedCategory to your categories!',
+                          ),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to save category.'),
+                        ),
+                      );
+                    }
+                  }
+                },
+              ),
           ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(60),
@@ -97,170 +118,221 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
               padding: const EdgeInsets.all(8.0),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: _selectedCategory != null 
-                     ? 'Search inside $_selectedCategory...' 
-                     : 'Search all games...',
+                  hintText: _selectedCategory != null
+                      ? 'Search inside $_selectedCategory...'
+                      : 'Search all games...',
                   prefixIcon: const Icon(Icons.search),
-                  suffixIcon: (_searchQuery.isNotEmpty) 
-                     ? IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() => _searchQuery = '')) 
-                     : null,
+                  suffixIcon: (_searchQuery.isNotEmpty)
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () => setState(() => _searchQuery = ''),
+                        )
+                      : null,
                   fillColor: Colors.white,
                   filled: true,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
-                onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
+                onChanged: (val) =>
+                    setState(() => _searchQuery = val.toLowerCase()),
               ),
             ),
           ),
         ),
         body: feedAsync.when(
           data: (allItems) {
-             // --- MODE 1: GRID VIEW (Categories) ---
-             if (_selectedCategory == null && _searchQuery.isEmpty) {
-               return GridView.builder(
-                 padding: const EdgeInsets.all(16),
-                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                   crossAxisCount: 2,
-                   childAspectRatio: 1.6,
-                   crossAxisSpacing: 16,
-                   mainAxisSpacing: 16,
-                 ),
-                 itemCount: allCategories.length,
-                 itemBuilder: (context, index) {
-                   final category = allCategories[index];
-                   final color = DefaultTags.getColorForTag(category);
-                   return InkWell(
-                     onTap: () {
-                       setState(() => _selectedCategory = category);
-                     },
-                     borderRadius: BorderRadius.circular(12),
-                     child: Container(
-                       decoration: BoxDecoration(
-                         gradient: LinearGradient(
-                           colors: [color, color.withOpacity(0.7)],
-                           begin: Alignment.topLeft, end: Alignment.bottomRight,
-                         ),
-                         borderRadius: BorderRadius.circular(12),
-                         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4, offset: const Offset(2, 2))],
-                       ),
-                       padding: const EdgeInsets.all(16),
-                       child: Stack(
-                         children: [
-                           Text(
-                             category,
-                             style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                           ),
-                         ],
-                       ),
-                     ),
-                   );
-                 },
-               );
-             }
-  
-             // --- MODE 2: FILTERED LIST ---
-             final List<String> discoveredTags = [];
-             final results = allItems.where((item) {
-               String title = '';
-               String hallName = '';
-               List<String> tags = [];
+            // --- MODE 1: GRID VIEW (Categories) ---
+            if (_selectedCategory == null && _searchQuery.isEmpty) {
+              return GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 1.6,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: allCategories.length,
+                itemBuilder: (context, index) {
+                  final category = allCategories[index];
+                  final color = DefaultTags.getColorForTag(category);
+                  return InkWell(
+                    onTap: () {
+                      setState(() => _selectedCategory = category);
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [color, color.withOpacity(0.7)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 4,
+                            offset: const Offset(2, 2),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: Stack(
+                        children: [
+                          Text(
+                            category,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            }
 
-               if (item is SpecialModel) {
-                 title = item.title;
-                 hallName = item.hallName;
-                 tags = item.tags;
-               } else if (item is TournamentModel) {
-                 title = item.title;
-                 // As noted, TournamentModel lacks hallName currently, so search might be limited
-                 tags = ['Tournaments']; 
-               } else if (item is RaffleModel) {
-                 title = item.name;
-                 tags = ['Raffles'];
-               }
+            // --- MODE 2: FILTERED LIST ---
+            final List<String> discoveredTags = [];
+            final results = allItems.where((item) {
+              String title = '';
+              String hallName = '';
+              List<String> tags = [];
 
-               final matchesSearch = title.toLowerCase().contains(_searchQuery) || hallName.toLowerCase().contains(_searchQuery);
-               final matchesCategory = _selectedCategory == null || tags.contains(_selectedCategory!) || (_selectedCategory == 'Tournaments' && item is TournamentModel) || (_selectedCategory == 'Raffles' && item is RaffleModel);
-               
-               // Tag Discovery
-               if (_searchQuery.isNotEmpty && _selectedCategory == null) {
-                  for (final t in tags) {
-                     if (t.toLowerCase().contains(_searchQuery) && !allCategories.contains(t) && !discoveredTags.contains(t)) {
-                         discoveredTags.add(t);
-                     }
+              if (item is SpecialModel) {
+                title = item.title;
+                hallName = item.hallName;
+                tags = item.tags;
+              } else if (item is TournamentModel) {
+                title = item.title;
+                // As noted, TournamentModel lacks hallName currently, so search might be limited
+                tags = ['Tournaments'];
+              } else if (item is RaffleModel) {
+                title = item.name;
+                tags = ['Raffles'];
+              }
+
+              final matchesSearch =
+                  title.toLowerCase().contains(_searchQuery) ||
+                  hallName.toLowerCase().contains(_searchQuery);
+              final matchesCategory =
+                  _selectedCategory == null ||
+                  tags.contains(_selectedCategory!) ||
+                  (_selectedCategory == 'Tournaments' &&
+                      item is TournamentModel) ||
+                  (_selectedCategory == 'Raffles' && item is RaffleModel);
+
+              // Tag Discovery
+              if (_searchQuery.isNotEmpty && _selectedCategory == null) {
+                for (final t in tags) {
+                  if (t.toLowerCase().contains(_searchQuery) &&
+                      !allCategories.contains(t) &&
+                      !discoveredTags.contains(t)) {
+                    discoveredTags.add(t);
                   }
-               }
-               
-               return matchesSearch && matchesCategory;
-             }).toList();
-  
-             return CustomScrollView(
-               slivers: [
-                 // 0. Discovered Tags from Search
-                 if (discoveredTags.isNotEmpty)
-                   SliverToBoxAdapter(
-                     child: Padding(
-                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                       child: Column(
-                         crossAxisAlignment: CrossAxisAlignment.start,
-                         children: [
-                           const Text("Discovered Categories", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent)),
-                           const SizedBox(height: 8),
-                           Wrap(
-                             spacing: 8,
-                             children: discoveredTags.map((tag) => ActionChip(
-                               label: Text(tag, style: const TextStyle(color: Colors.white)),
-                               backgroundColor: DefaultTags.getColorForTag(tag).withOpacity(0.2),
-                               side: BorderSide(color: DefaultTags.getColorForTag(tag)),
-                               onPressed: () {
-                                 setState(() {
-                                   _selectedCategory = tag;
-                                   _searchQuery = ''; // Clear search when selecting category
-                                 });
-                               },
-                             )).toList(),
-                           )
-                         ],
-                       ),
-                     ),
-                   ),
+                }
+              }
 
-                 // 1. My Active Items Section (Only if Category Selected & User Logged In)
-                 if (_selectedCategory != null)
-                   _buildMyItemsSection(context, ref, _selectedCategory!),
+              return matchesSearch && matchesCategory;
+            }).toList();
 
-                 // 2. Main List
-                 if (results.isEmpty)
-                   SliverFillRemaining(
-                     child: Center(
-                       child: Column(
-                         mainAxisAlignment: MainAxisAlignment.center,
-                         children: [
-                           const Icon(Icons.event_busy, size: 64, color: Colors.grey),
-                           const SizedBox(height: 16),
-                           Text("No ${_selectedCategory ?? ''} games found."),
-                         ],
-                       ),
-                     ),
-                   )
-                 else
-                   SliverList(
-                     delegate: SliverChildBuilderDelegate(
-                       (context, index) {
-                         final item = results[index];
-                         if (item is TournamentModel) {
-                           return TournamentListCard(tournament: item, showHallName: true);
-                         } else if (item is RaffleModel) {
-                           return RaffleListCard(raffle: item);
-                         } else if (item is SpecialModel) {
-                           return SpecialCard(special: item);
-                         }
-                         return const SizedBox.shrink();
-                       },
-                       childCount: results.length,
-                     ),
-                   ),
-               ],
-             );
+            return CustomScrollView(
+              slivers: [
+                // 0. Discovered Tags from Search
+                if (discoveredTags.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Discovered Categories",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blueAccent,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            children: discoveredTags
+                                .map(
+                                  (tag) => ActionChip(
+                                    label: Text(
+                                      tag,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    backgroundColor: DefaultTags.getColorForTag(
+                                      tag,
+                                    ).withOpacity(0.2),
+                                    side: BorderSide(
+                                      color: DefaultTags.getColorForTag(tag),
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _selectedCategory = tag;
+                                        _searchQuery =
+                                            ''; // Clear search when selecting category
+                                      });
+                                    },
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                // 1. My Active Items Section (Only if Category Selected & User Logged In)
+                if (_selectedCategory != null)
+                  _buildMyItemsSection(context, ref, _selectedCategory!),
+
+                // 2. Main List
+                if (results.isEmpty)
+                  SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.event_busy,
+                            size: 64,
+                            color: Colors.grey,
+                          ),
+                          const SizedBox(height: 16),
+                          Text("No ${_selectedCategory ?? ''} games found."),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final item = results[index];
+                      if (item is TournamentModel) {
+                        return TournamentListCard(
+                          tournament: item,
+                          showHallName: true,
+                        );
+                      } else if (item is RaffleModel) {
+                        return RaffleListCard(raffle: item);
+                      } else if (item is SpecialModel) {
+                        return SpecialCard(special: item);
+                      }
+                      return const SizedBox.shrink();
+                    }, childCount: results.length),
+                  ),
+              ],
+            );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, s) => Center(child: Text("Error: $e")),
@@ -269,7 +341,11 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
     );
   }
 
-  Widget _buildMyItemsSection(BuildContext context, WidgetRef ref, String category) {
+  Widget _buildMyItemsSection(
+    BuildContext context,
+    WidgetRef ref,
+    String category,
+  ) {
     final user = ref.watch(userProfileProvider).value;
     if (user == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
 
@@ -277,84 +353,151 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
       final myRafflesAsync = ref.watch(myRafflesStreamProvider(user.uid));
       return myRafflesAsync.when(
         data: (raffles) {
-          if (raffles.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+          if (raffles.isEmpty)
+            return const SliverToBoxAdapter(child: SizedBox.shrink());
           return SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Padding(
                   padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text("MY ACTIVE TICKETS", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                  child: Text(
+                    "MY ACTIVE TICKETS",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
                 ),
-                // Horizontal Scroll for Tickets? Or just stack them? 
+                // Horizontal Scroll for Tickets? Or just stack them?
                 // Requests said "Top of the page separated".
                 // Let's do a highlighted container.
                 Container(
                   color: Colors.green.withOpacity(0.05),
                   child: Column(
-                    children: raffles.take(3).map((ticket) => ListTile(
-                      leading: const Icon(Icons.confirmation_number, color: Colors.green),
-                      title: Text(ticket.title),
-                      subtitle: Text(ticket.hallName),
-                      trailing: Text("x${ticket.quantity}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                    )).toList(),
+                    children: raffles
+                        .take(3)
+                        .map(
+                          (ticket) => ListTile(
+                            leading: const Icon(
+                              Icons.confirmation_number,
+                              color: Colors.green,
+                            ),
+                            title: Text(ticket.title),
+                            subtitle: Text(ticket.hallName),
+                            trailing: Text(
+                              "x${ticket.quantity}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
                 if (raffles.length > 3)
-                   Padding(
-                     padding: const EdgeInsets.all(8.0),
-                     child: Center(child: Text("+ ${raffles.length - 3} more in Wallet", style: const TextStyle(fontSize: 12, color: Colors.grey))),
-                   ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Text(
+                        "+ ${raffles.length - 3} more in Wallet",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
                 const Divider(),
               ],
             ),
           );
         },
         loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-        error: (_,__) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+        error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
       );
-    } 
-    
+    }
+
     if (category == 'Tournaments') {
-      final myTournamentsAsync = ref.watch(myTournamentsStreamProvider(user.uid));
+      final myTournamentsAsync = ref.watch(
+        myTournamentsStreamProvider(user.uid),
+      );
       return myTournamentsAsync.when(
         data: (tournaments) {
-          if (tournaments.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+          if (tournaments.isEmpty)
+            return const SliverToBoxAdapter(child: SizedBox.shrink());
           return SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Padding(
                   padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text("MY TOURNAMENTS", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo)),
+                  child: Text(
+                    "MY TOURNAMENTS",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.indigo,
+                    ),
+                  ),
                 ),
                 Container(
                   color: Colors.indigo.withOpacity(0.05),
                   child: Column(
-                    children: tournaments.take(3).map((t) => ListTile(
-                      leading: const Icon(Icons.emoji_events, color: Colors.indigo),
-                      title: Text(t.title),
-                      subtitle: Text(t.hallName), // Need to ensure hallName is populated or fetched
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(color: Colors.indigo, borderRadius: BorderRadius.circular(4)),
-                        child: Text(t.currentPlacement, style: const TextStyle(color: Colors.white, fontSize: 10)),
-                      ),
-                    )).toList(),
+                    children: tournaments
+                        .take(3)
+                        .map(
+                          (t) => ListTile(
+                            leading: const Icon(
+                              Icons.emoji_events,
+                              color: Colors.indigo,
+                            ),
+                            title: Text(t.title),
+                            subtitle: Text(
+                              t.hallName,
+                            ), // Need to ensure hallName is populated or fetched
+                            trailing: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.indigo,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                t.currentPlacement,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
-                 if (tournaments.length > 3)
-                   Padding(
-                     padding: const EdgeInsets.all(8.0),
-                     child: Center(child: Text("+ ${tournaments.length - 3} more in Wallet", style: const TextStyle(fontSize: 12, color: Colors.grey))),
-                   ),
+                if (tournaments.length > 3)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Text(
+                        "+ ${tournaments.length - 3} more in Wallet",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
                 const Divider(),
               ],
             ),
           );
         },
         loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-        error: (_,__) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+        error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
       );
     }
 

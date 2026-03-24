@@ -13,7 +13,11 @@ class HallStoreScreen extends ConsumerStatefulWidget {
   final String hallId;
   final String hallName;
 
-  const HallStoreScreen({super.key, required this.hallId, required this.hallName});
+  const HallStoreScreen({
+    super.key,
+    required this.hallId,
+    required this.hallName,
+  });
 
   @override
   ConsumerState<HallStoreScreen> createState() => _HallStoreScreenState();
@@ -23,13 +27,24 @@ class _HallStoreScreenState extends ConsumerState<HallStoreScreen> {
   @override
   Widget build(BuildContext context) {
     // Fetch all active items
-    final activeItemsStream = ref.watch(storeRepositoryProvider).getActiveStoreItems(widget.hallId);
+    final activeItemsStream = ref
+        .watch(storeRepositoryProvider)
+        .getActiveStoreItems(widget.hallId);
 
     final user = ref.watch(userProfileProvider).value;
     final userId = user?.uid;
 
     final hallAsync = ref.watch(hallStreamProvider(widget.hallId));
-    final baseCategories = hallAsync.value?.storeCategories ?? ['Merchandise', 'Food & Beverage', 'Sessions', 'Pull Tabs', 'Electronics', 'Other'];
+    final baseCategories =
+        hallAsync.value?.storeCategories ??
+        [
+          'Merchandise',
+          'Food & Beverage',
+          'Sessions',
+          'Pull Tabs',
+          'Electronics',
+          'Other',
+        ];
     final displayCategories = ['All', ...baseCategories];
 
     return DefaultTabController(
@@ -37,72 +52,86 @@ class _HallStoreScreenState extends ConsumerState<HallStoreScreen> {
       length: displayCategories.length,
       child: Scaffold(
         backgroundColor: const Color(0xFF141414),
-      appBar: AppBar(
-        title: Text("${widget.hallName} Store"),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          if (userId != null)
-            _BalanceDisplay(userId: userId, hallId: widget.hallId),
-        ],
-        bottom: TabBar(
-          isScrollable: true,
-          labelColor: Colors.blueAccent,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Colors.blueAccent,
-          tabAlignment: TabAlignment.start,
-          tabs: displayCategories.map((c) => Tab(text: c)).toList(),
+        appBar: AppBar(
+          title: Text("${widget.hallName} Store"),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            if (userId != null)
+              _BalanceDisplay(userId: userId, hallId: widget.hallId),
+          ],
+          bottom: TabBar(
+            isScrollable: true,
+            labelColor: Colors.blueAccent,
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: Colors.blueAccent,
+            tabAlignment: TabAlignment.start,
+            tabs: displayCategories.map((c) => Tab(text: c)).toList(),
+          ),
         ),
-      ),
-      body: StreamBuilder<List<StoreItemModel>>(
-        stream: activeItemsStream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-             return Center(child: Text("Error: ${snapshot.error}", style: const TextStyle(color: Colors.white)));
-          }
-
-          final allItems = snapshot.data ?? [];
-
-          return TabBarView(
-            children: displayCategories.map((category) {
-              // Filter items
-              final filtered = category == 'All' 
-                  ? allItems 
-                  : allItems.where((item) => item.category == category).toList();
-              
-              if (filtered.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.category_outlined, size: 64, color: Colors.white12),
-                      const SizedBox(height: 16),
-                      Text("No items in $category", style: const TextStyle(color: Colors.white54)),
-                    ],
-                  ),
-                );
-              }
-
-              return GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.75,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+        body: StreamBuilder<List<StoreItemModel>>(
+          stream: activeItemsStream,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  "Error: ${snapshot.error}",
+                  style: const TextStyle(color: Colors.white),
                 ),
-                itemCount: filtered.length,
-                itemBuilder: (context, index) {
-                  return _StoreItemCard(item: filtered[index]);
-                },
               );
-            }).toList(),
-          );
-        },
-      ),
+            }
+
+            final allItems = snapshot.data ?? [];
+
+            return TabBarView(
+              children: displayCategories.map((category) {
+                // Filter items
+                final filtered = category == 'All'
+                    ? allItems
+                    : allItems
+                          .where((item) => item.category == category)
+                          .toList();
+
+                if (filtered.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.category_outlined,
+                          size: 64,
+                          color: Colors.white12,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "No items in $category",
+                          style: const TextStyle(color: Colors.white54),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.75,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    return _StoreItemCard(item: filtered[index]);
+                  },
+                );
+              }).toList(),
+            );
+          },
+        ),
       ),
     );
   }
@@ -135,7 +164,9 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard> {
   Future<void> _redeem() async {
     final user = ref.read(userProfileProvider).value;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error: User not found.")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Error: User not found.")));
       return;
     }
 
@@ -143,29 +174,37 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard> {
 
     try {
       final totalCost = widget.item.cost * _quantity;
-      await ref.read(transactionServiceProvider).redeemItem(
-        userId: user.uid,
-        hallId: widget.item.hallId,
-        itemId: widget.item.id,
-        itemName: widget.item.title,
-        quantity: _quantity,
-        totalCost: totalCost,
-      );
+      await ref
+          .read(transactionServiceProvider)
+          .redeemItem(
+            userId: user.uid,
+            hallId: widget.item.hallId,
+            itemId: widget.item.id,
+            itemName: widget.item.title,
+            quantity: _quantity,
+            totalCost: totalCost,
+          );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Successfully redeemed ${_quantity}x ${widget.item.title}!"),
-          backgroundColor: Colors.green,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Successfully redeemed ${_quantity}x ${widget.item.title}!",
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
         // Reset quantity
         setState(() => _quantity = 1);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e.toString().replaceAll("Exception: ", "")),
-          backgroundColor: Colors.redAccent,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll("Exception: ", "")),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -186,7 +225,11 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard> {
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
         ],
         border: Border.all(color: Colors.white10),
       ),
@@ -197,16 +240,20 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard> {
           Expanded(
             flex: 3,
             child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
               child: CachedNetworkImage(
                 imageUrl: widget.item.imageUrl,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Container(color: Colors.grey[900]),
-                errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.grey),
+                placeholder: (context, url) =>
+                    Container(color: Colors.grey[900]),
+                errorWidget: (context, url, error) =>
+                    const Icon(Icons.broken_image, color: Colors.grey),
               ),
             ),
           ),
-          
+
           // Content
           Expanded(
             flex: 3,
@@ -220,17 +267,41 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(widget.item.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(
+                        widget.item.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: Colors.white,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 2),
-                      Text(widget.item.description, style: const TextStyle(color: Colors.white54, fontSize: 10), maxLines: 2, overflow: TextOverflow.ellipsis),
+                      Text(
+                        widget.item.description,
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 10,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       if (limit != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
-                          child: Text("Limit: $limit per person", style: const TextStyle(color: Colors.redAccent, fontSize: 9, fontStyle: FontStyle.italic)),
+                          child: Text(
+                            "Limit: $limit per person",
+                            style: const TextStyle(
+                              color: Colors.redAccent,
+                              fontSize: 9,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
                         ),
                     ],
                   ),
-                  
+
                   // Quantity Picker
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -240,25 +311,48 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard> {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: (isMin || isLimitOne) ? Colors.white12 : Colors.white24,
+                            color: (isMin || isLimitOne)
+                                ? Colors.white12
+                                : Colors.white24,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: Icon(Icons.remove, size: 14, color: (isMin || isLimitOne) ? Colors.white38 : Colors.white),
+                          child: Icon(
+                            Icons.remove,
+                            size: 14,
+                            color: (isMin || isLimitOne)
+                                ? Colors.white38
+                                : Colors.white,
+                          ),
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Text("$_quantity", style: TextStyle(color: isLimitOne ? Colors.white54 : Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                        child: Text(
+                          "$_quantity",
+                          style: TextStyle(
+                            color: isLimitOne ? Colors.white54 : Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
                       InkWell(
                         onTap: (isMax || isLimitOne) ? null : _increment,
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: (isMax || isLimitOne) ? Colors.white12 : Colors.white24,
+                            color: (isMax || isLimitOne)
+                                ? Colors.white12
+                                : Colors.white24,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: Icon(Icons.add, size: 14, color: (isMax || isLimitOne) ? Colors.white38 : Colors.white),
+                          child: Icon(
+                            Icons.add,
+                            size: 14,
+                            color: (isMax || isLimitOne)
+                                ? Colors.white38
+                                : Colors.white,
+                          ),
                         ),
                       ),
                     ],
@@ -268,20 +362,41 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("$totalCost PTS", style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 13)),
-                      _isLoading 
-                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                        : InkWell(
-                            onTap: _redeem,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.blueAccent,
-                                borderRadius: BorderRadius.circular(20),
+                      Text(
+                        "$totalCost PTS",
+                        style: const TextStyle(
+                          color: Colors.amberAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : InkWell(
+                              onTap: _redeem,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.blueAccent,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  "GET",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
-                              child: const Text("GET", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                             ),
-                          ),
                     ],
                   ),
                 ],
@@ -306,9 +421,11 @@ class _BalanceDisplay extends ConsumerWidget {
 
     return membershipsAsync.when(
       data: (memberships) {
-        final membership = memberships.where((m) => m.hallId == hallId).firstOrNull;
+        final membership = memberships
+            .where((m) => m.hallId == hallId)
+            .firstOrNull;
         if (membership == null) return const SizedBox();
-        
+
         return Padding(
           padding: const EdgeInsets.only(right: 16.0),
           child: Center(
@@ -327,7 +444,7 @@ class _BalanceDisplay extends ConsumerWidget {
                   Text(
                     NumberFormat.decimalPattern().format(membership.balance),
                     style: const TextStyle(
-                      color: Colors.amber, 
+                      color: Colors.amber,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -340,7 +457,13 @@ class _BalanceDisplay extends ConsumerWidget {
       },
       loading: () => const Padding(
         padding: EdgeInsets.only(right: 16.0),
-        child: Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))),
+        child: Center(
+          child: SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
       ),
       error: (error, stack) => const SizedBox(),
     );
