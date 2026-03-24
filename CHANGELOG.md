@@ -2,6 +2,17 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+66] - 2026-03-24 - Privacy Hub & Push Notification Deep Links
+
+### Added
+- **Push Notification Deep Linking**: Architected a `GlobalKey<NavigatorState>` routing protocol into `main.dart` enabling Push Notifications to accurately intercept state and route `ChatScreens` seamlessly across foreground, background, and cold-boot application streams.
+- **Privacy Hub Integration**: Finalized the `PrivacySettingsScreen` encompassing `BlockedUsersScreen` and `HiddenPostsScreen`. Engineered a localized caching mechanism via `SharedPreferences` to silently filter toxic UGC and natively injected a strict 24-hour unblock cooldown to mitigate abuse.
+- **Optimistic RSVP Syncing**: Engaged instantaneous mutable `interestedUserIds` operations atop the `FeedPaginationController`, allowing Social Interaction Bar RSVPs to instantly reflect on the Home Feed without incurring heavy backend read costs.
+
+### Fixed
+- **FCM Kernel Blackholes**: Patched legacy Javascript Cloud functions aggressively stripping custom Deep Link `metadata`.
+- **Foreground Payload Rendering**: Repaired V20 parameter syntax errors inside `flutter_local_notifications` and invoked explicit Apple/Android 13+ OS `requestPermission()` routines to natively bypass zero-day notification blackout periods.
+
 ## [0.0.1+65] - 2026-03-23 - Messaging Haptics & Permanence
 
 ### Added
