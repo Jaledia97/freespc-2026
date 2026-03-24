@@ -1142,18 +1142,6 @@ class HallRepository {
         .map((d) => RaffleModel.fromJson(d.data() as Map<String, dynamic>))
         .toList();
 
-    if (userLoc != null) {
-      raffles = raffles.where((r) {
-        if (r.latitude == null || r.longitude == null) return true;
-        return Geolocator.distanceBetween(
-              userLoc.latitude,
-              userLoc.longitude,
-              r.latitude!,
-              r.longitude!,
-            ) <=
-            120700;
-      }).toList();
-    }
     return raffles;
   }
 
