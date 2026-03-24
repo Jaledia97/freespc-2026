@@ -49,6 +49,9 @@ class TournamentFeedCard extends StatelessWidget {
               hallId: tournament.hallId,
               fallbackName: "Tournament Event",
               subtitle: "Tournament",
+              postId: tournament.id,
+              authorId: tournament.authorId ?? tournament.hallId,
+              targetType: 'tournament',
               createdAt: tournament.recurrenceRule == null
                   ? tournament.startTime
                   : null,

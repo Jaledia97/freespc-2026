@@ -27,12 +27,18 @@ class DynamicHallHeader extends ConsumerWidget {
   final String fallbackName;
   final String subtitle;
   final DateTime? createdAt;
+  final String postId;
+  final String authorId;
+  final String targetType;
 
   const DynamicHallHeader({
     super.key,
     required this.hallId,
     required this.fallbackName,
     required this.subtitle,
+    required this.postId,
+    required this.authorId,
+    required this.targetType,
     this.createdAt,
   });
 
@@ -57,12 +63,21 @@ class DynamicHallHeader extends ConsumerWidget {
     return hallAsync.when(
       data: (hall) {
         if (hall == null) {
-          return PostHeader(title: fallbackName, subtitle: fullSubtitle);
+          return PostHeader(
+            title: fallbackName,
+            subtitle: fullSubtitle,
+            postId: postId,
+            authorId: authorId,
+            targetType: targetType,
+          );
         }
         return PostHeader(
           title: hall.name,
           subtitle: fullSubtitle,
           avatarUrl: hall.logoUrl ?? hall.bannerUrl,
+          postId: postId,
+          authorId: authorId,
+          targetType: targetType,
           onTap: () {
             Navigator.push(
               context,
@@ -73,8 +88,20 @@ class DynamicHallHeader extends ConsumerWidget {
           },
         );
       },
-      loading: () => PostHeader(title: fallbackName, subtitle: fullSubtitle),
-      error: (e, st) => PostHeader(title: fallbackName, subtitle: fullSubtitle),
+      loading: () => PostHeader(
+        title: fallbackName,
+        subtitle: fullSubtitle,
+        postId: postId,
+        authorId: authorId,
+        targetType: targetType,
+      ),
+      error: (e, st) => PostHeader(
+        title: fallbackName,
+        subtitle: fullSubtitle,
+        postId: postId,
+        authorId: authorId,
+        targetType: targetType,
+      ),
     );
   }
 }

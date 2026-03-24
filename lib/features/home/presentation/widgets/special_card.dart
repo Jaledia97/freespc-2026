@@ -66,6 +66,9 @@ class _SpecialCardState extends ConsumerState<SpecialCard>
                   ? widget.special.hallName
                   : "FreeSpc",
               subtitle: "Special Offer",
+              postId: widget.special.id,
+              authorId: widget.special.authorId ?? widget.special.hallId,
+              targetType: 'special',
               createdAt:
                   (widget.special.recurrence == 'none' &&
                       widget.special.recurrenceRule == null)

@@ -6,6 +6,7 @@ import '../../../../services/auth_service.dart';
 import '../../../../services/location_service.dart';
 import '../../home/repositories/hall_repository.dart';
 import '../../home/repositories/feed_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FeedPaginationState {
   final List<FeedItem> items;
@@ -165,11 +166,40 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
       // Await all distinct collection pulls
       await Future.wait(futures);
 
+      // --- UGC MODERATION FILTERS ---
+      final prefs = await SharedPreferences.getInstance();
+      final List<String> hiddenPosts = prefs.getStringList('hidden_posts') ?? [];
+      final List<String> blockedUsers = prefs.getStringList('blocked_users') ?? [];
+
+      final List<FeedItem> filteredItems = state.items.where((item) {
+        final String authorId = item.map(
+          tournament: (t) => t.data.authorId ?? '',
+          raffle: (r) => r.data.authorId ?? '',
+          special: (s) => s.data.authorId ?? '',
+          checkIn: (c) => c.data.userId,
+          winPost: (w) => w.data.userId,
+          textPost: (tp) => tp.data.authorId,
+        );
+
+        final String docId = item.map(
+          tournament: (t) => t.data.id,
+          raffle: (r) => r.data.id,
+          special: (s) => s.data.id,
+          checkIn: (c) => c.data.id,
+          winPost: (w) => w.data.id,
+          textPost: (tp) => tp.data.id,
+        );
+
+        if (blockedUsers.contains(authorId)) return false;
+        if (hiddenPosts.contains(docId)) return false;
+        return true;
+      }).toList();
+
       // 2. Sort the aggregate pool using standard algorithms
       final currentUser = ref.read(authStateChangesProvider).value;
-      // We don't have Squad access natively here easily without a provider, but feedRepo handles nulls safely
+      
       final sortedItems = feedRepo.sortFeedByHype(
-        List.from(state.items),
+        filteredItems,
         currentUser,
         [], // squads optimization placeholder
       );
@@ -185,8 +215,58 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
         hasMore: overallHasMore,
       );
     } catch (e) {
-      print("Feed pagination error: \$e");
+      print("Feed pagination error: $e");
       state = state.copyWith(isLoading: false);
     }
+  }
+
+  /// Instantly strips a post from the feed and cascades the ID locally
+  Future<void> hidePost(String postId) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> hidden = prefs.getStringList('hidden_posts') ?? [];
+    if (!hidden.contains(postId)) {
+      hidden.add(postId);
+      await prefs.setStringList('hidden_posts', hidden);
+    }
+
+    // Instantly wipe from active UI array
+    final newItems = state.items.where((item) {
+      final String docId = item.map(
+        tournament: (t) => t.data.id,
+        raffle: (r) => r.data.id,
+        special: (s) => s.data.id,
+        checkIn: (c) => c.data.id,
+        winPost: (w) => w.data.id,
+        textPost: (tp) => tp.data.id,
+      );
+      return docId != postId;
+    }).toList();
+
+    state = state.copyWith(items: newItems);
+  }
+
+  /// Instantly shreds an entire user's history from the feed locally
+  Future<void> blockUser(String authorId) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> blocked = prefs.getStringList('blocked_users') ?? [];
+    if (!blocked.contains(authorId)) {
+      blocked.add(authorId);
+      await prefs.setStringList('blocked_users', blocked);
+    }
+
+    // Instantly wipe from active UI array
+    final newItems = state.items.where((item) {
+      final String aId = item.map(
+        tournament: (t) => t.data.authorId ?? '',
+        raffle: (r) => r.data.authorId ?? '',
+        special: (s) => s.data.authorId ?? '',
+        checkIn: (c) => c.data.userId,
+        winPost: (w) => w.data.userId,
+        textPost: (tp) => tp.data.authorId,
+      );
+      return aId != authorId;
+    }).toList();
+
+    state = state.copyWith(items: newItems);
   }
 }
