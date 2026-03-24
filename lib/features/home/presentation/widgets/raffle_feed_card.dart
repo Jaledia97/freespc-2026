@@ -48,7 +48,7 @@ class RaffleFeedCard extends StatelessWidget {
               fallbackName: "Raffle Event",
               subtitle: "Raffle",
               postId: raffle.id,
-              authorId: raffle.authorId ?? raffle.hallId,
+              authorId: raffle.hallId,
               targetType: 'raffle',
             ),
 

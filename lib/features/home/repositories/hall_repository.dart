@@ -1177,18 +1177,6 @@ class HallRepository {
         .map((d) => TournamentModel.fromJson(d.data() as Map<String, dynamic>))
         .toList();
 
-    if (userLoc != null) {
-      tourneys = tourneys.where((t) {
-        if (t.latitude == null || t.longitude == null) return true;
-        return Geolocator.distanceBetween(
-              userLoc.latitude,
-              userLoc.longitude,
-              t.latitude!,
-              t.longitude!,
-            ) <=
-            120700;
-      }).toList();
-    }
     return tourneys;
   }
 }

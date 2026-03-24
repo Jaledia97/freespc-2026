@@ -44,6 +44,9 @@ _TournamentModel _$TournamentModelFromJson(Map<String, dynamic> json) =>
               .toList() ??
           const [],
       commentCount: (json['commentCount'] as num?)?.toInt() ?? 0,
+      createdAt: json['createdAt'] == null
+          ? null
+          : DateTime.parse(json['createdAt'] as String),
       latestComment: json['latestComment'] as String?,
     );
 
@@ -63,6 +66,7 @@ Map<String, dynamic> _$TournamentModelToJson(_TournamentModel instance) =>
       'reactionUserIds': instance.reactionUserIds,
       'interestedUserIds': instance.interestedUserIds,
       'commentCount': instance.commentCount,
+      'createdAt': instance.createdAt?.toIso8601String(),
       'latestComment': instance.latestComment,
     };
 

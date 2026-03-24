@@ -33,6 +33,9 @@ _RaffleModel _$RaffleModelFromJson(Map<String, dynamic> json) => _RaffleModel(
           .toList() ??
       const [],
   commentCount: (json['commentCount'] as num?)?.toInt() ?? 0,
+  createdAt: json['createdAt'] == null
+      ? null
+      : DateTime.parse(json['createdAt'] as String),
   latestComment: json['latestComment'] as String?,
 );
 
@@ -52,5 +55,6 @@ Map<String, dynamic> _$RaffleModelToJson(_RaffleModel instance) =>
       'reactionUserIds': instance.reactionUserIds,
       'interestedUserIds': instance.interestedUserIds,
       'commentCount': instance.commentCount,
+      'createdAt': instance.createdAt?.toIso8601String(),
       'latestComment': instance.latestComment,
     };
