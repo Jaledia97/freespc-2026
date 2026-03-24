@@ -40,19 +40,21 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
   Future<void> _save() async {
     setState(() => _isLoading = true);
     try {
-      await ref.read(authServiceProvider).updateUserProfile(
-        widget.user.uid,
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        username: _usernameController.text.trim(),
-        bio: _bioController.text.trim(),
-      );
+      await ref
+          .read(authServiceProvider)
+          .updateUserProfile(
+            widget.user.uid,
+            firstName: _firstNameController.text.trim(),
+            lastName: _lastNameController.text.trim(),
+            username: _usernameController.text.trim(),
+            bio: _bioController.text.trim(),
+          );
       if (mounted) Navigator.pop(context); // Close dialog on success
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text('Error updating profile: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error updating profile: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -99,10 +101,7 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
         if (_isLoading)
           const CircularProgressIndicator()
         else
-          ElevatedButton(
-            onPressed: _save,
-            child: const Text('Save'),
-          ),
+          ElevatedButton(onPressed: _save, child: const Text('Save')),
       ],
     );
   }

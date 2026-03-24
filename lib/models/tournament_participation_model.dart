@@ -5,7 +5,8 @@ part 'tournament_participation_model.freezed.dart';
 part 'tournament_participation_model.g.dart';
 
 @freezed
-abstract class TournamentParticipationModel with _$TournamentParticipationModel {
+abstract class TournamentParticipationModel
+    with _$TournamentParticipationModel {
   const factory TournamentParticipationModel({
     required String id,
     required String tournamentId,
@@ -17,5 +18,6 @@ abstract class TournamentParticipationModel with _$TournamentParticipationModel 
     required DateTime lastUpdated,
   }) = _TournamentParticipationModel;
 
-  factory TournamentParticipationModel.fromJson(Map<String, Object?> json) => _$TournamentParticipationModelFromJson(json);
+  factory TournamentParticipationModel.fromJson(Map<String, Object?> json) =>
+      _$TournamentParticipationModelFromJson(json);
 }

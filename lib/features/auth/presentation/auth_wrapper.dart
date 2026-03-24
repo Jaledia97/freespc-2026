@@ -24,22 +24,31 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
 
   Future<void> _ensurePublicProfile(String uid) async {
     try {
-      final pubDoc = await FirebaseFirestore.instance.collection('public_profiles').doc(uid).get();
+      final pubDoc = await FirebaseFirestore.instance
+          .collection('public_profiles')
+          .doc(uid)
+          .get();
       if (!pubDoc.exists) {
         // Self-heal: Create it from the private users collection if possible
-        final privDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        final privDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .get();
         if (privDoc.exists && privDoc.data() != null) {
           final data = privDoc.data()!;
-          await FirebaseFirestore.instance.collection('public_profiles').doc(uid).set({
-            'uid': uid,
-            'username': data['username'] ?? 'user_${uid.substring(0, 5)}',
-            'firstName': data['firstName'] ?? 'Hidden',
-            'lastName': data['lastName'] ?? '',
-            'points': data['currentPoints'] ?? 0,
-            'realNameVisibility': data['realNameVisibility'] ?? 'Everyone',
-            'onlineStatus': data['onlineStatus'] ?? 'Online',
-            'lastSeen': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
+          await FirebaseFirestore.instance
+              .collection('public_profiles')
+              .doc(uid)
+              .set({
+                'uid': uid,
+                'username': data['username'] ?? 'user_${uid.substring(0, 5)}',
+                'firstName': data['firstName'] ?? 'Hidden',
+                'lastName': data['lastName'] ?? '',
+                'points': data['currentPoints'] ?? 0,
+                'realNameVisibility': data['realNameVisibility'] ?? 'Everyone',
+                'onlineStatus': data['onlineStatus'] ?? 'Online',
+                'lastSeen': FieldValue.serverTimestamp(),
+              }, SetOptions(merge: true));
         }
       }
     } catch (e) {
@@ -50,10 +59,14 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateChangesProvider);
-    
-    // PERFORMANCE OPTIMIZATION: 
+
+    // PERFORMANCE OPTIMIZATION:
     // We select only the 'hasValue' state essentially.
-    final hasProfileAsync = ref.watch(userProfileProvider.select((value) => value.whenData((profile) => profile != null)));
+    final hasProfileAsync = ref.watch(
+      userProfileProvider.select(
+        (value) => value.whenData((profile) => profile != null),
+      ),
+    );
 
     return authState.when(
       data: (user) {
@@ -61,8 +74,8 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
           return const LoginScreen();
         }
 
-        // The user is logged in. Before we even check `hasProfileAsync`, 
-        // silently trigger the Self-Healing public_profile routine in the background 
+        // The user is logged in. Before we even check `hasProfileAsync`,
+        // silently trigger the Self-Healing public_profile routine in the background
         // to guarantee this account is discoverable to other users.
         if (!_profileChecked) {
           _profileChecked = true;
@@ -78,24 +91,18 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
             // Once we have a profile, we mount the MainLayout.
             return _AuthHandler(child: const MainLayout());
           },
-          loading: () => const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          ),
-          error: (err, stack) => Scaffold(
-            body: Center(child: Text('Error: $err')),
-          ),
+          loading: () =>
+              const Scaffold(body: Center(child: CircularProgressIndicator())),
+          error: (err, stack) =>
+              Scaffold(body: Center(child: Text('Error: $err'))),
         );
       },
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
-      error: (err, stack) => Scaffold(
-        body: Center(child: Text('Error: $err')),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (err, stack) => Scaffold(body: Center(child: Text('Error: $err'))),
     );
   }
 }
-
 
 class _AuthHandler extends ConsumerStatefulWidget {
   final Widget child;
@@ -122,7 +129,7 @@ class _AuthHandlerState extends ConsumerState<_AuthHandler> {
   }
 
   // Also listen for deep link updates
-  @override 
+  @override
   void didUpdateWidget(covariant _AuthHandler oldWidget) {
     super.didUpdateWidget(oldWidget);
     // If provider changed (signaled by main.dart)
@@ -131,25 +138,25 @@ class _AuthHandlerState extends ConsumerState<_AuthHandler> {
 
   Future<void> _checkPendingInvites() async {
     final prefs = ref.read(sharedPreferencesProvider);
-    
+
     // 1. Check Hall Join
     final hallId = prefs.getString('pending_join_hall');
     if (hallId != null && mounted) {
-       showDialog(
-         context: context,
-         barrierDismissible: false,
-         builder: (ctx) => _JoinHallDialog(hallId: hallId, prefs: prefs),
-       );
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => _JoinHallDialog(hallId: hallId, prefs: prefs),
+      );
     }
 
     // 2. Check Friend Request
     final friendUid = prefs.getString('pending_add_friend');
     if (friendUid != null && mounted) {
-       showDialog(
-         context: context,
-         barrierDismissible: false,
-         builder: (ctx) => _AddFriendDialog(friendUid: friendUid, prefs: prefs),
-       );
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => _AddFriendDialog(friendUid: friendUid, prefs: prefs),
+      );
     }
   }
 
@@ -157,18 +164,18 @@ class _AuthHandlerState extends ConsumerState<_AuthHandler> {
   Widget build(BuildContext context) {
     // Watch signal from main.dart
     // We import pendingInviteProvider from main.dart... or duplicated here?
-    // Ideally it's in a shared file. For now let's assume we need to import it or 
+    // Ideally it's in a shared file. For now let's assume we need to import it or
     // simply rely on the fact that MainLayout rebuilds if we pass a key.
-    
+
     // To properly react to the invalidation in main.dart:
     // ref.watch(pendingInviteProvider); // This requires importing main.dart which is circular or messy.
     // Better pattern: Move `pendingInviteProvider` to `auth_service.dart` or a new `deep_link_service.dart`.
     // But for this quick implementation, we can just rely on `initState` (App Launch)
     // AND we can add a listener to AppLifecycleState if needed.
     // OR: `main.dart` rebuilds the entire app? No, `runApp` is static.
-    
+
     // Optimization: We will move `pendingInviteProvider` to `auth_service.dart` to avoid circular deps with main.dart.
-    
+
     return widget.child;
   }
 }
@@ -183,7 +190,10 @@ class _JoinHallDialog extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
       backgroundColor: const Color(0xFF2C2C2C),
-      title: const Text("Join Hall Team?", style: TextStyle(color: Colors.white)),
+      title: const Text(
+        "Join Hall Team?",
+        style: TextStyle(color: Colors.white),
+      ),
       content: const Text(
         "You have been invited to join a Bingo Hall staff team. Do you want to accept?",
         style: TextStyle(color: Colors.white70),
@@ -202,28 +212,40 @@ class _JoinHallDialog extends ConsumerWidget {
             // Logic to join
             final user = ref.read(userProfileProvider).value;
             if (user != null) {
-               // Update Firestore
-               // We need dependency on PersonnelRepository or direct Firestore
-               // Importing PersonnelRepository here might be circular if not careful, but usually Repository depends on Model/Service, not vice versa.
-               // Let's use direct firestore for simplicity or import the repo.
-               // Actually we can't import `personnel_repository.dart` effectively if it's in features/manager.
-               // Let's create a `JoinHallService` or just do it here.
-               
-               try {
-                 await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-                   'homeBaseId': hallId,
-                   'role': 'player', // Reset role to player pending assignment
-                 });
-                 
-                 // Refresh User
-                 ref.invalidate(userProfileProvider);
-                 
-                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Joined Hall! Ask a manager to assign your role.")));
-               } catch (e) {
-                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
-               }
+              // Update Firestore
+              // We need dependency on PersonnelRepository or direct Firestore
+              // Importing PersonnelRepository here might be circular if not careful, but usually Repository depends on Model/Service, not vice versa.
+              // Let's use direct firestore for simplicity or import the repo.
+              // Actually we can't import `personnel_repository.dart` effectively if it's in features/manager.
+              // Let's create a `JoinHallService` or just do it here.
+
+              try {
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user.uid)
+                    .update({
+                      'homeBaseId': hallId,
+                      'role':
+                          'player', // Reset role to player pending assignment
+                    });
+
+                // Refresh User
+                ref.invalidate(userProfileProvider);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Joined Hall! Ask a manager to assign your role.",
+                    ),
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text("Error: $e")));
+              }
             }
-            
+
             prefs.remove('pending_join_hall');
             Navigator.pop(context);
           },
@@ -256,7 +278,10 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
 
   Future<void> _fetchProfile() async {
     try {
-      final doc = await FirebaseFirestore.instance.collection('public_profiles').doc(widget.friendUid).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('public_profiles')
+          .doc(widget.friendUid)
+          .get();
       if (doc.exists && doc.data() != null) {
         if (mounted) {
           setState(() {
@@ -267,7 +292,7 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
       } else {
         if (mounted) setState(() => _isLoading = false);
       }
-    } catch(e) {
+    } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -277,7 +302,10 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
     if (_isLoading) {
       return const AlertDialog(
         backgroundColor: Color(0xFF2C2C2C),
-        content: SizedBox(height: 50, child: Center(child: CircularProgressIndicator())),
+        content: SizedBox(
+          height: 50,
+          child: Center(child: CircularProgressIndicator()),
+        ),
       );
     }
 
@@ -285,11 +313,20 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
       widget.prefs.remove('pending_add_friend');
       return AlertDialog(
         backgroundColor: const Color(0xFF2C2C2C),
-        title: const Text("User Not Found", style: TextStyle(color: Colors.white)),
-        content: const Text("This friend link is invalid or the user no longer exists.", style: TextStyle(color: Colors.white70)),
+        title: const Text(
+          "User Not Found",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          "This friend link is invalid or the user no longer exists.",
+          style: TextStyle(color: Colors.white70),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK", style: TextStyle(color: Colors.blueAccent))),
-        ]
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK", style: TextStyle(color: Colors.blueAccent)),
+          ),
+        ],
       );
     }
 
@@ -313,20 +350,31 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
           onPressed: () async {
             final user = ref.read(userProfileProvider).value;
             if (user != null) {
-               try {
-                 await ref.read(friendsRepositoryProvider).sendFriendRequest(user.uid, widget.friendUid);
-                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Friend Request Sent!"), backgroundColor: Colors.green));
-               } catch (e) {
-                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
-               }
+              try {
+                await ref
+                    .read(friendsRepositoryProvider)
+                    .sendFriendRequest(user.uid, widget.friendUid);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Friend Request Sent!"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text("Error: $e")));
+              }
             }
             widget.prefs.remove('pending_add_friend');
             Navigator.pop(context);
           },
-          child: const Text("Send Request", style: TextStyle(color: Colors.white)),
+          child: const Text(
+            "Send Request",
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ],
     );
   }
 }
-

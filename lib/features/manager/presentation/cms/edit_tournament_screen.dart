@@ -14,17 +14,19 @@ class EditTournamentScreen extends ConsumerStatefulWidget {
   final bool createTemplateMode;
 
   const EditTournamentScreen({
-    super.key, 
-    required this.hallId, 
-    this.tournament, 
-    this.createTemplateMode = false
+    super.key,
+    required this.hallId,
+    this.tournament,
+    this.createTemplateMode = false,
   });
 
   @override
-  ConsumerState<EditTournamentScreen> createState() => _EditTournamentScreenState();
+  ConsumerState<EditTournamentScreen> createState() =>
+      _EditTournamentScreenState();
 }
 
-class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> with SingleTickerProviderStateMixin {
+class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _formKey = GlobalKey<FormState>();
 
@@ -49,15 +51,19 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    
+
     _titleCtrl = TextEditingController(text: widget.tournament?.title ?? '');
-    _descCtrl = TextEditingController(text: widget.tournament?.description ?? '');
-    
+    _descCtrl = TextEditingController(
+      text: widget.tournament?.description ?? '',
+    );
+
     if (widget.tournament != null) {
       _startTime = widget.tournament!.startTime ?? DateTime.now();
       _endTime = widget.tournament!.endTime;
       _hasEndTime = _endTime != null;
-      _recurrenceRule = widget.tournament!.recurrenceRule ?? const RecurrenceRule(frequency: 'none');
+      _recurrenceRule =
+          widget.tournament!.recurrenceRule ??
+          const RecurrenceRule(frequency: 'none');
       _games = List.from(widget.tournament!.games);
       _imageUrl = widget.tournament!.imageUrl;
     } else {
@@ -86,7 +92,9 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
-        title: Text(widget.tournament == null ? 'Create Tournament' : 'Edit Tournament'),
+        title: Text(
+          widget.tournament == null ? 'Create Tournament' : 'Edit Tournament',
+        ),
         backgroundColor: const Color(0xFF1E1E1E),
         elevation: 0,
         bottom: TabBar(
@@ -107,16 +115,13 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
             ),
         ],
       ),
-      body: _isSaving 
+      body: _isSaving
           ? const Center(child: CircularProgressIndicator())
           : Form(
               key: _formKey,
               child: TabBarView(
                 controller: _tabController,
-                children: [
-                  _buildDetailsTab(),
-                  _buildSetupTab(),
-                ],
+                children: [_buildDetailsTab(), _buildSetupTab()],
               ),
             ),
     );
@@ -137,10 +142,16 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.white10),
               image: _imageFile != null
-                  ? DecorationImage(image: FileImage(_imageFile!), fit: BoxFit.cover)
+                  ? DecorationImage(
+                      image: FileImage(_imageFile!),
+                      fit: BoxFit.cover,
+                    )
                   : (_imageUrl != null
-                      ? DecorationImage(image: NetworkImage(_imageUrl!), fit: BoxFit.cover)
-                      : null),
+                        ? DecorationImage(
+                            image: NetworkImage(_imageUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null),
             ),
             child: _imageFile == null && _imageUrl == null
                 ? const Column(
@@ -148,7 +159,10 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
                     children: [
                       Icon(Icons.add_a_photo, size: 48, color: Colors.white54),
                       SizedBox(height: 8),
-                      Text("Add Cover Image", style: TextStyle(color: Colors.white54)),
+                      Text(
+                        "Add Cover Image",
+                        style: TextStyle(color: Colors.white54),
+                      ),
                     ],
                   )
                 : null,
@@ -170,7 +184,7 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
           validator: (val) => val == null || val.isEmpty ? 'Required' : null,
         ),
         const SizedBox(height: 16),
-        
+
         // Description
         TextFormField(
           controller: _descCtrl,
@@ -187,7 +201,14 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
         const SizedBox(height: 24),
 
         // Schedule Section
-        const Text("Schedule", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          "Schedule",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
@@ -198,59 +219,85 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
           ),
           child: Column(
             children: [
-               // Start Time
-               ListTile(
-                 contentPadding: EdgeInsets.zero,
-                 title: const Text("Start Time", style: TextStyle(color: Colors.white)),
-                 trailing: TextButton(
-                   onPressed: () => _pickDateTime(isStart: true),
-                   child: Text(
-                     "${_startTime.month}/${_startTime.day} ${_formatTime(_startTime)}",
-                     style: const TextStyle(color: Colors.blueAccent, fontSize: 16),
-                   ),
-                 ),
-               ),
-               const Divider(color: Colors.white10),
-               
-               // End Time Toggle
-               SwitchListTile(
-                 contentPadding: EdgeInsets.zero,
-                 activeThumbColor: Colors.blueAccent,
-                 title: const Text("Set End Time", style: TextStyle(color: Colors.white)),
-                 value: _hasEndTime,
-                 onChanged: (val) {
-                   setState(() {
-                     _hasEndTime = val;
-                     if (val && _endTime == null) {
-                       _endTime = _startTime.add(const Duration(hours: 4));
-                     }
-                     if (!val) _endTime = null;
-                   });
-                 },
-               ),
-               if (_hasEndTime && _endTime != null)
-                 ListTile(
-                   contentPadding: EdgeInsets.zero,
-                   title: const Text("End Time", style: TextStyle(color: Colors.white)),
-                   trailing: TextButton(
-                     onPressed: () => _pickDateTime(isStart: false),
-                     child: Text(
-                       "${_endTime!.month}/${_endTime!.day} ${_formatTime(_endTime!)}",
-                       style: const TextStyle(color: Colors.blueAccent, fontSize: 16),
-                     ),
-                   ),
-                 ),
-               
-               const Divider(color: Colors.white10),
+              // Start Time
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  "Start Time",
+                  style: TextStyle(color: Colors.white),
+                ),
+                trailing: TextButton(
+                  onPressed: () => _pickDateTime(isStart: true),
+                  child: Text(
+                    "${_startTime.month}/${_startTime.day} ${_formatTime(_startTime)}",
+                    style: const TextStyle(
+                      color: Colors.blueAccent,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const Divider(color: Colors.white10),
 
-               // Recurrence
-               ListTile(
-                 contentPadding: EdgeInsets.zero,
-                 title: const Text("Recurrence", style: TextStyle(color: Colors.white)),
-                 subtitle: Text(_recurrenceText, style: const TextStyle(color: Colors.white54)),
-                 trailing: Icon(Icons.repeat, color: _recurrenceRule.frequency != 'none' ? Colors.green : Colors.grey),
-                 onTap: _showRecurrencePicker, // Minimal implementation for now
-               ),
+              // End Time Toggle
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                activeThumbColor: Colors.blueAccent,
+                title: const Text(
+                  "Set End Time",
+                  style: TextStyle(color: Colors.white),
+                ),
+                value: _hasEndTime,
+                onChanged: (val) {
+                  setState(() {
+                    _hasEndTime = val;
+                    if (val && _endTime == null) {
+                      _endTime = _startTime.add(const Duration(hours: 4));
+                    }
+                    if (!val) _endTime = null;
+                  });
+                },
+              ),
+              if (_hasEndTime && _endTime != null)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                    "End Time",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  trailing: TextButton(
+                    onPressed: () => _pickDateTime(isStart: false),
+                    child: Text(
+                      "${_endTime!.month}/${_endTime!.day} ${_formatTime(_endTime!)}",
+                      style: const TextStyle(
+                        color: Colors.blueAccent,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+
+              const Divider(color: Colors.white10),
+
+              // Recurrence
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  "Recurrence",
+                  style: TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  _recurrenceText,
+                  style: const TextStyle(color: Colors.white54),
+                ),
+                trailing: Icon(
+                  Icons.repeat,
+                  color: _recurrenceRule.frequency != 'none'
+                      ? Colors.green
+                      : Colors.grey,
+                ),
+                onTap: _showRecurrencePicker, // Minimal implementation for now
+              ),
             ],
           ),
         ),
@@ -265,9 +312,20 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text("Games List", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              "Games List",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             IconButton(
-              icon: const Icon(Icons.add_circle, color: Colors.blueAccent, size: 32),
+              icon: const Icon(
+                Icons.add_circle,
+                color: Colors.blueAccent,
+                size: 32,
+              ),
               onPressed: _showAddGameDialog,
             ),
           ],
@@ -280,10 +338,16 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
         const SizedBox(height: 16),
 
         if (_games.isEmpty)
-          const Center(child: Padding(
-            padding: EdgeInsets.all(32.0),
-            child: Text("No games added yet.\nTap + to add a game.", textAlign: TextAlign.center, style: TextStyle(color: Colors.white24)),
-          ))
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(32.0),
+              child: Text(
+                "No games added yet.\nTap + to add a game.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white24),
+              ),
+            ),
+          )
         else
           ReorderableListView.builder(
             shrinkWrap: true,
@@ -304,8 +368,14 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   leading: const Icon(Icons.drag_handle, color: Colors.grey),
-                  title: Text(game.title, style: const TextStyle(color: Colors.white)),
-                  subtitle: Text("${game.value} Points", style: const TextStyle(color: Colors.amber)),
+                  title: Text(
+                    game.title,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    "${game.value} Points",
+                    style: const TextStyle(color: Colors.amber),
+                  ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.redAccent),
                     onPressed: () {
@@ -326,7 +396,7 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
 
   void _pickDateTime({required bool isStart}) async {
     final initial = isStart ? _startTime : (_endTime ?? DateTime.now());
-    
+
     final date = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -334,11 +404,11 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
       lastDate: DateTime(2030),
       builder: (context, child) => Theme(data: ThemeData.dark(), child: child!),
     );
-    
+
     if (date == null) return;
 
     if (!mounted) return;
-    
+
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(initial),
@@ -348,7 +418,13 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
     if (time == null) return;
 
     setState(() {
-      final dt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+      final dt = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
       if (isStart) {
         _startTime = dt;
         // Adjust end if it's before start
@@ -376,9 +452,21 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
       builder: (_) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ListTile(title: const Text("Does not repeat", style: TextStyle(color: Colors.white)), onTap: () => _setRecurrence('none')),
-          ListTile(title: const Text("Daily", style: TextStyle(color: Colors.white)), onTap: () => _setRecurrence('daily')),
-          ListTile(title: const Text("Weekly", style: TextStyle(color: Colors.white)), onTap: () => _setRecurrence('weekly')),
+          ListTile(
+            title: const Text(
+              "Does not repeat",
+              style: TextStyle(color: Colors.white),
+            ),
+            onTap: () => _setRecurrence('none'),
+          ),
+          ListTile(
+            title: const Text("Daily", style: TextStyle(color: Colors.white)),
+            onTap: () => _setRecurrence('daily'),
+          ),
+          ListTile(
+            title: const Text("Weekly", style: TextStyle(color: Colors.white)),
+            onTap: () => _setRecurrence('weekly'),
+          ),
           // Custom not implemented fully yet
         ],
       ),
@@ -408,31 +496,42 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
               controller: titleCtrl,
               autofocus: true,
               style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(labelText: "Game Name (e.g. Early Bird)", labelStyle: TextStyle(color: Colors.grey)),
+              decoration: const InputDecoration(
+                labelText: "Game Name (e.g. Early Bird)",
+                labelStyle: TextStyle(color: Colors.grey),
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: valCtrl,
               keyboardType: TextInputType.number,
               style: const TextStyle(color: Colors.amber),
-              decoration: const InputDecoration(labelText: "Points Value", labelStyle: TextStyle(color: Colors.grey)),
+              decoration: const InputDecoration(
+                labelText: "Points Value",
+                labelStyle: TextStyle(color: Colors.grey),
+              ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("CANCEL")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("CANCEL"),
+          ),
           ElevatedButton(
             onPressed: () {
               if (titleCtrl.text.isNotEmpty) {
-                 final val = int.tryParse(valCtrl.text) ?? 0;
-                 setState(() {
-                   _games.add(TournamentGame(
-                     id: const Uuid().v4(), // Use uuid package
-                     title: titleCtrl.text,
-                     value: val,
-                   ));
-                 });
-                 Navigator.pop(ctx);
+                final val = int.tryParse(valCtrl.text) ?? 0;
+                setState(() {
+                  _games.add(
+                    TournamentGame(
+                      id: const Uuid().v4(), // Use uuid package
+                      title: titleCtrl.text,
+                      value: val,
+                    ),
+                  );
+                });
+                Navigator.pop(ctx);
               }
             },
             child: const Text("ADD"),
@@ -457,10 +556,10 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
     if (_imageFile == null) return _imageUrl;
 
     try {
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('halls/${widget.hallId}/tournaments/$tournamentId/cover.jpg');
-      
+      final ref = FirebaseStorage.instance.ref().child(
+        'halls/${widget.hallId}/tournaments/$tournamentId/cover.jpg',
+      );
+
       await ref.putFile(_imageFile!);
       return await ref.getDownloadURL();
     } catch (e) {
@@ -472,7 +571,9 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
   Future<void> _saveTournament() async {
     if (!_formKey.currentState!.validate()) return;
     if (_games.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please add at least one game.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please add at least one game.")),
+      );
       _tabController.animateTo(1); // Switch to Setup tab
       return;
     }
@@ -480,8 +581,8 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
     setState(() => _isSaving = true);
 
     try {
-      final tournamentId = widget.tournament?.id.isNotEmpty == true 
-          ? widget.tournament!.id 
+      final tournamentId = widget.tournament?.id.isNotEmpty == true
+          ? widget.tournament!.id
           : const Uuid().v4(); // Generate ID early for storage path
 
       // Upload Image
@@ -496,11 +597,15 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
         startTime: _startTime,
         endTime: _endTime,
         recurrenceRule: _recurrenceRule,
-        isTemplate: widget.createTemplateMode || (widget.tournament?.isTemplate ?? false),
+        isTemplate:
+            widget.createTemplateMode ||
+            (widget.tournament?.isTemplate ?? false),
         games: _games,
       );
 
-      await ref.read(tournamentRepositoryProvider).saveTournament(widget.hallId, tournament);
+      await ref
+          .read(tournamentRepositoryProvider)
+          .saveTournament(widget.hallId, tournament);
 
       if (mounted) {
         Navigator.pop(context);
@@ -508,7 +613,9 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen> wit
     } catch (e) {
       if (mounted) {
         print("ERROR SAVING TOURNAMENT: $e");
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
         setState(() => _isSaving = false);
       }
     }

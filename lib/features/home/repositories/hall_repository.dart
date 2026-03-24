@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geoflutterfire_plus/geoflutterfire_plus.dart'; 
+import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import '../../../models/bingo_hall_model.dart';
 import '../../../models/user_model.dart'; // Import UserModel
 import '../../../models/special_model.dart';
@@ -13,21 +13,33 @@ import 'special_projection_logic.dart'; // Isolate Logic
 import 'dart:math';
 import 'package:flutter/foundation.dart'; // For compute
 
-final hallRepositoryProvider = Provider((ref) => HallRepository(FirebaseFirestore.instance));
+final hallRepositoryProvider = Provider(
+  (ref) => HallRepository(FirebaseFirestore.instance),
+);
 
-final hallsStreamProvider = StreamProvider.family<List<BingoHallModel>, List<String>>((ref, ids) {
-  return ref.watch(hallRepositoryProvider).getHallsByIds(ids);
-});
+final hallsStreamProvider =
+    StreamProvider.family<List<BingoHallModel>, List<String>>((ref, ids) {
+      return ref.watch(hallRepositoryProvider).getHallsByIds(ids);
+    });
 
-final hallStreamProvider = StreamProvider.family<BingoHallModel?, String>((ref, id) {
+final hallStreamProvider = StreamProvider.family<BingoHallModel?, String>((
+  ref,
+  id,
+) {
   return ref.watch(hallRepositoryProvider).getHallStream(id);
 });
 
-final hallSpecialsProvider = StreamProvider.family<List<SpecialModel>, String>((ref, hallId) {
+final hallSpecialsProvider = StreamProvider.family<List<SpecialModel>, String>((
+  ref,
+  hallId,
+) {
   return ref.read(hallRepositoryProvider).getSpecialsForHall(hallId);
 });
 
-final hallRafflesProvider = StreamProvider.family<List<RaffleModel>, String>((ref, hallId) {
+final hallRafflesProvider = StreamProvider.family<List<RaffleModel>, String>((
+  ref,
+  hallId,
+) {
   return ref.read(hallRepositoryProvider).getRaffles(hallId);
 });
 
@@ -59,20 +71,22 @@ class HallRepository {
 
   Stream<List<BingoHallModel>> getHallsByIds(List<String> ids) {
     if (ids.isEmpty) return Stream.value([]);
-    
+
     // chunks of 10 for 'whereIn' limitation (max 30 in Firestore, but 10 is safe)
     // For MVP, assuming < 30 follows. If more, we'd need to merge streams or just limit.
     // Let's implement robust chunking or just standard 10 for now.
     // Actually, simply 'whereIn' ids.take(30) is a reasonable MVP limit.
     final safeIds = ids.take(30).toList();
-    
+
     return _firestore
         .collection('bingo_halls')
         .where('id', whereIn: safeIds)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => BingoHallModel.fromJson(doc.data())).toList();
-    });
+          return snapshot.docs
+              .map((doc) => BingoHallModel.fromJson(doc.data()))
+              .toList();
+        });
   }
 
   Stream<BingoHallModel?> getHallStream(String id) {
@@ -95,34 +109,41 @@ class HallRepository {
         .limit(100) // SAFETY LIMIT
         .snapshots()
         .asyncMap((snapshot) async {
-          final specials = snapshot.docs.map((doc) => SpecialModel.fromJson(doc.data())).toList();
-          
-          // 1. Project Recurring Events (in Isolate)
-          final projectedSpecials = await compute(projectSpecialsComputed, specials);
+          final specials = snapshot.docs
+              .map((doc) => SpecialModel.fromJson(doc.data()))
+              .toList();
 
-          if (userLocation == null) return projectedSpecials; // Return all if no location
+          // 1. Project Recurring Events (in Isolate)
+          final projectedSpecials = await compute(
+            projectSpecialsComputed,
+            specials,
+          );
+
+          if (userLocation == null)
+            return projectedSpecials; // Return all if no location
 
           // 2. Filter by 75 mile radius
           final nearbySpecials = projectedSpecials.where((s) {
-            if (s.latitude == null || s.longitude == null) return true; // Keep if no coords
-            
+            if (s.latitude == null || s.longitude == null)
+              return true; // Keep if no coords
+
             final distanceMeters = Geolocator.distanceBetween(
-              userLocation.latitude, 
-              userLocation.longitude, 
-              s.latitude!, 
-              s.longitude!
+              userLocation.latitude,
+              userLocation.longitude,
+              s.latitude!,
+              s.longitude!,
             );
-            
+
             return distanceMeters <= 120700; // 75 miles
           }).toList();
 
           // Fallback: If nothing nearby, show everything (Demo Mode behavior)
           if (nearbySpecials.isEmpty && projectedSpecials.isNotEmpty) {
-             return projectedSpecials;
+            return projectedSpecials;
           }
-          
+
           return nearbySpecials;
-    });
+        });
   }
 
   Stream<List<SpecialModel>> getSpecialsForHall(String hallId) {
@@ -131,9 +152,11 @@ class HallRepository {
         .where('hallId', isEqualTo: hallId)
         .snapshots()
         .asyncMap((snapshot) async {
-           final specials = snapshot.docs.map((doc) => SpecialModel.fromJson(doc.data())).toList();
-           // For CMS, we want EVERYTHING.
-           return await compute(projectSpecialsComputedAll, specials);
+          final specials = snapshot.docs
+              .map((doc) => SpecialModel.fromJson(doc.data()))
+              .toList();
+          // For CMS, we want EVERYTHING.
+          return await compute(projectSpecialsComputedAll, specials);
         });
   }
 
@@ -144,26 +167,37 @@ class HallRepository {
         .where('isTemplate', isEqualTo: false)
         .snapshots()
         .map((snapshot) {
-           final now = DateTime.now();
-           final raffles = snapshot.docs.map((doc) => RaffleModel.fromJson(doc.data())).toList();
-           return raffles.where((r) => r.endsAt.isAfter(now)).toList();
+          final now = DateTime.now();
+          final raffles = snapshot.docs
+              .map((doc) => RaffleModel.fromJson(doc.data()))
+              .toList();
+          return raffles.where((r) => r.endsAt.isAfter(now)).toList();
         });
   }
 
-  Stream<List<TournamentModel>> getActiveTournamentsFeed(Position? userLocation) {
+  Stream<List<TournamentModel>> getActiveTournamentsFeed(
+    Position? userLocation,
+  ) {
     return _firestore
         .collection('tournaments')
         .where('isTemplate', isEqualTo: false)
         .snapshots()
         .map((snapshot) {
-           final now = DateTime.now();
-           final tourneys = snapshot.docs.map((doc) => TournamentModel.fromJson(doc.data())).toList();
-           return tourneys.where((t) => t.endTime == null || t.endTime!.isAfter(now)).toList();
+          final now = DateTime.now();
+          final tourneys = snapshot.docs
+              .map((doc) => TournamentModel.fromJson(doc.data()))
+              .toList();
+          return tourneys
+              .where((t) => t.endTime == null || t.endTime!.isAfter(now))
+              .toList();
         });
   }
 
   // --- Specials Management (CMS) ---
-  Future<void> addSpecial(SpecialModel special, {bool sendNotification = false}) async {
+  Future<void> addSpecial(
+    SpecialModel special, {
+    bool sendNotification = false,
+  }) async {
     // Generate ID if empty
     final docRef = _firestore.collection('specials').doc();
     final newSpecial = special.copyWith(id: docRef.id);
@@ -175,8 +209,14 @@ class HallRepository {
     }
   }
 
-  Future<void> updateSpecial(SpecialModel special, {bool sendNotification = false}) async {
-    await _firestore.collection('specials').doc(special.id).update(special.toJson());
+  Future<void> updateSpecial(
+    SpecialModel special, {
+    bool sendNotification = false,
+  }) async {
+    await _firestore
+        .collection('specials')
+        .doc(special.id)
+        .update(special.toJson());
 
     if (sendNotification) {
       // Mock Cloud Function Trigger
@@ -193,13 +233,17 @@ class HallRepository {
     // If we use merge, we only update fields present in the map.
     // Ideally we pass a Map of changes, but passing Model is easier.
     // We must ensure we don't wipe 'geo' if the model doesn't have it fully hydrated (our model has geoFirePoint getter).
-    
+
     final data = hall.toJson();
     // Re-calculate geo if lat/lng changed
     final geoPoint = GeoFirePoint(GeoPoint(hall.latitude, hall.longitude));
-    data['geo'] = geoPoint.data; // Use 'data' property of GeoFirePoint which returns the Map needed
+    data['geo'] = geoPoint
+        .data; // Use 'data' property of GeoFirePoint which returns the Map needed
 
-    await _firestore.collection('bingo_halls').doc(hall.id).set(data, SetOptions(merge: true));
+    await _firestore
+        .collection('bingo_halls')
+        .doc(hall.id)
+        .set(data, SetOptions(merge: true));
   }
 
   // --- Admin/Seed Tools ---
@@ -223,7 +267,8 @@ class HallRepository {
         hallName: 'Mary Esther Bingo',
         title: 'Friday Night Megapot',
         description: '\$10,000 Must Go! Doors open at 4pm.',
-        imageUrl: 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80', // Money/Cash (Working)
+        imageUrl:
+            'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80', // Money/Cash (Working)
         postedAt: now.subtract(const Duration(hours: 2)),
         startTime: now.add(const Duration(hours: 2)), // Happening soon
         latitude: baseLat,
@@ -236,8 +281,10 @@ class HallRepository {
         hallId: 'mary-esther-bingo',
         hallName: 'Mary Esther Bingo',
         title: 'Weekly Cash Pot Raffle',
-        description: 'Win \$500 Cash! Tickets available at the counter or in the app.',
-        imageUrl: 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80',
+        description:
+            'Win \$500 Cash! Tickets available at the counter or in the app.',
+        imageUrl:
+            'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80',
         postedAt: now.subtract(const Duration(hours: 1)),
         startTime: now.add(const Duration(days: 0, hours: 2)), // Today
         latitude: baseLat,
@@ -251,10 +298,11 @@ class HallRepository {
         hallName: 'Grand Bingo Hall',
         title: 'BOGO Buy-In',
         description: 'Buy one pack, get one FREE all day Saturday.',
-        imageUrl: 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?auto=format&fit=crop&w=800&q=80', // Slots/Casino
+        imageUrl:
+            'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?auto=format&fit=crop&w=800&q=80', // Slots/Casino
         postedAt: now.subtract(const Duration(days: 1)),
         startTime: now.add(const Duration(days: 1, hours: 4)),
-        latitude: baseLat + 0.1, 
+        latitude: baseLat + 0.1,
         longitude: baseLng + 0.1,
         tags: ['Specials', 'Session'],
       ),
@@ -264,23 +312,25 @@ class HallRepository {
         hallName: 'Beachside Bingo',
         title: 'Seafood & Slots',
         description: 'Free shrimp cocktail with every \$20 spend.',
-        imageUrl: 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=800&q=80', // Neon/Nightlife
+        imageUrl:
+            'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=800&q=80', // Neon/Nightlife
         postedAt: now.subtract(const Duration(hours: 5)),
-        startTime: now.add(const Duration(minutes: 30)), 
+        startTime: now.add(const Duration(minutes: 30)),
         latitude: baseLat - 0.05,
         longitude: baseLng + 0.05,
         tags: ['Pulltabs', 'Regular Program'],
       ),
       SpecialModel(
         id: 'sp4',
-        hallId: 'downtown-hall', 
+        hallId: 'downtown-hall',
         hallName: 'Downtown Gaming (Far)',
         title: 'Far Away Special',
         description: 'This is > 75 miles away.',
-        imageUrl: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80', // Crowd/Event
+        imageUrl:
+            'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80', // Crowd/Event
         postedAt: now.subtract(const Duration(minutes: 30)),
         startTime: now.add(const Duration(hours: 5)),
-        latitude: baseLat + 2.0, 
+        latitude: baseLat + 2.0,
         longitude: baseLng,
         tags: ['Session', 'Raffles'],
       ),
@@ -290,7 +340,8 @@ class HallRepository {
         hallName: 'Westside Winners',
         title: 'New Player Bonus',
         description: '\$20 Free Play for all new signups this week.',
-        imageUrl: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=800&q=80', // Abstract/Fun
+        imageUrl:
+            'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=800&q=80', // Abstract/Fun
         postedAt: now.subtract(const Duration(days: 2)),
         startTime: now.add(const Duration(days: 0)), // Ongoing
         latitude: baseLat + 0.02,
@@ -301,19 +352,19 @@ class HallRepository {
 
     for (var special in specials) {
       await collection.doc(special.id).set(special.toJson());
-      
+
       // Also ensure the Hall exists with GeoHash for the Map
       // This is a "Backfill" for our mock data
       final hallId = special.hallId;
       final hallName = special.hallName;
       final lat = special.latitude ?? baseLat;
       final lng = special.longitude ?? baseLng;
-      
-      // Check if hall exists first to avoid overwriting real data? 
+
+      // Check if hall exists first to avoid overwriting real data?
       // For seed tool, overwriting is expected.
-      
+
       final geoPoint = GeoFirePoint(GeoPoint(lat, lng));
-      
+
       final hall = BingoHallModel(
         id: hallId,
         name: hallName,
@@ -322,33 +373,47 @@ class HallRepository {
         longitude: lng,
         isActive: true,
         street: "Mock Street",
-        city: "Mary Esther", 
+        city: "Mary Esther",
         state: "FL",
         zipCode: "32569",
         geoHash: geoPoint.geohash,
         followBonus: 50.0, // Bonus for following
       );
-      
+
       final hallData = hall.toJson();
       hallData['geo'] = hall.geoFirePoint;
-      
-      await _firestore.collection('bingo_halls').doc(hallId).set(hallData, SetOptions(merge: true));
+
+      await _firestore
+          .collection('bingo_halls')
+          .doc(hallId)
+          .set(hallData, SetOptions(merge: true));
     }
   }
 
   // --- GPS Suggestions ---
-  Future<List<BingoHallModel>> getNearbyHalls(List<String> subscribedHallIds, {Position? location, int limit = 5}) async {
+  Future<List<BingoHallModel>> getNearbyHalls(
+    List<String> subscribedHallIds, {
+    Position? location,
+    int limit = 5,
+  }) async {
     try {
       // 1. Get User Location (Use cached if provided, otherwise fetch fresh)
-      final Position position = location ?? await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium
-      );
+      final Position position =
+          location ??
+          await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.medium,
+          );
 
       // 2. Fetch Halls (Limit to 50 for sanity)
       // Note: Geo-querying Firestore is complex without dedicated libs (GeoFlutterFire).
       // For this scale (<50 halls), filtering client-side is acceptable.
-      final snapshot = await _firestore.collection('bingo_halls').limit(20).get();
-      final allHalls = snapshot.docs.map((doc) => BingoHallModel.fromJson(doc.data())).toList();
+      final snapshot = await _firestore
+          .collection('bingo_halls')
+          .limit(20)
+          .get();
+      final allHalls = snapshot.docs
+          .map((doc) => BingoHallModel.fromJson(doc.data()))
+          .toList();
 
       // 3. Filter & Sort
       final List<MapEntry<BingoHallModel, double>> rankedHalls = [];
@@ -358,10 +423,10 @@ class HallRepository {
         if (subscribedHallIds.contains(hall.id)) continue;
 
         final distance = Geolocator.distanceBetween(
-          position.latitude, 
-          position.longitude, 
-          hall.latitude, 
-          hall.longitude
+          position.latitude,
+          position.longitude,
+          hall.latitude,
+          hall.longitude,
         );
 
         rankedHalls.add(MapEntry(hall, distance));
@@ -382,11 +447,11 @@ class HallRepository {
     final random = Random();
     final lat = 30.0 + random.nextDouble();
     final lng = -86.0 - random.nextDouble();
-    
+
     final geoPoint = GeoFirePoint(GeoPoint(lat, lng));
 
     final mockHall = BingoHallModel(
-      id: '', 
+      id: '',
       name: "Grand Bingo Hall ${random.nextInt(100)}",
       beaconUuid: "mock-uuid-${random.nextInt(1000)}",
       latitude: lat,
@@ -395,40 +460,48 @@ class HallRepository {
       street: "123 Random St",
       city: "Mary Esther",
       state: "FL",
-      zipCode: "32569", 
+      zipCode: "32569",
       geoHash: geoPoint.geohash,
     );
 
     final docRef = _firestore.collection('bingo_halls').doc();
-    
+
     final hallWithId = mockHall.copyWith(id: docRef.id);
-    
+
     final hallData = hallWithId.toJson();
     hallData['geo'] = hallWithId.geoFirePoint;
-    
+
     await docRef.set(hallData);
   }
 
   Future<List<BingoHallModel>> getAllHalls() async {
     try {
       final snapshot = await _firestore.collection('bingo_halls').get();
-      return snapshot.docs.map((doc) => BingoHallModel.fromJson(doc.data())).toList();
+      return snapshot.docs
+          .map((doc) => BingoHallModel.fromJson(doc.data()))
+          .toList();
     } catch (e) {
       print("Error getting all halls: $e");
       return [];
     }
   }
 
-
-
   // --- Advanced Search ---
-  Future<List<BingoHallModel>> searchHalls(String query, {Position? userLocation}) async {
+  Future<List<BingoHallModel>> searchHalls(
+    String query, {
+    Position? userLocation,
+  }) async {
     try {
       final lowerQuery = query.toLowerCase().trim();
-      
+
       // Fetch all halls (optimize later with algolia/elastic if needed)
-      final snapshot = await _firestore.collection('bingo_halls').limit(25).get();
-      final allHalls = snapshot.docs.map((doc) => BingoHallModel.fromJson(doc.data())).toList();
+      final snapshot = await _firestore
+          .collection('bingo_halls')
+          .limit(25)
+          .get();
+      final allHalls = snapshot.docs
+          .map((doc) => BingoHallModel.fromJson(doc.data()))
+          .toList();
 
       if (allHalls.isEmpty) return [];
 
@@ -437,13 +510,16 @@ class HallRepository {
         final name = hall.name.toLowerCase();
         final city = hall.city?.toLowerCase() ?? '';
         final zip = hall.zipCode ?? '';
-        
-        return name.contains(lowerQuery) || city.contains(lowerQuery) || zip.contains(lowerQuery);
+
+        return name.contains(lowerQuery) ||
+            city.contains(lowerQuery) ||
+            zip.contains(lowerQuery);
       }).toList();
 
       // 2. Zip Code Logic (The "Fill to 10" Rule)
-      final isZipSearch = int.tryParse(lowerQuery) != null && lowerQuery.length == 5;
-      
+      final isZipSearch =
+          int.tryParse(lowerQuery) != null && lowerQuery.length == 5;
+
       if (isZipSearch) {
         // If we have less than 10 results, we need to fill with spatially nearest halls.
         if (matches.length < 10) {
@@ -456,23 +532,30 @@ class HallRepository {
             anchorLat = matches.first.latitude;
             anchorLng = matches.first.longitude;
           } else if (userLocation != null) {
-             // Fallback: If no halls match the zip, use the User's location as the anchor.
-             // This fulfills: "If there isn't ATLEAST 10 halls... grab the nearest halls to fill".
-             // Since we can't geocode, we grab nearest to the USER.
-             anchorLat = userLocation.latitude;
-             anchorLng = userLocation.longitude;
+            // Fallback: If no halls match the zip, use the User's location as the anchor.
+            // This fulfills: "If there isn't ATLEAST 10 halls... grab the nearest halls to fill".
+            // Since we can't geocode, we grab nearest to the USER.
+            anchorLat = userLocation.latitude;
+            anchorLng = userLocation.longitude;
           } else {
             // No matches and no user location? Return empty.
             return [];
           }
 
           // 3. Find Neighbors
-          final otherHalls = allHalls.where((h) => !matches.any((m) => m.id == h.id)).toList();
-          
+          final otherHalls = allHalls
+              .where((h) => !matches.any((m) => m.id == h.id))
+              .toList();
+
           final List<MapEntry<BingoHallModel, double>> neighbors = [];
           for (var hall in otherHalls) {
-             final distance = Geolocator.distanceBetween(anchorLat, anchorLng, hall.latitude, hall.longitude);
-             neighbors.add(MapEntry(hall, distance));
+            final distance = Geolocator.distanceBetween(
+              anchorLat,
+              anchorLng,
+              hall.latitude,
+              hall.longitude,
+            );
+            neighbors.add(MapEntry(hall, distance));
           }
 
           // Sort by distance
@@ -485,7 +568,6 @@ class HallRepository {
       }
 
       return matches;
-
     } catch (e) {
       print("Error searching halls: $e");
       return [];
@@ -494,7 +576,7 @@ class HallRepository {
 
   Future<void> seedMaryEstherEnv(String userId) async {
     const hallId = 'mary-esther-bingo';
-    
+
     // Generate GeoHash
     final GeoFirePoint geoPoint = GeoFirePoint(GeoPoint(30.407, -86.662));
 
@@ -512,33 +594,33 @@ class HallRepository {
       zipCode: "32569",
       geoHash: geoPoint.geohash, // Scalable field
     );
-    
+
     // We need to store the 'geo' object as a Map for GFF+
     final hallData = hall.toJson();
     hallData['geo'] = hall.geoFirePoint;
 
     await _firestore.collection('bingo_halls').doc(hallId).set(hallData);
-    
+
     // 2. Update the User to be Owner
     final userRef = _firestore.collection('users').doc(userId);
-    
+
     await userRef.update({
       'role': 'superadmin', // Updated to Super Admin per user request
       'homeBaseId': hallId,
-      'qrToken': 'meb-owner-token-${userId.substring(0, 5)}', // Semi-stable token
+      'qrToken':
+          'meb-owner-token-${userId.substring(0, 5)}', // Semi-stable token
     });
 
     // 3. Create Public Worker Profile (Safe for scanning)
     await _firestore.collection('public_workers').doc(userId).set({
       'uid': userId,
-      'firstName': 'Mary Esther Owner', // ideally fetch this from user profile if available, but for seed we hardcode or query first
+      'firstName':
+          'Mary Esther Owner', // ideally fetch this from user profile if available, but for seed we hardcode or query first
       'role': 'owner',
       'qrToken': 'meb-owner-token-${userId.substring(0, 5)}',
       'homeBaseId': hallId,
     });
   }
-
-
 
   Future<void> promoteToSuperAdmin(String userId) async {
     await _firestore.collection('users').doc(userId).update({
@@ -569,58 +651,73 @@ class HallRepository {
     final radiusInKm = radiusInMiles * 1.60934;
 
     final collection = _firestore.collection('bingo_halls');
-    
+
     // Subscribes to updates within the radius
-    return GeoCollectionReference(collection).subscribeWithin(
-      center: center,
-      radiusInKm: radiusInKm,
-      field: 'geo', 
-      geopointFrom: (data) {
-        // Robust parsing
-        try {
-          if (data['geo'] == null || data['geo'] is! Map) {
-             throw Exception('Invalid geo field');
-          }
-          return (data['geo'] as Map)['geopoint'] as GeoPoint;
-        } catch (e) {
-          // print('Error parsing geopoint: $e'); // Optional: noisy log
-          return const GeoPoint(0, 0); // Fallback to avoid crash, will likely be filtered out or show at 0,0
-        }
-      },
-    ).map((snapshots) {
-      print("GeoFire Query: Found ${snapshots.length} potential matches");
-      return snapshots.map((doc) {
-        final data = doc.data(); 
-        if (data == null) return null;
-        // Verify geo field exists before returning model, otherwise standard json parsing might fail if we relied on it
-        // Actually locally we use lat/lng from model, not 'geo'
-        try {
-           return BingoHallModel.fromJson(data);
-        } catch (e) {
-           print("Error parsing hall model: $e");
-           return null;
-        } 
-      }).whereType<BingoHallModel>().toList();
-    });
+    return GeoCollectionReference(collection)
+        .subscribeWithin(
+          center: center,
+          radiusInKm: radiusInKm,
+          field: 'geo',
+          geopointFrom: (data) {
+            // Robust parsing
+            try {
+              if (data['geo'] == null || data['geo'] is! Map) {
+                throw Exception('Invalid geo field');
+              }
+              return (data['geo'] as Map)['geopoint'] as GeoPoint;
+            } catch (e) {
+              // print('Error parsing geopoint: $e'); // Optional: noisy log
+              return const GeoPoint(
+                0,
+                0,
+              ); // Fallback to avoid crash, will likely be filtered out or show at 0,0
+            }
+          },
+        )
+        .map((snapshots) {
+          print("GeoFire Query: Found ${snapshots.length} potential matches");
+          return snapshots
+              .map((doc) {
+                final data = doc.data();
+                if (data == null) return null;
+                // Verify geo field exists before returning model, otherwise standard json parsing might fail if we relied on it
+                // Actually locally we use lat/lng from model, not 'geo'
+                try {
+                  return BingoHallModel.fromJson(data);
+                } catch (e) {
+                  print("Error parsing hall model: $e");
+                  return null;
+                }
+              })
+              .whereType<BingoHallModel>()
+              .toList();
+        });
   }
 
   // --- Generic Interactions ---
-  Future<void> toggleInteraction(String collectionName, String docId, String arrayField, String userId, bool isAdding) async {
+  Future<void> toggleInteraction(
+    String collectionName,
+    String docId,
+    String arrayField,
+    String userId,
+    bool isAdding,
+  ) async {
     try {
       final docRef = _firestore.collection(collectionName).doc(docId);
       if (isAdding) {
         await docRef.update({
-          arrayField: FieldValue.arrayUnion([userId])
+          arrayField: FieldValue.arrayUnion([userId]),
         });
       } else {
         await docRef.update({
-          arrayField: FieldValue.arrayRemove([userId])
+          arrayField: FieldValue.arrayRemove([userId]),
         });
       }
     } catch (e) {
       print("Error toggling interaction: $e");
     }
   }
+
   // --- Comments ---
   Stream<List<CommentModel>> getComments(String collectionName, String docId) {
     return _firestore
@@ -629,11 +726,23 @@ class HallRepository {
         .collection('comments')
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => CommentModel.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => CommentModel.fromFirestore(doc))
+              .toList(),
+        );
   }
 
-  Future<void> addComment(String collectionName, String docId, CommentModel comment) async {
-    final commentRef = _firestore.collection(collectionName).doc(docId).collection('comments').doc();
+  Future<void> addComment(
+    String collectionName,
+    String docId,
+    CommentModel comment,
+  ) async {
+    final commentRef = _firestore
+        .collection(collectionName)
+        .doc(docId)
+        .collection('comments')
+        .doc();
     await commentRef.set(comment.toJson());
 
     // Serialize payload for the Feed Snippet
@@ -649,18 +758,36 @@ class HallRepository {
     });
   }
 
-  Future<void> updateComment(String collectionName, String docId, String commentId, String text) async {
-    await _firestore.collection(collectionName).doc(docId).collection('comments').doc(commentId).update({
-      'text': text,
-    });
+  Future<void> updateComment(
+    String collectionName,
+    String docId,
+    String commentId,
+    String text,
+  ) async {
+    await _firestore
+        .collection(collectionName)
+        .doc(docId)
+        .collection('comments')
+        .doc(commentId)
+        .update({'text': text});
   }
 
-  Future<void> deleteComment(String collectionName, String docId, String commentId) async {
-    await _firestore.collection(collectionName).doc(docId).collection('comments').doc(commentId).delete();
+  Future<void> deleteComment(
+    String collectionName,
+    String docId,
+    String commentId,
+  ) async {
+    await _firestore
+        .collection(collectionName)
+        .doc(docId)
+        .collection('comments')
+        .doc(commentId)
+        .delete();
     await _firestore.collection(collectionName).doc(docId).update({
       'commentCount': FieldValue.increment(-1),
     });
   }
+
   Future<UserModel?> getWorkerFromQr(String qrToken) async {
     try {
       print('Scanning for Token: $qrToken');
@@ -674,7 +801,7 @@ class HallRepository {
       if (querySnapshot.docs.isEmpty) return null;
 
       final data = querySnapshot.docs.first.data();
-      
+
       // Return safe partial user model
       return UserModel(
         uid: data['uid'],
@@ -693,41 +820,50 @@ class HallRepository {
     }
   }
 
-  Future<void> toggleFollow(String userId, String hallId, bool isFollowing, String hallName) async {
+  Future<void> toggleFollow(
+    String userId,
+    String hallId,
+    bool isFollowing,
+    String hallName,
+  ) async {
     final userRef = _firestore.collection('users').doc(userId);
     if (isFollowing) {
       // Unfollow
       await userRef.update({
-        'following': FieldValue.arrayRemove([hallId])
+        'following': FieldValue.arrayRemove([hallId]),
       });
     } else {
       // Follow
       // 1. Update List
       await userRef.update({
-        'following': FieldValue.arrayUnion([hallId])
+        'following': FieldValue.arrayUnion([hallId]),
       });
 
       // 2. Ensure Membership Card Exists & Check for Bonus
       final membershipRef = userRef.collection('memberships').doc(hallId);
       final doc = await membershipRef.get();
-      
+
       if (!doc.exists) {
         // Fetch Hall Details to check for Bonus
         double initialBalance = 0.0;
-        final hallDoc = await _firestore.collection('bingo_halls').doc(hallId).get();
+        final hallDoc = await _firestore
+            .collection('bingo_halls')
+            .doc(hallId)
+            .get();
         if (hallDoc.exists) {
           final hallData = hallDoc.data();
           final bonus = (hallData?['followBonus'] as num?)?.toDouble() ?? 0.0;
           if (bonus > 0) {
             initialBalance = bonus;
-            
+
             // Log Transaction for Bonus
             final transactionRef = _firestore.collection('transactions').doc();
-             await transactionRef.set({
+            await transactionRef.set({
               'id': transactionRef.id,
               'userId': userId,
               'hallId': hallId,
-              'amount': bonus.toInt(), // Stored as int usually, or double? keeping consistency
+              'amount': bonus
+                  .toInt(), // Stored as int usually, or double? keeping consistency
               'timestamp': FieldValue.serverTimestamp(),
               'type': 'bonus',
               'description': 'New Follow Bonus',
@@ -739,7 +875,7 @@ class HallRepository {
         await membershipRef.set({
           'hallId': hallId,
           'hallName': hallName,
-          'balance': initialBalance, 
+          'balance': initialBalance,
           'currencyName': 'Points',
           'tier': 'Member',
           'joinedAt': FieldValue.serverTimestamp(),
@@ -748,12 +884,16 @@ class HallRepository {
     }
   }
 
-  Future<void> toggleHomeBase(String userId, String hallId, String? currentHomeBaseId) async {
+  Future<void> toggleHomeBase(
+    String userId,
+    String hallId,
+    String? currentHomeBaseId,
+  ) async {
     // If already set to this hall, unset it. Otherwise, set it.
     final newHomeBaseId = (currentHomeBaseId == hallId) ? null : hallId;
-    
+
     await _firestore.collection('users').doc(userId).update({
-      'homeBaseId': newHomeBaseId
+      'homeBaseId': newHomeBaseId,
     });
   }
 
@@ -764,7 +904,11 @@ class HallRepository {
         .where('hallId', isEqualTo: hallId)
         .orderBy('endsAt', descending: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => RaffleModel.fromJson(doc.data())).toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => RaffleModel.fromJson(doc.data()))
+              .toList(),
+        );
   }
 
   Future<void> addRaffle(RaffleModel raffle) async {
@@ -791,7 +935,8 @@ class HallRepository {
         hallId: hallId,
         name: 'Weekly Cash Pot',
         description: 'Win \$500 Cash! Winner drawn Friday night.',
-        imageUrl: 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80', // Money/Cash
+        imageUrl:
+            'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&w=800&q=80', // Money/Cash
         maxTickets: 200,
         soldTickets: 45,
         endsAt: now.add(const Duration(days: 4)),
@@ -801,17 +946,19 @@ class HallRepository {
         hallId: hallId,
         name: 'Luxury Spa Day',
         description: 'Full day package at Serenity Spa.',
-        imageUrl: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80', // Spa
+        imageUrl:
+            'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80', // Spa
         maxTickets: 100,
         soldTickets: 12,
         endsAt: now.add(const Duration(days: 10)),
       ),
-       RaffleModel(
+      RaffleModel(
         id: 'raffle-$hallId-3',
         hallId: hallId,
         name: '65" 4K TV',
         description: 'Upgrade your living room!',
-        imageUrl: 'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=800&q=80', // TV
+        imageUrl:
+            'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=800&q=80', // TV
         maxTickets: 50,
         soldTickets: 2,
         endsAt: now.add(const Duration(days: 30)),
@@ -834,7 +981,8 @@ class HallRepository {
         hallId: 'grand-bingo-1',
         name: 'Grand Cash Bonanza',
         description: 'Win \$2,500 cash! Drawing at the end of the month.',
-        imageUrl: 'https://images.unsplash.com/photo-1559825481-12a05cc00344?auto=format&fit=crop&w=800&q=80', // Cash/Casino vibe
+        imageUrl:
+            'https://images.unsplash.com/photo-1559825481-12a05cc00344?auto=format&fit=crop&w=800&q=80', // Cash/Casino vibe
         maxTickets: 1000,
         soldTickets: 250,
         endsAt: now.add(const Duration(days: 20)),
@@ -844,7 +992,8 @@ class HallRepository {
         hallId: 'beach-bingo',
         name: 'Beach Getaway Package',
         description: 'A weekend stay at the resort + \$500 spending money.',
-        imageUrl: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80', // Beach house
+        imageUrl:
+            'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80', // Beach house
         maxTickets: 500,
         soldTickets: 490,
         endsAt: now.add(const Duration(days: 2)),
@@ -862,7 +1011,8 @@ class HallRepository {
         id: 'seed-tourney-grand-1',
         hallId: 'grand-bingo-1',
         title: 'Spring Fling Slots Tournament',
-        description: 'Compete across all slot machines. Top 10 players win a share of \$5,000!',
+        description:
+            'Compete across all slot machines. Top 10 players win a share of \$5,000!',
         startTime: now.add(const Duration(days: 5)),
         endTime: now.add(const Duration(days: 12)),
         games: [
@@ -877,10 +1027,8 @@ class HallRepository {
         description: 'A month-long bingo elimination tournament.',
         startTime: now.add(const Duration(days: 1)),
         endTime: now.add(const Duration(days: 28)),
-        games: [
-          const TournamentGame(id: 'g1', title: 'Coverall', value: 500),
-        ],
-      )
+        games: [const TournamentGame(id: 'g1', title: 'Coverall', value: 500)],
+      ),
     ];
 
     for (var t in tournaments) {
@@ -890,11 +1038,15 @@ class HallRepository {
 
   // --- Asset Library ---
   Future<void> addToAssetLibrary(String hallId, String url, String type) async {
-    await _firestore.collection('bingo_halls').doc(hallId).collection('assets').add({
-      'url': url,
-      'type': type,
-      'uploadedAt': FieldValue.serverTimestamp(),
-    });
+    await _firestore
+        .collection('bingo_halls')
+        .doc(hallId)
+        .collection('assets')
+        .add({
+          'url': url,
+          'type': type,
+          'uploadedAt': FieldValue.serverTimestamp(),
+        });
   }
 
   Stream<List<String>> getAssetLibrary(String hallId, String type) {
@@ -905,7 +1057,10 @@ class HallRepository {
         .where('type', isEqualTo: type)
         .orderBy('uploadedAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((d) => d.data()['url'] as String).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((d) => d.data()['url'] as String).toList(),
+        );
   }
 
   // --- Historic Image Usage (Quick Select) ---

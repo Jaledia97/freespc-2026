@@ -18,8 +18,11 @@ class UsernameRouter extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultStyle = style ?? const TextStyle(color: Colors.white, fontSize: 14);
-    final highlightStyle = linkStyle ?? const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold);
+    final defaultStyle =
+        style ?? const TextStyle(color: Colors.white, fontSize: 14);
+    final highlightStyle =
+        linkStyle ??
+        const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold);
 
     // Regex to match @username (letters, numbers, underscores)
     final RegExp exp = RegExp(r'(@[a-zA-Z0-9_]+)');
@@ -34,7 +37,12 @@ class UsernameRouter extends ConsumerWidget {
 
     for (var match in matches) {
       if (match.start > start) {
-        spans.add(TextSpan(text: text.substring(start, match.start), style: defaultStyle));
+        spans.add(
+          TextSpan(
+            text: text.substring(start, match.start),
+            style: defaultStyle,
+          ),
+        );
       }
 
       final String usernameWithAt = match.group(0)!;
@@ -49,13 +57,13 @@ class UsernameRouter extends ConsumerWidget {
               // Fetch the profile dynamically
               final authService = ref.read(authServiceProvider);
               final profiles = await authService.searchUsers(username);
-              
+
               if (profiles.isNotEmpty && context.mounted) {
                 final targetProfile = profiles.firstWhere(
-                  (p) => p.username.toLowerCase() == username.toLowerCase(), 
-                  orElse: () => profiles.first
+                  (p) => p.username.toLowerCase() == username.toLowerCase(),
+                  orElse: () => profiles.first,
                 );
-                
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -63,9 +71,9 @@ class UsernameRouter extends ConsumerWidget {
                   ),
                 );
               } else if (context.mounted) {
-                 ScaffoldMessenger.of(context).showSnackBar(
-                   const SnackBar(content: Text("User not found."))
-                 );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("User not found.")),
+                );
               }
             },
         ),

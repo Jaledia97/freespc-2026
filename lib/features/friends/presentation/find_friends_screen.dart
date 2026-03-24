@@ -37,32 +37,56 @@ class FindFriendsScreen extends ConsumerWidget {
             margin: const EdgeInsets.only(top: 12, bottom: 20),
             height: 5,
             width: 48,
-            decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(4)),
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(4),
+            ),
           ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-            child: Text("Find Friends", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+            child: Text(
+              "Find Friends",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
+            ),
           ),
           const SizedBox(height: 12),
           Expanded(
             child: userAsync.when(
               data: (user) {
                 if (user == null) {
-                  return const Center(child: Text("User not found", style: TextStyle(color: Colors.white)));
+                  return const Center(
+                    child: Text(
+                      "User not found",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
                 }
 
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 12.0,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const _ManualSearchSection(),
                       const SizedBox(height: 40),
-                      
+
                       const Text(
                         "Scan QR to Add",
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.5,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       const Text(
@@ -71,7 +95,7 @@ class FindFriendsScreen extends ConsumerWidget {
                         style: TextStyle(color: Colors.white60, fontSize: 14),
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // QR Code Display Premium Card
                       Center(
                         child: GlassContainer(
@@ -90,7 +114,7 @@ class FindFriendsScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 32),
 
                       // Scan Button
@@ -101,12 +125,25 @@ class FindFriendsScreen extends ConsumerWidget {
                             backgroundColor: Colors.blueAccent.withOpacity(0.9),
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
                           icon: const Icon(Icons.qr_code_scanner, size: 22),
-                          label: const Text("Scan a Friend's QR", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          label: const Text(
+                            "Scan a Friend's QR",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const ScanScreen()));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ScanScreen(),
+                              ),
+                            );
                           },
                         ),
                       ),
@@ -117,7 +154,14 @@ class FindFriendsScreen extends ConsumerWidget {
                           Expanded(child: Divider(color: Colors.white12)),
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Text("OR", style: TextStyle(color: Colors.white30, fontWeight: FontWeight.w600, fontSize: 13)),
+                            child: Text(
+                              "OR",
+                              style: TextStyle(
+                                color: Colors.white30,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
                           Expanded(child: Divider(color: Colors.white12)),
                         ],
@@ -129,23 +173,40 @@ class FindFriendsScreen extends ConsumerWidget {
                         height: 56,
                         child: OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                            side: BorderSide(
+                              color: Colors.white.withOpacity(0.2),
+                            ),
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
                           icon: const Icon(Icons.ios_share, size: 20),
-                          label: const Text("Share Invite Link", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          label: const Text(
+                            "Share Invite Link",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           onPressed: () => _shareLink(user.uid),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 48),
                     ],
                   ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
-              error: (e, st) => Center(child: Text("Error: $e", style: const TextStyle(color: Colors.red))),
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: Colors.blueAccent),
+              ),
+              error: (e, st) => Center(
+                child: Text(
+                  "Error: $e",
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
             ),
           ),
         ],
@@ -158,7 +219,8 @@ class _ManualSearchSection extends ConsumerStatefulWidget {
   const _ManualSearchSection();
 
   @override
-  ConsumerState<_ManualSearchSection> createState() => _ManualSearchSectionState();
+  ConsumerState<_ManualSearchSection> createState() =>
+      _ManualSearchSectionState();
 }
 
 class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
@@ -187,24 +249,26 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
     if (query.trim().isEmpty) {
       if (mounted) {
         setState(() {
-        _searchResults = [];
-        _hasSearched = false;
-      });
+          _searchResults = [];
+          _hasSearched = false;
+        });
       }
       return;
     }
-    
+
     setState(() {
       _isSearching = true;
       _hasSearched = true;
     });
 
-    final results = await ref.read(authServiceProvider).searchUsers(query.trim());
-    
+    final results = await ref
+        .read(authServiceProvider)
+        .searchUsers(query.trim());
+
     if (mounted) {
       setState(() {
-         _searchResults = results;
-         _isSearching = false;
+        _searchResults = results;
+        _isSearching = false;
       });
     }
   }
@@ -229,31 +293,48 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
             style: const TextStyle(color: Colors.white, fontSize: 15),
             decoration: InputDecoration(
               hintText: "Search by username or name...",
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 15),
-              prefixIcon: Icon(Icons.search, color: Colors.white.withOpacity(0.4)),
+              hintStyle: TextStyle(
+                color: Colors.white.withOpacity(0.4),
+                fontSize: 15,
+              ),
+              prefixIcon: Icon(
+                Icons.search,
+                color: Colors.white.withOpacity(0.4),
+              ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 16),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.blueAccent),
+                icon: const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Colors.blueAccent,
+                ),
                 onPressed: () => _performSearch(_searchController.text),
-              )
+              ),
             ),
             onSubmitted: _performSearch,
           ),
         ),
-        
+
         if (_isSearching)
           const Padding(
             padding: EdgeInsets.all(24.0),
-            child: Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
+            child: Center(
+              child: CircularProgressIndicator(color: Colors.blueAccent),
+            ),
           ),
-          
+
         if (!_isSearching && _hasSearched && _searchResults.isEmpty)
           const Padding(
             padding: EdgeInsets.all(24.0),
-            child: Center(child: Text("No users found.", style: TextStyle(color: Colors.white54))),
+            child: Center(
+              child: Text(
+                "No users found.",
+                style: TextStyle(color: Colors.white54),
+              ),
+            ),
           ),
-          
+
         if (!_isSearching && !_hasSearched && currentUserId != null)
           _PendingRequestsSection(currentUserId: currentUserId),
 
@@ -265,7 +346,15 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
               children: [
                 const Padding(
                   padding: EdgeInsets.only(left: 4, bottom: 12),
-                  child: Text("Suggested Friends", style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white54, fontSize: 13, letterSpacing: 0.5)),
+                  child: Text(
+                    "Suggested Friends",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white54,
+                      fontSize: 13,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
                 ),
                 GlassContainer(
                   borderRadius: BorderRadius.circular(16),
@@ -273,26 +362,60 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
                     shrinkWrap: true,
                     padding: EdgeInsets.zero,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _suggestedResults.length > 5 ? 5 : _suggestedResults.length,
-                    separatorBuilder: (context, index) => const Divider(color: Colors.white12, height: 1),
+                    itemCount: _suggestedResults.length > 5
+                        ? 5
+                        : _suggestedResults.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(color: Colors.white12, height: 1),
                     itemBuilder: (context, index) {
                       final result = _suggestedResults[index];
                       return ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
                         leading: CircleAvatar(
                           radius: 20,
                           backgroundColor: Colors.white12,
-                          backgroundImage: result.photoUrl != null ? CachedNetworkImageProvider(result.photoUrl!) : null,
-                          child: result.photoUrl == null ? const Icon(Icons.person, color: Colors.white54) : null,
+                          backgroundImage: result.photoUrl != null
+                              ? CachedNetworkImageProvider(result.photoUrl!)
+                              : null,
+                          child: result.photoUrl == null
+                              ? const Icon(Icons.person, color: Colors.white54)
+                              : null,
                         ),
-                        title: Text("@${result.username}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                        subtitle: result.realNameVisibility == 'Everyone' || result.realNameVisibility == 'Friends Only'
-                          ? Text("${result.firstName} ${result.lastName}", style: const TextStyle(color: Colors.white54, fontSize: 13))
-                          : null,
-                        trailing: currentUserId != null 
-                            ? _FriendshipStatusIcon(currentUserId: currentUserId, targetUser: result)
+                        title: Text(
+                          "@${result.username}",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        subtitle:
+                            result.realNameVisibility == 'Everyone' ||
+                                result.realNameVisibility == 'Friends Only'
+                            ? Text(
+                                "${result.firstName} ${result.lastName}",
+                                style: const TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 13,
+                                ),
+                              )
                             : null,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(profile: result))),
+                        trailing: currentUserId != null
+                            ? _FriendshipStatusIcon(
+                                currentUserId: currentUserId,
+                                targetUser: result,
+                              )
+                            : null,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                PublicProfileScreen(profile: result),
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -300,7 +423,7 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
               ],
             ),
           ),
-          
+
         if (!_isSearching && _hasSearched && _searchResults.isNotEmpty)
           Container(
             margin: const EdgeInsets.only(top: 24),
@@ -310,31 +433,64 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: _searchResults.length > 10 ? 10 : _searchResults.length,
-                separatorBuilder: (context, index) => const Divider(color: Colors.white12, height: 1),
+                itemCount: _searchResults.length > 10
+                    ? 10
+                    : _searchResults.length,
+                separatorBuilder: (context, index) =>
+                    const Divider(color: Colors.white12, height: 1),
                 itemBuilder: (context, index) {
                   final result = _searchResults[index];
                   return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     leading: CircleAvatar(
                       radius: 20,
                       backgroundColor: Colors.white12,
-                      backgroundImage: result.photoUrl != null ? CachedNetworkImageProvider(result.photoUrl!) : null,
-                      child: result.photoUrl == null ? const Icon(Icons.person, color: Colors.white54) : null,
+                      backgroundImage: result.photoUrl != null
+                          ? CachedNetworkImageProvider(result.photoUrl!)
+                          : null,
+                      child: result.photoUrl == null
+                          ? const Icon(Icons.person, color: Colors.white54)
+                          : null,
                     ),
-                    title: Text("@${result.username}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                    subtitle: result.realNameVisibility == 'Everyone' || result.realNameVisibility == 'Friends Only'
-                      ? Text("${result.firstName} ${result.lastName}", style: const TextStyle(color: Colors.white54, fontSize: 13))
-                      : null,
-                    trailing: currentUserId != null 
-                        ? _FriendshipStatusIcon(currentUserId: currentUserId, targetUser: result)
+                    title: Text(
+                      "@${result.username}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    subtitle:
+                        result.realNameVisibility == 'Everyone' ||
+                            result.realNameVisibility == 'Friends Only'
+                        ? Text(
+                            "${result.firstName} ${result.lastName}",
+                            style: const TextStyle(
+                              color: Colors.white54,
+                              fontSize: 13,
+                            ),
+                          )
                         : null,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(profile: result))),
+                    trailing: currentUserId != null
+                        ? _FriendshipStatusIcon(
+                            currentUserId: currentUserId,
+                            targetUser: result,
+                          )
+                        : null,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PublicProfileScreen(profile: result),
+                      ),
+                    ),
                   );
                 },
               ),
             ),
-          )
+          ),
       ],
     );
   }
@@ -351,7 +507,9 @@ class _PendingRequestsSection extends ConsumerWidget {
 
     return friendsStream.when(
       data: (friendsList) {
-        final pendingRequests = friendsList.where((f) => f.status == 'received').toList();
+        final pendingRequests = friendsList
+            .where((f) => f.status == 'received')
+            .toList();
 
         if (pendingRequests.isEmpty) return const SizedBox.shrink();
 
@@ -362,7 +520,15 @@ class _PendingRequestsSection extends ConsumerWidget {
             children: [
               const Padding(
                 padding: EdgeInsets.only(left: 4, bottom: 12),
-                child: Text("Pending Requests", style: TextStyle(fontWeight: FontWeight.w700, color: Colors.blueAccent, fontSize: 13, letterSpacing: 0.5)),
+                child: Text(
+                  "Pending Requests",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.blueAccent,
+                    fontSize: 13,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ),
               GlassContainer(
                 borderRadius: BorderRadius.circular(16),
@@ -371,11 +537,17 @@ class _PendingRequestsSection extends ConsumerWidget {
                   padding: EdgeInsets.zero,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: pendingRequests.length,
-                  separatorBuilder: (context, index) => const Divider(color: Colors.white12, height: 1),
+                  separatorBuilder: (context, index) =>
+                      const Divider(color: Colors.white12, height: 1),
                   itemBuilder: (context, index) {
                     final request = pendingRequests[index];
-                    final senderId = request.user1Id == currentUserId ? request.user2Id : request.user1Id;
-                    return _PendingRequestTile(senderId: senderId, currentUserId: currentUserId);
+                    final senderId = request.user1Id == currentUserId
+                        ? request.user2Id
+                        : request.user1Id;
+                    return _PendingRequestTile(
+                      senderId: senderId,
+                      currentUserId: currentUserId,
+                    );
                   },
                 ),
               ),
@@ -393,7 +565,10 @@ class _PendingRequestTile extends ConsumerWidget {
   final String senderId;
   final String currentUserId;
 
-  const _PendingRequestTile({required this.senderId, required this.currentUserId});
+  const _PendingRequestTile({
+    required this.senderId,
+    required this.currentUserId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -402,20 +577,46 @@ class _PendingRequestTile extends ConsumerWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const ListTile(
-            leading: CircleAvatar(radius: 20, backgroundColor: Colors.white12, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blueAccent)),
-            title: Text("Loading profile...", style: TextStyle(color: Colors.white54, fontSize: 15)),
+            leading: CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.white12,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.blueAccent,
+              ),
+            ),
+            title: Text(
+              "Loading profile...",
+              style: TextStyle(color: Colors.white54, fontSize: 15),
+            ),
           );
         }
 
         if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
           return ListTile(
-            leading: const CircleAvatar(radius: 20, backgroundColor: Colors.white12, child: Icon(Icons.error, color: Colors.redAccent)),
-            title: const Text("Unknown User", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-            subtitle: const Text("Profile missing or deleted", style: TextStyle(color: Colors.white54, fontSize: 13)),
+            leading: const CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.white12,
+              child: Icon(Icons.error, color: Colors.redAccent),
+            ),
+            title: const Text(
+              "Unknown User",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+            subtitle: const Text(
+              "Profile missing or deleted",
+              style: TextStyle(color: Colors.white54, fontSize: 13),
+            ),
             trailing: IconButton(
               icon: const Icon(Icons.cancel, color: Colors.white54),
               onPressed: () async {
-                await ref.read(friendsRepositoryProvider).removeFriend(currentUserId, senderId);
+                await ref
+                    .read(friendsRepositoryProvider)
+                    .removeFriend(currentUserId, senderId);
               },
             ),
           );
@@ -424,45 +625,91 @@ class _PendingRequestTile extends ConsumerWidget {
         final sender = snapshot.data!;
 
         return ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
+          ),
           leading: CircleAvatar(
             radius: 20,
             backgroundColor: Colors.white12,
-            backgroundImage: sender.photoUrl != null ? CachedNetworkImageProvider(sender.photoUrl!) : null,
-            child: sender.photoUrl == null ? const Icon(Icons.person, color: Colors.white54) : null,
+            backgroundImage: sender.photoUrl != null
+                ? CachedNetworkImageProvider(sender.photoUrl!)
+                : null,
+            child: sender.photoUrl == null
+                ? const Icon(Icons.person, color: Colors.white54)
+                : null,
           ),
-          title: Text("@${sender.username}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-          subtitle: const Text("Sent you a request", style: TextStyle(color: Colors.white54, fontSize: 13)),
+          title: Text(
+            "@${sender.username}",
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
+          ),
+          subtitle: const Text(
+            "Sent you a request",
+            style: TextStyle(color: Colors.white54, fontSize: 13),
+          ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                decoration: BoxDecoration(color: Colors.greenAccent.withOpacity(0.15), shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: Colors.greenAccent.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
                 child: IconButton(
-                  icon: const Icon(Icons.check, color: Colors.greenAccent, size: 20),
+                  icon: const Icon(
+                    Icons.check,
+                    color: Colors.greenAccent,
+                    size: 20,
+                  ),
                   onPressed: () async {
                     try {
-                      await ref.read(friendsRepositoryProvider).acceptFriendRequest(currentUserId, sender.uid);
+                      await ref
+                          .read(friendsRepositoryProvider)
+                          .acceptFriendRequest(currentUserId, sender.uid);
                     } catch (e) {
-                       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
+                      if (context.mounted)
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Error: $e"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
                     }
                   },
                 ),
               ),
               const SizedBox(width: 8),
               Container(
-                decoration: BoxDecoration(color: Colors.redAccent.withOpacity(0.15), shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.redAccent, size: 20),
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.redAccent,
+                    size: 20,
+                  ),
                   onPressed: () async {
-                    await ref.read(friendsRepositoryProvider).removeFriend(currentUserId, sender.uid);
+                    await ref
+                        .read(friendsRepositoryProvider)
+                        .removeFriend(currentUserId, sender.uid);
                   },
                 ),
               ),
             ],
           ),
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(profile: sender)));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PublicProfileScreen(profile: sender),
+              ),
+            );
           },
         );
       },
@@ -489,17 +736,30 @@ class _FriendshipStatusIcon extends ConsumerWidget {
 
     return friendsStream.when(
       data: (friendsList) {
-        final friendRecord = friendsList.where((f) => f.user2Id == targetUser.uid || f.user1Id == targetUser.uid).firstOrNull;
+        final friendRecord = friendsList
+            .where(
+              (f) => f.user2Id == targetUser.uid || f.user1Id == targetUser.uid,
+            )
+            .firstOrNull;
 
         if (friendRecord == null) {
           // Not friends
           return Container(
-            decoration: BoxDecoration(color: Colors.blueAccent.withOpacity(0.15), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: Colors.blueAccent.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
             child: IconButton(
-              icon: const Icon(Icons.person_add, color: Colors.blueAccent, size: 20),
+              icon: const Icon(
+                Icons.person_add,
+                color: Colors.blueAccent,
+                size: 20,
+              ),
               onPressed: () async {
                 try {
-                  await ref.read(friendsRepositoryProvider).sendFriendRequest(currentUserId, targetUser.uid);
+                  await ref
+                      .read(friendsRepositoryProvider)
+                      .sendFriendRequest(currentUserId, targetUser.uid);
                 } catch (e) {}
               },
             ),
@@ -507,37 +767,70 @@ class _FriendshipStatusIcon extends ConsumerWidget {
         } else if (friendRecord.status == 'sent') {
           // Pending request sent by current user
           return Container(
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
             child: IconButton(
-              icon: const Icon(Icons.hourglass_empty, color: Colors.white54, size: 20),
+              icon: const Icon(
+                Icons.hourglass_empty,
+                color: Colors.white54,
+                size: 20,
+              ),
               onPressed: () async {
-                 final confirm = await showDialog<bool>(
-                   context: context,
-                   builder: (context) => AlertDialog(
-                     backgroundColor: const Color(0xFF2C2C2C),
-                     title: const Text("Cancel Friend Request?", style: TextStyle(color: Colors.white)),
-                     content: Text("Cancel request to @${targetUser.username}?", style: const TextStyle(color: Colors.white70)),
-                     actions: [
-                       TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("No")),
-                       TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Yes", style: TextStyle(color: Colors.redAccent))),
-                     ],
-                   )
-                 );
-                 if (confirm == true) {
-                   await ref.read(friendsRepositoryProvider).removeFriend(currentUserId, targetUser.uid);
-                 }
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: const Color(0xFF2C2C2C),
+                    title: const Text(
+                      "Cancel Friend Request?",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    content: Text(
+                      "Cancel request to @${targetUser.username}?",
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text("No"),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text(
+                          "Yes",
+                          style: TextStyle(color: Colors.redAccent),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  await ref
+                      .read(friendsRepositoryProvider)
+                      .removeFriend(currentUserId, targetUser.uid);
+                }
               },
             ),
           );
         } else if (friendRecord.status == 'received') {
           // Received a request from this user
           return Container(
-            decoration: BoxDecoration(color: Colors.greenAccent.withOpacity(0.15), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: Colors.greenAccent.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
             child: IconButton(
-              icon: const Icon(Icons.check_circle_outline, color: Colors.greenAccent, size: 20),
+              icon: const Icon(
+                Icons.check_circle_outline,
+                color: Colors.greenAccent,
+                size: 20,
+              ),
               onPressed: () async {
                 try {
-                  await ref.read(friendsRepositoryProvider).acceptFriendRequest(currentUserId, targetUser.uid);
+                  await ref
+                      .read(friendsRepositoryProvider)
+                      .acceptFriendRequest(currentUserId, targetUser.uid);
                 } catch (e) {}
               },
             ),
@@ -545,20 +838,39 @@ class _FriendshipStatusIcon extends ConsumerWidget {
         } else {
           // Already friends
           return Container(
-            decoration: BoxDecoration(color: Colors.blueAccent.withOpacity(0.15), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: Colors.blueAccent.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
             child: IconButton(
-              icon: const Icon(Icons.chat_bubble_rounded, color: Colors.blueAccent, size: 20),
+              icon: const Icon(
+                Icons.chat_bubble_rounded,
+                color: Colors.blueAccent,
+                size: 20,
+              ),
               onPressed: () async {
                 try {
-                  final chat = await ref.read(messagingRepositoryProvider).createChat(
-                    [currentUserId, targetUser.uid],
-                    {
-                      currentUserId: ref.read(userProfileProvider).value?.username ?? "User",
-                      targetUser.uid: targetUser.username,
-                    }
-                  );
+                  final chat = await ref
+                      .read(messagingRepositoryProvider)
+                      .createChat(
+                        [currentUserId, targetUser.uid],
+                        {
+                          currentUserId:
+                              ref.read(userProfileProvider).value?.username ??
+                              "User",
+                          targetUser.uid: targetUser.username,
+                        },
+                      );
                   if (context.mounted) {
-                     Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(chatId: chat.id, chatName: targetUser.username)));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChatScreen(
+                          chatId: chat.id,
+                          chatName: targetUser.username,
+                        ),
+                      ),
+                    );
                   }
                 } catch (e) {}
               },

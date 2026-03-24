@@ -5,7 +5,11 @@ class InviteStaffSheet extends StatelessWidget {
   final String hallId;
   final String hallName;
 
-  const InviteStaffSheet({super.key, required this.hallId, required this.hallName});
+  const InviteStaffSheet({
+    super.key,
+    required this.hallId,
+    required this.hallName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +17,7 @@ class InviteStaffSheet extends StatelessWidget {
     // Deep Link Format: https://freespc.app/join?hallId=...
     // Note: In development/local, this might open the browser if not configured in AndroidManifest/Info.plist yet.
     // But 'app_links' will catch it if configured. For now, we simulate the link string.
-    
+
     // We can use a custom scheme 'freespc://join?hallId=...' or http if verified.
     // Let's use a robust https link that *could* be a dynamic link.
     final String inviteLink = "https://freespc.app/join?hallId=$hallId";
@@ -28,14 +32,21 @@ class InviteStaffSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Invite Staff", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+          const Text(
+            "Invite Staff",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 12),
           Text(
             "Send this link to your staff members. When they click it, they will join '$hallName' as a pending member.",
             style: TextStyle(color: Colors.grey[400]),
           ),
           const SizedBox(height: 24),
-          
+
           // Link Display
           Container(
             padding: const EdgeInsets.all(12),
@@ -51,7 +62,10 @@ class InviteStaffSheet extends StatelessWidget {
                 Expanded(
                   child: Text(
                     inviteLink,
-                    style: const TextStyle(color: Colors.cyan, fontFamily: 'Courier'),
+                    style: const TextStyle(
+                      color: Colors.cyan,
+                      fontFamily: 'Courier',
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -71,7 +85,9 @@ class InviteStaffSheet extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               onPressed: () {
-                Share.share("Join $hallName team on FreeSPC! Tap here: $inviteLink");
+                Share.share(
+                  "Join $hallName team on FreeSPC! Tap here: $inviteLink",
+                );
                 Navigator.pop(context);
               },
             ),

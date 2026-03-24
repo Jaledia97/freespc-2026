@@ -12,12 +12,15 @@ abstract class PublicProfile with _$PublicProfile {
     required String lastName,
     String? photoUrl,
     String? bio,
-    @Default(0) int points, // syncing points for potential leaderboards? kept simple for now
+    @Default(0)
+    int
+    points, // syncing points for potential leaderboards? kept simple for now
     @Default('Private') String realNameVisibility,
     @Default('Online') String onlineStatus,
     String? currentCheckInHallId,
     @Default([]) List<String> squadIds,
   }) = _PublicProfile;
 
-  factory PublicProfile.fromJson(Map<String, Object?> json) => _$PublicProfileFromJson(json);
+  factory PublicProfile.fromJson(Map<String, Object?> json) =>
+      _$PublicProfileFromJson(json);
 }

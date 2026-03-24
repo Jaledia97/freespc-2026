@@ -16,7 +16,7 @@ class PinEntryScreen extends ConsumerStatefulWidget {
 class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
   String _pin = "";
   final String _correctPin = "4836"; // Hardcoded Dev PIN
-  
+
   final local_auth.LocalAuthentication auth = local_auth.LocalAuthentication();
   bool _canCheckBiometrics = false;
 
@@ -33,7 +33,7 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
       setState(() {
         _canCheckBiometrics = canCheck && isSupported;
       });
-      
+
       if (_canCheckBiometrics) {
         _authenticate();
       }
@@ -85,7 +85,7 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
       // Failure
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Incorrect PIN"), 
+          content: Text("Incorrect PIN"),
           backgroundColor: Colors.red,
           duration: Duration(milliseconds: 1000),
         ),
@@ -97,17 +97,20 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
   }
 
   void _navigateToDashboard() {
-     final user = ref.read(userProfileProvider).value;
-     if (user != null && RoleUtils.canAccessDashboard(user)) {
-       Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ManagerDashboardScreen()),
-        );
-     } else {
-       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Access Denied: Insufficient Permissions"), backgroundColor: Colors.red),
-       );
-     }
+    final user = ref.read(userProfileProvider).value;
+    if (user != null && RoleUtils.canAccessDashboard(user)) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ManagerDashboardScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Access Denied: Insufficient Permissions"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -127,7 +130,11 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
             const SizedBox(height: 24),
             const Text(
               "Manager Access",
-              style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -135,14 +142,17 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
               style: TextStyle(color: Colors.white54, fontSize: 16),
             ),
             if (_canCheckBiometrics)
-               Padding(
-                 padding: const EdgeInsets.only(top: 8),
-                 child: TextButton.icon(
-                   onPressed: _authenticate, 
-                   icon: const Icon(Icons.fingerprint, color: Colors.blueAccent), 
-                   label: const Text("Use Biometrics", style: TextStyle(color: Colors.blueAccent)),
-                 ),
-               ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: TextButton.icon(
+                  onPressed: _authenticate,
+                  icon: const Icon(Icons.fingerprint, color: Colors.blueAccent),
+                  label: const Text(
+                    "Use Biometrics",
+                    style: TextStyle(color: Colors.blueAccent),
+                  ),
+                ),
+              ),
 
             const SizedBox(height: 48),
 
@@ -156,7 +166,9 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
                   height: 16,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: index < _pin.length ? Colors.blueAccent : Colors.white12,
+                    color: index < _pin.length
+                        ? Colors.blueAccent
+                        : Colors.white12,
                   ),
                 );
               }),
@@ -180,16 +192,24 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
                     if (_canCheckBiometrics)
                       IconButton(
                         onPressed: _authenticate,
-                        icon: const Icon(Icons.fingerprint, color: Colors.blueAccent, size: 32),
+                        icon: const Icon(
+                          Icons.fingerprint,
+                          color: Colors.blueAccent,
+                          size: 32,
+                        ),
                       )
-                    else 
-                      const SizedBox(), 
+                    else
+                      const SizedBox(),
 
                     _buildDigitBtn("0"),
-                    
+
                     IconButton(
                       onPressed: _onDelete,
-                      icon: const Icon(Icons.backspace_outlined, color: Colors.white70, size: 28),
+                      icon: const Icon(
+                        Icons.backspace_outlined,
+                        color: Colors.white70,
+                        size: 28,
+                      ),
                     ),
                   ],
                 ),
@@ -213,7 +233,11 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
         ),
         child: Text(
           digit,
-          style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w500),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );

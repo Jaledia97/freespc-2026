@@ -19,20 +19,28 @@ class RaffleTicketItem extends ConsumerWidget {
 
         return GestureDetector(
           onTap: () {
-             if (hall != null) {
-               Navigator.push(
-                 context, 
-                 MaterialPageRoute(
-                   builder: (_) => HallProfileScreen(hall: hall, initialTabIndex: 2) // 2 = Raffles Tab
-                 )
-               );
-             } else {
-               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Hall not found")));
-             }
+            if (hall != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HallProfileScreen(
+                    hall: hall,
+                    initialTabIndex: 2,
+                  ), // 2 = Raffles Tab
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text("Hall not found")));
+            }
           },
           child: Container(
             width: 280,
-            margin: const EdgeInsets.only(right: 12, bottom: 12), // Added bottom margin for vertical lists
+            margin: const EdgeInsets.only(
+              right: 12,
+              bottom: 12,
+            ), // Added bottom margin for vertical lists
             child: Stack(
               children: [
                 // Ticket Shape (Visual approximation)
@@ -50,17 +58,34 @@ class RaffleTicketItem extends ConsumerWidget {
                         height: 100, // Fixed height for consistency
                         decoration: BoxDecoration(
                           color: Colors.grey[900],
-                          borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
-                          image: ticket.imageUrl != null 
-                            ? DecorationImage(image: NetworkImage(ticket.imageUrl!), fit: BoxFit.cover)
-                            : null,
+                          borderRadius: const BorderRadius.horizontal(
+                            left: Radius.circular(12),
+                          ),
+                          image: ticket.imageUrl != null
+                              ? DecorationImage(
+                                  image: NetworkImage(ticket.imageUrl!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
                         ),
-                        child: ticket.imageUrl == null ? const Center(child: Icon(Icons.confirmation_number, color: Colors.white24)) : null,
+                        child: ticket.imageUrl == null
+                            ? const Center(
+                                child: Icon(
+                                  Icons.confirmation_number,
+                                  color: Colors.white24,
+                                ),
+                              )
+                            : null,
                       ),
-                      
+
                       // Dashed Line
-                      Container(width: 1, height: 100, color: Colors.white10, margin: const EdgeInsets.symmetric(horizontal: 2)),
-                      
+                      Container(
+                        width: 1,
+                        height: 100,
+                        color: Colors.white10,
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                      ),
+
                       // Details
                       Expanded(
                         child: Padding(
@@ -69,15 +94,40 @@ class RaffleTicketItem extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(ticket.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                              Text(
+                                ticket.title,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                               const SizedBox(height: 4),
-                              Text(hallName, style: const TextStyle(color: Colors.white54, fontSize: 12)), // Use Live Name
+                              Text(
+                                hallName,
+                                style: const TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 12,
+                                ),
+                              ), // Use Live Name
                               const SizedBox(height: 12),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text("x${ticket.quantity} Tickets", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-                                  const Icon(Icons.qr_code, color: Colors.white24, size: 20),
+                                  Text(
+                                    "x${ticket.quantity} Tickets",
+                                    style: const TextStyle(
+                                      color: Colors.amber,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.qr_code,
+                                    color: Colors.white24,
+                                    size: 20,
+                                  ),
                                 ],
                               ),
                             ],
@@ -92,8 +142,13 @@ class RaffleTicketItem extends ConsumerWidget {
           ),
         );
       },
-      loading: () => Container(width: 280, height: 100, margin: const EdgeInsets.only(right: 12, bottom: 12), color: Colors.white10),
-      error: (_,__) => const SizedBox(),
+      loading: () => Container(
+        width: 280,
+        height: 100,
+        margin: const EdgeInsets.only(right: 12, bottom: 12),
+        color: Colors.white10,
+      ),
+      error: (_, __) => const SizedBox(),
     );
   }
 }

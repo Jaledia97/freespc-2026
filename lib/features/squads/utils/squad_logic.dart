@@ -9,7 +9,7 @@ double calculateSquadBonus(
   if (userSquad == null) return 1.0;
   if (!userSquad.isValidSquad) return 1.0;
   if (!hall.squadBonusConfig.isSquadBonusActive) return 1.0;
-  
+
   final config = hall.squadBonusConfig;
   final now = DateTime.now();
   if (config.startTime != null && now.isBefore(config.startTime!)) return 1.0;

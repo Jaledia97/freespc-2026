@@ -13,6 +13,7 @@ import '../../../../models/feed_item.dart';
 import 'social_interaction_bar.dart';
 import 'dynamic_hall_header.dart';
 import 'expandable_post_text.dart';
+import 'package:vibration/vibration.dart';
 
 class SpecialCard extends ConsumerStatefulWidget {
   final SpecialModel special;
@@ -74,7 +75,7 @@ class _SpecialCardState extends ConsumerState<SpecialCard>
 
           // Post Content
           GestureDetector(
-            onDoubleTap: () => HapticFeedback.vibrate(),
+            onDoubleTap: () => Vibration.vibrate(duration: 40),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
@@ -145,7 +146,7 @@ class _SpecialCardState extends ConsumerState<SpecialCard>
           // Edge-to-Edge Image
           if (widget.special.imageUrl.isNotEmpty)
             GestureDetector(
-              onDoubleTap: () => HapticFeedback.vibrate(),
+              onDoubleTap: () => Vibration.vibrate(duration: 40),
               child: CachedNetworkImage(
                 imageUrl: widget.special.imageUrl,
                 width: double.infinity,

@@ -9,10 +9,12 @@ abstract class HallMembershipModel with _$HallMembershipModel {
     required String hallId,
     required String hallName,
     required double balance,
-    @Default('Points') String currencyName, // e.g. "Points", "Tokens", "Credits"
+    @Default('Points')
+    String currencyName, // e.g. "Points", "Tokens", "Credits"
     @Default('Bronze') String tier, // e.g. "Gold", "VIP"
     String? bannerUrl, // Optional: Specific card design
   }) = _HallMembershipModel;
 
-  factory HallMembershipModel.fromJson(Map<String, Object?> json) => _$HallMembershipModelFromJson(json);
+  factory HallMembershipModel.fromJson(Map<String, Object?> json) =>
+      _$HallMembershipModelFromJson(json);
 }

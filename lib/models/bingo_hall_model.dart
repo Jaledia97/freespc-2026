@@ -41,7 +41,15 @@ abstract class BingoHallModel with _$BingoHallModel {
     // Loyalty Configuration
     @Default(LoyaltySettings()) LoyaltySettings loyaltySettings,
     // Store Categories
-    @Default(['Merchandise', 'Food & Beverage', 'Sessions', 'Pull Tabs', 'Electronics', 'Other']) List<String> storeCategories,
+    @Default([
+      'Merchandise',
+      'Food & Beverage',
+      'Sessions',
+      'Pull Tabs',
+      'Electronics',
+      'Other',
+    ])
+    List<String> storeCategories,
     @Default('bingo') String venueType,
     @Default(SquadBonusConfig()) SquadBonusConfig squadBonusConfig,
   }) = _BingoHallModel;
@@ -52,7 +60,7 @@ abstract class BingoHallModel with _$BingoHallModel {
   // Helper for GeoFlutterFire Plus
   Map<String, dynamic> get geoFirePoint => {
     'geohash': geoHash,
-    'geopoint': GeoPoint(latitude, longitude), 
+    'geopoint': GeoPoint(latitude, longitude),
   };
 }
 

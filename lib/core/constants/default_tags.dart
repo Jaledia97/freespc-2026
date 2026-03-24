@@ -4,12 +4,12 @@ class DefaultTags {
   static const List<String> categories = [
     'Session',
     'Regular Program',
-    'Specials', 
-    'Pulltabs', 
-    'Progressives', 
+    'Specials',
+    'Pulltabs',
+    'Progressives',
     'Raffles',
     'Tournaments',
-    'New Player'
+    'New Player',
   ];
 
   static const List<Color> categoryColors = [

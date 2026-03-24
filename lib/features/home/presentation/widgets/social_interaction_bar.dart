@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vibration/vibration.dart';
 import 'dart:convert';
 import '../../../../models/feed_item.dart';
 import '../../../../services/auth_service.dart';
@@ -22,13 +23,13 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
   bool? _localHypeState; // Local optimistic state
 
   void _handleHype(bool currentlyHyped) {
-    HapticFeedback.vibrate();
+    Vibration.vibrate(duration: 40);
     setState(() => _localHypeState = !currentlyHyped);
     _handleInteractionSync('reactionUserIds', !currentlyHyped);
   }
 
   void _showReactionsOverlay(BuildContext context, Offset position) {
-    HapticFeedback.vibrate();
+    Vibration.vibrate(duration: 40);
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
@@ -93,7 +94,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
   Widget _reactionIcon(String emoji, String label, BuildContext parentContext) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.vibrate();
+        Vibration.vibrate(duration: 40);
         setState(() => _localHypeState = true); // Represent reaction
         Navigator.pop(parentContext);
         ScaffoldMessenger.of(
@@ -144,7 +145,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
   }
 
   void _handleRsvp(bool currentlyRsvpd) {
-    HapticFeedback.vibrate();
+    Vibration.vibrate(duration: 40);
     setState(() => _localRsvpState = !currentlyRsvpd);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -157,7 +158,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
   }
 
   void _handleComment() {
-    HapticFeedback.vibrate();
+    Vibration.vibrate(duration: 40);
 
     final currentUser = ref.read(authStateChangesProvider).value;
     if (currentUser == null) {
@@ -198,7 +199,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
   }
 
   void _handleShare() {
-    HapticFeedback.vibrate();
+    Vibration.vibrate(duration: 40);
     final String titleText = widget.feedItem.map(
       tournament: (t) => t.data.title,
       raffle: (r) => r.data.name,

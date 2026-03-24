@@ -31,7 +31,8 @@ abstract class SpecialModel with _$SpecialModel {
     String? latestComment,
   }) = _SpecialModel;
 
-  factory SpecialModel.fromJson(Map<String, Object?> json) => _$SpecialModelFromJson(json);
+  factory SpecialModel.fromJson(Map<String, Object?> json) =>
+      _$SpecialModelFromJson(json);
 }
 
 @freezed
@@ -45,7 +46,6 @@ abstract class RecurrenceRule with _$RecurrenceRule {
     int? occurrenceCount,
   }) = _RecurrenceRule;
 
-  factory RecurrenceRule.fromJson(Map<String, Object?> json) => _$RecurrenceRuleFromJson(json);
+  factory RecurrenceRule.fromJson(Map<String, Object?> json) =>
+      _$RecurrenceRuleFromJson(json);
 }
-
-

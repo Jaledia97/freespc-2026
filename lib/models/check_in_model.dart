@@ -21,5 +21,6 @@ abstract class CheckInModel with _$CheckInModel {
     String? latestComment,
   }) = _CheckInModel;
 
-  factory CheckInModel.fromJson(Map<String, dynamic> json) => _$CheckInModelFromJson(json);
+  factory CheckInModel.fromJson(Map<String, dynamic> json) =>
+      _$CheckInModelFromJson(json);
 }

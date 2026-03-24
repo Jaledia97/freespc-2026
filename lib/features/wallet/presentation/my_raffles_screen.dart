@@ -22,7 +22,12 @@ class MyRafflesScreen extends ConsumerWidget {
       body: userAsync.when(
         data: (user) {
           if (user == null) {
-            return const Center(child: Text("Please Log In", style: TextStyle(color: Colors.white)));
+            return const Center(
+              child: Text(
+                "Please Log In",
+                style: TextStyle(color: Colors.white),
+              ),
+            );
           }
           final userId = user.uid;
 
@@ -36,11 +41,25 @@ class MyRafflesScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.confirmation_number_outlined, size: 64, color: Colors.white38),
+                      const Icon(
+                        Icons.confirmation_number_outlined,
+                        size: 64,
+                        color: Colors.white38,
+                      ),
                       const SizedBox(height: 16),
-                      const Text("No tickets collected yet", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text(
+                        "No tickets collected yet",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 8),
-                      const Text("Join a Hall to start playing!", style: TextStyle(color: Colors.white54)),
+                      const Text(
+                        "Join a Hall to start playing!",
+                        style: TextStyle(color: Colors.white54),
+                      ),
                     ],
                   ),
                 );
@@ -53,7 +72,8 @@ class MyRafflesScreen extends ConsumerWidget {
                   // Reuse the widget, but ensure it takes full width appropriately
                   return Center(
                     child: SizedBox(
-                      width: double.infinity, // Let it stretch if needed, or stick to 280
+                      width: double
+                          .infinity, // Let it stretch if needed, or stick to 280
                       child: RaffleTicketItem(ticket: raffles[index]),
                     ),
                   );
@@ -61,11 +81,18 @@ class MyRafflesScreen extends ConsumerWidget {
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, s) => Center(child: Text("Error: $e", style: const TextStyle(color: Colors.red))),
+            error: (e, s) => Center(
+              child: Text(
+                "Error: $e",
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => const Center(child: Text("User Error", style: TextStyle(color: Colors.red))),
+        error: (e, s) => const Center(
+          child: Text("User Error", style: TextStyle(color: Colors.red)),
+        ),
       ),
     );
   }

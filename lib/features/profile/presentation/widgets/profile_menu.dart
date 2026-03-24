@@ -24,7 +24,9 @@ class ProfileMenu extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isDestructive ? Colors.red.withOpacity(0.1) : Colors.white.withOpacity(0.05),
+          color: isDestructive
+              ? Colors.red.withOpacity(0.1)
+              : Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
@@ -41,9 +43,14 @@ class ProfileMenu extends StatelessWidget {
         ),
       ),
       subtitle: subtitle != null
-          ? Text(subtitle!, style: const TextStyle(color: Colors.white54, fontSize: 12))
+          ? Text(
+              subtitle!,
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+            )
           : null,
-      trailing: trailing ?? const Icon(Icons.chevron_right, color: Colors.white24, size: 20),
+      trailing:
+          trailing ??
+          const Icon(Icons.chevron_right, color: Colors.white24, size: 20),
       onTap: onTap,
     );
   }

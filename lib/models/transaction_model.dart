@@ -1,11 +1,11 @@
-
 class TransactionModel {
   final String id;
   final String userId;
   final String hallId;
   final String hallName;
   final double amount; // Positive for deposit/win, Negative for spend
-  final String description; // e.g. "Raffle Win", "Ticket Purchase", "Daily Check-in"
+  final String
+  description; // e.g. "Raffle Win", "Ticket Purchase", "Daily Check-in"
   final DateTime timestamp;
 
   const TransactionModel({
@@ -26,8 +26,8 @@ class TransactionModel {
       hallName: json['hallName'] ?? 'Unknown Hall',
       amount: (json['amount'] ?? 0).toDouble(),
       description: json['description'] ?? '',
-      timestamp: json['timestamp'] != null 
-          ? DateTime.fromMillisecondsSinceEpoch(json['timestamp']) 
+      timestamp: json['timestamp'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(json['timestamp'])
           : DateTime.now(),
     );
   }

@@ -1,4 +1,3 @@
-
 import '../../models/user_model.dart';
 
 class RoleUtils {
@@ -24,10 +23,11 @@ class RoleUtils {
 
   // Hall-Level Permissions
   // Note: App-level admins usually have implicit access to all halls for support purposes.
-  
+
   static bool canManageHall(UserModel user, String hallId) {
     if (isSuperAdmin(user)) return true;
-    if ([owner, manager].contains(user.role) && user.homeBaseId == hallId) return true;
+    if ([owner, manager].contains(user.role) && user.homeBaseId == hallId)
+      return true;
     return false;
   }
 
@@ -45,20 +45,23 @@ class RoleUtils {
 
   static bool canManageSpecials(UserModel user, String hallId) {
     if (isAdmin(user)) return true; // Admins can help setup
-    if ([owner, manager].contains(user.role) && user.homeBaseId == hallId) return true;
+    if ([owner, manager].contains(user.role) && user.homeBaseId == hallId)
+      return true;
     return false;
   }
 
   static bool canManageGames(UserModel user, String hallId) {
-     return canManageSpecials(user, hallId);
+    return canManageSpecials(user, hallId);
   }
 
   static bool canScanAndVerify(UserModel user, String hallId) {
     if (isAdmin(user)) return true;
-    if ([owner, manager, worker].contains(user.role) && user.homeBaseId == hallId) return true;
+    if ([owner, manager, worker].contains(user.role) &&
+        user.homeBaseId == hallId)
+      return true;
     return false;
   }
-  
+
   static bool canAccessDashboard(UserModel user) {
     // Anyone worker or above can access the dashboard, but tiles will be hidden
     return [superadmin, admin, owner, manager, worker].contains(user.role);

@@ -16,5 +16,6 @@ abstract class RaffleTicketModel with _$RaffleTicketModel {
     String? imageUrl,
   }) = _RaffleTicketModel;
 
-  factory RaffleTicketModel.fromJson(Map<String, Object?> json) => _$RaffleTicketModelFromJson(json);
+  factory RaffleTicketModel.fromJson(Map<String, Object?> json) =>
+      _$RaffleTicketModelFromJson(json);
 }

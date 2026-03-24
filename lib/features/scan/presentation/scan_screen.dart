@@ -38,7 +38,7 @@ class _ScanScreenState extends State<ScanScreen> {
         onDetect: (capture) async {
           if (_isProcessing) return;
           final List<Barcode> barcodes = capture.barcodes;
-          
+
           for (final barcode in barcodes) {
             final String? code = barcode.rawValue;
             if (code != null && code.isNotEmpty) {
@@ -46,27 +46,25 @@ class _ScanScreenState extends State<ScanScreen> {
                 _isProcessing = true;
               });
               controller.stop(); // Pause camera logic
-              
+
               await showDialog(
                 context: context,
                 barrierDismissible: false,
-                builder: (context) => ScanActionDialog(
-                  content: code, 
-                  onResumeCamera: () { },
-                ),
+                builder: (context) =>
+                    ScanActionDialog(content: code, onResumeCamera: () {}),
               ).then((_) {
-                 // Resume when dialog closes
+                // Resume when dialog closes
                 if (mounted) {
-                    setState(() {
-                      _isProcessing = false;
-                    });
-                    controller.start();
+                  setState(() {
+                    _isProcessing = false;
+                  });
+                  controller.start();
                 }
               });
               break; // Only process first code
             } else {
-               // Invalid/Empty code
-               // Feedback provided here if needed, but scanning usually happens fast. 
+              // Invalid/Empty code
+              // Feedback provided here if needed, but scanning usually happens fast.
             }
           }
         },

@@ -11,9 +11,11 @@ class BluetoothRepository {
   // Feasycom Standard UUIDs (common for BP101E, but we might need to be flexible)
   // For now, we scan for devices with specific names or Service UUIDs.
   // BP101E often advertises as "FSC_BP101E" or similar.
-  static const String targetDeviceName = "BP101E"; 
-  static const String pinServiceUuid = "0000FFF0-0000-1000-8000-00805F9B34FB"; // Example
-  static const String writeCharUuid = "0000FFF2-0000-1000-8000-00805F9B34FB"; // Example
+  static const String targetDeviceName = "BP101E";
+  static const String pinServiceUuid =
+      "0000FFF0-0000-1000-8000-00805F9B34FB"; // Example
+  static const String writeCharUuid =
+      "0000FFF2-0000-1000-8000-00805F9B34FB"; // Example
 
   // Using standard AT commands for Feasycom
   // AT+PIN=000000
@@ -33,12 +35,15 @@ class BluetoothRepository {
   Stream<List<ScanResult>> scanForBeacons() {
     // Start scanning
     FlutterBluePlus.startScan(timeout: const Duration(seconds: 10));
-    
-    return FlutterBluePlus.scanResults.map((results) => 
-      results
-        .where((r) => r.device.platformName.toUpperCase().contains("BP101E") || 
-                      r.device.platformName.toUpperCase().contains("FSC"))
-        .toList()
+
+    return FlutterBluePlus.scanResults.map(
+      (results) => results
+          .where(
+            (r) =>
+                r.device.platformName.toUpperCase().contains("BP101E") ||
+                r.device.platformName.toUpperCase().contains("FSC"),
+          )
+          .toList(),
     );
   }
 
@@ -59,7 +64,7 @@ class BluetoothRepository {
     // Determine strict Write Characteristic from Feasycom Docs or Scan
     // This is a simplified implementation assuming we found the correct service/char
     // Real implementation requires iterating services.
-    
+
     final services = await device.discoverServices();
     for (var service in services) {
       for (var characteristic in service.characteristics) {
@@ -69,11 +74,11 @@ class BluetoothRepository {
           // For Feasycom AT mode: "AT+PIN{000000}"
           String command = "AT+PIN$pin";
           try {
-             await characteristic.write(command.codeUnits);
-             print("Sent PIN: $command");
-             return; // Success (optimistic)
-          } catch(e) {
-             print("Error writing PIN: $e");
+            await characteristic.write(command.codeUnits);
+            print("Sent PIN: $command");
+            return; // Success (optimistic)
+          } catch (e) {
+            print("Error writing PIN: $e");
           }
         }
       }
@@ -81,17 +86,17 @@ class BluetoothRepository {
   }
 
   Future<void> writeCommand(BluetoothDevice device, String command) async {
-     final services = await device.discoverServices();
+    final services = await device.discoverServices();
     for (var service in services) {
       for (var characteristic in service.characteristics) {
         if (characteristic.properties.write) {
           try {
-             await characteristic.write(command.codeUnits);
-             print("Sent Command: $command");
-             return; 
-          } catch(e) {
-             print("Error writing command: $e");
-             rethrow;
+            await characteristic.write(command.codeUnits);
+            print("Sent Command: $command");
+            return;
+          } catch (e) {
+            print("Error writing command: $e");
+            rethrow;
           }
         }
       }
@@ -103,19 +108,19 @@ class BluetoothRepository {
     // Standard format: 8-4-4-4-12 hex
     // Using a library or simple randomizer
     final newUuid = _generateRandomUuid();
-    
+
     // 2. Formulate AT command
     // Feasycom: AT+IBEACON=UUID,Major,Minor... verify spec.
     // Assuming AT+UUID={newUuid}
     String command = "AT+UUID$newUuid";
-    
+
     await writeCommand(device, command);
-    
+
     // 3. Wait/Verify (optional read back)
-    
+
     return newUuid;
   }
-  
+
   String _generateRandomUuid() {
     // Simple mock random UUID v4
     // Implementation of valid UUID v4 generator

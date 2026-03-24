@@ -19,5 +19,6 @@ abstract class MessageModel with _$MessageModel {
     String? replyToSenderName,
   }) = _MessageModel;
 
-  factory MessageModel.fromJson(Map<String, Object?> json) => _$MessageModelFromJson(json);
+  factory MessageModel.fromJson(Map<String, Object?> json) =>
+      _$MessageModelFromJson(json);
 }

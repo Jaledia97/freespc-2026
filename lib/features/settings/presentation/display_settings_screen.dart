@@ -30,11 +30,21 @@ class DisplaySettingsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Appearance", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text(
+                  "Appearance",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                const Text("Choose your preferred theme.", style: TextStyle(color: Colors.white54, fontSize: 12)),
+                const Text(
+                  "Choose your preferred theme.",
+                  style: TextStyle(color: Colors.white54, fontSize: 12),
+                ),
                 const SizedBox(height: 16),
-                
+
                 Consumer(
                   builder: (context, ref, _) {
                     final themeMode = ref.watch(themeModeProvider);
@@ -43,30 +53,41 @@ class DisplaySettingsScreen extends ConsumerWidget {
                       dropdownColor: const Color(0xFF2C2C2C),
                       decoration: const InputDecoration(
                         filled: true,
-                        fillColor: Colors.black26, 
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+                        fillColor: Colors.black26,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                        ),
                       ),
                       items: const [
                         DropdownMenuItem(
                           value: AppThemeMode.system,
-                          child: Text("Auto (System Default)", style: TextStyle(color: Colors.white)),
+                          child: Text(
+                            "Auto (System Default)",
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                         DropdownMenuItem(
                           value: AppThemeMode.light,
-                          child: Text("Light Mode", style: TextStyle(color: Colors.white)),
+                          child: Text(
+                            "Light Mode",
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                         DropdownMenuItem(
                           value: AppThemeMode.dark,
-                          child: Text("Dark Mode", style: TextStyle(color: Colors.white)),
+                          child: Text(
+                            "Dark Mode",
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
-                      ], 
+                      ],
                       onChanged: (val) {
                         if (val != null) {
                           ref.read(themeModeProvider.notifier).setMode(val);
                         }
-                      }
+                      },
                     );
-                  }
+                  },
                 ),
               ],
             ),
@@ -82,34 +103,52 @@ class DisplaySettingsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Time Format", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text(
+                  "Time Format",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                const Text("Select your preferred clock format.", style: TextStyle(color: Colors.white54, fontSize: 12)),
+                const Text(
+                  "Select your preferred clock format.",
+                  style: TextStyle(color: Colors.white54, fontSize: 12),
+                ),
                 const SizedBox(height: 16),
-                
+
                 DropdownButtonFormField<TimeFormat>(
                   initialValue: timeFormat,
                   dropdownColor: const Color(0xFF2C2C2C),
                   decoration: const InputDecoration(
                     filled: true,
-                    fillColor: Colors.black26, 
-                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+                    fillColor: Colors.black26,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                    ),
                   ),
                   items: const [
                     DropdownMenuItem(
                       value: TimeFormat.h12,
-                      child: Text("12-Hour (1:00 PM)", style: TextStyle(color: Colors.white)),
+                      child: Text(
+                        "12-Hour (1:00 PM)",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                     DropdownMenuItem(
                       value: TimeFormat.h24,
-                      child: Text("24-Hour (13:00)", style: TextStyle(color: Colors.white)),
+                      child: Text(
+                        "24-Hour (13:00)",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
-                  ], 
+                  ],
                   onChanged: (val) {
                     if (val != null) {
                       ref.read(timeFormatProvider.notifier).setFormat(val);
                     }
-                  }
+                  },
                 ),
               ],
             ),

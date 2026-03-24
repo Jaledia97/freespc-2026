@@ -14,7 +14,8 @@ abstract class SquadModel with _$SquadModel {
     required String captainId,
   }) = _SquadModel;
 
-  factory SquadModel.fromJson(Map<String, dynamic> json) => _$SquadModelFromJson(json);
+  factory SquadModel.fromJson(Map<String, dynamic> json) =>
+      _$SquadModelFromJson(json);
 
   bool get isValidSquad => memberIds.length >= 5;
 }

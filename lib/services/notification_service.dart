@@ -4,10 +4,14 @@ import 'package:uuid/uuid.dart';
 import '../models/notification_model.dart';
 import 'auth_service.dart';
 
-final notificationServiceProvider = Provider((ref) => NotificationService(FirebaseFirestore.instance));
+final notificationServiceProvider = Provider(
+  (ref) => NotificationService(FirebaseFirestore.instance),
+);
 
 /// Provides a stream of all notifications for the current user
-final userNotificationsProvider = StreamProvider<List<NotificationModel>>((ref) {
+final userNotificationsProvider = StreamProvider<List<NotificationModel>>((
+  ref,
+) {
   final userAsync = ref.watch(userProfileProvider);
   final user = userAsync.value;
   if (user == null) return Stream.value([]);
@@ -34,11 +38,11 @@ class NotificationService {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-           final docs = snapshot.docs
+          final docs = snapshot.docs
               .map((doc) => NotificationModel.fromJson(doc.data()))
               .toList();
-           docs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-           return docs;
+          docs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return docs;
         });
   }
 

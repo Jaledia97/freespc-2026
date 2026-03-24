@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final transactionServiceProvider = Provider((ref) => TransactionService(FirebaseFirestore.instance));
+final transactionServiceProvider = Provider(
+  (ref) => TransactionService(FirebaseFirestore.instance),
+);
 
 class TransactionService {
   final FirebaseFirestore _firestore;
@@ -16,7 +18,7 @@ class TransactionService {
     String? authorizedByWorkerId,
   }) async {
     if (hallId.isEmpty) {
-       throw Exception("Invalid Hall ID (Empty)");
+      throw Exception("Invalid Hall ID (Empty)");
     }
     final userRef = _firestore.collection('users').doc(userId);
     final hallRef = _firestore.collection('bingo_halls').doc(hallId);
@@ -38,7 +40,8 @@ class TransactionService {
       }
 
       // 3. Update Membership Balance
-      final currentBalance = (membershipSnapshot.data()?['balance'] as num?)?.toDouble() ?? 0.0;
+      final currentBalance =
+          (membershipSnapshot.data()?['balance'] as num?)?.toDouble() ?? 0.0;
       final newBalance = currentBalance + points;
 
       transaction.update(membershipRef, {'balance': newBalance});
@@ -46,8 +49,9 @@ class TransactionService {
       // 4. Update Global Lifetime Points (Optional: Keep for legacy/leaderboards)
       final userSnapshot = await transaction.get(userRef);
       if (userSnapshot.exists) {
-         final currentGlobal = (userSnapshot.data()?['currentPoints'] as int?) ?? 0;
-         transaction.update(userRef, {'currentPoints': currentGlobal + points});
+        final currentGlobal =
+            (userSnapshot.data()?['currentPoints'] as int?) ?? 0;
+        transaction.update(userRef, {'currentPoints': currentGlobal + points});
       }
 
       // 5. Log Transaction
@@ -59,7 +63,8 @@ class TransactionService {
         'timestamp': FieldValue.serverTimestamp(),
         'type': 'earn',
         'description': description,
-        if (authorizedByWorkerId != null) 'authorizedByWorkerId': authorizedByWorkerId,
+        if (authorizedByWorkerId != null)
+          'authorizedByWorkerId': authorizedByWorkerId,
       });
     });
   }
@@ -73,9 +78,9 @@ class TransactionService {
     required int totalCost,
   }) async {
     if (hallId.isEmpty || totalCost < 0 || quantity < 1) {
-       throw Exception("Invalid redemption parameters");
+      throw Exception("Invalid redemption parameters");
     }
-    
+
     final userRef = _firestore.collection('users').doc(userId);
     final membershipRef = userRef.collection('memberships').doc(hallId);
     final transactionRef = userRef.collection('transactions').doc();
@@ -87,7 +92,8 @@ class TransactionService {
         throw Exception("You must follow this Hall to redeem items!");
       }
 
-      final currentBalance = (membershipSnapshot.data()?['balance'] as num?)?.toDouble() ?? 0.0;
+      final currentBalance =
+          (membershipSnapshot.data()?['balance'] as num?)?.toDouble() ?? 0.0;
       if (currentBalance < totalCost) {
         throw Exception("Insufficient points. You need $totalCost PTS.");
       }
@@ -99,8 +105,13 @@ class TransactionService {
       // 3. Deduct Global Lifetime Points
       final userSnapshot = await transaction.get(userRef);
       if (userSnapshot.exists) {
-         final currentGlobal = (userSnapshot.data()?['currentPoints'] as int?) ?? 0;
-         transaction.update(userRef, {'currentPoints': (currentGlobal - totalCost).clamp(0, double.maxFinite).toInt()});
+        final currentGlobal =
+            (userSnapshot.data()?['currentPoints'] as int?) ?? 0;
+        transaction.update(userRef, {
+          'currentPoints': (currentGlobal - totalCost)
+              .clamp(0, double.maxFinite)
+              .toInt(),
+        });
       }
 
       // 4. Log Transaction
@@ -114,7 +125,7 @@ class TransactionService {
         'description': 'Redeemed ${quantity}x $itemName',
         'itemId': itemId,
       });
-      
+
       // Optional: Add to a "My Items" collection for the user
       final myItemRef = userRef.collection('my_items').doc();
       transaction.set(myItemRef, {

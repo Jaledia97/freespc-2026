@@ -10,10 +10,15 @@ class PhotoApprovalScreen extends ConsumerStatefulWidget {
   final String hallId;
   final String hallName;
 
-  const PhotoApprovalScreen({super.key, required this.hallId, required this.hallName});
+  const PhotoApprovalScreen({
+    super.key,
+    required this.hallId,
+    required this.hallName,
+  });
 
   @override
-  ConsumerState<PhotoApprovalScreen> createState() => _PhotoApprovalScreenState();
+  ConsumerState<PhotoApprovalScreen> createState() =>
+      _PhotoApprovalScreenState();
 }
 
 class _PhotoApprovalScreenState extends ConsumerState<PhotoApprovalScreen> {
@@ -24,14 +29,18 @@ class _PhotoApprovalScreenState extends ConsumerState<PhotoApprovalScreen> {
       final user = ref.read(userProfileProvider).value;
       if (user != null) {
         ref.read(authServiceProvider).updateLastViewedPhotoApprovals(user.uid);
-        ref.read(notificationServiceProvider).markTypeAsRead(user.uid, 'hall_photo_pending');
+        ref
+            .read(notificationServiceProvider)
+            .markTypeAsRead(user.uid, 'hall_photo_pending');
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final pendingPhotosStream = ref.watch(photoRepositoryProvider).getPendingHallPhotos(widget.hallId);
+    final pendingPhotosStream = ref
+        .watch(photoRepositoryProvider)
+        .getPendingHallPhotos(widget.hallId);
 
     return Scaffold(
       appBar: AppBar(title: Text("Approvals: ${widget.hallName}")),
@@ -42,22 +51,29 @@ class _PhotoApprovalScreenState extends ConsumerState<PhotoApprovalScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-             return Center(child: Text("Error: ${snapshot.error}"));
+            return Center(child: Text("Error: ${snapshot.error}"));
           }
           final photos = snapshot.data ?? [];
 
           if (photos.isEmpty) {
-             return const Center(
-               child: Column(
-                 mainAxisAlignment: MainAxisAlignment.center,
-                 children: [
-                   Icon(Icons.check_circle_outline, size: 64, color: Colors.green),
-                   SizedBox(height: 16),
-                   Text("All caught up!", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                   Text("No pending photos to review."),
-                 ],
-               ),
-             );
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 64,
+                    color: Colors.green,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    "All caught up!",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text("No pending photos to review."),
+                ],
+              ),
+            );
           }
 
           return ListView.builder(
@@ -68,13 +84,17 @@ class _PhotoApprovalScreenState extends ConsumerState<PhotoApprovalScreen> {
               return Card(
                 elevation: 4,
                 margin: const EdgeInsets.only(bottom: 24),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Photo
                     ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
                       child: Image.network(
                         photo.imageUrl,
                         height: 300,
@@ -87,18 +107,38 @@ class _PhotoApprovalScreenState extends ConsumerState<PhotoApprovalScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                           Row(
-                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                             children: [
-                               Text("Uploaded: ${_timeAgo(photo.timestamp)}", style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                               // Potentially show user ID here
-                             ],
-                           ),
-                           const SizedBox(height: 8),
-                           if (photo.description != null && photo.description!.isNotEmpty)
-                             Text(photo.description!, style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic)),
-                           if (photo.description == null || photo.description!.isEmpty)
-                             const Text("No caption provided.", style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Uploaded: ${_timeAgo(photo.timestamp)}",
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              // Potentially show user ID here
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          if (photo.description != null &&
+                              photo.description!.isNotEmpty)
+                            Text(
+                              photo.description!,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          if (photo.description == null ||
+                              photo.description!.isEmpty)
+                            const Text(
+                              "No caption provided.",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -108,28 +148,54 @@ class _PhotoApprovalScreenState extends ConsumerState<PhotoApprovalScreen> {
                         Expanded(
                           child: TextButton.icon(
                             onPressed: () {
-                               ref.read(photoRepositoryProvider).declinePhoto(photo.id, widget.hallId);
-                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Photo Declined & Tag Removed")));
+                              ref
+                                  .read(photoRepositoryProvider)
+                                  .declinePhoto(photo.id, widget.hallId);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Photo Declined & Tag Removed"),
+                                ),
+                              );
                             },
                             icon: const Icon(Icons.close, color: Colors.red),
-                            label: const Text("Decline", style: TextStyle(color: Colors.red)),
-                            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                            label: const Text(
+                              "Decline",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
                           ),
                         ),
-                        Container(width: 1, height: 48, color: Colors.grey[200]),
+                        Container(
+                          width: 1,
+                          height: 48,
+                          color: Colors.grey[200],
+                        ),
                         Expanded(
                           child: TextButton.icon(
                             onPressed: () {
-                              ref.read(photoRepositoryProvider).approvePhoto(photo.id, widget.hallId);
-                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Photo Approved!")));
+                              ref
+                                  .read(photoRepositoryProvider)
+                                  .approvePhoto(photo.id, widget.hallId);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Photo Approved!"),
+                                ),
+                              );
                             },
                             icon: const Icon(Icons.check, color: Colors.green),
-                            label: const Text("Approve", style: TextStyle(color: Colors.green)),
-                             style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                            label: const Text(
+                              "Approve",
+                              style: TextStyle(color: Colors.green),
+                            ),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
                           ),
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               );

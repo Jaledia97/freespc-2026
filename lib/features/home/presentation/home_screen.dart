@@ -22,6 +22,7 @@ import '../../../models/public_profile.dart'; // Add this for PublicProfile
 import '../../../models/bingo_hall_model.dart'; // Add this for BingoHallModel
 import '../../profile/presentation/public_profile_screen.dart'; // For user routing
 import 'hall_profile_screen.dart'; // For hall routing
+import 'package:vibration/vibration.dart';
 
 final homeSearchUsersProvider =
     FutureProvider.family<List<PublicProfile>, String>((ref, query) async {
@@ -90,7 +91,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _handleRefresh() async {
-    HapticFeedback.vibrate();
+    Vibration.vibrate(duration: 40);
     final userLocation = ref.read(userLocationStreamProvider).valueOrNull;
     // Just re-fetching data logic (simulated by a short delay in real scenarios, or riverpod invalidation)
     await Future.delayed(const Duration(milliseconds: 800));
@@ -98,7 +99,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _onFilterTap(String filter) {
-    HapticFeedback.vibrate();
+    Vibration.vibrate(duration: 40);
     setState(() => _selectedFilter = filter);
   }
 

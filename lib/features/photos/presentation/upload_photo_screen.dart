@@ -60,7 +60,7 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
 
   void _showWarningAndUpload() {
     if (_imageFile == null) return;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -69,24 +69,35 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Please ensure your photo contains NO inappropriate content.", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "Please ensure your photo contains NO inappropriate content.",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 12),
             Text("• 1st Offense: 30-day gallery ban"),
             Text("• 2nd Offense: 1-year gallery ban"),
             Text("• 3rd Offense: Permanent Platform Ban"),
             SizedBox(height: 12),
-            Text("If you tag a Hall, a manager MUST approve it before it appears on their profile."),
+            Text(
+              "If you tag a Hall, a manager MUST approve it before it appears on their profile.",
+            ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               Navigator.pop(context); // Close dialog
               _upload();
             },
-            child: const Text("I Understand & Upload", style: TextStyle(color: Colors.white)),
+            child: const Text(
+              "I Understand & Upload",
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -101,24 +112,33 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
 
       // Combine preSelected + search-tagged
       final allTaggedHallIds = <String>{};
-      if (widget.preSelectedHallId != null) allTaggedHallIds.add(widget.preSelectedHallId!);
+      if (widget.preSelectedHallId != null)
+        allTaggedHallIds.add(widget.preSelectedHallId!);
       allTaggedHallIds.addAll(_taggedHalls.map((h) => h.id));
 
-      await ref.read(photoRepositoryProvider).uploadPhoto(
-        imageFile: _imageFile!,
-        uploaderId: user.uid,
-        description: _descriptionController.text.trim(),
-        taggedHallIds: allTaggedHallIds.toList(),
-        taggedUserIds: _taggedUsers.map((u) => u.uid).toList(),
-      );
+      await ref
+          .read(photoRepositoryProvider)
+          .uploadPhoto(
+            imageFile: _imageFile!,
+            uploaderId: user.uid,
+            description: _descriptionController.text.trim(),
+            taggedHallIds: allTaggedHallIds.toList(),
+            taggedUserIds: _taggedUsers.map((u) => u.uid).toList(),
+          );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Upload Successful! Awaiting Approval.")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Upload Successful! Awaiting Approval."),
+          ),
+        );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     } finally {
       if (mounted) setState(() => _isUploading = false);
@@ -136,14 +156,31 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
             // Image Preview
             GestureDetector(
               onTap: () {
-                showModalBottomSheet(context: context, builder: (_) => SafeArea(
-                  child: Wrap(
-                    children: [
-                      ListTile(leading: const Icon(Icons.camera_alt), title: const Text("Camera"), onTap: () { Navigator.pop(context); _pickImage(ImageSource.camera); }),
-                      ListTile(leading: const Icon(Icons.photo_library), title: const Text("Gallery"), onTap: () { Navigator.pop(context); _pickImage(ImageSource.gallery); }),
-                    ],
+                showModalBottomSheet(
+                  context: context,
+                  builder: (_) => SafeArea(
+                    child: Wrap(
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.camera_alt),
+                          title: const Text("Camera"),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _pickImage(ImageSource.camera);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.photo_library),
+                          title: const Text("Gallery"),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _pickImage(ImageSource.gallery);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ));
+                );
               },
               child: Container(
                 height: 250,
@@ -151,22 +188,30 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(16),
-                  image: _imageFile != null ? DecorationImage(image: FileImage(_imageFile!), fit: BoxFit.cover) : null,
+                  image: _imageFile != null
+                      ? DecorationImage(
+                          image: FileImage(_imageFile!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: _imageFile == null 
-                  ? const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add_a_photo, size: 48, color: Colors.grey),
-                        SizedBox(height: 8),
-                        Text("Tap to select photo", style: TextStyle(color: Colors.grey)),
-                      ],
-                    )
-                  : null,
+                child: _imageFile == null
+                    ? const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add_a_photo, size: 48, color: Colors.grey),
+                          SizedBox(height: 8),
+                          Text(
+                            "Tap to select photo",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      )
+                    : null,
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Description
             TextField(
               controller: _descriptionController,
@@ -186,15 +231,23 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50], 
+                  color: Colors.blue[50],
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue[100]!)
+                  border: Border.all(color: Colors.blue[100]!),
                 ),
                 child: const Row(
                   children: [
                     Icon(Icons.location_on, color: Colors.blue),
                     SizedBox(width: 8),
-                    Expanded(child: Text("Posting to Current Hall", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue))),
+                    Expanded(
+                      child: Text(
+                        "Posting to Current Hall",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ),
                     Icon(Icons.lock, size: 16, color: Colors.blueGrey),
                   ],
                 ),
@@ -204,24 +257,33 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
             if (_taggedHalls.isNotEmpty)
               Wrap(
                 spacing: 8,
-                children: _taggedHalls.map((hall) => Chip(
-                  avatar: const Icon(Icons.location_on, size: 14),
-                  label: Text(hall.name),
-                  onDeleted: () => setState(() => _taggedHalls.remove(hall)),
-                )).toList(),
+                children: _taggedHalls
+                    .map(
+                      (hall) => Chip(
+                        avatar: const Icon(Icons.location_on, size: 14),
+                        label: Text(hall.name),
+                        onDeleted: () =>
+                            setState(() => _taggedHalls.remove(hall)),
+                      ),
+                    )
+                    .toList(),
               ),
 
             // 3. Tagged Users List
             if (_taggedUsers.isNotEmpty)
               Wrap(
                 spacing: 8,
-                children: _taggedUsers.map((u) => Chip(
-                  avatar: const Icon(Icons.person, size: 14),
-                  label: Text(u.firstName),
-                  onDeleted: () => setState(() => _taggedUsers.remove(u)),
-                )).toList(),
+                children: _taggedUsers
+                    .map(
+                      (u) => Chip(
+                        avatar: const Icon(Icons.person, size: 14),
+                        label: Text(u.firstName),
+                        onDeleted: () => setState(() => _taggedUsers.remove(u)),
+                      ),
+                    )
+                    .toList(),
               ),
-            
+
             const SizedBox(height: 16),
 
             // 4. Tag Buttons
@@ -233,8 +295,12 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
                       icon: const Icon(Icons.add_location_alt),
                       label: const Text("Tag Hall"),
                       onPressed: () async {
-                        final hall = await showSearch(context: context, delegate: HallSearchDelegate(ref));
-                        if (hall != null && !_taggedHalls.any((h) => h.id == hall.id)) {
+                        final hall = await showSearch(
+                          context: context,
+                          delegate: HallSearchDelegate(ref),
+                        );
+                        if (hall != null &&
+                            !_taggedHalls.any((h) => h.id == hall.id)) {
                           setState(() => _taggedHalls.add(hall));
                         }
                       },
@@ -242,22 +308,26 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
                   ),
                   const SizedBox(width: 12),
                 ],
-                
+
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.person_add),
                     label: const Text("Tag User"),
                     onPressed: () async {
-                      final user = await showSearch(context: context, delegate: UserSearchDelegate(ref));
-                      if (user != null && !_taggedUsers.any((u) => u.uid == user.uid)) {
-                          setState(() => _taggedUsers.add(user));
+                      final user = await showSearch(
+                        context: context,
+                        delegate: UserSearchDelegate(ref),
+                      );
+                      if (user != null &&
+                          !_taggedUsers.any((u) => u.uid == user.uid)) {
+                        setState(() => _taggedUsers.add(user));
                       }
                     },
                   ),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 32),
 
             // Upload Button
@@ -268,10 +338,22 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: Colors.black,
                 ),
-                onPressed: (_imageFile != null && !_isUploading) ? _showWarningAndUpload : null,
-                child: _isUploading 
-                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                   : const Text("Upload Photo", style: TextStyle(fontSize: 16, color: Colors.white)),
+                onPressed: (_imageFile != null && !_isUploading)
+                    ? _showWarningAndUpload
+                    : null,
+                child: _isUploading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        "Upload Photo",
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
               ),
             ),
           ],

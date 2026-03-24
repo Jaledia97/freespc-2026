@@ -22,21 +22,21 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: ${message.messageId}");
 }
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'high_importance_channel', // id
   'High Importance Notifications', // title
-  description: 'This channel is used for important notifications.', // description
+  description:
+      'This channel is used for important notifications.', // description
   importance: Importance.max,
 );
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   await FirebaseAppCheck.instance.activate(
     androidProvider: AndroidProvider.debug,
     appleProvider: AppleProvider.debug,
@@ -45,7 +45,9 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
       ?.createNotificationChannel(channel);
 
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
@@ -53,28 +55,30 @@ void main() async {
     badge: true,
     sound: true,
   );
-  
+
   // Force Portrait
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
+
   final prefs = await SharedPreferences.getInstance();
 
   // Temporary Migration Script for Main Account
   try {
     print("Running Temp Account Migration...");
     final auth = FirebaseAuth.instance;
-    await Future.delayed(const Duration(milliseconds: 1500)); // wait for auth state
+    await Future.delayed(
+      const Duration(milliseconds: 1500),
+    ); // wait for auth state
     final user = auth.currentUser;
     if (user != null) {
       final db = FirebaseFirestore.instance;
       final doc = await db.collection("users").doc(user.uid).get();
       final data = doc.data() ?? {};
-      
+
       final currentUsername = data['username'] ?? 'admin';
-      
+
       await db.collection("users").doc(user.uid).set({
         'uid': user.uid,
         'email': user.email ?? data['email'] ?? '',
@@ -99,16 +103,16 @@ void main() async {
     } else {
       print("No user logged in for migration.");
     }
-  } catch(e) {
+  } catch (e) {
     print("Error during migration: $e");
   }
 
-  runApp(ProviderScope(
-    overrides: [
-      sharedPreferencesProvider.overrideWithValue(prefs),
-    ],
-    child: const MyApp(),
-  ));
+  runApp(
+    ProviderScope(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends ConsumerStatefulWidget {

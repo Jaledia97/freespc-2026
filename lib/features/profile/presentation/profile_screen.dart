@@ -23,7 +23,8 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTickerProviderStateMixin {
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -50,21 +51,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-
           IconButton(
             icon: const NotificationBadge(
               showForManager: false,
               child: Icon(Icons.chat_bubble_outline),
             ),
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const MessagingHubScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MessagingHubScreen()),
+              );
             },
           ),
           IconButton(
             icon: const NotificationBadge(
               showForGeneral: false,
-              showForMessages: false, // Don't show personal chat badges on the manager settings
-              child: Icon(Icons.settings)
+              showForMessages:
+                  false, // Don't show personal chat badges on the manager settings
+              child: Icon(Icons.settings),
             ),
             onPressed: () {
               // Extract values BEFORE the list
@@ -80,52 +84,107 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                         // Manager Mode Switch (Conditional)
-                         if (user != null && RoleUtils.canAccessDashboard(user))
-                           ListTile(
-                             leading: const Icon(Icons.admin_panel_settings, color: Colors.blueAccent),
-                             title: const Text('Switch to Manager Mode', style: TextStyle(color: Colors.blueAccent)),
-                             onTap: () {
-                               Navigator.pop(context); // Close sheet
-                               Navigator.push(context, MaterialPageRoute(builder: (_) => const PinEntryScreen()));
-                             },
-                           ),
-                         
+                        // Manager Mode Switch (Conditional)
+                        if (user != null && RoleUtils.canAccessDashboard(user))
+                          ListTile(
+                            leading: const Icon(
+                              Icons.admin_panel_settings,
+                              color: Colors.blueAccent,
+                            ),
+                            title: const Text(
+                              'Switch to Manager Mode',
+                              style: TextStyle(color: Colors.blueAccent),
+                            ),
+                            onTap: () {
+                              Navigator.pop(context); // Close sheet
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const PinEntryScreen(),
+                                ),
+                              );
+                            },
+                          ),
 
-                         // Super Admin: View As
-                         if (role == 'super-admin' || role == 'superadmin' || overrideRole != null) 
-                           ExpansionTile(
-                             leading: const Icon(Icons.visibility, color: Colors.purpleAccent),
-                             title: Text(overrideRole != null ? 'Viewing as: $overrideRole' : 'View As...', style: const TextStyle(color: Colors.purpleAccent)),
-                             children: [
-                               _roleOption(context, ref, 'super-admin', 'Super Admin (Reset)'),
-                               _roleOption(context, ref, 'owner', 'Owner'),
-                               _roleOption(context, ref, 'admin', 'Admin'),
-                               _roleOption(context, ref, 'manager', 'Manager'),
-                               _roleOption(context, ref, 'worker', 'Worker'),
-                               _roleOption(context, ref, 'player', 'Player'),
-                             ],
-                           ),
-                         
-                         ListTile(
-                           leading: const Icon(Icons.manage_accounts, color: Colors.blueGrey),
-                           title: const Text('Account Settings', style: TextStyle(color: Colors.white)),
-                           onTap: () {
-                             Navigator.pop(context); // Close sheet
-                             Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountSettingsScreen()));
-                           },
-                         ),
-                         ListTile(
-                           leading: const Icon(Icons.settings_display, color: Colors.blueGrey),
-                           title: const Text('Display Settings', style: TextStyle(color: Colors.white)),
-                           onTap: () {
-                             Navigator.pop(context); // Close sheet
-                             Navigator.push(context, MaterialPageRoute(builder: (_) => const DisplaySettingsScreen()));
-                           },
-                         ),
-                         ListTile(
-                          leading: const Icon(Icons.logout, color: Colors.redAccent),
-                          title: const Text('Logout', style: TextStyle(color: Colors.redAccent)),
+                        // Super Admin: View As
+                        if (role == 'super-admin' ||
+                            role == 'superadmin' ||
+                            overrideRole != null)
+                          ExpansionTile(
+                            leading: const Icon(
+                              Icons.visibility,
+                              color: Colors.purpleAccent,
+                            ),
+                            title: Text(
+                              overrideRole != null
+                                  ? 'Viewing as: $overrideRole'
+                                  : 'View As...',
+                              style: const TextStyle(
+                                color: Colors.purpleAccent,
+                              ),
+                            ),
+                            children: [
+                              _roleOption(
+                                context,
+                                ref,
+                                'super-admin',
+                                'Super Admin (Reset)',
+                              ),
+                              _roleOption(context, ref, 'owner', 'Owner'),
+                              _roleOption(context, ref, 'admin', 'Admin'),
+                              _roleOption(context, ref, 'manager', 'Manager'),
+                              _roleOption(context, ref, 'worker', 'Worker'),
+                              _roleOption(context, ref, 'player', 'Player'),
+                            ],
+                          ),
+
+                        ListTile(
+                          leading: const Icon(
+                            Icons.manage_accounts,
+                            color: Colors.blueGrey,
+                          ),
+                          title: const Text(
+                            'Account Settings',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onTap: () {
+                            Navigator.pop(context); // Close sheet
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const AccountSettingsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(
+                            Icons.settings_display,
+                            color: Colors.blueGrey,
+                          ),
+                          title: const Text(
+                            'Display Settings',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onTap: () {
+                            Navigator.pop(context); // Close sheet
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const DisplaySettingsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(
+                            Icons.logout,
+                            color: Colors.redAccent,
+                          ),
+                          title: const Text(
+                            'Logout',
+                            style: TextStyle(color: Colors.redAccent),
+                          ),
                           onTap: () {
                             Navigator.pop(context); // Close sheet
                             ref.read(authServiceProvider).signOut();
@@ -146,11 +205,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
             return const Center(child: Text("User not found"));
           }
           return CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -164,21 +228,62 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                         height: 48,
                         child: Row(
                           children: [
-                            Expanded(child: _buildActionBtn(context, "Friends", Icons.people, Colors.greenAccent, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FriendsScreen())))),
+                            Expanded(
+                              child: _buildActionBtn(
+                                context,
+                                "Friends",
+                                Icons.people,
+                                Colors.greenAccent,
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const FriendsScreen(),
+                                  ),
+                                ),
+                              ),
+                            ),
                             const SizedBox(width: 8),
-                            Expanded(child: _buildActionBtn(context, "Tournaments", Icons.emoji_events, Colors.purpleAccent, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpcomingGamesScreen(initialCategory: 'Tournaments'))))),
+                            Expanded(
+                              child: _buildActionBtn(
+                                context,
+                                "Tournaments",
+                                Icons.emoji_events,
+                                Colors.purpleAccent,
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const UpcomingGamesScreen(
+                                      initialCategory: 'Tournaments',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                             const SizedBox(width: 8),
-                            Expanded(child: _buildActionBtn(context, "Raffles", Icons.local_activity, Colors.orangeAccent, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRafflesScreen())))),
+                            Expanded(
+                              child: _buildActionBtn(
+                                context,
+                                "Raffles",
+                                Icons.local_activity,
+                                Colors.orangeAccent,
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const MyRafflesScreen(),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
                     ],
                   ),
                 ),
               ),
-              
+
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _SliverAppBarDelegate(
@@ -203,154 +308,276 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                   child: SizedBox(
                     height: 300,
                     child: Center(
-                      child: Text("The Wall Component Coming Soon", style: TextStyle(color: Colors.white54)),
+                      child: Text(
+                        "The Wall Component Coming Soon",
+                        style: TextStyle(color: Colors.white54),
+                      ),
                     ),
                   ),
-                )
+                ),
               ] else ...[
                 // 4. Gallery Grid
                 Consumer(
-                builder: (context, ref, _) {
-                  final galleryAsync = ref.watch(profileGalleryProvider(user.uid));
-                  
-                  return galleryAsync.when(
-                    data: (images) {
-                      if (images.isEmpty) {
-                        return const SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.all(32.0),
-                            child: Center(child: Text("No photos yet.", style: TextStyle(color: Colors.white54))),
-                          )
-                        );
-                      }
-                      
-                      return SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 1),
-                        sliver: SliverGrid(
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 2,
-                            mainAxisSpacing: 2,
-                            childAspectRatio: 1.0,
-                          ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
+                  builder: (context, ref, _) {
+                    final galleryAsync = ref.watch(
+                      profileGalleryProvider(user.uid),
+                    );
+
+                    return galleryAsync.when(
+                      data: (images) {
+                        if (images.isEmpty) {
+                          return const SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.all(32.0),
+                              child: Center(
+                                child: Text(
+                                  "No photos yet.",
+                                  style: TextStyle(color: Colors.white54),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        return SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 1),
+                          sliver: SliverGrid(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: 2,
+                                  mainAxisSpacing: 2,
+                                  childAspectRatio: 1.0,
+                                ),
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
                               return CachedNetworkImage(
                                 imageUrl: images[index],
                                 fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(color: Colors.white10),
-                                errorWidget: (context, url, error) => Container(color: Colors.white10, child: const Icon(Icons.error, color: Colors.white24)),
+                                placeholder: (context, url) =>
+                                    Container(color: Colors.white10),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Colors.white10,
+                                  child: const Icon(
+                                    Icons.error,
+                                    color: Colors.white24,
+                                  ),
+                                ),
                               );
-                            },
-                            childCount: images.length,
+                            }, childCount: images.length),
                           ),
-                        ),
-                      );
-                    },
-                    loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
-                    error: (e, st) => const SliverToBoxAdapter(child: Center(child: Text("Failed to load gallery."))),
-                  );
-                }
-              ),
+                        );
+                      },
+                      loading: () => const SliverToBoxAdapter(
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                      error: (e, st) => const SliverToBoxAdapter(
+                        child: Center(child: Text("Failed to load gallery.")),
+                      ),
+                    );
+                  },
+                ),
               ],
 
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 24.0,
+                  ),
                   child: Column(
                     children: [
                       // 5. Developer Tools (Collapsible) - RESTRICTED
-                      if (user.role == 'super-admin' || user.role == 'superadmin' || ref.read(roleOverrideProvider) == 'super-admin' || ref.read(roleOverrideProvider) == 'superadmin')
-                      Theme(
-                        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                        child: ExpansionTile(
-                          title: const Text("Developer Options", style: TextStyle(color: Colors.redAccent, fontSize: 14)),
-                          iconColor: Colors.redAccent,
-                          collapsedIconColor: Colors.redAccent,
-                          children: [
-                            ListTile(
-                              title: const Text('ADMIN: Seed Mock Hall', style: TextStyle(color: Colors.red)),
-                              trailing: const Icon(Icons.add_box, color: Colors.white54),
-                              onTap: () {
-                                 ref.read(hallRepositoryProvider).createMockHall();
-                                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mock Hall Created')));
-                              },
+                      if (user.role == 'super-admin' ||
+                          user.role == 'superadmin' ||
+                          ref.read(roleOverrideProvider) == 'super-admin' ||
+                          ref.read(roleOverrideProvider) == 'superadmin')
+                        Theme(
+                          data: Theme.of(
+                            context,
+                          ).copyWith(dividerColor: Colors.transparent),
+                          child: ExpansionTile(
+                            title: const Text(
+                              "Developer Options",
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 14,
+                              ),
                             ),
-                            ListTile(
-                              title: const Text('ADMIN: Seed Mary Esther Env', style: TextStyle(color: Colors.blue)),
-                              subtitle: const Text('Sets You as Owner + Resets Data'),
-                              trailing: const Icon(Icons.build, color: Colors.white54),
-                              onTap: () async {
-                                 try {
-                                   final repo = ref.read(hallRepositoryProvider);
-                                   // 1. Reset Hall & User
-                                   await repo.seedMaryEstherEnv(user.uid);
-                                   // 2. Reset Raffles (Sync with Wallet)
-                                   await repo.seedRaffles('mary-esther-bingo');
-                                   // 3. Reset Wallet Data
-                                   await ref.read(walletRepositoryProvider).seedWalletData(user.uid);
+                            iconColor: Colors.redAccent,
+                            collapsedIconColor: Colors.redAccent,
+                            children: [
+                              ListTile(
+                                title: const Text(
+                                  'ADMIN: Seed Mock Hall',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                                trailing: const Icon(
+                                  Icons.add_box,
+                                  color: Colors.white54,
+                                ),
+                                onTap: () {
+                                  ref
+                                      .read(hallRepositoryProvider)
+                                      .createMockHall();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Mock Hall Created'),
+                                    ),
+                                  );
+                                },
+                              ),
+                              ListTile(
+                                title: const Text(
+                                  'ADMIN: Seed Mary Esther Env',
+                                  style: TextStyle(color: Colors.blue),
+                                ),
+                                subtitle: const Text(
+                                  'Sets You as Owner + Resets Data',
+                                ),
+                                trailing: const Icon(
+                                  Icons.build,
+                                  color: Colors.white54,
+                                ),
+                                onTap: () async {
+                                  try {
+                                    final repo = ref.read(
+                                      hallRepositoryProvider,
+                                    );
+                                    // 1. Reset Hall & User
+                                    await repo.seedMaryEstherEnv(user.uid);
+                                    // 2. Reset Raffles (Sync with Wallet)
+                                    await repo.seedRaffles('mary-esther-bingo');
+                                    // 3. Reset Wallet Data
+                                    await ref
+                                        .read(walletRepositoryProvider)
+                                        .seedWalletData(user.uid);
 
-                                   if (context.mounted) {
-                                     ScaffoldMessenger.of(context).showSnackBar(
-                                       const SnackBar(content: Text('Master Reset Complete! (User, Hall, Raffles, Wallet)')),
-                                     );
-                                   }
-                                 } catch (e) {
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Master Reset Complete! (User, Hall, Raffles, Wallet)',
+                                          ),
+                                        ),
+                                      );
                                     }
-                                 }
-                              },
-                            ),
-                            ListTile(
-                              title: const Text('ADMIN: Seed Specials (5 items)', style: TextStyle(color: Colors.green)),
-                              trailing: const Icon(Icons.cloud_upload, color: Colors.white54),
-                              onTap: () async {
-                                 await ref.read(hallRepositoryProvider).seedSpecials();
-                                 ScaffoldMessenger.of(context).showSnackBar(
-                                   const SnackBar(content: Text('Specials Seeded!')),
-                                 );
-                                // Force refresh of map might be needed
-                              },
-                            ),
-                            ListTile(
-                              title: const Text('ADMIN: Seed Carousels (Tourneys/Raffles)', style: TextStyle(color: Colors.blueAccent)),
-                              trailing: const Icon(Icons.view_carousel, color: Colors.white54),
-                              onTap: () async {
-                                 await ref.read(hallRepositoryProvider).seedCarouselEvents();
-                                 if (context.mounted) {
-                                   ScaffoldMessenger.of(context).showSnackBar(
-                                     const SnackBar(content: Text('Carousels Seeded! Check Home Screen.')),
-                                   );
-                                 }
-                              },
-                            ),
-                            ListTile(
-                              title: const Text('ADMIN: Seed Wallet Data', style: TextStyle(color: Colors.amber)),
-                              trailing: const Icon(Icons.account_balance_wallet, color: Colors.white54),
-                              onTap: () async {
-                                 try {
-                                   await ref.read(walletRepositoryProvider).seedWalletData(user.uid);
-                                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wallet Data Seeded!')));
-                                 } catch (e) {
-                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                                 }
-                              },
-                            ),
-                            ListTile(
-                              title: const Text('ADMIN: Promote to Super Admin', style: TextStyle(color: Colors.purpleAccent)),
-                              subtitle: const Text('Grants full access without resetting data'),
-                              trailing: const Icon(Icons.security, color: Colors.white54),
-                              onTap: () async {
-                                 await ref.read(hallRepositoryProvider).promoteToSuperAdmin(user.uid);
-                                 if (context.mounted) {
-                                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You are now a Super Admin!')));
-                                 }
-                              },
-                            ),
-                          ],
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(content: Text("Error: $e")),
+                                      );
+                                    }
+                                  }
+                                },
+                              ),
+                              ListTile(
+                                title: const Text(
+                                  'ADMIN: Seed Specials (5 items)',
+                                  style: TextStyle(color: Colors.green),
+                                ),
+                                trailing: const Icon(
+                                  Icons.cloud_upload,
+                                  color: Colors.white54,
+                                ),
+                                onTap: () async {
+                                  await ref
+                                      .read(hallRepositoryProvider)
+                                      .seedSpecials();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Specials Seeded!'),
+                                    ),
+                                  );
+                                  // Force refresh of map might be needed
+                                },
+                              ),
+                              ListTile(
+                                title: const Text(
+                                  'ADMIN: Seed Carousels (Tourneys/Raffles)',
+                                  style: TextStyle(color: Colors.blueAccent),
+                                ),
+                                trailing: const Icon(
+                                  Icons.view_carousel,
+                                  color: Colors.white54,
+                                ),
+                                onTap: () async {
+                                  await ref
+                                      .read(hallRepositoryProvider)
+                                      .seedCarouselEvents();
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Carousels Seeded! Check Home Screen.',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                              ListTile(
+                                title: const Text(
+                                  'ADMIN: Seed Wallet Data',
+                                  style: TextStyle(color: Colors.amber),
+                                ),
+                                trailing: const Icon(
+                                  Icons.account_balance_wallet,
+                                  color: Colors.white54,
+                                ),
+                                onTap: () async {
+                                  try {
+                                    await ref
+                                        .read(walletRepositoryProvider)
+                                        .seedWalletData(user.uid);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Wallet Data Seeded!'),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Error: $e')),
+                                    );
+                                  }
+                                },
+                              ),
+                              ListTile(
+                                title: const Text(
+                                  'ADMIN: Promote to Super Admin',
+                                  style: TextStyle(color: Colors.purpleAccent),
+                                ),
+                                subtitle: const Text(
+                                  'Grants full access without resetting data',
+                                ),
+                                trailing: const Icon(
+                                  Icons.security,
+                                  color: Colors.white54,
+                                ),
+                                onTap: () async {
+                                  await ref
+                                      .read(hallRepositoryProvider)
+                                      .promoteToSuperAdmin(user.uid);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'You are now a Super Admin!',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 80),
                     ],
                   ),
@@ -365,7 +592,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     );
   }
 
-  Widget _buildActionBtn(BuildContext context, String title, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildActionBtn(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -380,14 +613,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
           children: [
             Icon(icon, color: color, size: 20),
             const SizedBox(height: 4),
-            Text(title, style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  PopupMenuItem<String> _roleOption(BuildContext context, WidgetRef ref, String role, String label) {
+  PopupMenuItem<String> _roleOption(
+    BuildContext context,
+    WidgetRef ref,
+    String role,
+    String label,
+  ) {
     return PopupMenuItem<String>(
       child: Text(label),
       onTap: () {
@@ -413,11 +658,12 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => _tabBar.preferredSize.height;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: const Color(0xFF121212),
-      child: _tabBar,
-    );
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(color: const Color(0xFF121212), child: _tabBar);
   }
 
   @override

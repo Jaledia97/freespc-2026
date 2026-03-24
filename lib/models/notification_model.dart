@@ -14,7 +14,7 @@ class TimestampConverter implements JsonConverter<DateTime, dynamic> {
       if (json is Timestamp) return json.toDate();
       if (json is String) return DateTime.tryParse(json) ?? DateTime.now();
       if (json is int) return DateTime.fromMillisecondsSinceEpoch(json);
-      
+
       // Handle cases where the timestamp was serialized as a Map via cloud functions or web API
       if (json is Map) {
         final seconds = json['_seconds'] ?? json['seconds'];
@@ -23,19 +23,21 @@ class TimestampConverter implements JsonConverter<DateTime, dynamic> {
           // If seconds is a string, parse it. Otherwise cast to int.
           final sLength = seconds.toString();
           if (sLength.length > 10) {
-              // It might actually be milliseconds secretly passed as seconds
-              return DateTime.fromMillisecondsSinceEpoch(int.parse(sLength));
+            // It might actually be milliseconds secretly passed as seconds
+            return DateTime.fromMillisecondsSinceEpoch(int.parse(sLength));
           }
           return Timestamp(
-              int.tryParse(seconds.toString()) ?? 0, 
-              int.tryParse(nanoseconds.toString()) ?? 0
-            ).toDate();
+            int.tryParse(seconds.toString()) ?? 0,
+            int.tryParse(nanoseconds.toString()) ?? 0,
+          ).toDate();
         }
       }
     } catch (e) {
-      print("Error parsing timestamp in NotificationModel: $e. Falling back to now(). json was $json");
+      print(
+        "Error parsing timestamp in NotificationModel: $e. Falling back to now(). json was $json",
+      );
     }
-    
+
     return DateTime.now(); // Fallback
   }
 
@@ -54,10 +56,12 @@ abstract class NotificationModel with _$NotificationModel {
     required String body,
     required String type, // 'system', 'hall_update', 'event'
     String? hallId, // Source of notification
-    Map<String, dynamic>? metadata, // Deep link payload, e.g. {'photoId': '...'}
+    Map<String, dynamic>?
+    metadata, // Deep link payload, e.g. {'photoId': '...'}
     @TimestampConverter() required DateTime createdAt,
     @Default(false) bool isRead,
   }) = _NotificationModel;
 
-  factory NotificationModel.fromJson(Map<String, Object?> json) => _$NotificationModelFromJson(json);
+  factory NotificationModel.fromJson(Map<String, Object?> json) =>
+      _$NotificationModelFromJson(json);
 }

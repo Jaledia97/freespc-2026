@@ -20,10 +20,12 @@ final roleOverrideProvider = StateProvider<String?>((ref) => null);
 final userProfileProvider = StreamProvider<UserModel?>((ref) {
   final user = ref.watch(authStateChangesProvider).value;
   if (user == null) return Stream.value(null);
-  
+
   final overrideRole = ref.watch(roleOverrideProvider);
   return ref.watch(authServiceProvider).getUserStream(user.uid).map((userData) {
-    if (userData != null && (userData.role == 'super-admin' || userData.role == 'superadmin') && overrideRole != null) {
+    if (userData != null &&
+        (userData.role == 'super-admin' || userData.role == 'superadmin') &&
+        overrideRole != null) {
       return userData.copyWith(role: overrideRole);
     }
     return userData;
@@ -52,21 +54,21 @@ class AuthService {
       if (doc.exists && doc.data() != null) {
         return PublicProfile.fromJson(doc.data()!);
       }
-      
+
       // Fallback: If older test accounts don't have a public profile, read their private user profile
       final privateDoc = await _firestore.collection('users').doc(uid).get();
       if (privateDoc.exists && privateDoc.data() != null) {
-         final data = privateDoc.data()!;
-         // Synthesize a PublicProfile from the private data
-         return PublicProfile(
-            uid: uid,
-            username: data['username'] ?? 'unknown',
-            firstName: data['firstName'] ?? 'Hidden',
-            lastName: data['lastName'] ?? '',
-            points: data['currentPoints'] ?? 0,
-            realNameVisibility: 'Everyone',
-            onlineStatus: 'Offline',
-         );
+        final data = privateDoc.data()!;
+        // Synthesize a PublicProfile from the private data
+        return PublicProfile(
+          uid: uid,
+          username: data['username'] ?? 'unknown',
+          firstName: data['firstName'] ?? 'Hidden',
+          lastName: data['lastName'] ?? '',
+          points: data['currentPoints'] ?? 0,
+          realNameVisibility: 'Everyone',
+          onlineStatus: 'Offline',
+        );
       }
     } catch (e) {
       print("Error fetching public profile: $e");
@@ -94,18 +96,30 @@ class AuthService {
     }
   }
 
-  Future<UserCredential?> signInWithEmailAndPassword(String email, String password) async {
+  Future<UserCredential?> signInWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
     try {
-      return await _auth.signInWithEmailAndPassword(email: email, password: password);
+      return await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
     } catch (e) {
       print("Error signing in: $e");
-      rethrow; 
+      rethrow;
     }
   }
 
-  Future<UserCredential?> registerWithEmailAndPassword(String email, String password) async {
+  Future<UserCredential?> registerWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      return await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
     } catch (e) {
       print("Error registering: $e");
       rethrow;
@@ -141,7 +155,9 @@ class AuthService {
 
       if (result.status == LoginStatus.success) {
         final AccessToken accessToken = result.accessToken!;
-        final OAuthCredential credential = FacebookAuthProvider.credential(accessToken.tokenString);
+        final OAuthCredential credential = FacebookAuthProvider.credential(
+          accessToken.tokenString,
+        );
         return await _auth.signInWithCredential(credential);
       } else {
         print("Facebook Login Failed: ${result.status} - ${result.message}");
@@ -169,7 +185,10 @@ class AuthService {
     );
   }
 
-  Future<UserCredential?> verifySmsCode(String verificationId, String smsCode) async {
+  Future<UserCredential?> verifySmsCode(
+    String verificationId,
+    String smsCode,
+  ) async {
     try {
       final PhoneAuthCredential credential = PhoneAuthProvider.credential(
         verificationId: verificationId,
@@ -182,17 +201,20 @@ class AuthService {
     }
   }
 
-  Future<UserCredential?> signInWithCredential(AuthCredential credential) async {
+  Future<UserCredential?> signInWithCredential(
+    AuthCredential credential,
+  ) async {
     try {
       return await _auth.signInWithCredential(credential);
     } catch (e) {
-       print("Error signing in with credential: $e");
-       rethrow;
+      print("Error signing in with credential: $e");
+      rethrow;
     }
   }
 
-  Future<void> updateUserProfile(String uid, {
-    String? firstName, 
+  Future<void> updateUserProfile(
+    String uid, {
+    String? firstName,
     String? lastName,
     String? username,
     String? bio,
@@ -206,10 +228,12 @@ class AuthService {
     if (lastName != null) updates['lastName'] = lastName;
     if (username != null) updates['username'] = username;
     if (bio != null) updates['bio'] = bio;
-    if (realNameVisibility != null) updates['realNameVisibility'] = realNameVisibility;
+    if (realNameVisibility != null)
+      updates['realNameVisibility'] = realNameVisibility;
     if (onlineStatus != null) updates['onlineStatus'] = onlineStatus;
-    if (currentCheckInHallId != null) updates['currentCheckInHallId'] = currentCheckInHallId;
-    
+    if (currentCheckInHallId != null)
+      updates['currentCheckInHallId'] = currentCheckInHallId;
+
     // Safety check just in case
     if (updates.isEmpty) return;
 
@@ -227,15 +251,19 @@ class AuthService {
       if (firstName != null) publicUpdates['firstName'] = firstName;
       if (lastName != null) publicUpdates['lastName'] = lastName;
       if (bio != null) publicUpdates['bio'] = bio;
-      if (realNameVisibility != null) publicUpdates['realNameVisibility'] = realNameVisibility;
+      if (realNameVisibility != null)
+        publicUpdates['realNameVisibility'] = realNameVisibility;
       if (onlineStatus != null) publicUpdates['onlineStatus'] = onlineStatus;
-      if (currentCheckInHallId != null) publicUpdates['currentCheckInHallId'] = currentCheckInHallId;
-      
-      // If we have public updates, apply them. 
-      if (publicUpdates.isNotEmpty) {
-         await _firestore.collection('public_profiles').doc(uid).set(publicUpdates, SetOptions(merge: true));
-      }
+      if (currentCheckInHallId != null)
+        publicUpdates['currentCheckInHallId'] = currentCheckInHallId;
 
+      // If we have public updates, apply them.
+      if (publicUpdates.isNotEmpty) {
+        await _firestore
+            .collection('public_profiles')
+            .doc(uid)
+            .set(publicUpdates, SetOptions(merge: true));
+      }
     } catch (e) {
       print("Error updating profile: $e");
       rethrow;
@@ -245,24 +273,32 @@ class AuthService {
   Future<void> updateUserFields(String uid, Map<String, dynamic> data) async {
     try {
       await _firestore.collection('users').doc(uid).update(data);
-      
+
       // Dual-write specific fields to public profile
-      final publicKeys = ['username', 'firstName', 'lastName', 'photoUrl', 'bio'];
+      final publicKeys = [
+        'username',
+        'firstName',
+        'lastName',
+        'photoUrl',
+        'bio',
+      ];
       final publicUpdates = <String, dynamic>{};
-      
+
       for (var key in publicKeys) {
         if (data.containsKey(key)) {
           publicUpdates[key] = data[key];
           if (key == 'username') {
-             publicUpdates['searchName'] = data[key].toString().toLowerCase();
+            publicUpdates['searchName'] = data[key].toString().toLowerCase();
           }
         }
       }
 
       if (publicUpdates.isNotEmpty) {
-        await _firestore.collection('public_profiles').doc(uid).set(publicUpdates, SetOptions(merge: true));
+        await _firestore
+            .collection('public_profiles')
+            .doc(uid)
+            .set(publicUpdates, SetOptions(merge: true));
       }
-
     } catch (e) {
       print("Error updating user fields: $e");
       rethrow;
@@ -286,15 +322,15 @@ class AuthService {
       final fcmToken = await FirebaseMessaging.instance.getToken();
       if (fcmToken != null) {
         await _firestore.collection('users').doc(uid).update({
-          'fcmTokens': FieldValue.arrayUnion([fcmToken])
+          'fcmTokens': FieldValue.arrayUnion([fcmToken]),
         });
       }
 
       // Also listen to token refreshes
       FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
-         await _firestore.collection('users').doc(uid).update({
-          'fcmTokens': FieldValue.arrayUnion([newToken])
-         });
+        await _firestore.collection('users').doc(uid).update({
+          'fcmTokens': FieldValue.arrayUnion([newToken]),
+        });
       });
     } catch (e) {
       print("Error updating FCM token: $e");
@@ -305,8 +341,12 @@ class AuthService {
     if (query.trim().isEmpty) return [];
     try {
       // Force format for identical matching and strip @ just in case
-      final term = query.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '').replaceAll('@', '');
-      
+      final term = query
+          .trim()
+          .toLowerCase()
+          .replaceAll(RegExp(r'\s+'), '')
+          .replaceAll('@', '');
+
       // SECURE & PERFORMANT SEARCH: Natively index query public_profiles by username
       final snapshot = await _firestore
           .collection('public_profiles')
@@ -314,16 +354,19 @@ class AuthService {
           .where('username', isLessThanOrEqualTo: '$term\uf8ff')
           .limit(50)
           .get();
-      
-      return snapshot.docs.map((doc) {
-        try {
-          return PublicProfile.fromJson(doc.data());
-        } catch (e) {
-          print("Error parsing public profile ${doc.id}: $e");
-          return null; 
-        }
-      }).where((profile) => profile != null).cast<PublicProfile>().toList();
 
+      return snapshot.docs
+          .map((doc) {
+            try {
+              return PublicProfile.fromJson(doc.data());
+            } catch (e) {
+              print("Error parsing public profile ${doc.id}: $e");
+              return null;
+            }
+          })
+          .where((profile) => profile != null)
+          .cast<PublicProfile>()
+          .toList();
     } catch (e) {
       print("Error searching users: $e");
       return [];
@@ -333,15 +376,22 @@ class AuthService {
   Future<List<PublicProfile>> getSuggestedUsers() async {
     try {
       final String? currentUid = _auth.currentUser?.uid;
-      final snapshot = await _firestore.collection('public_profiles').limit(20).get();
-      
-      return snapshot.docs.map((doc) {
-        try {
-          return PublicProfile.fromJson(doc.data());
-        } catch (e) {
-          return null; 
-        }
-      }).where((profile) => profile != null && profile.uid != currentUid).cast<PublicProfile>().toList();
+      final snapshot = await _firestore
+          .collection('public_profiles')
+          .limit(20)
+          .get();
+
+      return snapshot.docs
+          .map((doc) {
+            try {
+              return PublicProfile.fromJson(doc.data());
+            } catch (e) {
+              return null;
+            }
+          })
+          .where((profile) => profile != null && profile.uid != currentUid)
+          .cast<PublicProfile>()
+          .toList();
     } catch (e) {
       print("Error getting suggested users: $e");
       return [];
@@ -357,7 +407,7 @@ class AuthService {
     try {
       final user = _auth.currentUser;
       if (user == null) throw Exception("No user logged in");
-      
+
       // 1. Delete Firestore Data (Optional: Cloud Function usually better for recursive delete)
       // Here we just delete the main doc. Subcollections might persist unless recursive delete used.
       // For compliance, a flag 'deleted' might be better, but strict delete requested.
@@ -368,13 +418,14 @@ class AuthService {
       // 2. Delete Auth Account
       // Requires recent login. Re-authentication might be needed if old session.
       await user.delete();
-
     } catch (e) {
       print("Error deleting account: $e");
       // If error is 'requires-recent-login', generic e.code check
       if (e is FirebaseAuthException && e.code == 'requires-recent-login') {
-         // UI should handle re-auth, but for now we rethrow
-         throw Exception("Please log out and log back in to delete your account.");
+        // UI should handle re-auth, but for now we rethrow
+        throw Exception(
+          "Please log out and log back in to delete your account.",
+        );
       }
       rethrow;
     }
@@ -385,7 +436,7 @@ class AuthService {
     try {
       final docRef = _firestore.collection('users').doc(userId);
       await docRef.update({
-        'customCategories': FieldValue.arrayUnion([category])
+        'customCategories': FieldValue.arrayUnion([category]),
       });
     } catch (e) {
       print("Error saving custom category: $e");
@@ -397,7 +448,7 @@ class AuthService {
     try {
       final docRef = _firestore.collection('users').doc(userId);
       await docRef.update({
-        'customCategories': FieldValue.arrayRemove([category])
+        'customCategories': FieldValue.arrayRemove([category]),
       });
     } catch (e) {
       print("Error removing custom category: $e");

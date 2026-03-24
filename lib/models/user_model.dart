@@ -33,24 +33,31 @@ abstract class UserModel with _$UserModel {
     required DateTime birthday,
     String? phoneNumber,
     String? recoveryEmail,
-    @Default('player') String role, // superadmin, admin, owner, manager, worker, player
+    @Default('player')
+    String role, // superadmin, admin, owner, manager, worker, player
     @Default(0) int currentPoints,
     String? homeBaseId,
     String? qrToken,
-    String? bio, 
+    String? bio,
     String? photoUrl,
     String? bannerUrl,
     @Default([]) List<String> following,
-    @Default('Private') String realNameVisibility, // 'Private', 'Friends Only', 'Everyone'
+    @Default('Private')
+    String realNameVisibility, // 'Private', 'Friends Only', 'Everyone'
     @Default('Online') String onlineStatus,
     String? currentCheckInHallId,
-    @Default([]) List<String> blockedUsers, // Array of User IDs this user has blocked
-    @Default([]) List<String> customCategories, // Array of Custom Tags/Categories the user has saved
-    @NullableTimestampConverter() DateTime? lastViewedPhotoApprovals, // Track when the worker last viewed pending photos
+    @Default([])
+    List<String> blockedUsers, // Array of User IDs this user has blocked
+    @Default([])
+    List<String>
+    customCategories, // Array of Custom Tags/Categories the user has saved
+    @NullableTimestampConverter()
+    DateTime?
+    lastViewedPhotoApprovals, // Track when the worker last viewed pending photos
     @Default([]) List<String> fcmTokens, // Device tokens for push notifications
     @Default([]) List<String> squadIds,
-
   }) = _UserModel;
 
-  factory UserModel.fromJson(Map<String, Object?> json) => _$UserModelFromJson(json);
+  factory UserModel.fromJson(Map<String, Object?> json) =>
+      _$UserModelFromJson(json);
 }

@@ -7,7 +7,7 @@ import '../../../services/auth_service.dart';
 
 class HallSearchDelegate extends SearchDelegate<BingoHallModel?> {
   final WidgetRef ref;
-  
+
   HallSearchDelegate(this.ref);
 
   @override
@@ -30,40 +30,43 @@ class HallSearchDelegate extends SearchDelegate<BingoHallModel?> {
   Widget buildResults(BuildContext context) {
     return Consumer(
       builder: (context, ref, _) {
-       return FutureBuilder<List<BingoHallModel>>(
-        future: ref.read(hallRepositoryProvider).searchHalls(query),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-          if (!snapshot.hasData || snapshot.data!.isEmpty) return const Center(child: Text("No halls found"));
-          
-          final halls = snapshot.data!;
-          return ListView.builder(
-            itemCount: halls.length,
-            itemBuilder: (context, index) {
-              final hall = halls[index];
-              return ListTile(
-                title: Text(hall.name),
-                subtitle: Text("${hall.city}, ${hall.state}"),
-                onTap: () => close(context, hall),
-              );
-            },
-          );
-        },
-      );
-      }
+        return FutureBuilder<List<BingoHallModel>>(
+          future: ref.read(hallRepositoryProvider).searchHalls(query),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting)
+              return const Center(child: CircularProgressIndicator());
+            if (!snapshot.hasData || snapshot.data!.isEmpty)
+              return const Center(child: Text("No halls found"));
+
+            final halls = snapshot.data!;
+            return ListView.builder(
+              itemCount: halls.length,
+              itemBuilder: (context, index) {
+                final hall = halls[index];
+                return ListTile(
+                  title: Text(hall.name),
+                  subtitle: Text("${hall.city}, ${hall.state}"),
+                  onTap: () => close(context, hall),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (query.length < 2) return const Center(child: Text("Search for halls..."));
+    if (query.length < 2)
+      return const Center(child: Text("Search for halls..."));
     return buildResults(context);
   }
 }
 
 class UserSearchDelegate extends SearchDelegate<PublicProfile?> {
   final WidgetRef ref;
-  
+
   UserSearchDelegate(this.ref);
 
   @override
@@ -84,30 +87,32 @@ class UserSearchDelegate extends SearchDelegate<PublicProfile?> {
 
   @override
   Widget buildResults(BuildContext context) {
-     return Consumer(
+    return Consumer(
       builder: (context, ref, _) {
-       return FutureBuilder<List<PublicProfile>>(
-        future: ref.read(authServiceProvider).searchUsers(query),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-          if (!snapshot.hasData || snapshot.data!.isEmpty) return const Center(child: Text("No users found"));
-          
-          final users = snapshot.data!;
-          return ListView.builder(
-            itemCount: users.length,
-            itemBuilder: (context, index) {
-              final user = users[index];
-              return ListTile(
-                leading: const CircleAvatar(child: Icon(Icons.person)),
-                title: Text("${user.firstName} ${user.lastName}"),
-                subtitle: Text("@${user.username}"),
-                onTap: () => close(context, user),
-              );
-            },
-          );
-        },
-      );
-      }
+        return FutureBuilder<List<PublicProfile>>(
+          future: ref.read(authServiceProvider).searchUsers(query),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting)
+              return const Center(child: CircularProgressIndicator());
+            if (!snapshot.hasData || snapshot.data!.isEmpty)
+              return const Center(child: Text("No users found"));
+
+            final users = snapshot.data!;
+            return ListView.builder(
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                final user = users[index];
+                return ListTile(
+                  leading: const CircleAvatar(child: Icon(Icons.person)),
+                  title: Text("${user.firstName} ${user.lastName}"),
+                  subtitle: Text("@${user.username}"),
+                  onTap: () => close(context, user),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 
@@ -119,36 +124,46 @@ class UserSearchDelegate extends SearchDelegate<PublicProfile?> {
           return FutureBuilder<List<PublicProfile>>(
             future: ref.read(authServiceProvider).getSuggestedUsers(),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-              if (!snapshot.hasData || snapshot.data!.isEmpty) return const Center(child: Text("Search for friends..."));
-              
+              if (snapshot.connectionState == ConnectionState.waiting)
+                return const Center(child: CircularProgressIndicator());
+              if (!snapshot.hasData || snapshot.data!.isEmpty)
+                return const Center(child: Text("Search for friends..."));
+
               final users = snapshot.data!;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   const Padding(
-                     padding: EdgeInsets.all(16.0),
-                     child: Text("Suggested Friends", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                   ),
-                   Expanded(
-                     child: ListView.builder(
-                       itemCount: users.length,
-                       itemBuilder: (context, index) {
-                         final user = users[index];
-                         return ListTile(
-                           leading: const CircleAvatar(child: Icon(Icons.person)),
-                           title: Text("${user.firstName} ${user.lastName}"),
-                           subtitle: Text("@${user.username}"),
-                           onTap: () => close(context, user),
-                         );
-                       },
-                     ),
-                   ),
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      "Suggested Friends",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: users.length,
+                      itemBuilder: (context, index) {
+                        final user = users[index];
+                        return ListTile(
+                          leading: const CircleAvatar(
+                            child: Icon(Icons.person),
+                          ),
+                          title: Text("${user.firstName} ${user.lastName}"),
+                          subtitle: Text("@${user.username}"),
+                          onTap: () => close(context, user),
+                        );
+                      },
+                    ),
+                  ),
                 ],
               );
             },
           );
-        }
+        },
       );
     }
     return buildResults(context);

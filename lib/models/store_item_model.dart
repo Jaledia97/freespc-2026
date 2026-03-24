@@ -16,7 +16,9 @@ abstract class StoreItemModel with _$StoreItemModel {
     required String description,
     required int cost, // Points required
     required String imageUrl,
-    @Default("General") String category, // "Merchandise", "Food & Beverage", "Sessions", "Pull Tabs", "Electronics", "Other"
+    @Default("General")
+    String
+    category, // "Merchandise", "Food & Beverage", "Sessions", "Pull Tabs", "Electronics", "Other"
     @Default(true) bool isActive,
     int? perCustomerLimit, // Max items per person
     int? dailyLimit, // Max items sold per day (overall)

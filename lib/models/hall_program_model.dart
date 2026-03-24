@@ -11,9 +11,11 @@ abstract class HallProgramModel with _$HallProgramModel {
     @Default('') String details,
     @Default([]) List<int> selectedDays, // 1=Mon, 7=Sun. Empty = Every Day.
     String? startTime, // e.g., "6:00 PM"
-    String? endTime,   // e.g., "9:00 PM"
-    DateTime? overrideEndTime, // If set and in future, program is forced ACTIVE.
+    String? endTime, // e.g., "9:00 PM"
+    DateTime?
+    overrideEndTime, // If set and in future, program is forced ACTIVE.
   }) = _HallProgramModel;
 
-  factory HallProgramModel.fromJson(Map<String, dynamic> json) => _$HallProgramModelFromJson(json);
+  factory HallProgramModel.fromJson(Map<String, dynamic> json) =>
+      _$HallProgramModelFromJson(json);
 }

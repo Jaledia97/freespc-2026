@@ -23,5 +23,6 @@ abstract class WinPostModel with _$WinPostModel {
     String? latestComment,
   }) = _WinPostModel;
 
-  factory WinPostModel.fromJson(Map<String, dynamic> json) => _$WinPostModelFromJson(json);
+  factory WinPostModel.fromJson(Map<String, dynamic> json) =>
+      _$WinPostModelFromJson(json);
 }

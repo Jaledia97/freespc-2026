@@ -16,8 +16,8 @@ class EditRaffleScreen extends ConsumerStatefulWidget {
   final bool isEditingTemplate;
 
   const EditRaffleScreen({
-    super.key, 
-    required this.hallId, 
+    super.key,
+    required this.hallId,
     this.raffle,
     this.isCreatingFromTemplate = false,
     this.isTemplate = false,
@@ -34,10 +34,10 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
   late TextEditingController _descCtrl;
   late TextEditingController _imgUrlCtrl;
   late DateTime _endsAt;
-  
+
   bool _isTemplate = false;
   RecurrenceRule? _recurrenceRule;
-  
+
   bool _isSaving = false;
   bool _isUploading = false;
 
@@ -53,18 +53,30 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.raffle?.name ?? '');
     _descCtrl = TextEditingController(text: widget.raffle?.description ?? '');
-    _imgUrlCtrl = TextEditingController(text: widget.raffle?.imageUrl ?? _presets[0]);
-    
+    _imgUrlCtrl = TextEditingController(
+      text: widget.raffle?.imageUrl ?? _presets[0],
+    );
+
     if (widget.isCreatingFromTemplate) {
       final now = DateTime.now();
       final base = widget.raffle?.endsAt ?? now;
       // Default to tomorrow same time
-      _endsAt = DateTime(now.year, now.month, now.day + 1, base.hour, base.minute);
+      _endsAt = DateTime(
+        now.year,
+        now.month,
+        now.day + 1,
+        base.hour,
+        base.minute,
+      );
       _isTemplate = false;
       _recurrenceRule = null;
     } else {
-      _endsAt = widget.raffle?.endsAt ?? DateTime.now().add(const Duration(days: 1));
-      _isTemplate = widget.isTemplate || (widget.raffle?.isTemplate ?? false) || widget.isEditingTemplate;
+      _endsAt =
+          widget.raffle?.endsAt ?? DateTime.now().add(const Duration(days: 1));
+      _isTemplate =
+          widget.isTemplate ||
+          (widget.raffle?.isTemplate ?? false) ||
+          widget.isEditingTemplate;
       _recurrenceRule = widget.raffle?.recurrenceRule;
     }
   }
@@ -73,16 +85,16 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
     try {
       final picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-      
+
       if (image == null) return;
 
       setState(() => _isUploading = true);
 
       // Upload to Firebase Storage
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('raffles/${widget.hallId}/${DateTime.now().millisecondsSinceEpoch}.jpg');
-      
+      final ref = FirebaseStorage.instance.ref().child(
+        'raffles/${widget.hallId}/${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
+
       await ref.putFile(File(image.path));
       final downloadUrl = await ref.getDownloadURL();
 
@@ -91,11 +103,15 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Image Uploaded!")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Image Uploaded!")));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Upload Failed: $e")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Upload Failed: $e")));
       }
     } finally {
       if (mounted) setState(() => _isUploading = false);
@@ -111,7 +127,8 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
       // Create new ID if:
       // 1. Explicitly creating from template
       // 2. Creating scratch (raffle is null) AND NOT explicitly editing a template
-      if (widget.isCreatingFromTemplate || (widget.raffle == null && !widget.isEditingTemplate)) {
+      if (widget.isCreatingFromTemplate ||
+          (widget.raffle == null && !widget.isEditingTemplate)) {
         id = ''; // New
       }
 
@@ -123,7 +140,9 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
         imageUrl: _imgUrlCtrl.text.trim(),
         endsAt: _endsAt,
         maxTickets: widget.raffle?.maxTickets ?? 100,
-        soldTickets: widget.isCreatingFromTemplate ? 0 : (widget.raffle?.soldTickets ?? 0),
+        soldTickets: widget.isCreatingFromTemplate
+            ? 0
+            : (widget.raffle?.soldTickets ?? 0),
         isTemplate: _isTemplate,
         recurrenceRule: _isTemplate ? _recurrenceRule : null,
       );
@@ -137,7 +156,10 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
 
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -159,7 +181,13 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
     if (time == null) return;
 
     setState(() {
-      _endsAt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+      _endsAt = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
     });
   }
 
@@ -170,12 +198,15 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
         String freq = _recurrenceRule?.frequency ?? 'weekly';
         int interval = _recurrenceRule?.interval ?? 1;
         List<int> days = List.from(_recurrenceRule?.daysOfWeek ?? []);
-        
+
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
               backgroundColor: const Color(0xFF1E1E1E),
-              title: const Text("Recurrence (Auto-Schedule)", style: TextStyle(color: Colors.white)),
+              title: const Text(
+                "Recurrence (Auto-Schedule)",
+                style: TextStyle(color: Colors.white),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -186,20 +217,28 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
                     items: const [
                       DropdownMenuItem(value: 'daily', child: Text("Daily")),
                       DropdownMenuItem(value: 'weekly', child: Text("Weekly")),
-                      DropdownMenuItem(value: 'monthly', child: Text("Monthly")),
+                      DropdownMenuItem(
+                        value: 'monthly',
+                        child: Text("Monthly"),
+                      ),
                     ],
                     onChanged: (val) => setState(() => freq = val!),
                   ),
                   if (freq == 'weekly') ...[
                     const SizedBox(height: 16),
-                    const Text("Repeat On:", style: TextStyle(color: Colors.white70)),
+                    const Text(
+                      "Repeat On:",
+                      style: TextStyle(color: Colors.white70),
+                    ),
                     Wrap(
                       spacing: 4,
                       children: List.generate(7, (index) {
                         final day = index + 1;
                         final isSelected = days.contains(day);
                         return FilterChip(
-                          label: Text(['M','T','W','T','F','S','S'][index]),
+                          label: Text(
+                            ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index],
+                          ),
                           selected: isSelected,
                           onSelected: (selected) {
                             setState(() {
@@ -218,8 +257,8 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(ctx), 
-                  child: const Text("Cancel")
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text("Cancel"),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -236,17 +275,23 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
                 ),
               ],
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.isCreatingFromTemplate 
-        ? "Create from Template" 
-        : (widget.isTemplate ? "Create Template" : (_isTemplate ? "Edit Template" : (widget.raffle == null ? "Create Raffle" : "Edit Raffle")));
+    final title = widget.isCreatingFromTemplate
+        ? "Create from Template"
+        : (widget.isTemplate
+              ? "Create Template"
+              : (_isTemplate
+                    ? "Edit Template"
+                    : (widget.raffle == null
+                          ? "Create Raffle"
+                          : "Edit Raffle")));
 
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
@@ -254,7 +299,10 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
         title: Text(title),
         backgroundColor: Colors.transparent,
         actions: [
-          IconButton(onPressed: _save, icon: const Icon(Icons.check, color: Colors.green)),
+          IconButton(
+            onPressed: _save,
+            icon: const Icon(Icons.check, color: Colors.green),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -267,19 +315,27 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
               TextFormField(
                 controller: _nameCtrl,
                 style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(labelText: "Raffle Name", filled: true, fillColor: Color(0xFF1E1E1E)),
+                decoration: const InputDecoration(
+                  labelText: "Raffle Name",
+                  filled: true,
+                  fillColor: Color(0xFF1E1E1E),
+                ),
                 validator: (v) => v!.isEmpty ? "Required" : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descCtrl,
                 style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(labelText: "Description", filled: true, fillColor: Color(0xFF1E1E1E)),
+                decoration: const InputDecoration(
+                  labelText: "Description",
+                  filled: true,
+                  fillColor: Color(0xFF1E1E1E),
+                ),
                 maxLines: 3,
                 validator: (v) => v!.isEmpty ? "Required" : null,
               ),
               const SizedBox(height: 16),
-              
+
               if (widget.isCreatingFromTemplate)
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -287,13 +343,18 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
                   decoration: BoxDecoration(
                     color: Colors.blue.withOpacity(0.2),
                     border: Border.all(color: Colors.blue),
-                    borderRadius: BorderRadius.circular(8)
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Row(
                     children: [
-                       Icon(Icons.info, color: Colors.blue),
-                       SizedBox(width: 8),
-                       Expanded(child: Text("Creating a new Active Raffle from this template. Adjust the Draw Date below.", style: TextStyle(color: Colors.blue))),
+                      Icon(Icons.info, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "Creating a new Active Raffle from this template. Adjust the Draw Date below.",
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -302,7 +363,10 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
                 onTap: _pickDateTime,
                 child: Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E1E1E),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   child: Row(
                     children: [
                       const Icon(Icons.calendar_month, color: Colors.white54),
@@ -310,8 +374,22 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(_isTemplate ? "Default Draw Time (Anchor)" : "Draw Date & Time", style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                          Text(TimeUtils.formatDateTime(_endsAt, ref), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          Text(
+                            _isTemplate
+                                ? "Default Draw Time (Anchor)"
+                                : "Draw Date & Time",
+                            style: const TextStyle(
+                              color: Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            TimeUtils.formatDateTime(_endsAt, ref),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -320,9 +398,12 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
               ),
               const SizedBox(height: 16),
 
-              if (!widget.isCreatingFromTemplate && !widget.isEditingTemplate) 
+              if (!widget.isCreatingFromTemplate && !widget.isEditingTemplate)
                 CheckboxListTile(
-                  title: const Text("Save as Template", style: TextStyle(color: Colors.white)),
+                  title: const Text(
+                    "Save as Template",
+                    style: TextStyle(color: Colors.white),
+                  ),
                   value: _isTemplate,
                   onChanged: (v) => setState(() => _isTemplate = v ?? false),
                   activeColor: Colors.amber,
@@ -336,9 +417,9 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
                     margin: const EdgeInsets.only(top: 8),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E1E), 
+                      color: const Color(0xFF1E1E1E),
                       border: Border.all(color: Colors.amber.withOpacity(0.5)),
-                      borderRadius: BorderRadius.circular(8)
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
@@ -347,10 +428,21 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("Recurrence (Auto-Schedule)", style: TextStyle(color: Colors.white54, fontSize: 12)),
+                            const Text(
+                              "Recurrence (Auto-Schedule)",
+                              style: TextStyle(
+                                color: Colors.white54,
+                                fontSize: 12,
+                              ),
+                            ),
                             Text(
-                              _recurrenceRule == null ? "None" : "${_recurrenceRule!.frequency} - ${_recurrenceRule!.daysOfWeek.isNotEmpty ? 'Days: ${_recurrenceRule!.daysOfWeek}' : ''}",
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                              _recurrenceRule == null
+                                  ? "None"
+                                  : "${_recurrenceRule!.frequency} - ${_recurrenceRule!.daysOfWeek.isNotEmpty ? 'Days: ${_recurrenceRule!.daysOfWeek}' : ''}",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -360,18 +452,25 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
                 ),
 
               const SizedBox(height: 16),
-              
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                   const Text("Cover Image", style: TextStyle(color: Colors.white54)),
-                   TextButton.icon(
-                     onPressed: _pickAndUploadImage,
-                     icon: _isUploading 
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) 
+                  const Text(
+                    "Cover Image",
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                  TextButton.icon(
+                    onPressed: _pickAndUploadImage,
+                    icon: _isUploading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : const Icon(Icons.photo_library),
-                     label: const Text("Pick from Gallery"),
-                   ),
+                    label: const Text("Pick from Gallery"),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -380,7 +479,7 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _presets.length,
-                  separatorBuilder: (_,__) => const SizedBox(width: 8),
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
                   itemBuilder: (context, index) {
                     final url = _presets[index];
                     final isSelected = _imgUrlCtrl.text == url;
@@ -389,9 +488,14 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
                       child: Container(
                         width: 80,
                         decoration: BoxDecoration(
-                          border: isSelected ? Border.all(color: Colors.amber, width: 2) : null,
+                          border: isSelected
+                              ? Border.all(color: Colors.amber, width: 2)
+                              : null,
                           borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
+                          image: DecorationImage(
+                            image: NetworkImage(url),
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     );
@@ -402,10 +506,20 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
               TextFormField(
                 controller: _imgUrlCtrl,
                 style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(labelText: "Image URL", filled: true, fillColor: Color(0xFF1E1E1E)),
+                decoration: const InputDecoration(
+                  labelText: "Image URL",
+                  filled: true,
+                  fillColor: Color(0xFF1E1E1E),
+                ),
               ),
-              
-              if (_isSaving) const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
+
+              if (_isSaving)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
             ],
           ),
         ),

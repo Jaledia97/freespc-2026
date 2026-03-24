@@ -5,7 +5,6 @@ import 'special_model.dart'; // For RecurrenceRule
 part 'tournament_model.freezed.dart';
 part 'tournament_model.g.dart';
 
-
 @freezed
 abstract class TournamentModel with _$TournamentModel {
   const TournamentModel._();
@@ -29,7 +28,8 @@ abstract class TournamentModel with _$TournamentModel {
     String? latestComment,
   }) = _TournamentModel;
 
-  factory TournamentModel.fromJson(Map<String, dynamic> json) => _$TournamentModelFromJson(json);
+  factory TournamentModel.fromJson(Map<String, dynamic> json) =>
+      _$TournamentModelFromJson(json);
 
   factory TournamentModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -45,5 +45,6 @@ abstract class TournamentGame with _$TournamentGame {
     required int value, // Points awardable
   }) = _TournamentGame;
 
-  factory TournamentGame.fromJson(Map<String, dynamic> json) => _$TournamentGameFromJson(json);
+  factory TournamentGame.fromJson(Map<String, dynamic> json) =>
+      _$TournamentGameFromJson(json);
 }

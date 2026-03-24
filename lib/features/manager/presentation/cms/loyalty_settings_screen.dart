@@ -7,15 +7,20 @@ class LoyaltySettingsScreen extends ConsumerStatefulWidget {
   final String hallId;
   final BingoHallModel hall;
 
-  const LoyaltySettingsScreen({super.key, required this.hallId, required this.hall});
+  const LoyaltySettingsScreen({
+    super.key,
+    required this.hallId,
+    required this.hall,
+  });
 
   @override
-  ConsumerState<LoyaltySettingsScreen> createState() => _LoyaltySettingsScreenState();
+  ConsumerState<LoyaltySettingsScreen> createState() =>
+      _LoyaltySettingsScreenState();
 }
 
 class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _nameController;
   late TextEditingController _symbolController;
   late TextEditingController _colorController;
@@ -41,17 +46,29 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
     _nameController = TextEditingController(text: settings.currencyName);
     _symbolController = TextEditingController(text: settings.currencySymbol);
     _colorController = TextEditingController(text: settings.primaryColor);
-    _checkInBonusController = TextEditingController(text: settings.checkInBonus.toString());
-    _timeDropAmountController = TextEditingController(text: settings.timeDropAmount.toString());
-    _timeDropIntervalController = TextEditingController(text: settings.timeDropInterval.toString());
-    _birthdayBonusController = TextEditingController(text: settings.birthdayBonus.toString());
-    
+    _checkInBonusController = TextEditingController(
+      text: settings.checkInBonus.toString(),
+    );
+    _timeDropAmountController = TextEditingController(
+      text: settings.timeDropAmount.toString(),
+    );
+    _timeDropIntervalController = TextEditingController(
+      text: settings.timeDropInterval.toString(),
+    );
+    _birthdayBonusController = TextEditingController(
+      text: settings.birthdayBonus.toString(),
+    );
+
     _isCapEnabled = settings.dailyEarningCap != null;
-    _capController = TextEditingController(text: settings.dailyEarningCap?.toString() ?? "100");
+    _capController = TextEditingController(
+      text: settings.dailyEarningCap?.toString() ?? "100",
+    );
 
     final squadConfig = widget.hall.squadBonusConfig;
     _isSquadBonusActive = squadConfig.isSquadBonusActive;
-    _squadMultiplierController = TextEditingController(text: squadConfig.squadBonusMultiplier.toString());
+    _squadMultiplierController = TextEditingController(
+      text: squadConfig.squadBonusMultiplier.toString(),
+    );
     _squadStartTime = squadConfig.startTime;
     _squadEndTime = squadConfig.endTime;
   }
@@ -84,12 +101,15 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
         timeDropAmount: int.parse(_timeDropAmountController.text.trim()),
         timeDropInterval: int.parse(_timeDropIntervalController.text.trim()),
         birthdayBonus: int.parse(_birthdayBonusController.text.trim()),
-        dailyEarningCap: _isCapEnabled ? int.parse(_capController.text.trim()) : null,
+        dailyEarningCap: _isCapEnabled
+            ? int.parse(_capController.text.trim())
+            : null,
       );
 
       final updatedSquadConfig = SquadBonusConfig(
         isSquadBonusActive: _isSquadBonusActive,
-        squadBonusMultiplier: double.tryParse(_squadMultiplierController.text.trim()) ?? 1.5,
+        squadBonusMultiplier:
+            double.tryParse(_squadMultiplierController.text.trim()) ?? 1.5,
         startTime: _squadStartTime,
         endTime: _squadEndTime,
       );
@@ -98,16 +118,20 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
         loyaltySettings: updatedSettings,
         squadBonusConfig: updatedSquadConfig,
       );
-      
+
       await ref.read(hallRepositoryProvider).updateHall(updatedHall);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Settings updated successfully!")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Settings updated successfully!")),
+        );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -125,9 +149,22 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
         actions: [
           TextButton(
             onPressed: _isSaving ? null : _save,
-            child: _isSaving 
-              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-              : const Text("Save", style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
+            child: _isSaving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text(
+                    "Save",
+                    style: TextStyle(
+                      color: Colors.amber,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ],
       ),
@@ -165,10 +202,10 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 24),
             _buildSectionHeader("Earning Rules"),
-            
+
             _buildNumberField(
               controller: _checkInBonusController,
               label: "Check-in Bonus",
@@ -176,13 +213,13 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
               desc: "Points awarded instantly when a user checks in.",
             ),
 
-             _buildNumberField(
+            _buildNumberField(
               controller: _timeDropAmountController,
               label: "Time-Drop Amount",
               suffix: "pts",
               desc: "Points awarded passively for staying at the hall.",
             ),
-             _buildNumberField(
+            _buildNumberField(
               controller: _timeDropIntervalController,
               label: "Time-Drop Interval",
               suffix: "mins",
@@ -195,12 +232,18 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               activeThumbColor: Colors.amber,
-              title: const Text("Daily Earning Cap", style: TextStyle(color: Colors.white)),
-              subtitle: const Text("Limit the total points a user can earn per day.", style: TextStyle(color: Colors.white54, fontSize: 12)),
+              title: const Text(
+                "Daily Earning Cap",
+                style: TextStyle(color: Colors.white),
+              ),
+              subtitle: const Text(
+                "Limit the total points a user can earn per day.",
+                style: TextStyle(color: Colors.white54, fontSize: 12),
+              ),
               value: _isCapEnabled,
               onChanged: (val) => setState(() => _isCapEnabled = val),
             ),
-            
+
             if (_isCapEnabled)
               Padding(
                 padding: const EdgeInsets.only(left: 16, bottom: 16),
@@ -212,7 +255,7 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
                 ),
               ),
 
-             _buildNumberField(
+            _buildNumberField(
               controller: _birthdayBonusController,
               label: "Birthday Bonus",
               suffix: "pts",
@@ -221,16 +264,22 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
 
             const SizedBox(height: 16),
             _buildSectionHeader("Squad Bonuses (The 51%)"),
-            
+
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               activeThumbColor: Colors.amber,
-              title: const Text("Enable Squad Bonus", style: TextStyle(color: Colors.white)),
-              subtitle: const Text("Grant a multiplier if >50% of an active Squad is checked in.", style: TextStyle(color: Colors.white54, fontSize: 12)),
+              title: const Text(
+                "Enable Squad Bonus",
+                style: TextStyle(color: Colors.white),
+              ),
+              subtitle: const Text(
+                "Grant a multiplier if >50% of an active Squad is checked in.",
+                style: TextStyle(color: Colors.white54, fontSize: 12),
+              ),
               value: _isSquadBonusActive,
               onChanged: (val) => setState(() => _isSquadBonusActive = val),
             ),
-            
+
             if (_isSquadBonusActive)
               Padding(
                 padding: const EdgeInsets.only(left: 16, bottom: 16),
@@ -254,7 +303,14 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(color: Colors.amber, fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.amber,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const Divider(color: Colors.white24),
         ],
       ),
@@ -285,15 +341,24 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
               hintStyle: const TextStyle(color: Colors.white30),
               filled: true,
               fillColor: const Color(0xFF1E1E1E),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
             ),
             validator: (val) => val == null || val.isEmpty ? "Required" : null,
           ),
           if (desc != null)
             Padding(
               padding: const EdgeInsets.only(top: 6, left: 4),
-              child: Text(desc, style: const TextStyle(color: Colors.white38, fontSize: 11)),
+              child: Text(
+                desc,
+                style: const TextStyle(color: Colors.white38, fontSize: 11),
+              ),
             ),
         ],
       ),
@@ -323,13 +388,20 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
               labelStyle: const TextStyle(color: Colors.white70),
               filled: true,
               fillColor: const Color(0xFF1E1E1E),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
             ),
             validator: (val) {
               if (val == null || val.isEmpty) return "Required";
               if (isDouble) {
-                if (double.tryParse(val) == null) return "Must be a decimal number";
+                if (double.tryParse(val) == null)
+                  return "Must be a decimal number";
                 if (double.parse(val) < 0) return "Cannot be negative";
               } else {
                 if (int.tryParse(val) == null) return "Must be a number";
@@ -340,7 +412,10 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 6, left: 4),
-            child: Text(desc, style: const TextStyle(color: Colors.white38, fontSize: 11)),
+            child: Text(
+              desc,
+              style: const TextStyle(color: Colors.white38, fontSize: 11),
+            ),
           ),
         ],
       ),

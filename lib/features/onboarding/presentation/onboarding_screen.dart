@@ -15,7 +15,6 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
 
-  
   // Controllers
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -39,15 +38,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               if (loadingProgress == null) return child;
               return Container(color: Colors.black);
             },
-            errorBuilder: (context, error, stackTrace) => Container(color: const Color(0xFF1A1A1A)),
+            errorBuilder: (context, error, stackTrace) =>
+                Container(color: const Color(0xFF1A1A1A)),
           ),
-          
+
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.black.withOpacity(0.5), Colors.black.withOpacity(0.9)],
+                colors: [
+                  Colors.black.withOpacity(0.5),
+                  Colors.black.withOpacity(0.9),
+                ],
               ),
             ),
           ),
@@ -58,18 +61,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               children: [
                 // Header / Progress
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
                   child: Row(
                     children: [
                       if (_currentStep > 0)
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
                           onPressed: () {
-                            _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                            _pageController.previousPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
                           },
                         ),
                       const Spacer(),
-                      Text("Step ${_currentStep + 1} of 3", style: const TextStyle(color: Colors.white70)),
+                      Text(
+                        "Step ${_currentStep + 1} of 3",
+                        style: const TextStyle(color: Colors.white70),
+                      ),
                       const SizedBox(width: 8),
                       // Simple Progress Bar
                       SizedBox(
@@ -78,58 +93,87 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         child: LinearProgressIndicator(
                           value: (_currentStep + 1) / 3,
                           backgroundColor: Colors.white24,
-                          valueColor: const AlwaysStoppedAnimation(Colors.amber),
+                          valueColor: const AlwaysStoppedAnimation(
+                            Colors.amber,
+                          ),
                           borderRadius: BorderRadius.circular(2),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
-                
+
                 Expanded(
                   child: PageView(
                     controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(), // Disable swipe
+                    physics:
+                        const NeverScrollableScrollPhysics(), // Disable swipe
                     onPageChanged: (idx) => setState(() => _currentStep = idx),
                     children: [
                       // Step 1: Identity
                       _buildStep(
                         title: "Who are you?",
-                        subtitle: "Let's start with your real name for ID verification.",
+                        subtitle:
+                            "Let's start with your real name for ID verification.",
                         content: Column(
                           children: [
-                            _buildTextField(_firstNameController, "First Name", textCapitalization: TextCapitalization.words),
+                            _buildTextField(
+                              _firstNameController,
+                              "First Name",
+                              textCapitalization: TextCapitalization.words,
+                            ),
                             const SizedBox(height: 16),
-                            _buildTextField(_lastNameController, "Last Name", textCapitalization: TextCapitalization.words),
+                            _buildTextField(
+                              _lastNameController,
+                              "Last Name",
+                              textCapitalization: TextCapitalization.words,
+                            ),
                           ],
                         ),
                         onNext: () {
-                          if (_firstNameController.text.isNotEmpty && _lastNameController.text.isNotEmpty) {
+                          if (_firstNameController.text.isNotEmpty &&
+                              _lastNameController.text.isNotEmpty) {
                             _nextPage();
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter your name")));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Please enter your name"),
+                              ),
+                            );
                           }
-                        }
+                        },
                       ),
 
                       // Step 2: Persona
                       _buildStep(
                         title: "Pick your Handle",
-                        subtitle: "This is how you'll appear on leaderboards and to friends.",
-                        content: _buildTextField(_usernameController, "Username / Handle", icon: Icons.alternate_email, textCapitalization: TextCapitalization.none, maxLength: 20),
+                        subtitle:
+                            "This is how you'll appear on leaderboards and to friends.",
+                        content: _buildTextField(
+                          _usernameController,
+                          "Username / Handle",
+                          icon: Icons.alternate_email,
+                          textCapitalization: TextCapitalization.none,
+                          maxLength: 20,
+                        ),
                         onNext: () {
                           if (_usernameController.text.isNotEmpty) {
                             _nextPage();
                           } else {
-                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter a username")));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Please enter a username"),
+                              ),
+                            );
                           }
-                        }
+                        },
                       ),
 
                       // Step 3: Birthday
                       _buildStep(
                         title: "When's your birthday?",
-                        subtitle: "You must be 18+ to play. We verify this at the hall.",
+                        subtitle:
+                            "You must be 18+ to play. We verify this at the hall.",
                         content: InkWell(
                           onTap: _pickDate,
                           child: Container(
@@ -143,15 +187,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  _selectedBirthday == null 
-                                    ? "Select Date" 
-                                    : _selectedBirthday!.toLocal().toString().split(' ')[0],
+                                  _selectedBirthday == null
+                                      ? "Select Date"
+                                      : _selectedBirthday!
+                                            .toLocal()
+                                            .toString()
+                                            .split(' ')[0],
                                   style: TextStyle(
-                                    color: _selectedBirthday == null ? Colors.white54 : Colors.white,
+                                    color: _selectedBirthday == null
+                                        ? Colors.white54
+                                        : Colors.white,
                                     fontSize: 18,
                                   ),
                                 ),
-                                const Icon(Icons.calendar_today, color: Colors.amber),
+                                const Icon(
+                                  Icons.calendar_today,
+                                  color: Colors.amber,
+                                ),
                               ],
                             ),
                           ),
@@ -172,10 +224,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildStep({
-    required String title, 
-    required String subtitle, 
-    required Widget content, 
-    required VoidCallback onNext, 
+    required String title,
+    required String subtitle,
+    required Widget content,
+    required VoidCallback onNext,
     bool isFinal = false,
     bool isLoading = false,
   }) {
@@ -185,35 +237,61 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 16),
-          Text(title, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 8),
-          Text(subtitle, style: const TextStyle(fontSize: 16, color: Colors.white70)),
-          const SizedBox(height: 48),
-          
-          GlassContainer(
-            child: content,
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
-          
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: const TextStyle(fontSize: 16, color: Colors.white70),
+          ),
           const SizedBox(height: 48),
-          
+
+          GlassContainer(child: content),
+
+          const SizedBox(height: 48),
+
           ElevatedButton(
             onPressed: isLoading ? null : onNext,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber,
               foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: isLoading 
-              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-              : Text(isFinal ? "Finish Setup" : "Continue", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            child: isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(
+                    isFinal ? "Finish Setup" : "Continue",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, {IconData? icon, TextCapitalization textCapitalization = TextCapitalization.sentences, int? maxLength}) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String hint, {
+    IconData? icon,
+    TextCapitalization textCapitalization = TextCapitalization.sentences,
+    int? maxLength,
+  }) {
     return TextField(
       controller: controller,
       textCapitalization: textCapitalization,
@@ -223,15 +301,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         labelText: hint,
         labelStyle: const TextStyle(color: Colors.white70),
         prefixIcon: icon != null ? Icon(icon, color: Colors.white70) : null,
-        enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
-        focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.amber)),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white24),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.amber),
+        ),
         counterStyle: const TextStyle(color: Colors.white54),
       ),
     );
   }
 
   void _nextPage() {
-    _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   Future<void> _pickDate() async {
@@ -243,7 +328,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       builder: (context, child) {
         return Theme(
           data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(primary: Colors.amber, onPrimary: Colors.black, surface: Color(0xFF222222)), dialogTheme: DialogThemeData(backgroundColor: const Color(0xFF222222)),
+            colorScheme: const ColorScheme.dark(
+              primary: Colors.amber,
+              onPrimary: Colors.black,
+              surface: Color(0xFF222222),
+            ),
+            dialogTheme: DialogThemeData(
+              backgroundColor: const Color(0xFF222222),
+            ),
           ),
           child: child!,
         );
@@ -256,16 +348,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _submit() async {
     if (_selectedBirthday == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter your birthday")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your birthday")),
+      );
       return;
     }
 
-    final proposedUsername = _usernameController.text.trim().replaceAll(RegExp(r'\s+'), '');
+    final proposedUsername = _usernameController.text.trim().replaceAll(
+      RegExp(r'\s+'),
+      '',
+    );
     final proposedSearchName = proposedUsername.toLowerCase();
-    
+
     if (proposedUsername.isEmpty) {
-       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter a valid username without spaces")));
-       return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please enter a valid username without spaces"),
+        ),
+      );
+      return;
     }
 
     setState(() => _isContributing = true);
@@ -273,23 +374,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     try {
       final user = ref.read(authStateChangesProvider).value;
       if (user != null) {
-        
         // Check uniqueness in public_profiles (case-insensitive)
         final usernameCheck = await FirebaseFirestore.instance
             .collection('public_profiles')
             .where('searchName', isEqualTo: proposedSearchName)
             .get();
-            
+
         bool isTaken = false;
         for (var doc in usernameCheck.docs) {
-           if (doc.id != user.uid) {
-               isTaken = true;
-               break;
-           }
+          if (doc.id != user.uid) {
+            isTaken = true;
+            break;
+          }
         }
 
         if (isTaken) {
-           throw Exception("This username is already taken. Please choose another.");
+          throw Exception(
+            "This username is already taken. Please choose another.",
+          );
         }
 
         final newUser = UserModel(
@@ -302,10 +404,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         );
 
         final batch = FirebaseFirestore.instance.batch();
-        batch.set(FirebaseFirestore.instance.collection('users').doc(user.uid), newUser.toJson());
-        
         batch.set(
-          FirebaseFirestore.instance.collection('public_profiles').doc(user.uid), 
+          FirebaseFirestore.instance.collection('users').doc(user.uid),
+          newUser.toJson(),
+        );
+
+        batch.set(
+          FirebaseFirestore.instance
+              .collection('public_profiles')
+              .doc(user.uid),
           {
             'uid': user.uid,
             'username': proposedUsername,
@@ -313,11 +420,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             'firstName': _firstNameController.text.trim(),
             'lastName': _lastNameController.text.trim(),
             'points': 0, // Default properties
-            'realNameVisibility': 'Everyone', 
+            'realNameVisibility': 'Everyone',
             'onlineStatus': 'Online',
             'lastSeen': FieldValue.serverTimestamp(),
           },
-          SetOptions(merge: true)
+          SetOptions(merge: true),
         );
 
         await batch.commit();
@@ -326,7 +433,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       }
     } catch (e) {
       final errorMsg = e.toString().replaceAll('Exception: ', '');
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMsg), backgroundColor: Colors.red));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
+        );
     } finally {
       if (mounted) setState(() => _isContributing = false);
     }

@@ -13,6 +13,6 @@ abstract class FriendshipModel with _$FriendshipModel {
     required DateTime createdAt,
   }) = _FriendshipModel;
 
-  factory FriendshipModel.fromJson(Map<String, Object?> json) => 
+  factory FriendshipModel.fromJson(Map<String, Object?> json) =>
       _$FriendshipModelFromJson(json);
 }

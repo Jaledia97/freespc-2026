@@ -14,7 +14,7 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // Import
 enum DialogState { checking, idle, loading, success, notFound, addFriend }
 
 class ScanActionDialog extends ConsumerStatefulWidget {
-  final String content; 
+  final String content;
   final VoidCallback onResumeCamera;
 
   const ScanActionDialog({
@@ -49,7 +49,10 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
         final uid = uri.queryParameters['uid'];
         if (uid != null) {
           // Fetch public profile to confirm and show details
-          final doc = await FirebaseFirestore.instance.collection('public_profiles').doc(uid).get();
+          final doc = await FirebaseFirestore.instance
+              .collection('public_profiles')
+              .doc(uid)
+              .get();
           if (doc.exists && doc.data() != null) {
             if (mounted) {
               setState(() {
@@ -67,26 +70,30 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
     }
 
     // 2. Check if this is a worker
-    final worker = await ref.read(hallRepositoryProvider).getWorkerFromQr(widget.content);
-    
+    final worker = await ref
+        .read(hallRepositoryProvider)
+        .getWorkerFromQr(widget.content);
+
     if (worker != null && worker.homeBaseId != null) {
       // Worker Found! Now check for active tournament
       final hallId = worker.homeBaseId!;
-      final tournament = await ref.read(tournamentRepositoryProvider).getActiveTournament(hallId);
+      final tournament = await ref
+          .read(tournamentRepositoryProvider)
+          .getActiveTournament(hallId);
 
       if (mounted) {
         setState(() {
-           _verifiedWorker = worker;
-           _targetHallId = hallId;
-           _activeTournament = tournament;
-           _state = DialogState.idle; 
+          _verifiedWorker = worker;
+          _targetHallId = hallId;
+          _activeTournament = tournament;
+          _state = DialogState.idle;
         });
       }
     } else {
       // STRICT: If not a worker or friend, it is INVALID.
       if (mounted) {
         setState(() {
-           _state = DialogState.notFound;
+          _state = DialogState.notFound;
         });
       }
     }
@@ -105,22 +112,29 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
             if (_state == DialogState.checking) ...[
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
-              const Text("Verifying Code...", style: TextStyle(color: Colors.white)),
+              const Text(
+                "Verifying Code...",
+                style: TextStyle(color: Colors.white),
+              ),
             ] else if (_state == DialogState.notFound) ...[
-               const Icon(Icons.error_outline, color: Colors.grey, size: 60),
-               const SizedBox(height: 16),
-               const Text(
-                 "Invalid or Revoked Code",
-                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
-               ),
-               const SizedBox(height: 8),
-               const Text(
-                 "This QR code is not recognized as a valid Worker Token.",
-                 textAlign: TextAlign.center,
-                 style: TextStyle(color: Colors.grey),
-               ),
-               const SizedBox(height: 24),
-               SizedBox(
+              const Icon(Icons.error_outline, color: Colors.grey, size: 60),
+              const SizedBox(height: 16),
+              const Text(
+                "Invalid or Revoked Code",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "This QR code is not recognized as a valid Worker Token.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
@@ -138,93 +152,128 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
                 ),
               ),
             ] else if (_state == DialogState.idle) ...[
-                 // Worker Found State
-                 Row(
-                   mainAxisAlignment: MainAxisAlignment.center,
-                   children: [
-                     const Icon(Icons.verified_user, color: Colors.blue, size: 24),
-                     const SizedBox(width: 8),
-                     Text(
-                      "Verified: ${_verifiedWorker!.firstName}", 
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
-                    ),
-                   ],
-                 ),
-                const SizedBox(height: 16),
-                
-                if (_activeTournament != null && _activeTournament!.games.isNotEmpty) ...[
-                    // T O U R N A M E N T   M O D E
-                    Text("Current Event: ${_activeTournament!.title}", 
-                      style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 18),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text("Select Game to Award:", style: TextStyle(color: Colors.white70)),
-                    const SizedBox(height: 12),
-                    
-                    // Grid of Games
-                    Flexible(
-                      child: SingleChildScrollView(
-                        child: Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
-                          alignment: WrapAlignment.center,
-                          children: _activeTournament!.games.map((game) {
-                            return SizedBox(
-                              width: 130, // Fixed width for consistent grid look
-                              height: 100,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF333333),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    side: const BorderSide(color: Colors.blueAccent, width: 2),
-                                  ),
-                                  elevation: 4,
-                                ),
-                                onPressed: () => _logWin(points: game.value, description: "Won ${game.title}"),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(game.title, 
-                                      textAlign: TextAlign.center, 
-                                      maxLines: 2, 
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text("${game.value} pts", 
-                                      style: const TextStyle(color: Colors.greenAccent, fontSize: 16, fontWeight: FontWeight.bold)
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                ] else ...[
-                  // F A L L B A C K   M O D E
-                  const Text("No active tournament found.", style: TextStyle(color: Colors.white54)),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 60,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () => _logWin(points: 10, description: "Authorized Check-in"),
-                      child: const Text("STANDARD CHECK-IN (+10 pts)", style: TextStyle(fontSize: 18)),
+              // Worker Found State
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.verified_user, color: Colors.blue, size: 24),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Verified: ${_verifiedWorker!.firstName}",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+
+              if (_activeTournament != null &&
+                  _activeTournament!.games.isNotEmpty) ...[
+                // T O U R N A M E N T   M O D E
+                Text(
+                  "Current Event: ${_activeTournament!.title}",
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  "Select Game to Award:",
+                  style: TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 12),
+
+                // Grid of Games
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.center,
+                      children: _activeTournament!.games.map((game) {
+                        return SizedBox(
+                          width: 130, // Fixed width for consistent grid look
+                          height: 100,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF333333),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: const BorderSide(
+                                  color: Colors.blueAccent,
+                                  width: 2,
+                                ),
+                              ),
+                              elevation: 4,
+                            ),
+                            onPressed: () => _logWin(
+                              points: game.value,
+                              description: "Won ${game.title}",
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  game.title,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "${game.value} pts",
+                                  style: const TextStyle(
+                                    color: Colors.greenAccent,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ] else ...[
+                // F A L L B A C K   M O D E
+                const Text(
+                  "No active tournament found.",
+                  style: TextStyle(color: Colors.white54),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 60,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () =>
+                        _logWin(points: 10, description: "Authorized Check-in"),
+                    child: const Text(
+                      "STANDARD CHECK-IN (+10 pts)",
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
+              ],
 
               const SizedBox(height: 24),
               SizedBox(
@@ -240,21 +289,26 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
                   child: const Text("CANCEL", style: TextStyle(fontSize: 16)),
                 ),
               ),
-            ] else if (_state == DialogState.addFriend && _friendProfile != null) ...[
-               const Icon(Icons.person_add, color: Colors.blueAccent, size: 60),
-               const SizedBox(height: 16),
-               const Text(
-                 "Add Friend",
-                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-               ),
-               const SizedBox(height: 8),
-               Text(
-                 "Send friend request to @${_friendProfile!.username}?",
-                 textAlign: TextAlign.center,
-                 style: const TextStyle(color: Colors.white70),
-               ),
-               const SizedBox(height: 24),
-               SizedBox(
+            ] else if (_state == DialogState.addFriend &&
+                _friendProfile != null) ...[
+              const Icon(Icons.person_add, color: Colors.blueAccent, size: 60),
+              const SizedBox(height: 16),
+              const Text(
+                "Add Friend",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Send friend request to @${_friendProfile!.username}?",
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
@@ -266,7 +320,10 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
                     ),
                   ),
                   onPressed: () => _sendFriendRequest(),
-                  child: const Text("SEND REQUEST", style: TextStyle(fontSize: 18)),
+                  child: const Text(
+                    "SEND REQUEST",
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -286,13 +343,26 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
             ] else if (_state == DialogState.loading) ...[
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
-              const Text("Processing Transaction...", style: TextStyle(color: Colors.white)),
+              const Text(
+                "Processing Transaction...",
+                style: TextStyle(color: Colors.white),
+              ),
             ] else if (_state == DialogState.success) ...[
               const Icon(Icons.check_circle, color: Colors.green, size: 80),
               const SizedBox(height: 16),
-              const Text("Points Added!", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-              if (_verifiedWorker != null) 
-                const Text("Authorized Transaction", style: TextStyle(color: Colors.grey)),
+              const Text(
+                "Points Added!",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              if (_verifiedWorker != null)
+                const Text(
+                  "Authorized Transaction",
+                  style: TextStyle(color: Colors.grey),
+                ),
             ],
           ],
         ),
@@ -300,28 +370,36 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
     );
   }
 
-  Future<void> _logWin({required int points, required String description}) async {
+  Future<void> _logWin({
+    required int points,
+    required String description,
+  }) async {
     setState(() => _state = DialogState.loading);
 
     final user = ref.read(authStateChangesProvider).value;
     if (user != null && _targetHallId != null) {
       try {
-        await ref.read(transactionServiceProvider).awardPoints(
-          userId: user.uid,
-          hallId: _targetHallId!, 
-          points: points,
-          description: "$description (${_verifiedWorker!.firstName})", // include worker name
-          authorizedByWorkerId: _verifiedWorker?.uid,
-        );
+        await ref
+            .read(transactionServiceProvider)
+            .awardPoints(
+              userId: user.uid,
+              hallId: _targetHallId!,
+              points: points,
+              description:
+                  "$description (${_verifiedWorker!.firstName})", // include worker name
+              authorizedByWorkerId: _verifiedWorker?.uid,
+            );
 
         setState(() => _state = DialogState.success);
-        
-        await Future.delayed(const Duration(milliseconds: 1000)); // Faster close
-        
+
+        await Future.delayed(
+          const Duration(milliseconds: 1000),
+        ); // Faster close
+
         if (mounted) {
-          Navigator.pop(context); 
+          Navigator.pop(context);
           // Navigator.of(context).popUntil((route) => route.isFirst); // Don't pop to root, just close dialog
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('$description Recorded!'),
@@ -330,10 +408,12 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
           );
         }
       } catch (e) {
-         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-           setState(() => _state = DialogState.idle);
-         }
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
+          setState(() => _state = DialogState.idle);
+        }
       }
     }
   }
@@ -343,18 +423,25 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
     final user = ref.read(authStateChangesProvider).value;
     if (user != null && _friendUid != null) {
       try {
-        await ref.read(friendsRepositoryProvider).sendFriendRequest(user.uid, _friendUid!);
+        await ref
+            .read(friendsRepositoryProvider)
+            .sendFriendRequest(user.uid, _friendUid!);
         setState(() => _state = DialogState.success);
         await Future.delayed(const Duration(milliseconds: 1000));
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Friend Request Sent!'), backgroundColor: Colors.green),
+            const SnackBar(
+              content: Text('Friend Request Sent!'),
+              backgroundColor: Colors.green,
+            ),
           );
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
           setState(() => _state = DialogState.addFriend);
         }
       }

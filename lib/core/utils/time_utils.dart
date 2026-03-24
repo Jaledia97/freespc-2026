@@ -16,13 +16,13 @@ class TimeUtils {
     final format = ref.watch(timeFormatProvider);
     final datePart = DateFormat.yMMMd().format(date);
     String timePart;
-    
+
     if (format == TimeFormat.h24) {
       timePart = DateFormat('HH:mm').format(date);
     } else {
       timePart = DateFormat('h:mm a').format(date);
     }
-    
+
     return "$datePart $timePart";
   }
 }

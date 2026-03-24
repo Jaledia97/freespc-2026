@@ -14,12 +14,13 @@ class EditHallProfileScreen extends ConsumerStatefulWidget {
   const EditHallProfileScreen({super.key, required this.hallId});
 
   @override
-  ConsumerState<EditHallProfileScreen> createState() => _EditHallProfileScreenState();
+  ConsumerState<EditHallProfileScreen> createState() =>
+      _EditHallProfileScreenState();
 }
 
 class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // Controllers
   late TextEditingController _nameCtrl;
   late TextEditingController _descCtrl;
@@ -32,19 +33,27 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
   late TextEditingController _stateCtrl;
 
   // Operating Hours Logic
-  final List<String> _days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  final List<String> _days = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
   final Map<String, Map<String, TextEditingController>> _hoursCtrls = {};
-  
+
   // Programs Logic
   List<HallProgramModel> _programs = [];
-  
+
   // Charities Logic
   List<HallCharityModel> _charities = [];
 
   bool _isInit = false;
   bool _isSaving = false;
   BingoHallModel? _currentHall;
-  
+
   // Image State
   String? _bannerUrl;
   String? _logoUrl;
@@ -62,7 +71,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     _zipCtrl = TextEditingController();
     _unitCtrl = TextEditingController();
     _stateCtrl = TextEditingController();
-    
+
     // Init Hours Controllers
     for (var day in _days) {
       _hoursCtrls[day] = {
@@ -106,25 +115,25 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
           _zipCtrl.text = hall.zipCode ?? '';
           _unitCtrl.text = hall.unitNumber ?? '';
           _stateCtrl.text = hall.state ?? '';
-          _descCtrl.text = hall.description ?? ''; 
+          _descCtrl.text = hall.description ?? '';
           _bannerUrl = hall.bannerUrl;
           _logoUrl = hall.logoUrl;
-          
+
           // Populate Hours
           if (hall.operatingHours.isNotEmpty) {
             hall.operatingHours.forEach((day, times) {
-               if (_hoursCtrls.containsKey(day)) {
-                 _hoursCtrls[day]?['open']?.text = times['open'] ?? '';
-                 _hoursCtrls[day]?['close']?.text = times['close'] ?? '';
-               }
+              if (_hoursCtrls.containsKey(day)) {
+                _hoursCtrls[day]?['open']?.text = times['open'] ?? '';
+                _hoursCtrls[day]?['close']?.text = times['close'] ?? '';
+              }
             });
           }
-          
+
           // Populate Programs
           if (hall.programs.isNotEmpty) {
             _programs = List.from(hall.programs);
           }
-          
+
           if (hall.charities.isNotEmpty) {
             _charities = List.from(hall.charities);
           }
@@ -145,8 +154,14 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.blueAccent),
-              title: const Text('Open Gallery', style: TextStyle(color: Colors.white)),
+              leading: const Icon(
+                Icons.photo_library,
+                color: Colors.blueAccent,
+              ),
+              title: const Text(
+                'Open Gallery',
+                style: TextStyle(color: Colors.white),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _uploadFromSource(type, ImageSource.gallery);
@@ -154,7 +169,10 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt, color: Colors.blueAccent),
-              title: const Text('Take Photo', style: TextStyle(color: Colors.white)),
+              title: const Text(
+                'Take Photo',
+                style: TextStyle(color: Colors.white),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _uploadFromSource(type, ImageSource.camera);
@@ -162,7 +180,10 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.history, color: Colors.amber),
-              title: const Text('Asset Library (Past Uploads)', style: TextStyle(color: Colors.white)),
+              title: const Text(
+                'Asset Library (Past Uploads)',
+                style: TextStyle(color: Colors.white),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _showAssetLibrary(type);
@@ -175,29 +196,37 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
   }
 
   Future<void> _uploadFromSource(String type, ImageSource source) async {
-     try {
-       final file = await ref.read(storageServiceProvider).pickImage(source: source);
-       if (file == null) return;
-       
-       setState(() => _isUploading = true);
-       
-       // Upload
-       final url = await ref.read(storageServiceProvider).uploadHallImage(File(file.path), widget.hallId, type);
-       
-       // Save to Asset Library
-       await ref.read(hallRepositoryProvider).addToAssetLibrary(widget.hallId, url, type);
-       
-       // Update UI temporarily (until full save)
-       setState(() {
-         if (type == 'banner') _bannerUrl = url;
-         if (type == 'logo') _logoUrl = url;
-         _isUploading = false;
-       });
-       
-     } catch (e) {
-       setState(() => _isUploading = false);
-       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Upload Error: $e")));
-     }
+    try {
+      final file = await ref
+          .read(storageServiceProvider)
+          .pickImage(source: source);
+      if (file == null) return;
+
+      setState(() => _isUploading = true);
+
+      // Upload
+      final url = await ref
+          .read(storageServiceProvider)
+          .uploadHallImage(File(file.path), widget.hallId, type);
+
+      // Save to Asset Library
+      await ref
+          .read(hallRepositoryProvider)
+          .addToAssetLibrary(widget.hallId, url, type);
+
+      // Update UI temporarily (until full save)
+      setState(() {
+        if (type == 'banner') _bannerUrl = url;
+        if (type == 'logo') _logoUrl = url;
+        _isUploading = false;
+      });
+    } catch (e) {
+      setState(() => _isUploading = false);
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Upload Error: $e")));
+    }
   }
 
   void _showAssetLibrary(String type) {
@@ -217,25 +246,54 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text("Select ${type == 'banner' ? 'Banner' : 'Logo'}", style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text(
+                  "Select ${type == 'banner' ? 'Banner' : 'Logo'}",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               Expanded(
                 child: Consumer(
                   builder: (_, ref, __) {
-                    final assetsAsync = ref.watch(hallRepositoryProvider).getAssetLibrary(widget.hallId, type);
+                    final assetsAsync = ref
+                        .watch(hallRepositoryProvider)
+                        .getAssetLibrary(widget.hallId, type);
                     return StreamBuilder<List<String>>(
-                      stream: assetsAsync, 
+                      stream: assetsAsync,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-                        if (snapshot.hasError) return Center(child: Text("Error: ${snapshot.error}", style: const TextStyle(color: Colors.red)));
-                        
+                        if (snapshot.connectionState == ConnectionState.waiting)
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        if (snapshot.hasError)
+                          return Center(
+                            child: Text(
+                              "Error: ${snapshot.error}",
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          );
+
                         final images = snapshot.data ?? [];
-                        if (images.isEmpty) return const Center(child: Text("No stored images found.", style: TextStyle(color: Colors.white54)));
-                        
+                        if (images.isEmpty)
+                          return const Center(
+                            child: Text(
+                              "No stored images found.",
+                              style: TextStyle(color: Colors.white54),
+                            ),
+                          );
+
                         return GridView.builder(
                           controller: scrollController,
                           padding: const EdgeInsets.all(8),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 8, mainAxisSpacing: 8),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 8,
+                                mainAxisSpacing: 8,
+                              ),
                           itemCount: images.length,
                           itemBuilder: (ctx, i) {
                             return GestureDetector(
@@ -248,12 +306,15 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
-                                child: Image.network(images[i], fit: BoxFit.cover),
+                                child: Image.network(
+                                  images[i],
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             );
                           },
                         );
-                      }
+                      },
                     );
                   },
                 ),
@@ -268,64 +329,80 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_currentHall == null) return;
-    
+
     setState(() => _isSaving = true);
-    
+
     try {
       double newLat = _currentHall!.latitude;
       double newLng = _currentHall!.longitude;
-      String? newState = _currentHall!.state; 
-      
+      String? newState = _currentHall!.state;
+
       // If user manually edited state, use that.
       if (_stateCtrl.text.trim() != (newState ?? '')) {
-         newState = _stateCtrl.text.trim();
+        newState = _stateCtrl.text.trim();
       }
 
       // Check for Address Changes
-      final addressChanged = 
-        _streetCtrl.text.trim() != (_currentHall!.street ?? '') ||
-        _cityCtrl.text.trim() != (_currentHall!.city ?? '') ||
-        _zipCtrl.text.trim() != (_currentHall!.zipCode ?? '') ||
-        _unitCtrl.text.trim() != (_currentHall!.unitNumber ?? '');
+      final addressChanged =
+          _streetCtrl.text.trim() != (_currentHall!.street ?? '') ||
+          _cityCtrl.text.trim() != (_currentHall!.city ?? '') ||
+          _zipCtrl.text.trim() != (_currentHall!.zipCode ?? '') ||
+          _unitCtrl.text.trim() != (_currentHall!.unitNumber ?? '');
 
       if (addressChanged) {
         // Attempt Geocoding
         try {
-          final fullAddress = "${_streetCtrl.text.trim()} ${_unitCtrl.text.trim()}, ${_cityCtrl.text.trim()}, ${_stateCtrl.text.trim()} ${_zipCtrl.text.trim()}";
+          final fullAddress =
+              "${_streetCtrl.text.trim()} ${_unitCtrl.text.trim()}, ${_cityCtrl.text.trim()}, ${_stateCtrl.text.trim()} ${_zipCtrl.text.trim()}";
           // We can assume USA or append it? "fullAddress, USA"
-          
+
           List<Location> locations = await locationFromAddress(fullAddress);
           if (locations.isNotEmpty) {
             newLat = locations.first.latitude;
             newLng = locations.first.longitude;
-            
+
             // Only update state from Geocoding if the user DIDN'T explicit set one (or left it empty)
             if (_stateCtrl.text.isEmpty) {
               try {
-                 List<Placemark> placemarks = await placemarkFromCoordinates(newLat, newLng);
-                 if (placemarks.isNotEmpty) {
-                   newState = placemarks.first.administrativeArea ?? newState;
-                   // Update controller too so user sees it
-                   _stateCtrl.text = newState ?? '';
-                 }
-              } catch (_) {} 
+                List<Placemark> placemarks = await placemarkFromCoordinates(
+                  newLat,
+                  newLng,
+                );
+                if (placemarks.isNotEmpty) {
+                  newState = placemarks.first.administrativeArea ?? newState;
+                  // Update controller too so user sees it
+                  _stateCtrl.text = newState ?? '';
+                }
+              } catch (_) {}
             }
           } else {
-             if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Warning: Could not locate address on map.")));
+            if (mounted)
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Warning: Could not locate address on map."),
+                ),
+              );
           }
         } catch (e) {
           print("Geocoding error: $e");
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Warning: Address check failed. Map pin may not update.")));
+          if (mounted)
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  "Warning: Address check failed. Map pin may not update.",
+                ),
+              ),
+            );
         }
       }
 
       final Map<String, dynamic> finalHours = {};
       for (var day in _days) {
-         final open = _hoursCtrls[day]?['open']?.text.trim() ?? '';
-         final close = _hoursCtrls[day]?['close']?.text.trim() ?? '';
-         if (open.isNotEmpty) {
-           finalHours[day] = {'open': open, 'close': close};
-         }
+        final open = _hoursCtrls[day]?['open']?.text.trim() ?? '';
+        final close = _hoursCtrls[day]?['close']?.text.trim() ?? '';
+        if (open.isNotEmpty) {
+          finalHours[day] = {'open': open, 'close': close};
+        }
       }
 
       final updatedHall = _currentHall!.copyWith(
@@ -348,13 +425,18 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
       );
 
       await ref.read(hallRepositoryProvider).updateHall(updatedHall);
-      
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile Updated!")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Profile Updated!")));
         Navigator.pop(context);
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -364,7 +446,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
   Widget build(BuildContext context) {
     // Force rebuild of UI if async hall loads to populate controllers (in didChangeDep)
     // But we use _currentHall once loaded.
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
@@ -373,278 +455,426 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         elevation: 0,
         actions: [
           if (_isSaving || _isUploading)
-            const Center(child: Padding(padding: EdgeInsets.only(right: 16), child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              ),
+            )
           else
             TextButton(
-              onPressed: _save, 
-              child: const Text("SAVE", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 16))
+              onPressed: _save,
+              child: const Text(
+                "SAVE",
+                style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
             ),
         ],
       ),
-      body: _currentHall == null 
-        ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildHeaderImageSection(),
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // General Info (Includes Contact & Location)
-                        _buildSection(
-                          title: "General Information",
-                          initiallyExpanded: false,
-                          children: [
-                            _input("Hall Name", _nameCtrl),
-                            const SizedBox(height: 12),
-                            _input("Bio / Description", _descCtrl, maxLines: 3),
-                            
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16),
-                              child: Divider(color: Colors.white24),
-                            ),
-                            const Text("Contact Details", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 14)),
-                            const SizedBox(height: 12),
-                            _input("Phone Number", _phoneCtrl),
-                            const SizedBox(height: 12),
-                            _input("Website", _webCtrl),
-
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16),
-                              child: Divider(color: Colors.white24),
-                            ),
-                            const Text("Location", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 14)),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(child: _input("Street Address", _streetCtrl)),
-                                const SizedBox(width: 12),
-                                SizedBox(width: 100, child: _input("Unit/Suite", _unitCtrl)),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(flex: 2, child: _input("City", _cityCtrl)),
-                                const SizedBox(width: 8),
-                                SizedBox(width: 80, child: _input("State", _stateCtrl)),
-                                const SizedBox(width: 8),
-                                Expanded(child: _input("Zip", _zipCtrl)),
-                              ],
-                            ),
-                          ],
-                        ),
-
-                        // Operating Hours
-                        _buildSection(
-                          title: "Operating Hours",
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(bottom: 12),
-                              child: Text(
-                                "If close time is left blank, it will display as 'to CLOSE'. e.g. '5:00 PM to CLOSE'",
-                                style: TextStyle(color: Colors.white54, fontSize: 13, fontStyle: FontStyle.italic),
+      body: _currentHall == null
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildHeaderImageSection(),
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // General Info (Includes Contact & Location)
+                          _buildSection(
+                            title: "General Information",
+                            initiallyExpanded: false,
+                            children: [
+                              _input("Hall Name", _nameCtrl),
+                              const SizedBox(height: 12),
+                              _input(
+                                "Bio / Description",
+                                _descCtrl,
+                                maxLines: 3,
                               ),
-                            ),
-                            ..._days.map((day) => _buildDayRow(day)),
-                          ],
-                        ),
 
-                        // Program Details
-                        _buildSection(
-                          title: "Program Details",
-                          children: [
-                            if (_programs.isEmpty)
                               const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8.0),
-                                child: Text("No programs added yet.", style: TextStyle(color: Colors.white54)),
-                              )
-                            else
-                              ..._programs.asMap().entries.map((entry) {
-                                final index = entry.key;
-                                final program = entry.value;
-                                
-                                final isOverridden = program.overrideEndTime != null && program.overrideEndTime!.isAfter(DateTime.now());
-                                
-                                return Card(
-                                  color: const Color(0xFF2C2C2C),
-                                  margin: const EdgeInsets.only(bottom: 8),
-                                  child: ListTile(
-                                    leading: Checkbox(
-                                      value: isOverridden, 
-                                      activeColor: Colors.greenAccent,
-                                      onChanged: (val) async {
-                                        if (val == true) {
-                                          // Turn ON Override: Ask for End Time
-                                          final time = await showTimePicker(
-                                            context: context, 
-                                            initialTime: const TimeOfDay(hour: 23, minute: 59),
-                                            helpText: "Select when this override ends",
-                                          );
-                                          
-                                          if (time != null) {
-                                            final now = DateTime.now();
-                                            var endDt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
-                                            // If time is earlier than now, assume tomorrow? Or just allow it (it will expire immediately)
-                                            if (endDt.isBefore(now)) {
-                                               endDt = endDt.add(const Duration(days: 1));
-                                            }
-                                            
-                                            setState(() {
-                                              _programs[index] = program.copyWith(overrideEndTime: endDt);
-                                            });
-                                          }
-                                        } else {
-                                          // Turn OFF Override
-                                          setState(() {
-                                            _programs[index] = program.copyWith(overrideEndTime: null);
-                                          });
-                                        }
-                                      },
-                                    ),
-                                    title: Text(program.title, style: TextStyle(color: isOverridden ? Colors.greenAccent : Colors.white, fontWeight: FontWeight.bold)),
-                                    subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        if (isOverridden)
-                                          Text(
-                                            "Forced Active until ${TimeOfDay.fromDateTime(program.overrideEndTime!).format(context)}",
-                                            style: const TextStyle(color: Colors.greenAccent, fontSize: 12, fontWeight: FontWeight.bold),
-                                          ),
-                                        Text(
-                                          "${program.selectedDays.isEmpty ? 'Manual Only' : program.selectedDays.map((d) => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][d - 1]).join(', ')} • ${program.pricing.replaceAll('\n', ', ')}", 
-                                          style: const TextStyle(color: Colors.white70),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                    trailing: IconButton(
-                                      icon: const Icon(Icons.edit, color: Colors.blueAccent),
-                                      onPressed: () => _showAddEditProgramDialog(existing: program, index: index),
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                child: Divider(color: Colors.white24),
+                              ),
+                              const Text(
+                                "Contact Details",
+                                style: TextStyle(
+                                  color: Colors.blueAccent,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _input("Phone Number", _phoneCtrl),
+                              const SizedBox(height: 12),
+                              _input("Website", _webCtrl),
+
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                child: Divider(color: Colors.white24),
+                              ),
+                              const Text(
+                                "Location",
+                                style: TextStyle(
+                                  color: Colors.blueAccent,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _input(
+                                      "Street Address",
+                                      _streetCtrl,
                                     ),
                                   ),
-                                );
-                              }),
+                                  const SizedBox(width: 12),
+                                  SizedBox(
+                                    width: 100,
+                                    child: _input("Unit/Suite", _unitCtrl),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    flex: 2,
+                                    child: _input("City", _cityCtrl),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  SizedBox(
+                                    width: 80,
+                                    child: _input("State", _stateCtrl),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: _input("Zip", _zipCtrl)),
+                                ],
+                              ),
+                            ],
+                          ),
 
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton.icon(
-                                onPressed: () => _showAddEditProgramDialog(),
-                                icon: const Icon(Icons.add, color: Colors.blueAccent),
-                                label: const Text("Add A Program", style: TextStyle(color: Colors.blueAccent)),
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: Colors.blueAccent),
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                          // Operating Hours
+                          _buildSection(
+                            title: "Operating Hours",
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(bottom: 12),
+                                child: Text(
+                                  "If close time is left blank, it will display as 'to CLOSE'. e.g. '5:00 PM to CLOSE'",
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 13,
+                                    fontStyle: FontStyle.italic,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                              ..._days.map((day) => _buildDayRow(day)),
+                            ],
+                          ),
 
+                          // Program Details
+                          _buildSection(
+                            title: "Program Details",
+                            children: [
+                              if (_programs.isEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(
+                                    "No programs added yet.",
+                                    style: TextStyle(color: Colors.white54),
+                                  ),
+                                )
+                              else
+                                ..._programs.asMap().entries.map((entry) {
+                                  final index = entry.key;
+                                  final program = entry.value;
 
-                        // Charities
-                        _buildSection(
-                          title: "Charities & Partnerships",
-                          children: [
-                            if (_charities.isEmpty)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8.0),
-                                child: Text("No charities added yet.", style: TextStyle(color: Colors.white54)),
-                              )
-                            else
-                              GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 3,
-                                  crossAxisSpacing: 8,
-                                  mainAxisSpacing: 8,
-                                  childAspectRatio: 0.8,
-                                ),
-                                itemCount: _charities.length,
-                                itemBuilder: (ctx, i) {
-                                  final charity = _charities[i];
-                                  return Stack(
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF2C2C2C),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: Colors.white10),
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                                          children: [
-                                            Expanded(
-                                              child: ClipRRect(
-                                                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                                                child: Image.network(charity.logoUrl, fit: BoxFit.cover),
+                                  final isOverridden =
+                                      program.overrideEndTime != null &&
+                                      program.overrideEndTime!.isAfter(
+                                        DateTime.now(),
+                                      );
+
+                                  return Card(
+                                    color: const Color(0xFF2C2C2C),
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    child: ListTile(
+                                      leading: Checkbox(
+                                        value: isOverridden,
+                                        activeColor: Colors.greenAccent,
+                                        onChanged: (val) async {
+                                          if (val == true) {
+                                            // Turn ON Override: Ask for End Time
+                                            final time = await showTimePicker(
+                                              context: context,
+                                              initialTime: const TimeOfDay(
+                                                hour: 23,
+                                                minute: 59,
                                               ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(4),
-                                              child: Text(
-                                                charity.name,
-                                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                                                textAlign: TextAlign.center,
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ],
+                                              helpText:
+                                                  "Select when this override ends",
+                                            );
+
+                                            if (time != null) {
+                                              final now = DateTime.now();
+                                              var endDt = DateTime(
+                                                now.year,
+                                                now.month,
+                                                now.day,
+                                                time.hour,
+                                                time.minute,
+                                              );
+                                              // If time is earlier than now, assume tomorrow? Or just allow it (it will expire immediately)
+                                              if (endDt.isBefore(now)) {
+                                                endDt = endDt.add(
+                                                  const Duration(days: 1),
+                                                );
+                                              }
+
+                                              setState(() {
+                                                _programs[index] = program
+                                                    .copyWith(
+                                                      overrideEndTime: endDt,
+                                                    );
+                                              });
+                                            }
+                                          } else {
+                                            // Turn OFF Override
+                                            setState(() {
+                                              _programs[index] = program
+                                                  .copyWith(
+                                                    overrideEndTime: null,
+                                                  );
+                                            });
+                                          }
+                                        },
+                                      ),
+                                      title: Text(
+                                        program.title,
+                                        style: TextStyle(
+                                          color: isOverridden
+                                              ? Colors.greenAccent
+                                              : Colors.white,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      Positioned(
-                                        right: 0,
-                                        top: 0,
-                                        child: InkWell(
-                                          onTap: () => setState(() => _charities.removeAt(i)),
-                                          child: Container(
-                                            decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                                            padding: const EdgeInsets.all(4),
-                                            child: const Icon(Icons.close, color: Colors.white, size: 14),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          if (isOverridden)
+                                            Text(
+                                              "Forced Active until ${TimeOfDay.fromDateTime(program.overrideEndTime!).format(context)}",
+                                              style: const TextStyle(
+                                                color: Colors.greenAccent,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          Text(
+                                            "${program.selectedDays.isEmpty ? 'Manual Only' : program.selectedDays.map((d) => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][d - 1]).join(', ')} • ${program.pricing.replaceAll('\n', ', ')}",
+                                            style: const TextStyle(
+                                              color: Colors.white70,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: IconButton(
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          color: Colors.blueAccent,
+                                        ),
+                                        onPressed: () =>
+                                            _showAddEditProgramDialog(
+                                              existing: program,
+                                              index: index,
+                                            ),
+                                      ),
+                                    ),
+                                  );
+                                }),
+
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () => _showAddEditProgramDialog(),
+                                  icon: const Icon(
+                                    Icons.add,
+                                    color: Colors.blueAccent,
+                                  ),
+                                  label: const Text(
+                                    "Add A Program",
+                                    style: TextStyle(color: Colors.blueAccent),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                      color: Colors.blueAccent,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // Charities
+                          _buildSection(
+                            title: "Charities & Partnerships",
+                            children: [
+                              if (_charities.isEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(
+                                    "No charities added yet.",
+                                    style: TextStyle(color: Colors.white54),
+                                  ),
+                                )
+                              else
+                                GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 3,
+                                        crossAxisSpacing: 8,
+                                        mainAxisSpacing: 8,
+                                        childAspectRatio: 0.8,
+                                      ),
+                                  itemCount: _charities.length,
+                                  itemBuilder: (ctx, i) {
+                                    final charity = _charities[i];
+                                    return Stack(
+                                      children: [
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF2C2C2C),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white10,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              Expanded(
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      const BorderRadius.vertical(
+                                                        top: Radius.circular(8),
+                                                      ),
+                                                  child: Image.network(
+                                                    charity.logoUrl,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.all(
+                                                  4,
+                                                ),
+                                                child: Text(
+                                                  charity.name,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                             
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton.icon(
-                                onPressed: _showAddCharityDialog,
-                                icon: const Icon(Icons.add, color: Colors.blueAccent),
-                                label: const Text("Add Charity", style: TextStyle(color: Colors.blueAccent)),
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: Colors.blueAccent),
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                        Positioned(
+                                          right: 0,
+                                          top: 0,
+                                          child: InkWell(
+                                            onTap: () => setState(
+                                              () => _charities.removeAt(i),
+                                            ),
+                                            child: Container(
+                                              decoration: const BoxDecoration(
+                                                color: Colors.black54,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              padding: const EdgeInsets.all(4),
+                                              child: const Icon(
+                                                Icons.close,
+                                                color: Colors.white,
+                                                size: 14,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: _showAddCharityDialog,
+                                  icon: const Icon(
+                                    Icons.add,
+                                    color: Colors.blueAccent,
+                                  ),
+                                  label: const Text(
+                                    "Add Charity",
+                                    style: TextStyle(color: Colors.blueAccent),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                      color: Colors.blueAccent,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
 
-                        // Bottom Padding to fix clipping
-                        const SizedBox(height: 100),
-                      ],
+                          // Bottom Padding to fix clipping
+                          const SizedBox(height: 100),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
     );
   }
-  
+
   Widget _buildHeaderImageSection() {
     return Stack(
       clipBehavior: Clip.none,
@@ -657,9 +887,15 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
             height: 180,
             width: double.infinity,
             color: Colors.grey[900],
-            child: _bannerUrl != null 
-              ? Image.network(_bannerUrl!, fit: BoxFit.cover)
-              : const Center(child: Icon(Icons.add_a_photo, color: Colors.white54, size: 40)),
+            child: _bannerUrl != null
+                ? Image.network(_bannerUrl!, fit: BoxFit.cover)
+                : const Center(
+                    child: Icon(
+                      Icons.add_a_photo,
+                      color: Colors.white54,
+                      size: 40,
+                    ),
+                  ),
           ),
         ),
         // Logo
@@ -675,12 +911,23 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                 color: Colors.black,
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFF141414), width: 4),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 10)], // Fixed deprecated
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 10,
+                  ),
+                ], // Fixed deprecated
               ),
               child: ClipOval(
                 child: _logoUrl != null
-                  ? Image.network(_logoUrl!, fit: BoxFit.cover)
-                  : const Center(child: Icon(Icons.add_a_photo, color: Colors.white54, size: 30)),
+                    ? Image.network(_logoUrl!, fit: BoxFit.cover)
+                    : const Center(
+                        child: Icon(
+                          Icons.add_a_photo,
+                          color: Colors.white54,
+                          size: 30,
+                        ),
+                      ),
               ),
             ),
           ),
@@ -691,14 +938,22 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
           right: 10,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(12)),
-            child: const Row(children: [
-              Icon(Icons.edit, color: Colors.white, size: 14),
-              SizedBox(width: 4),
-              Text("Edit Banner", style: TextStyle(color: Colors.white, fontSize: 12)),
-            ]),
+            decoration: BoxDecoration(
+              color: Colors.black54,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.edit, color: Colors.white, size: 14),
+                SizedBox(width: 4),
+                Text(
+                  "Edit Banner",
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ],
+            ),
           ),
-        )
+        ),
       ],
     );
   }
@@ -710,8 +965,14 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-             width: 100,
-             child: Text(day, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            width: 100,
+            child: Text(
+              day,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           Expanded(
             child: _input("Open", _hoursCtrls[day]!['open']!, isDense: true),
@@ -725,7 +986,11 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     );
   }
 
-  Widget _buildSection({required String title, required List<Widget> children, bool initiallyExpanded = false}) {
+  Widget _buildSection({
+    required String title,
+    required List<Widget> children,
+    bool initiallyExpanded = false,
+  }) {
     return Card(
       color: const Color(0xFF1E1E1E),
       margin: const EdgeInsets.only(bottom: 16),
@@ -734,7 +999,14 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           initiallyExpanded: initiallyExpanded,
-          title: Text(title, style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 16)),
+          title: Text(
+            title,
+            style: const TextStyle(
+              color: Colors.blueAccent,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
           childrenPadding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           children: children,
         ),
@@ -742,7 +1014,12 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     );
   }
 
-  Widget _input(String label, TextEditingController ctrl, {int maxLines = 1, bool isDense = false}) {
+  Widget _input(
+    String label,
+    TextEditingController ctrl, {
+    int maxLines = 1,
+    bool isDense = false,
+  }) {
     return TextFormField(
       controller: ctrl,
       maxLines: maxLines,
@@ -753,8 +1030,13 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         filled: true,
         fillColor: const Color(0xFF1E1E1E),
         isDense: isDense,
-        contentPadding: isDense ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8) : null,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+        contentPadding: isDense
+            ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
+            : null,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
       ),
       validator: (v) => label == "Hall Name" && v!.isEmpty ? "Required" : null,
     );
@@ -773,9 +1055,11 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
 
   void _showAddEditProgramDialog({HallProgramModel? existing, int? index}) {
     final titleCtrl = TextEditingController(text: existing?.title ?? '');
-    final pricingCtrl = TextEditingController(text: existing?.pricing ?? ''); // Per request: Multiline
+    final pricingCtrl = TextEditingController(
+      text: existing?.pricing ?? '',
+    ); // Per request: Multiline
     final detailsCtrl = TextEditingController(text: existing?.details ?? '');
-    
+
     // Dialog State
     Set<int> selectedDays = (existing?.selectedDays ?? []).toSet();
     // Removed specificDay logic
@@ -805,14 +1089,17 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
       selectedStartTime = parseTime(existing.startTime);
       selectedEndTime = parseTime(existing.endTime);
     }
-    
+
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
             backgroundColor: const Color(0xFF1E1E1E),
-            title: Text(existing == null ? "Add Program" : "Edit Program", style: const TextStyle(color: Colors.white)),
+            title: Text(
+              existing == null ? "Add Program" : "Edit Program",
+              style: const TextStyle(color: Colors.white),
+            ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -820,64 +1107,111 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                 children: [
                   _input("Program Name", titleCtrl, isDense: true),
                   const SizedBox(height: 12),
-                  const Text("Pricing", style: TextStyle(color: Colors.white54, fontSize: 12)),
+                  const Text(
+                    "Pricing",
+                    style: TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
                   const SizedBox(height: 4),
-                  _input("Full Pricing Details", pricingCtrl, maxLines: 4, isDense: true),
+                  _input(
+                    "Full Pricing Details",
+                    pricingCtrl,
+                    maxLines: 4,
+                    isDense: true,
+                  ),
                   const SizedBox(height: 12),
-                  const Text("Details", style: TextStyle(color: Colors.white54, fontSize: 12)),
+                  const Text(
+                    "Details",
+                    style: TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
                   const SizedBox(height: 4),
-                  _input("Program Description", detailsCtrl, maxLines: 4, isDense: true),
+                  _input(
+                    "Program Description",
+                    detailsCtrl,
+                    maxLines: 4,
+                    isDense: true,
+                  ),
                   const SizedBox(height: 16),
-                  
+
                   // Day Selector
-                  const Text("Select Days", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                  const Text(
+                    "Select Days",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  const Text("Leave blank to make this program manual-only (active via override).", style: TextStyle(color: Colors.white54, fontSize: 12, fontStyle: FontStyle.italic)),
+                  const Text(
+                    "Leave blank to make this program manual-only (active via override).",
+                    style: TextStyle(
+                      color: Colors.white54,
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 12, // Increased spacing
-                    children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].asMap().entries.map((entry) {
-                      final index = entry.key; // 0-6
-                      final dayNum = index + 1; // 1-7
-                      final isSelected = selectedDays.contains(dayNum);
-                      
-                      return GestureDetector(
-                        onTap: () {
-                          setDialogState(() {
-                            if (isSelected) {
-                              selectedDays.remove(dayNum);
-                            } else {
-                              selectedDays.add(dayNum);
-                            }
-                          });
-                        },
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: isSelected ? Colors.blueAccent : const Color(0xFF2C2C2C),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isSelected ? Colors.blueAccent : Colors.white24,
-                              width: 1.5,
+                    children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                        .asMap()
+                        .entries
+                        .map((entry) {
+                          final index = entry.key; // 0-6
+                          final dayNum = index + 1; // 1-7
+                          final isSelected = selectedDays.contains(dayNum);
+
+                          return GestureDetector(
+                            onTap: () {
+                              setDialogState(() {
+                                if (isSelected) {
+                                  selectedDays.remove(dayNum);
+                                } else {
+                                  selectedDays.add(dayNum);
+                                }
+                              });
+                            },
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? Colors.blueAccent
+                                    : const Color(0xFF2C2C2C),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Colors.blueAccent
+                                      : Colors.white24,
+                                  width: 1.5,
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                entry.value[0], // First letter
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.white54,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            entry.value[0], // First letter
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.white54,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                          );
+                        })
+                        .toList(),
                   ),
                   const SizedBox(height: 24),
 
                   // Timeframe
-                  const Text("Timeframe (Optional)", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                  const Text(
+                    "Timeframe (Optional)",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -885,23 +1219,41 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                       Expanded(
                         child: InkWell(
                           onTap: () async {
-                            final time = await showTimePicker(context: context, initialTime: selectedStartTime ?? const TimeOfDay(hour: 18, minute: 0));
+                            final time = await showTimePicker(
+                              context: context,
+                              initialTime:
+                                  selectedStartTime ??
+                                  const TimeOfDay(hour: 18, minute: 0),
+                            );
                             if (time != null) {
                               setDialogState(() => selectedStartTime = time);
                             }
                           },
                           child: InputDecorator(
                             decoration: _inputDecoration("Start Time").copyWith(
-                              suffixIcon: selectedStartTime != null 
-                                ? IconButton(
-                                    icon: const Icon(Icons.clear, color: Colors.white54, size: 20),
-                                    onPressed: () => setDialogState(() => selectedStartTime = null),
-                                  )
-                                : const Icon(Icons.access_time, color: Colors.white54),
+                              suffixIcon: selectedStartTime != null
+                                  ? IconButton(
+                                      icon: const Icon(
+                                        Icons.clear,
+                                        color: Colors.white54,
+                                        size: 20,
+                                      ),
+                                      onPressed: () => setDialogState(
+                                        () => selectedStartTime = null,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.access_time,
+                                      color: Colors.white54,
+                                    ),
                             ),
                             child: Text(
                               selectedStartTime?.format(context) ?? "Set Start",
-                              style: TextStyle(color: selectedStartTime != null ? Colors.white : Colors.white38),
+                              style: TextStyle(
+                                color: selectedStartTime != null
+                                    ? Colors.white
+                                    : Colors.white38,
+                              ),
                             ),
                           ),
                         ),
@@ -911,47 +1263,70 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                       Expanded(
                         child: InkWell(
                           onTap: () async {
-                            final time = await showTimePicker(context: context, initialTime: selectedEndTime ?? const TimeOfDay(hour: 21, minute: 0));
+                            final time = await showTimePicker(
+                              context: context,
+                              initialTime:
+                                  selectedEndTime ??
+                                  const TimeOfDay(hour: 21, minute: 0),
+                            );
                             if (time != null) {
                               setDialogState(() => selectedEndTime = time);
                             }
                           },
                           child: InputDecorator(
                             decoration: _inputDecoration("End Time").copyWith(
-                               suffixIcon: selectedEndTime != null 
-                                ? IconButton(
-                                    icon: const Icon(Icons.clear, color: Colors.white54, size: 20),
-                                    onPressed: () => setDialogState(() => selectedEndTime = null),
-                                  )
-                                : const Icon(Icons.access_time, color: Colors.white54),
+                              suffixIcon: selectedEndTime != null
+                                  ? IconButton(
+                                      icon: const Icon(
+                                        Icons.clear,
+                                        color: Colors.white54,
+                                        size: 20,
+                                      ),
+                                      onPressed: () => setDialogState(
+                                        () => selectedEndTime = null,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.access_time,
+                                      color: Colors.white54,
+                                    ),
                             ),
                             child: Text(
                               selectedEndTime?.format(context) ?? "Set End",
-                              style: TextStyle(color: selectedEndTime != null ? Colors.white : Colors.white38),
+                              style: TextStyle(
+                                color: selectedEndTime != null
+                                    ? Colors.white
+                                    : Colors.white38,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ],
                   ),
-
                 ],
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text("CANCEL", style: TextStyle(color: Colors.grey)),
+                child: const Text(
+                  "CANCEL",
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
               if (existing != null)
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, "DELETE"),
-                  child: const Text("DELETE", style: TextStyle(color: Colors.redAccent)),
+                  child: const Text(
+                    "DELETE",
+                    style: TextStyle(color: Colors.redAccent),
+                  ),
                 ),
               TextButton(
                 onPressed: () {
                   if (titleCtrl.text.isEmpty) return;
-                  
+
                   final newProgram = HallProgramModel(
                     title: titleCtrl.text.trim(),
                     pricing: pricingCtrl.text.trim(),
@@ -959,12 +1334,19 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                     selectedDays: selectedDays.toList(),
                     startTime: selectedStartTime?.format(context),
                     endTime: selectedEndTime?.format(context),
-                    overrideEndTime: existing?.overrideEndTime, // Preserve existing override
+                    overrideEndTime:
+                        existing?.overrideEndTime, // Preserve existing override
                   );
-                  
+
                   Navigator.pop(ctx, newProgram); // Return the new object
                 },
-                child: const Text("SAVE", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "SAVE",
+                  style: TextStyle(
+                    color: Colors.blueAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           );
@@ -972,17 +1354,17 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
       ),
     ).then((result) {
       if (result != null) {
-         setState(() {
-           if (result == 'DELETE' && existing != null) {
-             _programs.removeAt(index!);
-           } else if (result is HallProgramModel) {
-             if (existing != null) {
-               _programs[index!] = result;
-             } else {
-               _programs.add(result);
-             }
-           }
-         });
+        setState(() {
+          if (result == 'DELETE' && existing != null) {
+            _programs.removeAt(index!);
+          } else if (result is HallProgramModel) {
+            if (existing != null) {
+              _programs[index!] = result;
+            } else {
+              _programs.add(result);
+            }
+          }
+        });
       }
     });
   }
@@ -992,27 +1374,38 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     final webCtrl = TextEditingController();
     String? logoUrl;
     bool isUploading = false;
-    
+
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
             backgroundColor: const Color(0xFF1E1E1E),
-            title: const Text("Add Charity", style: TextStyle(color: Colors.white)),
+            title: const Text(
+              "Add Charity",
+              style: TextStyle(color: Colors.white),
+            ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                   GestureDetector(
+                  GestureDetector(
                     onTap: () async {
                       // Custom Image Picker for Dialog
-                      final file = await ref.read(storageServiceProvider).pickImage(source: ImageSource.gallery);
+                      final file = await ref
+                          .read(storageServiceProvider)
+                          .pickImage(source: ImageSource.gallery);
                       if (file != null) {
                         setDialogState(() => isUploading = true);
                         try {
-                          final url = await ref.read(storageServiceProvider).uploadHallImage(File(file.path), widget.hallId, 'charity_logo');
-                           setDialogState(() {
+                          final url = await ref
+                              .read(storageServiceProvider)
+                              .uploadHallImage(
+                                File(file.path),
+                                widget.hallId,
+                                'charity_logo',
+                              );
+                          setDialogState(() {
                             logoUrl = url;
                             isUploading = false;
                           });
@@ -1029,43 +1422,64 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.white24),
                       ),
-                      child: isUploading 
-                        ? const Center(child: CircularProgressIndicator())
-                        : logoUrl != null 
-                          ? ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(logoUrl!, fit: BoxFit.cover))
-                          : const Center(child: Icon(Icons.add_a_photo, color: Colors.white54)),
+                      child: isUploading
+                          ? const Center(child: CircularProgressIndicator())
+                          : logoUrl != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(logoUrl!, fit: BoxFit.cover),
+                            )
+                          : const Center(
+                              child: Icon(
+                                Icons.add_a_photo,
+                                color: Colors.white54,
+                              ),
+                            ),
                     ),
-                   ),
-                   const SizedBox(height: 16),
-                   _input("Charity Name", nameCtrl, isDense: true),
-                   const SizedBox(height: 12),
-                   _input("Website (Optional)", webCtrl, isDense: true),
+                  ),
+                  const SizedBox(height: 16),
+                  _input("Charity Name", nameCtrl, isDense: true),
+                  const SizedBox(height: 12),
+                  _input("Website (Optional)", webCtrl, isDense: true),
                 ],
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text("CANCEL", style: TextStyle(color: Colors.grey)),
+                child: const Text(
+                  "CANCEL",
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
               TextButton(
                 onPressed: () {
-                   if (nameCtrl.text.isEmpty || logoUrl == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Name and Logo required")));
-                      return;
-                   }
-                   
-                   final newCharity = HallCharityModel(
-                     id: DateTime.now().millisecondsSinceEpoch.toString(),
-                     name: nameCtrl.text.trim(),
-                     logoUrl: logoUrl!,
-                     websiteUrl: webCtrl.text.trim().isEmpty ? null : webCtrl.text.trim(),
-                   );
-                   
-                   setState(() => _charities.add(newCharity));
-                   Navigator.pop(ctx);
+                  if (nameCtrl.text.isEmpty || logoUrl == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Name and Logo required")),
+                    );
+                    return;
+                  }
+
+                  final newCharity = HallCharityModel(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    name: nameCtrl.text.trim(),
+                    logoUrl: logoUrl!,
+                    websiteUrl: webCtrl.text.trim().isEmpty
+                        ? null
+                        : webCtrl.text.trim(),
+                  );
+
+                  setState(() => _charities.add(newCharity));
+                  Navigator.pop(ctx);
                 },
-                child: const Text("ADD", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "ADD",
+                  style: TextStyle(
+                    color: Colors.blueAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           );

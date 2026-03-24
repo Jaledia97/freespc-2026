@@ -13,7 +13,8 @@ class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() =>
+      _NotificationsScreenState();
 }
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
@@ -42,10 +43,17 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       body: notificationsAsync.when(
         data: (notifications) {
           // Filter out chat push receipts so they aggressively vibrate the phone but don't clutter the UI Feed
-          final displayNotifs = notifications.where((n) => n.type != 'new_message').toList();
-          
+          final displayNotifs = notifications
+              .where((n) => n.type != 'new_message')
+              .toList();
+
           if (displayNotifs.isEmpty) {
-            return const Center(child: Text("No notifications yet.", style: TextStyle(color: Colors.white54)));
+            return const Center(
+              child: Text(
+                "No notifications yet.",
+                style: TextStyle(color: Colors.white54),
+              ),
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
@@ -63,31 +71,41 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     if (isUnread) {
                       final user = ref.read(userProfileProvider).value;
                       if (user != null) {
-                         ref.read(notificationServiceProvider).markAsRead(user.uid, notification.id);
+                        ref
+                            .read(notificationServiceProvider)
+                            .markAsRead(user.uid, notification.id);
                       }
                     }
                     // Handle 'friend_request' routing
-                    if (notification.type == 'friend_request' && notification.metadata?.containsKey('senderId') == true) {
+                    if (notification.type == 'friend_request' &&
+                        notification.metadata?.containsKey('senderId') ==
+                            true) {
                       final senderId = notification.metadata!['senderId'];
-                      final senderProfile = await ref.read(authServiceProvider).getPublicProfile(senderId);
+                      final senderProfile = await ref
+                          .read(authServiceProvider)
+                          .getPublicProfile(senderId);
 
                       if (context.mounted && senderProfile != null) {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => PublicProfileScreen(profile: senderProfile),
+                            builder: (_) =>
+                                PublicProfileScreen(profile: senderProfile),
                           ),
                         );
                       }
                     }
 
                     // Handle 'photo_approval' routing
-                    if (notification.type == 'photo_approval' && notification.metadata?.containsKey('photoId') == true) {
+                    if (notification.type == 'photo_approval' &&
+                        notification.metadata?.containsKey('photoId') == true) {
                       final photoId = notification.metadata!['photoId'];
                       final hallId = notification.hallId;
                       if (hallId != null) {
-                        final photo = await ref.read(photoRepositoryProvider).getPhotoById(photoId);
-                        
+                        final photo = await ref
+                            .read(photoRepositoryProvider)
+                            .getPhotoById(photoId);
+
                         if (context.mounted) {
                           if (photo != null) {
                             Navigator.push(
@@ -98,7 +116,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("This photo is no longer available.")),
+                              const SnackBar(
+                                content: Text(
+                                  "This photo is no longer available.",
+                                ),
+                              ),
                             );
                           }
                         }
@@ -106,14 +128,15 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     }
 
                     // Handle 'hall_photo_pending' routing (for managers/workers)
-                    if (notification.type == 'hall_photo_pending' && notification.hallId != null) {
+                    if (notification.type == 'hall_photo_pending' &&
+                        notification.hallId != null) {
                       if (context.mounted) {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => PhotoApprovalScreen(
                               hallId: notification.hallId!,
-                              hallName: 'Review Photos', 
+                              hallName: 'Review Photos',
                             ),
                           ),
                         );
@@ -123,9 +146,15 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isUnread ? Colors.blue.withOpacity(0.1) : Colors.white.withOpacity(0.05),
+                      color: isUnread
+                          ? Colors.blue.withOpacity(0.1)
+                          : Colors.white.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(12),
-                      border: isUnread ? Border.all(color: Colors.blueAccent.withOpacity(0.5)) : null,
+                      border: isUnread
+                          ? Border.all(
+                              color: Colors.blueAccent.withOpacity(0.5),
+                            )
+                          : null,
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,22 +172,37 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                 notification.title,
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontWeight: isUnread ? FontWeight.bold : FontWeight.w500,
+                                  fontWeight: isUnread
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
                                   fontSize: 16,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 notification.body,
-                                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 _timeAgo(notification.createdAt),
-                                style: const TextStyle(color: Colors.white38, fontSize: 12),
+                                style: const TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 12,
+                                ),
                               ),
-                              if (notification.type == 'friend_request' && notification.metadata?.containsKey('senderId') == true)
-                                _FriendRequestActions(senderId: notification.metadata!['senderId'], notificationId: notification.id),
+                              if (notification.type == 'friend_request' &&
+                                  notification.metadata?.containsKey(
+                                        'senderId',
+                                      ) ==
+                                      true)
+                                _FriendRequestActions(
+                                  senderId: notification.metadata!['senderId'],
+                                  notificationId: notification.id,
+                                ),
                             ],
                           ),
                         ),
@@ -194,11 +238,16 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   IconData _getIconForType(String type) {
     switch (type) {
-      case 'photo_approval': return Icons.photo_camera;
-      case 'photo_declined': return Icons.broken_image;
-      case 'friend_request': return Icons.person_add;
-      case 'system': return Icons.info_outline;
-      default: return Icons.notifications;
+      case 'photo_approval':
+        return Icons.photo_camera;
+      case 'photo_declined':
+        return Icons.broken_image;
+      case 'friend_request':
+        return Icons.person_add;
+      case 'system':
+        return Icons.info_outline;
+      default:
+        return Icons.notifications;
     }
   }
 }
@@ -207,7 +256,10 @@ class _FriendRequestActions extends ConsumerWidget {
   final String senderId;
   final String notificationId;
 
-  const _FriendRequestActions({required this.senderId, required this.notificationId});
+  const _FriendRequestActions({
+    required this.senderId,
+    required this.notificationId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -218,11 +270,13 @@ class _FriendRequestActions extends ConsumerWidget {
 
     return friendsStream.when(
       data: (friendsList) {
-        final friendRecord = friendsList.where((f) => f.user1Id == senderId || f.user2Id == senderId).firstOrNull;
+        final friendRecord = friendsList
+            .where((f) => f.user1Id == senderId || f.user2Id == senderId)
+            .firstOrNull;
 
         if (friendRecord == null || friendRecord.status != 'received') {
           // If we already accepted/declined, or it's not pending anymore, hide actions
-          return const SizedBox.shrink(); 
+          return const SizedBox.shrink();
         }
 
         return Padding(
@@ -233,22 +287,42 @@ class _FriendRequestActions extends ConsumerWidget {
                 child: FilledButton(
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.greenAccent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     visualDensity: VisualDensity.compact,
                   ),
                   onPressed: () async {
                     try {
-                      await ref.read(friendsRepositoryProvider).acceptFriendRequest(currentUserId, senderId);
+                      await ref
+                          .read(friendsRepositoryProvider)
+                          .acceptFriendRequest(currentUserId, senderId);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Friend request accepted!"), backgroundColor: Colors.green));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Friend request accepted!"),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
                       }
                     } catch (e) {
                       if (context.mounted) {
-                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: \$e"), backgroundColor: Colors.red));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Error: \$e"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
                       }
                     }
                   },
-                  child: const Text("Accept", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    "Accept",
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -256,39 +330,78 @@ class _FriendRequestActions extends ConsumerWidget {
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.redAccent),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     visualDensity: VisualDensity.compact,
                   ),
                   onPressed: () async {
-                     await ref.read(friendsRepositoryProvider).removeFriend(currentUserId, senderId);
-                     if (context.mounted) {
-                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Friend request declined."), backgroundColor: Colors.white30));
-                     }
+                    await ref
+                        .read(friendsRepositoryProvider)
+                        .removeFriend(currentUserId, senderId);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Friend request declined."),
+                          backgroundColor: Colors.white30,
+                        ),
+                      );
+                    }
                   },
-                  child: const Text("Decline", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    "Decline",
+                    style: TextStyle(
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: TextButton(
                   style: TextButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     visualDensity: VisualDensity.compact,
                   ),
                   onPressed: () async {
-                     await ref.read(notificationServiceProvider).deleteNotification(currentUserId, notificationId);
-                     if (context.mounted) {
-                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Notification ignored."), backgroundColor: Colors.white30));
-                     }
+                    await ref
+                        .read(notificationServiceProvider)
+                        .deleteNotification(currentUserId, notificationId);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Notification ignored."),
+                          backgroundColor: Colors.white30,
+                        ),
+                      );
+                    }
                   },
-                  child: const Text("Ignore", style: TextStyle(color: Colors.white54, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    "Ignore",
+                    style: TextStyle(
+                      color: Colors.white54,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
         );
       },
-      loading: () => const Center(child: Padding(padding: EdgeInsets.only(top: 8.0), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)))),
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.only(top: 8.0),
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      ),
       error: (_, __) => const SizedBox.shrink(),
     );
   }

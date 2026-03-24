@@ -37,8 +37,11 @@ class _NewChatScreenState extends ConsumerState<NewChatScreen> {
     setState(() => _isCreating = true);
 
     try {
-      final participantIds = [currentUser.uid, ..._selectedFriends.map((f) => f.uid)];
-      
+      final participantIds = [
+        currentUser.uid,
+        ..._selectedFriends.map((f) => f.uid),
+      ];
+
       final participantNames = <String, String>{
         currentUser.uid: currentUser.username,
         for (var f in _selectedFriends) f.uid: f.username,
@@ -47,28 +50,35 @@ class _NewChatScreenState extends ConsumerState<NewChatScreen> {
       // Prompt for Group Name if multiple friends selected
       String? groupName;
       if (_selectedFriends.length > 1) {
-         groupName = await _showGroupNameDialog();
-         if (groupName == null || groupName.isEmpty) {
-            // Cancelled
-            setState(() => _isCreating = false);
-            return;
-         }
+        groupName = await _showGroupNameDialog();
+        if (groupName == null || groupName.isEmpty) {
+          // Cancelled
+          setState(() => _isCreating = false);
+          return;
+        }
       }
 
-      final chat = await ref.read(messagingRepositoryProvider).createChat(
-        participantIds,
-        participantNames,
-        groupName: groupName,
-      );
+      final chat = await ref
+          .read(messagingRepositoryProvider)
+          .createChat(participantIds, participantNames, groupName: groupName);
 
       if (mounted) {
         Navigator.pop(context); // Close new chat screen
-        Navigator.push(context, MaterialPageRoute(
-          builder: (_) => ChatScreen(chatId: chat.id, chatName: chat.name ?? _selectedFriends.first.username)
-        ));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChatScreen(
+              chatId: chat.id,
+              chatName: chat.name ?? _selectedFriends.first.username,
+            ),
+          ),
+        );
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
       if (mounted) setState(() => _isCreating = false);
     }
@@ -81,19 +91,31 @@ class _NewChatScreenState extends ConsumerState<NewChatScreen> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF2C2C2C),
-          title: const Text("Name your group", style: TextStyle(color: Colors.white)),
+          title: const Text(
+            "Name your group",
+            style: TextStyle(color: Colors.white),
+          ),
           content: TextField(
             autofocus: true,
             style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(hintText: "Group Name", hintStyle: TextStyle(color: Colors.white54)),
+            decoration: const InputDecoration(
+              hintText: "Group Name",
+              hintStyle: TextStyle(color: Colors.white54),
+            ),
             onChanged: (val) => name = val,
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, null), child: const Text("Cancel")),
-            ElevatedButton(onPressed: () => Navigator.pop(context, name), child: const Text("Create")),
+            TextButton(
+              onPressed: () => Navigator.pop(context, null),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, name),
+              child: const Text("Create"),
+            ),
           ],
         );
-      }
+      },
     );
   }
 
@@ -111,16 +133,31 @@ class _NewChatScreenState extends ConsumerState<NewChatScreen> {
           if (_selectedFriends.isNotEmpty)
             TextButton(
               onPressed: _isCreating ? null : _createChat,
-              child: _isCreating 
-                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                : Text("Chat (${_selectedFriends.length})", style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
-            )
+              child: _isCreating
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      "Chat (${_selectedFriends.length})",
+                      style: const TextStyle(
+                        color: Colors.blueAccent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
         ],
       ),
       body: friendsAsync.when(
         data: (friends) {
           if (friends.isEmpty) {
-             return const Center(child: Text("No friends to message yet.", style: TextStyle(color: Colors.white54)));
+            return const Center(
+              child: Text(
+                "No friends to message yet.",
+                style: TextStyle(color: Colors.white54),
+              ),
+            );
           }
 
           return Column(
@@ -128,37 +165,55 @@ class _NewChatScreenState extends ConsumerState<NewChatScreen> {
             children: [
               if (_selectedFriends.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   color: const Color(0xFF2C2C2C),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: _selectedFriends.map((f) => Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: Chip(
-                          label: Text(f.username),
-                          onDeleted: () => _toggleSelection(f),
-                          backgroundColor: Colors.blueAccent.withValues(alpha: 0.2),
-                          deleteIconColor: Colors.blueAccent,
-                        ),
-                      )).toList(),
+                      children: _selectedFriends
+                          .map(
+                            (f) => Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: Chip(
+                                label: Text(f.username),
+                                onDeleted: () => _toggleSelection(f),
+                                backgroundColor: Colors.blueAccent.withValues(
+                                  alpha: 0.2,
+                                ),
+                                deleteIconColor: Colors.blueAccent,
+                              ),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
                 ),
-                
+
               Expanded(
                 child: ListView.builder(
                   itemCount: friends.length,
                   itemBuilder: (context, index) {
                     final friend = friends[index];
                     final isSelected = _selectedFriends.contains(friend);
-                    
+
                     return ListTile(
                       leading: const CircleAvatar(child: Icon(Icons.person)),
-                      title: Text(friend.username, style: const TextStyle(color: Colors.white)),
-                      trailing: isSelected 
-                        ? const Icon(Icons.check_circle, color: Colors.blueAccent)
-                        : const Icon(Icons.circle_outlined, color: Colors.white54),
+                      title: Text(
+                        friend.username,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      trailing: isSelected
+                          ? const Icon(
+                              Icons.check_circle,
+                              color: Colors.blueAccent,
+                            )
+                          : const Icon(
+                              Icons.circle_outlined,
+                              color: Colors.white54,
+                            ),
                       onTap: () => _toggleSelection(friend),
                     );
                   },
@@ -168,7 +223,9 @@ class _NewChatScreenState extends ConsumerState<NewChatScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(child: Text("Error: $e", style: const TextStyle(color: Colors.red))),
+        error: (e, st) => Center(
+          child: Text("Error: $e", style: const TextStyle(color: Colors.red)),
+        ),
       ),
     );
   }

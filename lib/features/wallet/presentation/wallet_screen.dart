@@ -29,7 +29,10 @@ class WalletScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline),
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const MessagingHubScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MessagingHubScreen()),
+              );
             },
           ),
         ],
@@ -40,14 +43,19 @@ class WalletScreen extends ConsumerWidget {
           final userId = user.uid;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 150), // Increased padding for Nav Bar
+            padding: const EdgeInsets.only(
+              bottom: 150,
+            ), // Increased padding for Nav Bar
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 1. Hall Memberships (Cards)
                 SizedBox(
                   height: 220,
-                  child: _HallCardsParams(userId: userId, followingIds: user.following),
+                  child: _HallCardsParams(
+                    userId: userId,
+                    followingIds: user.following,
+                  ),
                 ),
 
                 const SizedBox(height: 32),
@@ -58,10 +66,25 @@ class WalletScreen extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("My Raffles", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                      const Text(
+                        "My Raffles",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
                       TextButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyRafflesScreen())),
-                        child: const Text("See All", style: TextStyle(color: Colors.amber)),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MyRafflesScreen(),
+                          ),
+                        ),
+                        child: const Text(
+                          "See All",
+                          style: TextStyle(color: Colors.amber),
+                        ),
                       ),
                     ],
                   ),
@@ -76,15 +99,29 @@ class WalletScreen extends ConsumerWidget {
                 // 3. My Tournaments
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: const Text("Active Tournaments", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                  child: const Text(
+                    "Active Tournaments",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 _TournamentsList(userId: userId),
-                
+
                 // 4. Transaction History (Grouped)
-                 Padding(
+                Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: const Text("History", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                  child: const Text(
+                    "History",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TransactionHistoryList(userId: userId),
@@ -111,7 +148,9 @@ class _HallCardsParams extends ConsumerWidget {
 
     return membershipsAsync.when(
       data: (allMemberships) {
-        final memberships = allMemberships.where((m) => followingIds.contains(m.hallId)).toList();
+        final memberships = allMemberships
+            .where((m) => followingIds.contains(m.hallId))
+            .toList();
 
         if (memberships.isEmpty) {
           return Center(
@@ -123,10 +162,20 @@ class _HallCardsParams extends ConsumerWidget {
                 child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                     Icon(Icons.credit_card_off, size: 48, color: Colors.white38),
-                     SizedBox(height: 16),
-                     Text("No Active Memberships", style: TextStyle(color: Colors.white70)),
-                     Text("Join a Hall to earn points!", style: TextStyle(color: Colors.white38, fontSize: 12)),
+                    Icon(
+                      Icons.credit_card_off,
+                      size: 48,
+                      color: Colors.white38,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      "No Active Memberships",
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                    Text(
+                      "Join a Hall to earn points!",
+                      style: TextStyle(color: Colors.white38, fontSize: 12),
+                    ),
                   ],
                 ),
               ),
@@ -166,22 +215,31 @@ class HallMembershipCard extends ConsumerWidget {
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-             borderRadius: BorderRadius.circular(24),
-             image: bannerUrl != null 
-                 ? DecorationImage(
-                     image: NetworkImage(bannerUrl), 
-                     fit: BoxFit.cover,
-                     colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.darken),
-                   )
-                 : null,
-             gradient: bannerUrl == null ? const LinearGradient(
-               colors: [Color(0xFF2C3E50), Color(0xFF000000)],
-               begin: Alignment.topLeft,
-               end: Alignment.bottomRight,
-             ) : null,
-             boxShadow: [
-               BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10, offset: const Offset(0,5)),
-             ]
+            borderRadius: BorderRadius.circular(24),
+            image: bannerUrl != null
+                ? DecorationImage(
+                    image: NetworkImage(bannerUrl),
+                    fit: BoxFit.cover,
+                    colorFilter: ColorFilter.mode(
+                      Colors.black.withOpacity(0.6),
+                      BlendMode.darken,
+                    ),
+                  )
+                : null,
+            gradient: bannerUrl == null
+                ? const LinearGradient(
+                    colors: [Color(0xFF2C3E50), Color(0xFF000000)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -195,19 +253,34 @@ class HallMembershipCard extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       hallName,
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   // Tier Badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.amber.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.amber.withOpacity(0.5)),
                     ),
-                    child: Text(membership.tier, style: const TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      membership.tier,
+                      style: const TextStyle(
+                        color: Colors.amber,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -218,33 +291,54 @@ class HallMembershipCard extends ConsumerWidget {
                 children: [
                   Text(
                     NumberFormat.decimalPattern().format(membership.balance),
-                    style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.w900, letterSpacing: -1),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 42,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1,
+                    ),
                   ),
                   Text(
-                    (hall?.loyaltySettings.currencyName ?? membership.currencyName).toUpperCase(),
-                    style: const TextStyle(color: Colors.white54, fontSize: 14, letterSpacing: 1.5),
+                    (hall?.loyaltySettings.currencyName ??
+                            membership.currencyName)
+                        .toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 14,
+                      letterSpacing: 1.5,
+                    ),
                   ),
                 ],
               ),
 
               // Footer
               Row(
-                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                 children: [
-                   const Text("Member ID: **** 9382", style: TextStyle(color: Colors.white38, fontSize: 12)),
-                   Icon(Icons.nfc, color: Colors.white.withOpacity(0.3), size: 32),
-                 ],
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Member ID: **** 9382",
+                    style: TextStyle(color: Colors.white38, fontSize: 12),
+                  ),
+                  Icon(
+                    Icons.nfc,
+                    color: Colors.white.withOpacity(0.3),
+                    size: 32,
+                  ),
+                ],
               ),
             ],
           ),
         );
       },
       loading: () => Container(
-         margin: const EdgeInsets.symmetric(horizontal: 8),
-         decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(24)),
-         child: const Center(child: CircularProgressIndicator()),
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white10,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
       ),
-      error: (_,__) => const SizedBox(), // Minimal fallback
+      error: (_, __) => const SizedBox(), // Minimal fallback
     );
   }
 }
@@ -261,7 +355,12 @@ class _RafflesList extends ConsumerWidget {
     return rafflesAsync.when(
       data: (raffles) {
         if (raffles.isEmpty) {
-           return const Center(child: Text("No tickets collected yet.", style: TextStyle(color: Colors.white38)));
+          return const Center(
+            child: Text(
+              "No tickets collected yet.",
+              style: TextStyle(color: Colors.white38),
+            ),
+          );
         }
 
         return ListView.builder(
@@ -279,8 +378,6 @@ class _RafflesList extends ConsumerWidget {
   }
 }
 
-
-
 // --- My Tournaments List ---
 // --- My Tournaments List ---
 class _TournamentsList extends ConsumerWidget {
@@ -296,10 +393,13 @@ class _TournamentsList extends ConsumerWidget {
         if (tournaments.isEmpty) {
           return const Padding(
             padding: EdgeInsets.all(20),
-            child: Text("Not participating in any tournaments.", style: TextStyle(color: Colors.white38)),
+            child: Text(
+              "Not participating in any tournaments.",
+              style: TextStyle(color: Colors.white38),
+            ),
           );
         }
-        
+
         return ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -331,9 +431,14 @@ class TournamentItem extends ConsumerWidget {
         final hallName = hall?.name ?? tournament.hallName;
 
         return ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
           tileColor: const Color(0xFF1E1E1E),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           leading: Container(
             width: 50,
             height: 50,
@@ -343,8 +448,17 @@ class TournamentItem extends ConsumerWidget {
             ),
             child: const Icon(Icons.emoji_events, color: Colors.purple),
           ),
-          title: Text(tournament.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          subtitle: Text(hallName, style: const TextStyle(color: Colors.white54)), // Use Live Name
+          title: Text(
+            tournament.title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          subtitle: Text(
+            hallName,
+            style: const TextStyle(color: Colors.white54),
+          ), // Use Live Name
           trailing: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -352,14 +466,19 @@ class TournamentItem extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: tournament.status == 'Active' ? Colors.green.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
+                  color: tournament.status == 'Active'
+                      ? Colors.green.withOpacity(0.2)
+                      : Colors.grey.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  tournament.currentPlacement, 
+                  tournament.currentPlacement,
                   style: TextStyle(
-                    color: tournament.status == 'Active' ? Colors.green : Colors.grey, 
-                    fontWeight: FontWeight.bold, fontSize: 12
+                    color: tournament.status == 'Active'
+                        ? Colors.green
+                        : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
                   ),
                 ),
               ),
@@ -367,8 +486,10 @@ class TournamentItem extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const ListTile(title: Text("Loading...", style: TextStyle(color: Colors.white38))),
-      error: (_,__) => const SizedBox(),
+      loading: () => const ListTile(
+        title: Text("Loading...", style: TextStyle(color: Colors.white38)),
+      ),
+      error: (_, __) => const SizedBox(),
     );
   }
 }

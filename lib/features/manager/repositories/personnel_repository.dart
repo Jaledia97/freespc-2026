@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../models/user_model.dart';
 import '../../../../core/utils/role_utils.dart';
 
-final personnelRepositoryProvider = Provider((ref) => PersonnelRepository(FirebaseFirestore.instance));
+final personnelRepositoryProvider = Provider(
+  (ref) => PersonnelRepository(FirebaseFirestore.instance),
+);
 
 class PersonnelRepository {
   final FirebaseFirestore _firestore;
@@ -16,7 +18,11 @@ class PersonnelRepository {
         .collection('users')
         .where('homeBaseId', isEqualTo: hallId)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => UserModel.fromJson(doc.data())).toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => UserModel.fromJson(doc.data()))
+              .toList(),
+        );
   }
 
   // Update a user's role (Strict checks should be done in UI/Security Rules, but we add safe guards here if needed)
@@ -43,7 +49,7 @@ class PersonnelRepository {
   // Search users by matching username or Name
   Future<List<UserModel>> searchUsers(String query) async {
     if (query.isEmpty) return [];
-    
+
     // Simple prefix search on username
     final usernameSnapshot = await _firestore
         .collection('users')
@@ -52,6 +58,8 @@ class PersonnelRepository {
         .limit(10)
         .get();
 
-    return usernameSnapshot.docs.map((doc) => UserModel.fromJson(doc.data())).toList();
+    return usernameSnapshot.docs
+        .map((doc) => UserModel.fromJson(doc.data()))
+        .toList();
   }
 }

@@ -38,7 +38,10 @@ class MessagingHubScreen extends ConsumerWidget {
         backgroundColor: Colors.blueAccent,
         child: const Icon(Icons.add, color: Colors.white),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const NewChatScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const NewChatScreen()),
+          );
         },
       ),
     );
@@ -64,43 +67,63 @@ class _MessagesTab extends ConsumerWidget {
               if (friends.isEmpty) {
                 return const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Center(child: Text("Add friends to easily message them here", style: TextStyle(color: Colors.white54, fontSize: 13))),
+                  child: Center(
+                    child: Text(
+                      "Add friends to easily message them here",
+                      style: TextStyle(color: Colors.white54, fontSize: 13),
+                    ),
+                  ),
                 );
               }
-              
+
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 12.0,
+                ),
                 itemCount: friends.length,
                 itemBuilder: (context, index) {
                   final friend = friends[index];
                   // Check online status
                   Color statusColor = Colors.grey;
-                  if (friend.onlineStatus == 'Online') statusColor = Colors.green;
+                  if (friend.onlineStatus == 'Online')
+                    statusColor = Colors.green;
                   if (friend.onlineStatus == 'Away') statusColor = Colors.amber;
-                  
+
                   return GestureDetector(
                     onTap: () async {
                       try {
                         final currentUser = ref.read(userProfileProvider).value;
                         if (currentUser == null) return;
-                        
+
                         // Intelligent resolution: create or route
-                        final chat = await ref.read(messagingRepositoryProvider).createChat(
-                          [currentUser.uid, friend.uid],
-                          {
-                            currentUser.uid: currentUser.username,
-                            friend.uid: friend.username,
-                          }
-                        );
-                        
+                        final chat = await ref
+                            .read(messagingRepositoryProvider)
+                            .createChat(
+                              [currentUser.uid, friend.uid],
+                              {
+                                currentUser.uid: currentUser.username,
+                                friend.uid: friend.username,
+                              },
+                            );
+
                         if (context.mounted) {
-                          Navigator.push(context, MaterialPageRoute(
-                            builder: (_) => ChatScreen(chatId: chat.id, chatName: friend.username)
-                          ));
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatScreen(
+                                chatId: chat.id,
+                                chatName: friend.username,
+                              ),
+                            ),
+                          );
                         }
                       } catch (e) {
-                         if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+                        if (context.mounted)
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text("Error: $e")));
                       }
                     },
                     child: Padding(
@@ -110,21 +133,38 @@ class _MessagesTab extends ConsumerWidget {
                         children: [
                           Stack(
                             children: [
-                               CircleAvatar(
+                              CircleAvatar(
                                 radius: 26,
                                 backgroundColor: const Color(0xFF333333),
-                                backgroundImage: friend.photoUrl != null ? CachedNetworkImageProvider(friend.photoUrl!) : null,
-                                child: friend.photoUrl == null ? const Icon(Icons.person, color: Colors.white54) : null,
+                                backgroundImage: friend.photoUrl != null
+                                    ? CachedNetworkImageProvider(
+                                        friend.photoUrl!,
+                                      )
+                                    : null,
+                                child: friend.photoUrl == null
+                                    ? const Icon(
+                                        Icons.person,
+                                        color: Colors.white54,
+                                      )
+                                    : null,
                               ),
                               Positioned(
                                 bottom: 0,
                                 right: 0,
                                 child: Container(
-                                  width: 14, height: 14,
-                                  decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle, border: Border.all(color: const Color(0xFF1E1E1E), width: 2)),
-                                )
-                              )
-                            ]
+                                  width: 14,
+                                  height: 14,
+                                  decoration: BoxDecoration(
+                                    color: statusColor,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: const Color(0xFF1E1E1E),
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 4),
                           SizedBox(
@@ -134,9 +174,12 @@ class _MessagesTab extends ConsumerWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(color: Colors.white, fontSize: 11),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                              ),
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -145,7 +188,12 @@ class _MessagesTab extends ConsumerWidget {
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, st) => Center(child: Text("Error: $e", style: const TextStyle(color: Colors.red))),
+            error: (e, st) => Center(
+              child: Text(
+                "Error: $e",
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
           ),
         ),
 
@@ -158,7 +206,10 @@ class _MessagesTab extends ConsumerWidget {
             data: (chats) {
               if (chats.isEmpty) {
                 return const Center(
-                  child: Text("No messages yet.", style: TextStyle(color: Colors.white54)),
+                  child: Text(
+                    "No messages yet.",
+                    style: TextStyle(color: Colors.white54),
+                  ),
                 );
               }
 
@@ -166,13 +217,20 @@ class _MessagesTab extends ConsumerWidget {
                 itemCount: chats.length,
                 itemBuilder: (context, index) {
                   final chat = chats[index];
-                  final currentUserId = ref.read(userProfileProvider).value?.uid;
-                  
+                  final currentUserId = ref
+                      .read(userProfileProvider)
+                      .value
+                      ?.uid;
+
                   // Derive display name (if 1-on-1, show other person's name)
                   String displayName = chat.name ?? "Group Chat";
                   if (!chat.isGroup && chat.name == null) {
-                    final otherUserId = chat.participantIds.firstWhere((id) => id != currentUserId, orElse: () => "");
-                    displayName = chat.participantNames[otherUserId] ?? "Unknown User";
+                    final otherUserId = chat.participantIds.firstWhere(
+                      (id) => id != currentUserId,
+                      orElse: () => "",
+                    );
+                    displayName =
+                        chat.participantNames[otherUserId] ?? "Unknown User";
                   }
 
                   final unreadCount = chat.unreadCounts[currentUserId] ?? 0;
@@ -188,21 +246,49 @@ class _MessagesTab extends ConsumerWidget {
                       child: const Icon(Icons.delete, color: Colors.white),
                     ),
                     onDismissed: (direction) {
-                      ref.read(messagingRepositoryProvider).hideChat(chat.id, currentUserId!);
+                      ref
+                          .read(messagingRepositoryProvider)
+                          .hideChat(chat.id, currentUserId!);
                     },
                     child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
                       leading: CircleAvatar(
                         radius: 26,
                         backgroundColor: Colors.blueGrey,
-                        child: Text(displayName.isNotEmpty ? displayName[0].toUpperCase() : "?", style: const TextStyle(color: Colors.white, fontSize: 20)),
+                        child: Text(
+                          displayName.isNotEmpty
+                              ? displayName[0].toUpperCase()
+                              : "?",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                          ),
+                        ),
                       ),
-                      title: Text(displayName, style: TextStyle(color: Colors.white, fontWeight: hasUnread ? FontWeight.w900 : FontWeight.bold, fontSize: 16)),
+                      title: Text(
+                        displayName,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: hasUnread
+                              ? FontWeight.w900
+                              : FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                       subtitle: Text(
-                        chat.lastMessage, 
-                        maxLines: 1, 
+                        chat.lastMessage,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: hasUnread ? Colors.white : Colors.white54, fontSize: 14, fontWeight: hasUnread ? FontWeight.w600 : FontWeight.normal)
+                        style: TextStyle(
+                          color: hasUnread ? Colors.white : Colors.white54,
+                          fontSize: 14,
+                          fontWeight: hasUnread
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
                       ),
                       trailing: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -210,21 +296,49 @@ class _MessagesTab extends ConsumerWidget {
                         children: [
                           Text(
                             _formatDate(chat.lastMessageAt),
-                            style: TextStyle(color: hasUnread ? Colors.blueAccent : Colors.white38, fontSize: 12, fontWeight: hasUnread ? FontWeight.bold : FontWeight.normal),
+                            style: TextStyle(
+                              color: hasUnread
+                                  ? Colors.blueAccent
+                                  : Colors.white38,
+                              fontSize: 12,
+                              fontWeight: hasUnread
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
                           ),
                           if (hasUnread) ...[
                             const SizedBox(height: 4),
                             Container(
                               padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(color: Colors.blueAccent, shape: BoxShape.circle),
-                              child: Text(unreadCount.toString(), style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                            )
-                          ]
+                              decoration: const BoxDecoration(
+                                color: Colors.blueAccent,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                unreadCount.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                       onTap: () {
-                         ref.read(messagingRepositoryProvider).markChatAsRead(chat.id, currentUserId!);
-                         Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(chatId: chat.id, chatName: displayName)));
+                        ref
+                            .read(messagingRepositoryProvider)
+                            .markChatAsRead(chat.id, currentUserId!);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChatScreen(
+                              chatId: chat.id,
+                              chatName: displayName,
+                            ),
+                          ),
+                        );
                       },
                     ),
                   );
@@ -232,16 +346,23 @@ class _MessagesTab extends ConsumerWidget {
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, st) => Center(child: Text("Error: $e", style: const TextStyle(color: Colors.red))),
+            error: (e, st) => Center(
+              child: Text(
+                "Error: $e",
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
           ),
         ),
       ],
     );
   }
-  
+
   String _formatDate(DateTime date) {
     final now = DateTime.now();
-    if (date.year == now.year && date.month == now.month && date.day == now.day) {
+    if (date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day) {
       return "${date.hour}:${date.minute.toString().padLeft(2, '0')}";
     }
     return "${date.month}/${date.day}";

@@ -2,9 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/store_item_model.dart';
 
-final storeRepositoryProvider = Provider((ref) => StoreRepository(FirebaseFirestore.instance));
+final storeRepositoryProvider = Provider(
+  (ref) => StoreRepository(FirebaseFirestore.instance),
+);
 
-final storeItemsProvider = StreamProvider.family<List<StoreItemModel>, String>((ref, hallId) {
+final storeItemsProvider = StreamProvider.family<List<StoreItemModel>, String>((
+  ref,
+  hallId,
+) {
   return ref.watch(storeRepositoryProvider).getStoreItems(hallId);
 });
 
@@ -22,7 +27,9 @@ class StoreRepository {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) => StoreItemModel.fromJson(doc.data())).toList();
+          return snapshot.docs
+              .map((doc) => StoreItemModel.fromJson(doc.data()))
+              .toList();
         });
   }
 
@@ -36,7 +43,9 @@ class StoreRepository {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) => StoreItemModel.fromJson(doc.data())).toList();
+          return snapshot.docs
+              .map((doc) => StoreItemModel.fromJson(doc.data()))
+              .toList();
         });
   }
 

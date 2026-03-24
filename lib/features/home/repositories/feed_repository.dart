@@ -10,11 +10,15 @@ class FeedRepository {
   FeedRepository({required this.ref});
 
   /// Sorts a raw list of FeedItems by the calculated algorithmic hypeScore.
-  List<FeedItem> sortFeedByHype(List<FeedItem> items, UserModel? currentUser, List<SquadModel> userSquads) {
+  List<FeedItem> sortFeedByHype(
+    List<FeedItem> items,
+    UserModel? currentUser,
+    List<SquadModel> userSquads,
+  ) {
     items.sort((a, b) {
       double scoreA = _calculateHypeScore(a, currentUser, userSquads);
       double scoreB = _calculateHypeScore(b, currentUser, userSquads);
-      
+
       // Sort descending (highest hype first)
       if (scoreA == scoreB) {
         final aDate = a.map(
@@ -40,9 +44,13 @@ class FeedRepository {
     return items;
   }
 
-  double _calculateHypeScore(FeedItem item, UserModel? currentUser, List<SquadModel> userSquads) {
+  double _calculateHypeScore(
+    FeedItem item,
+    UserModel? currentUser,
+    List<SquadModel> userSquads,
+  ) {
     double baseScore = 1.0;
-    
+
     // Extrapolate interactions
     List<String> reactions = item.map(
       tournament: (t) => t.data.reactionUserIds,
@@ -61,7 +69,7 @@ class FeedRepository {
       }
     }
     if (squadIntersections > 0) {
-       baseScore += (squadIntersections * 50.0); // Massive algorithmic boost
+      baseScore += (squadIntersections * 50.0); // Massive algorithmic boost
     }
 
     // Weight 2: High payout overriding distance
@@ -70,14 +78,11 @@ class FeedRepository {
       orElse: () => 0.0,
     );
     if (payoutValue > 500) {
-      baseScore += 30.0; 
+      baseScore += 30.0;
     }
 
     // Weight 3: Local SpecialModel forced visual priority inside 7 days
-    bool isSpecial = item.maybeMap(
-      special: (_) => true,
-      orElse: () => false,
-    );
+    bool isSpecial = item.maybeMap(special: (_) => true, orElse: () => false);
     if (isSpecial) {
       baseScore += 20.0;
     }

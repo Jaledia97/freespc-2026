@@ -21,11 +21,10 @@ class LoginScreen extends ConsumerWidget {
               if (loadingProgress == null) return child;
               return Container(color: Colors.black);
             },
-            errorBuilder: (context, error, stackTrace) => Container(
-              color: const Color(0xFF1A1A1A),
-            ),
+            errorBuilder: (context, error, stackTrace) =>
+                Container(color: const Color(0xFF1A1A1A)),
           ),
-          
+
           // Gradient Overlay
           Container(
             decoration: BoxDecoration(
@@ -53,7 +52,7 @@ class LoginScreen extends ConsumerWidget {
                   const Text(
                     'FreeSPC',
                     style: TextStyle(
-                      fontSize: 48, 
+                      fontSize: 48,
                       fontWeight: FontWeight.bold, // Reduced precision
                       color: Colors.white,
                       letterSpacing: 2.0,
@@ -92,55 +91,66 @@ class LoginScreen extends ConsumerWidget {
                           style: TextStyle(color: Colors.white60),
                         ),
                         const SizedBox(height: 32),
-                        
+
                         // Social Login Row
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             // Apple
                             _SocialButton(
-                              imageUrl: "https://upload.wikimedia.org/wikipedia/commons/3/31/Apple_logo_white.svg", 
+                              imageUrl:
+                                  "https://upload.wikimedia.org/wikipedia/commons/3/31/Apple_logo_white.svg",
                               onTap: () async {
-                                await ref.read(authServiceProvider).signInWithApple();
+                                await ref
+                                    .read(authServiceProvider)
+                                    .signInWithApple();
                               },
                               isDark: true,
                             ),
-                            
+
                             // Google
                             _SocialButton(
-                              imageUrl: "https://cdn-icons-png.flaticon.com/512/300/300221.png",
+                              imageUrl:
+                                  "https://cdn-icons-png.flaticon.com/512/300/300221.png",
                               onTap: () {
-                                ref.read(authServiceProvider).signInWithGoogle();
+                                ref
+                                    .read(authServiceProvider)
+                                    .signInWithGoogle();
                               },
                             ),
 
                             // Facebook
                             _SocialButton(
-                              imageUrl: "https://cdn-icons-png.flaticon.com/512/5968/5968764.png",
+                              imageUrl:
+                                  "https://cdn-icons-png.flaticon.com/512/5968/5968764.png",
                               onTap: () async {
-                                await ref.read(authServiceProvider).signInWithFacebook();
+                                await ref
+                                    .read(authServiceProvider)
+                                    .signInWithFacebook();
                               },
                             ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Create Account Button
                         TextButton(
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                              MaterialPageRoute(
+                                builder: (context) => const RegisterScreen(),
+                              ),
                             );
                           },
                           child: const Text(
                             "Create Account",
                             style: TextStyle(
-                              color: Colors.white, 
-                              fontSize: 16, 
+                              color: Colors.white,
+                              fontSize: 16,
                               decoration: TextDecoration.underline,
-                               decorationColor: Colors.white54,
+                              decorationColor: Colors.white54,
                             ),
                           ),
                         ),
@@ -162,7 +172,11 @@ class _SocialButton extends StatelessWidget {
   final VoidCallback onTap;
   final bool isDark;
 
-  const _SocialButton({required this.imageUrl, required this.onTap, this.isDark = false});
+  const _SocialButton({
+    required this.imageUrl,
+    required this.onTap,
+    this.isDark = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -181,12 +195,16 @@ class _SocialButton extends StatelessWidget {
               color: Colors.black.withOpacity(0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
-            )
+            ),
           ],
         ),
-        child: isDark 
-          ? const Icon(Icons.apple, size: 36, color: Colors.black) // Use Icon for Apple if SVG is tricky or just standard icon
-          : Image.network(imageUrl, fit: BoxFit.contain), 
+        child: isDark
+            ? const Icon(
+                Icons.apple,
+                size: 36,
+                color: Colors.black,
+              ) // Use Icon for Apple if SVG is tricky or just standard icon
+            : Image.network(imageUrl, fit: BoxFit.contain),
       ),
     );
   }

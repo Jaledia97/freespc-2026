@@ -21,5 +21,6 @@ abstract class TextPostModel with _$TextPostModel {
     String? latestComment,
   }) = _TextPostModel;
 
-  factory TextPostModel.fromJson(Map<String, dynamic> json) => _$TextPostModelFromJson(json);
+  factory TextPostModel.fromJson(Map<String, dynamic> json) =>
+      _$TextPostModelFromJson(json);
 }

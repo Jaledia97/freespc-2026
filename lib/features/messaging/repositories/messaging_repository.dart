@@ -23,7 +23,7 @@ final unreadMessagesCountProvider = Provider<int>((ref) {
   final chatsAsync = ref.watch(userChatsProvider);
   final user = ref.watch(userProfileProvider).value;
   if (user == null || chatsAsync.value == null) return 0;
-  
+
   int count = 0;
   for (var chat in chatsAsync.value!) {
     count += (chat.unreadCounts[user.uid] ?? 0);
@@ -51,23 +51,33 @@ class MessagingRepository {
         .limit(30)
         .snapshots()
         .map((snapshot) {
-      final chats = snapshot.docs.map((doc) => ChatModel.fromJson(doc.data())).toList();
-      
-      // Filter out 1-on-1 chats with blocked users and chats deleted by the user
-      return chats.where((chat) {
-        if (chat.deletedBy.contains(userId)) return false; // Hidden from this user's Inbox
-        
-        if (chat.isGroup) return true; // Keep groups, but we'll mask messages later
-        
-        final otherUserId = chat.participantIds.firstWhere((id) => id != userId, orElse: () => '');
-        return !blockedUsers.contains(otherUserId);
-      }).toList();
-    });
+          final chats = snapshot.docs
+              .map((doc) => ChatModel.fromJson(doc.data()))
+              .toList();
+
+          // Filter out 1-on-1 chats with blocked users and chats deleted by the user
+          return chats.where((chat) {
+            if (chat.deletedBy.contains(userId))
+              return false; // Hidden from this user's Inbox
+
+            if (chat.isGroup)
+              return true; // Keep groups, but we'll mask messages later
+
+            final otherUserId = chat.participantIds.firstWhere(
+              (id) => id != userId,
+              orElse: () => '',
+            );
+            return !blockedUsers.contains(otherUserId);
+          }).toList();
+        });
   }
 
   /// Streams the most recent messages for a specific chat.
   /// Cursor pagination can be layered on top of this by adjusting the limit or startAfter.
-  Stream<List<MessageModel>> streamChatMessages(String chatId, {int limit = 50}) {
+  Stream<List<MessageModel>> streamChatMessages(
+    String chatId, {
+    int limit = 50,
+  }) {
     final userProfile = _ref.watch(userProfileProvider).value;
     final blockedUsers = userProfile?.blockedUsers ?? [];
 
@@ -79,34 +89,42 @@ class MessagingRepository {
         .limit(limit)
         .snapshots()
         .map((snapshot) {
-      final messages = snapshot.docs.map((doc) => MessageModel.fromJson(doc.data())).toList();
-      
-      // Map messages sent by blocked users to a "Blocked Message" placeholder
-      return messages.map((msg) {
-        if (blockedUsers.contains(msg.senderId)) {
-          return msg.copyWith(text: "You blocked this user.");
-        }
-        return msg;
-      }).toList();
-    });
+          final messages = snapshot.docs
+              .map((doc) => MessageModel.fromJson(doc.data()))
+              .toList();
+
+          // Map messages sent by blocked users to a "Blocked Message" placeholder
+          return messages.map((msg) {
+            if (blockedUsers.contains(msg.senderId)) {
+              return msg.copyWith(text: "You blocked this user.");
+            }
+            return msg;
+          }).toList();
+        });
   }
 
   /// Sends a message and performs a batched write to update the parent chat's `lastMessage` metadata.
   Future<void> sendMessage(
-      String chatId, String text, String senderId, {
-      String? replyToMessageId,
-      String? replyToText,
-      String? replyToSenderName,
+    String chatId,
+    String text,
+    String senderId, {
+    String? replyToMessageId,
+    String? replyToText,
+    String? replyToSenderName,
   }) async {
     final chatDoc = await _firestore.collection('chats').doc(chatId).get();
     if (!chatDoc.exists) return;
     final chat = ChatModel.fromJson(chatDoc.data()!);
 
     final batch = _firestore.batch();
-    
-    final messageRef = _firestore.collection('chats').doc(chatId).collection('messages').doc();
+
+    final messageRef = _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc();
     final chatRef = _firestore.collection('chats').doc(chatId);
-    
+
     final now = DateTime.now();
 
     final message = MessageModel(
@@ -122,28 +140,36 @@ class MessagingRepository {
 
     // 1. Write the message
     batch.set(messageRef, message.toJson());
-    
-    final String senderProfileName = chat.participantNames[senderId] ?? 'Someone';
+
+    final String senderProfileName =
+        chat.participantNames[senderId] ?? 'Someone';
 
     // 2. Increment unreadCounts for all other participants and dispatch Push Notifications
     Map<String, int> updatedUnreadCounts = Map.from(chat.unreadCounts);
     for (String participantId in chat.participantIds) {
       if (participantId != senderId) {
-        updatedUnreadCounts[participantId] = (updatedUnreadCounts[participantId] ?? 0) + 1;
+        updatedUnreadCounts[participantId] =
+            (updatedUnreadCounts[participantId] ?? 0) + 1;
 
         // Dispatch Push Notification (only if not muted)
         if (!chat.mutedBy.contains(participantId)) {
-           final notifRef = _firestore.collection('users').doc(participantId).collection('notifications').doc();
-           batch.set(notifRef, {
-             'id': notifRef.id,
-             'userId': participantId,
-             'title': chat.isGroup ? "${chat.name ?? "Group"} ($senderProfileName)" : senderProfileName,
-             'body': text,
-             'createdAt': FieldValue.serverTimestamp(),
-             'isRead': false,
-             'type': 'new_message',
-             'metadata': {'chatId': chatId},
-           });
+          final notifRef = _firestore
+              .collection('users')
+              .doc(participantId)
+              .collection('notifications')
+              .doc();
+          batch.set(notifRef, {
+            'id': notifRef.id,
+            'userId': participantId,
+            'title': chat.isGroup
+                ? "${chat.name ?? "Group"} ($senderProfileName)"
+                : senderProfileName,
+            'body': text,
+            'createdAt': FieldValue.serverTimestamp(),
+            'isRead': false,
+            'type': 'new_message',
+            'metadata': {'chatId': chatId},
+          });
         }
       }
     }
@@ -154,7 +180,7 @@ class MessagingRepository {
       'lastMessageAt': now.toIso8601String(),
       'lastMessageSenderId': senderId,
       'unreadCounts': updatedUnreadCounts,
-      'deletedBy': [], 
+      'deletedBy': [],
     });
 
     await batch.commit();
@@ -177,14 +203,18 @@ class MessagingRepository {
   }
 
   /// Creates a new Chat or Group Chat.
-  Future<ChatModel> createChat(List<String> participantIds, Map<String, String> participantNames, {String? groupName}) async {
+  Future<ChatModel> createChat(
+    List<String> participantIds,
+    Map<String, String> participantNames, {
+    String? groupName,
+  }) async {
     // Basic existence check to see if a 1-on-1 already exists
     if (participantIds.length == 2) {
       final existingParams = await _firestore
           .collection('chats')
           .where('participantIds', arrayContains: participantIds.first)
           .get();
-          
+
       for (var doc in existingParams.docs) {
         final chat = ChatModel.fromJson(doc.data());
         if (!chat.isGroup && chat.participantIds.contains(participantIds[1])) {
@@ -201,7 +231,9 @@ class MessagingRepository {
       id: id,
       name: groupName,
       isGroup: isGroup,
-      ownerId: isGroup ? participantIds.first : null, // The creator is the owner
+      ownerId: isGroup
+          ? participantIds.first
+          : null, // The creator is the owner
       participantIds: participantIds,
       pendingParticipantIds: [],
       participantNames: participantNames,
@@ -214,42 +246,57 @@ class MessagingRepository {
   }
 
   /// Updates the typing status for a user in a chat
-  Future<void> setTypingStatus(String chatId, String userId, bool isTyping) async {
+  Future<void> setTypingStatus(
+    String chatId,
+    String userId,
+    bool isTyping,
+  ) async {
     final chatRef = _firestore.collection('chats').doc(chatId);
-    
+
     // We use arrayUnion / arrayRemove so multiple people can type at once
     await chatRef.update({
-      'isTyping': isTyping 
-          ? FieldValue.arrayUnion([userId]) 
-          : FieldValue.arrayRemove([userId])
+      'isTyping': isTyping
+          ? FieldValue.arrayUnion([userId])
+          : FieldValue.arrayRemove([userId]),
     });
   }
 
   /// Invites a user to a group chat. Enforces friendship and owner rules.
-  Future<void> inviteToGroupChat(String chatId, String inviterId, String targetUserId, String targetUsername) async {
+  Future<void> inviteToGroupChat(
+    String chatId,
+    String inviterId,
+    String targetUserId,
+    String targetUsername,
+  ) async {
     // 1. Verify Friendship
     final friendshipDoc = await _firestore
-        .collection('users').doc(inviterId)
-        .collection('friends').doc(targetUserId)
+        .collection('users')
+        .doc(inviterId)
+        .collection('friends')
+        .doc(targetUserId)
         .get();
 
-    if (!friendshipDoc.exists || friendshipDoc.data()?['status'] != 'accepted') {
+    if (!friendshipDoc.exists ||
+        friendshipDoc.data()?['status'] != 'accepted') {
       throw Exception("You can only invite accepted friends to a group chat.");
     }
 
     // 2. Enforce Ownership rules
     final chatDoc = await _firestore.collection('chats').doc(chatId).get();
     if (!chatDoc.exists) throw Exception("Chat not found.");
-    
+
     final chat = ChatModel.fromJson(chatDoc.data()!);
-    if (!chat.isGroup) throw Exception("Cannot invite members to a 1-on-1 chat.");
-    
+    if (!chat.isGroup)
+      throw Exception("Cannot invite members to a 1-on-1 chat.");
+
     if (chat.participantIds.contains(targetUserId)) {
       throw Exception("User is already in this chat.");
     }
-    
+
     if (chat.pendingParticipantIds.contains(targetUserId)) {
-      throw Exception("User has already been invited and is awaiting owner approval.");
+      throw Exception(
+        "User has already been invited and is awaiting owner approval.",
+      );
     }
 
     final batch = _firestore.batch();
@@ -275,17 +322,23 @@ class MessagingRepository {
       // Non-owner must request addition
       batch.update(chatRef, {
         'pendingParticipantIds': FieldValue.arrayUnion([targetUserId]),
-        'participantNames.$targetUserId': targetUsername, // Prep their name for the approval UI
+        'participantNames.$targetUserId':
+            targetUsername, // Prep their name for the approval UI
       });
-      
+
       // Optionally create a notification for the owner here
       if (chat.ownerId != null) {
-        final notifRef = _firestore.collection('users').doc(chat.ownerId).collection('notifications').doc();
+        final notifRef = _firestore
+            .collection('users')
+            .doc(chat.ownerId)
+            .collection('notifications')
+            .doc();
         batch.set(notifRef, {
           'id': notifRef.id,
           'userId': chat.ownerId,
           'title': 'Group Chat Request',
-          'body': 'A member wants to add @${targetUsername} to ${chat.name ?? "your group"}.',
+          'body':
+              'A member wants to add @${targetUsername} to ${chat.name ?? "your group"}.',
           'type': 'group_invite_request',
           'createdAt': FieldValue.serverTimestamp(),
           'metadata': {'chatId': chatId, 'targetUserId': targetUserId},
@@ -297,7 +350,11 @@ class MessagingRepository {
   }
 
   /// Owner approves a pending invite
-  Future<void> approveGroupInvite(String chatId, String targetUserId, String targetUsername) async {
+  Future<void> approveGroupInvite(
+    String chatId,
+    String targetUserId,
+    String targetUsername,
+  ) async {
     final chatRef = _firestore.collection('chats').doc(chatId);
     final batch = _firestore.batch();
 
@@ -340,7 +397,7 @@ class MessagingRepository {
     await _firestore.collection('chats').doc(chatId).update({
       'mutedBy': isMuted
           ? FieldValue.arrayRemove([userId])
-          : FieldValue.arrayUnion([userId])
+          : FieldValue.arrayUnion([userId]),
     });
   }
 
@@ -357,14 +414,14 @@ class MessagingRepository {
       'targetType': targetType,
       'reason': reason,
       'createdAt': FieldValue.serverTimestamp(),
-      'status': 'pending', 
+      'status': 'pending',
     });
   }
 
   /// Blocks a user by adding them to the User Profile's `blockedUsers` array
   Future<void> blockUser(String currentUserId, String userToBlockId) async {
     await _firestore.collection('users').doc(currentUserId).update({
-      'blockedUsers': FieldValue.arrayUnion([userToBlockId])
+      'blockedUsers': FieldValue.arrayUnion([userToBlockId]),
     });
   }
 
@@ -378,9 +435,11 @@ class MessagingRepository {
         .limit(30)
         .snapshots()
         .map((snapshot) {
-      final docs = snapshot.docs.map((doc) => NotificationModel.fromJson(doc.data())).toList();
-      docs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return docs;
-    });
+          final docs = snapshot.docs
+              .map((doc) => NotificationModel.fromJson(doc.data()))
+              .toList();
+          docs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return docs;
+        });
   }
 }

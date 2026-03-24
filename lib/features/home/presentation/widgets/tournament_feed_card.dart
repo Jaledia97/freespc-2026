@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../models/tournament_model.dart';
 import 'package:intl/intl.dart';
+import 'package:vibration/vibration.dart';
 import '../../../../models/feed_item.dart';
 import 'social_interaction_bar.dart';
 import 'dynamic_hall_header.dart';
@@ -55,7 +56,7 @@ class TournamentFeedCard extends StatelessWidget {
 
           // Post Content
           GestureDetector(
-            onDoubleTap: () => HapticFeedback.vibrate(),
+            onDoubleTap: () => Vibration.vibrate(duration: 40),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
@@ -117,7 +118,7 @@ class TournamentFeedCard extends StatelessWidget {
           // Edge-to-Edge Image if it exists
           if (tournament.imageUrl != null && tournament.imageUrl!.isNotEmpty)
             GestureDetector(
-              onDoubleTap: () => HapticFeedback.vibrate(),
+              onDoubleTap: () => Vibration.vibrate(duration: 40),
               child: CachedNetworkImage(
                 imageUrl: tournament.imageUrl!,
                 width: double.infinity,

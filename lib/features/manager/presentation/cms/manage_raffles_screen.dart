@@ -11,10 +11,12 @@ class ManageRafflesScreen extends ConsumerStatefulWidget {
   const ManageRafflesScreen({super.key, required this.hallId});
 
   @override
-  ConsumerState<ManageRafflesScreen> createState() => _ManageRafflesScreenState();
+  ConsumerState<ManageRafflesScreen> createState() =>
+      _ManageRafflesScreenState();
 }
 
-class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen> with SingleTickerProviderStateMixin {
+class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -38,60 +40,97 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen> with 
     final isTemplateTab = _tabController.index == 2;
 
     return Scaffold(
-        backgroundColor: const Color(0xFF141414),
-        appBar: AppBar(
-          title: const Text('Manage Raffles'),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          bottom: TabBar(
-            controller: _tabController,
-            indicatorColor: Colors.amber,
-            labelColor: Colors.amber,
-            unselectedLabelColor: Colors.white54,
-            tabs: const [
-              Tab(text: "Active"),
-              Tab(text: "Expired"),
-              Tab(text: "Templates"),
-            ],
-          ),
+      backgroundColor: const Color(0xFF141414),
+      appBar: AppBar(
+        title: const Text('Manage Raffles'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Colors.amber,
+          labelColor: Colors.amber,
+          unselectedLabelColor: Colors.white54,
+          tabs: const [
+            Tab(text: "Active"),
+            Tab(text: "Expired"),
+            Tab(text: "Templates"),
+          ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => EditRaffleScreen(
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => EditRaffleScreen(
                 hallId: widget.hallId,
                 isTemplate: isTemplateTab, // Auto-check template box if on tab
-              )),
-            );
-          },
-          backgroundColor: Colors.amber,
-          label: Text(isTemplateTab ? "Create Template" : "Create Raffle", style: const TextStyle(color: Colors.black)),
-          icon: Icon(isTemplateTab ? Icons.save_as : Icons.add, color: Colors.black),
+              ),
+            ),
+          );
+        },
+        backgroundColor: Colors.amber,
+        label: Text(
+          isTemplateTab ? "Create Template" : "Create Raffle",
+          style: const TextStyle(color: Colors.black),
         ),
-        body: rafflesAsync.when(
-          data: (raffles) {
-            final now = DateTime.now();
-
-            // Filter lists
-            final templates = raffles.where((r) => r.isTemplate).toList();
-            // Active: Not a template, and ends in future OR is today
-            final active = raffles.where((r) => !r.isTemplate && (r.endsAt.isAfter(now) || isSameDay(r.endsAt, now))).toList();
-            // Expired: Not a template, ends in past, and NOT today
-            final expired = raffles.where((r) => !r.isTemplate && r.endsAt.isBefore(now) && !isSameDay(r.endsAt, now)).toList();
-
-            return TabBarView(
-              controller: _tabController,
-              children: [
-                _buildRaffleList(context, ref, active, emptyMsg: "No Active Raffles"),
-                _buildRaffleList(context, ref, expired, emptyMsg: "No Expired Raffles"),
-                _buildRaffleList(context, ref, templates, emptyMsg: "No Templates", isTemplateTab: true),
-              ],
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, s) => Center(child: Text("Error: $e")),
+        icon: Icon(
+          isTemplateTab ? Icons.save_as : Icons.add,
+          color: Colors.black,
         ),
+      ),
+      body: rafflesAsync.when(
+        data: (raffles) {
+          final now = DateTime.now();
+
+          // Filter lists
+          final templates = raffles.where((r) => r.isTemplate).toList();
+          // Active: Not a template, and ends in future OR is today
+          final active = raffles
+              .where(
+                (r) =>
+                    !r.isTemplate &&
+                    (r.endsAt.isAfter(now) || isSameDay(r.endsAt, now)),
+              )
+              .toList();
+          // Expired: Not a template, ends in past, and NOT today
+          final expired = raffles
+              .where(
+                (r) =>
+                    !r.isTemplate &&
+                    r.endsAt.isBefore(now) &&
+                    !isSameDay(r.endsAt, now),
+              )
+              .toList();
+
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              _buildRaffleList(
+                context,
+                ref,
+                active,
+                emptyMsg: "No Active Raffles",
+              ),
+              _buildRaffleList(
+                context,
+                ref,
+                expired,
+                emptyMsg: "No Expired Raffles",
+              ),
+              _buildRaffleList(
+                context,
+                ref,
+                templates,
+                emptyMsg: "No Templates",
+                isTemplateTab: true,
+              ),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, s) => Center(child: Text("Error: $e")),
+      ),
     );
   }
 
@@ -99,23 +138,41 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen> with 
     return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
   }
 
-  Widget _buildRaffleList(BuildContext context, WidgetRef ref, List<RaffleModel> raffles, {required String emptyMsg, bool isTemplateTab = false}) {
+  Widget _buildRaffleList(
+    BuildContext context,
+    WidgetRef ref,
+    List<RaffleModel> raffles, {
+    required String emptyMsg,
+    bool isTemplateTab = false,
+  }) {
     if (raffles.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.confirmation_number_outlined, size: 64, color: Colors.white24),
+            const Icon(
+              Icons.confirmation_number_outlined,
+              size: 64,
+              color: Colors.white24,
+            ),
             const SizedBox(height: 16),
-             Text(emptyMsg, style: const TextStyle(color: Colors.white54)),
-             if (isTemplateTab) // Only suggest seeding on template tab maybe? or just generic
-               Padding(
-                 padding: const EdgeInsets.only(top: 8.0),
-                 child: TextButton(
-                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: widget.hallId, isTemplate: true))),
-                   child: const Text("Create Template"),
-                 ),
-               ),
+            Text(emptyMsg, style: const TextStyle(color: Colors.white54)),
+            if (isTemplateTab) // Only suggest seeding on template tab maybe? or just generic
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: TextButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EditRaffleScreen(
+                        hallId: widget.hallId,
+                        isTemplate: true,
+                      ),
+                    ),
+                  ),
+                  child: const Text("Create Template"),
+                ),
+              ),
           ],
         ),
       );
@@ -133,7 +190,9 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen> with 
 
         return Card(
           color: const Color(0xFF1E1E1E),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: ListTile(
             contentPadding: const EdgeInsets.all(12),
             leading: Container(
@@ -147,34 +206,82 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen> with 
                 ),
               ),
             ),
-            title: Text(raffle.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            title: Text(
+              raffle.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(raffle.description, style: const TextStyle(color: Colors.white54, fontSize: 12), maxLines: 1),
+                Text(
+                  raffle.description,
+                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  maxLines: 1,
+                ),
                 const SizedBox(height: 4),
                 if (isTemplateTab)
                   Container(
-                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                     decoration: BoxDecoration(color: Colors.blue.withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
-                     child: const Text("TEMPLATE", style: TextStyle(color: Colors.blue, fontSize: 10, fontWeight: FontWeight.bold)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      "TEMPLATE",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   )
                 else
                   Row(
                     children: [
-                       Icon(Icons.calendar_today, size: 12, color: isPast ? Colors.red : (isToday ? Colors.green : Colors.blue)),
-                       const SizedBox(width: 4),
-                       Text(
-                         TimeUtils.formatDateTime(raffle.endsAt, ref),
-                         style: TextStyle(color: isPast ? Colors.red : (isToday ? Colors.green : Colors.blue), fontSize: 12, fontWeight: FontWeight.bold)
-                       ),
-                       if (isToday)
-                         Container(
-                           margin: const EdgeInsets.only(left: 8),
-                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                           decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(4)),
-                           child: const Text("TODAY", style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
-                         ),
+                      Icon(
+                        Icons.calendar_today,
+                        size: 12,
+                        color: isPast
+                            ? Colors.red
+                            : (isToday ? Colors.green : Colors.blue),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        TimeUtils.formatDateTime(raffle.endsAt, ref),
+                        style: TextStyle(
+                          color: isPast
+                              ? Colors.red
+                              : (isToday ? Colors.green : Colors.blue),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (isToday)
+                        Container(
+                          margin: const EdgeInsets.only(left: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            "TODAY",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
               ],
@@ -185,13 +292,17 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen> with 
                 _showTemplateDialog(context, ref, raffle);
               } else {
                 if (isPast) {
-                   _showEditDialog(context, ref, raffle); // Expired -> Edit/Delete/Archive
+                  _showEditDialog(
+                    context,
+                    ref,
+                    raffle,
+                  ); // Expired -> Edit/Delete/Archive
                 } else if (isToday) {
-                   // Active Today -> Show Options
-                   _showActiveOptions(context, ref, raffle);
+                  // Active Today -> Show Options
+                  _showActiveOptions(context, ref, raffle);
                 } else {
-                   // Future -> Edit
-                   _showEditDialog(context, ref, raffle);
+                  // Future -> Edit
+                  _showEditDialog(context, ref, raffle);
                 }
               }
             },
@@ -201,7 +312,11 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen> with 
     );
   }
 
-  void _showTemplateDialog(BuildContext context, WidgetRef ref, RaffleModel raffle) {
+  void _showTemplateDialog(
+    BuildContext context,
+    WidgetRef ref,
+    RaffleModel raffle,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -212,29 +327,60 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen> with 
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
             onPressed: () {
               Navigator.pop(ctx);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: widget.hallId, raffle: raffle, isCreatingFromTemplate: true)));
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditRaffleScreen(
+                    hallId: widget.hallId,
+                    raffle: raffle,
+                    isCreatingFromTemplate: true,
+                  ),
+                ),
+              );
             },
-            child: const Text("Use Template", style: TextStyle(color: Colors.black)),
+            child: const Text(
+              "Use Template",
+              style: TextStyle(color: Colors.black),
+            ),
           ),
           // Option to edit template itself
           TextButton(
             onPressed: () {
-               Navigator.pop(ctx);
-               Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: widget.hallId, raffle: raffle, isEditingTemplate: true)));
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditRaffleScreen(
+                    hallId: widget.hallId,
+                    raffle: raffle,
+                    isEditingTemplate: true,
+                  ),
+                ),
+              );
             },
-            child: const Text("Edit Template", style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              "Edit Template",
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
         ],
       ),
     );
   }
 
-  void _showEditDialog(BuildContext context, WidgetRef ref, RaffleModel raffle) {
+  void _showEditDialog(
+    BuildContext context,
+    WidgetRef ref,
+    RaffleModel raffle,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -253,8 +399,17 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen> with 
                   title: const Text("Delete Raffle?"),
                   content: const Text("This cannot be undone."),
                   actions: [
-                    TextButton(onPressed: () => Navigator.pop(c, false), child: const Text("Cancel")),
-                    TextButton(onPressed: () => Navigator.pop(c, true), child: const Text("Delete", style: TextStyle(color: Colors.red))),
+                    TextButton(
+                      onPressed: () => Navigator.pop(c, false),
+                      child: const Text("Cancel"),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(c, true),
+                      child: const Text(
+                        "Delete",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -269,7 +424,13 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen> with 
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: widget.hallId, raffle: raffle)));
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      EditRaffleScreen(hallId: widget.hallId, raffle: raffle),
+                ),
+              );
             },
             child: const Text("EDIT"),
           ),
@@ -277,47 +438,86 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen> with 
       ),
     );
   }
-  void _showActiveOptions(BuildContext context, WidgetRef ref, RaffleModel raffle) {
+
+  void _showActiveOptions(
+    BuildContext context,
+    WidgetRef ref,
+    RaffleModel raffle,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1E1E1E),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(raffle.name, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(
+              raffle.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 8),
-            const Text("This raffle is active today. What would you like to do?", style: TextStyle(color: Colors.white54)),
+            const Text(
+              "This raffle is active today. What would you like to do?",
+              style: TextStyle(color: Colors.white54),
+            ),
             const SizedBox(height: 24),
-            
+
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
                 icon: const Icon(Icons.play_arrow),
                 label: const Text("LAUNCH RAFFLE TOOL"),
                 onPressed: () {
                   Navigator.pop(ctx);
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => RaffleToolScreen(hallId: widget.hallId, raffle: raffle)));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => RaffleToolScreen(
+                        hallId: widget.hallId,
+                        raffle: raffle,
+                      ),
+                    ),
+                  );
                 },
               ),
             ),
             const SizedBox(height: 12),
-            
+
             SizedBox(
               width: double.infinity,
               height: 50,
               child: OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(foregroundColor: Colors.blueAccent, side: const BorderSide(color: Colors.blueAccent)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.blueAccent,
+                  side: const BorderSide(color: Colors.blueAccent),
+                ),
                 icon: const Icon(Icons.edit),
                 label: const Text("EDIT DETAILS"),
                 onPressed: () {
                   Navigator.pop(ctx);
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => EditRaffleScreen(hallId: widget.hallId, raffle: raffle)));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EditRaffleScreen(
+                        hallId: widget.hallId,
+                        raffle: raffle,
+                      ),
+                    ),
+                  );
                 },
               ),
             ),

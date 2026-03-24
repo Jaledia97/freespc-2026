@@ -48,24 +48,28 @@ class ScanActionSheet extends ConsumerWidget {
                 final user = ref.read(authStateChangesProvider).value;
                 if (user != null) {
                   try {
-                    await ref.read(transactionServiceProvider).awardPoints(
-                      userId: user.uid,
-                      hallId: hallId,
-                      points: 10,
-                      description: "Scanned at $hallId",
-                    );
+                    await ref
+                        .read(transactionServiceProvider)
+                        .awardPoints(
+                          userId: user.uid,
+                          hallId: hallId,
+                          points: 10,
+                          description: "Scanned at $hallId",
+                        );
                     if (context.mounted) {
                       Navigator.pop(context); // Close sheet
-                      Navigator.pop(context); // Close ScanScreen (return to Home)
+                      Navigator.pop(
+                        context,
+                      ); // Close ScanScreen (return to Home)
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Succcess! +10 Points!')),
                       );
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: $e')),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('Error: $e')));
                     }
                   }
                 }
@@ -91,10 +95,7 @@ class ScanActionSheet extends ConsumerWidget {
                 Navigator.pop(context);
                 onResumeCamera();
               },
-              child: const Text(
-                "CANCEL",
-                style: TextStyle(fontSize: 18),
-              ),
+              child: const Text("CANCEL", style: TextStyle(fontSize: 18)),
             ),
           ),
         ],

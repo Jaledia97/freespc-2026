@@ -5,7 +5,6 @@ part 'hall_charity_model.g.dart';
 
 @freezed
 abstract class HallCharityModel with _$HallCharityModel {
-
   const factory HallCharityModel({
     required String id,
     required String name,

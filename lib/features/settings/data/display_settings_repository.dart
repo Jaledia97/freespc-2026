@@ -3,33 +3,33 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum TimeFormat {
   h12, // 12-hour (AM/PM)
-  h24  // 24-hour
+  h24, // 24-hour
 }
 
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError(); // Must be overridden in main
 });
 
-final displaySettingsRepositoryProvider = Provider<DisplaySettingsRepository>((ref) {
+final displaySettingsRepositoryProvider = Provider<DisplaySettingsRepository>((
+  ref,
+) {
   final prefs = ref.watch(sharedPreferencesProvider);
   return DisplaySettingsRepository(prefs);
 });
 
-enum AppThemeMode {
-  system,
-  light,
-  dark
-}
+enum AppThemeMode { system, light, dark }
 
-final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, AppThemeMode>((ref) {
-  final repo = ref.watch(displaySettingsRepositoryProvider);
-  return ThemeModeNotifier(repo);
-});
+final themeModeProvider =
+    StateNotifierProvider<ThemeModeNotifier, AppThemeMode>((ref) {
+      final repo = ref.watch(displaySettingsRepositoryProvider);
+      return ThemeModeNotifier(repo);
+    });
 
-final timeFormatProvider = StateNotifierProvider<TimeFormatNotifier, TimeFormat>((ref) {
-  final repo = ref.watch(displaySettingsRepositoryProvider);
-  return TimeFormatNotifier(repo);
-});
+final timeFormatProvider =
+    StateNotifierProvider<TimeFormatNotifier, TimeFormat>((ref) {
+      final repo = ref.watch(displaySettingsRepositoryProvider);
+      return TimeFormatNotifier(repo);
+    });
 
 class DisplaySettingsRepository {
   final SharedPreferences _prefs;

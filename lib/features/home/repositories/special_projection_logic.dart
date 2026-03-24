@@ -1,6 +1,5 @@
 import '../../../models/special_model.dart';
 
-
 // Top-level function for compute()
 List<SpecialModel> projectSpecialsComputed(List<SpecialModel> input) {
   // Pass 'false' for includeAll as default for feed
@@ -13,7 +12,10 @@ List<SpecialModel> projectSpecialsComputedAll(List<SpecialModel> input) {
 }
 
 // The core logic, moved from HallRepository
-List<SpecialModel> _projectSpecialsLogic(List<SpecialModel> input, {bool includeAll = false}) {
+List<SpecialModel> _projectSpecialsLogic(
+  List<SpecialModel> input, {
+  bool includeAll = false,
+}) {
   final now = DateTime.now();
   final output = <SpecialModel>[];
 
@@ -22,13 +24,13 @@ List<SpecialModel> _projectSpecialsLogic(List<SpecialModel> input, {bool include
       output.add(s);
       continue;
     }
-    
+
     // 1. If not recurring, check expiry
     if (s.recurrence == 'none') {
       final end = s.endTime ?? s.startTime?.add(const Duration(hours: 2));
       // Show if not expired more than 12 hours ago
       if (end != null && end.isAfter(now.subtract(const Duration(hours: 12)))) {
-          output.add(s);
+        output.add(s);
       }
       continue;
     }
@@ -38,9 +40,10 @@ List<SpecialModel> _projectSpecialsLogic(List<SpecialModel> input, {bool include
 
     final originalStart = s.startTime!;
     final localStart = originalStart.toLocal(); // Wall Clock Time
-    final originalEnd = s.endTime ?? originalStart.add(const Duration(hours: 4));
+    final originalEnd =
+        s.endTime ?? originalStart.add(const Duration(hours: 4));
     final duration = originalEnd.difference(originalStart);
-    
+
     // Determine Rule
     RecurrenceRule rule;
     if (s.recurrenceRule != null) {
@@ -58,16 +61,16 @@ List<SpecialModel> _projectSpecialsLogic(List<SpecialModel> input, {bool include
     final projectionLimit = now.add(const Duration(days: 30));
 
     DateTime candidateStart = DateTime(
-      localStart.year, 
-      localStart.month, 
-      localStart.day, 
-      localStart.hour, 
-      localStart.minute
+      localStart.year,
+      localStart.month,
+      localStart.day,
+      localStart.hour,
+      localStart.minute,
     );
 
     int safety = 0;
     bool found = false;
-    
+
     // Check End Conditions
     bool isEnded(DateTime checkDate, int count) {
       if (rule.endCondition == 'date' && rule.endDate != null) {
@@ -83,46 +86,59 @@ List<SpecialModel> _projectSpecialsLogic(List<SpecialModel> input, {bool include
     final candidateEnd = candidateStart.add(duration);
     if (candidateEnd.isAfter(now)) {
       if (rule.frequency == 'weekly' && rule.daysOfWeek.isNotEmpty) {
-          if (rule.daysOfWeek.contains(candidateStart.weekday)) {
-            output.add(s);
-            found = true;
-          }
-      } else {
+        if (rule.daysOfWeek.contains(candidateStart.weekday)) {
           output.add(s);
           found = true;
+        }
+      } else {
+        output.add(s);
+        found = true;
       }
     }
 
     // Find next occurrence
     if (!found) {
       DateTime current = candidateStart;
-      int occurrences = 1; 
+      int occurrences = 1;
 
-      while (safety < 100) { // Reduced safety limit for performance
+      while (safety < 100) {
+        // Reduced safety limit for performance
         safety++;
-        
+
         if (current.isAfter(projectionLimit)) break;
 
         // Advance
         if (rule.frequency == 'daily') {
           current = current.add(Duration(days: rule.interval));
         } else if (rule.frequency == 'weekly') {
-           if (rule.daysOfWeek.isNotEmpty) {
-             // Simple daily advance to match pattern
-             current = current.add(const Duration(days: 1));
-             if (!rule.daysOfWeek.contains(current.weekday)) continue;
-             
-             // Check interval week
-             final daysDiff = current.difference(candidateStart).inDays;
-             final weeksDiff = (daysDiff / 7).floor();
-             if (weeksDiff % rule.interval != 0) continue;
-           } else {
-             current = current.add(Duration(days: 7 * rule.interval));
-           }
+          if (rule.daysOfWeek.isNotEmpty) {
+            // Simple daily advance to match pattern
+            current = current.add(const Duration(days: 1));
+            if (!rule.daysOfWeek.contains(current.weekday)) continue;
+
+            // Check interval week
+            final daysDiff = current.difference(candidateStart).inDays;
+            final weeksDiff = (daysDiff / 7).floor();
+            if (weeksDiff % rule.interval != 0) continue;
+          } else {
+            current = current.add(Duration(days: 7 * rule.interval));
+          }
         } else if (rule.frequency == 'monthly') {
-          current = DateTime(current.year, current.month + rule.interval, current.day, current.hour, current.minute);
+          current = DateTime(
+            current.year,
+            current.month + rule.interval,
+            current.day,
+            current.hour,
+            current.minute,
+          );
         } else if (rule.frequency == 'yearly') {
-           current = DateTime(current.year + rule.interval, current.month, current.day, current.hour, current.minute);
+          current = DateTime(
+            current.year + rule.interval,
+            current.month,
+            current.day,
+            current.hour,
+            current.minute,
+          );
         }
 
         if (isEnded(current, occurrences)) break;
@@ -130,16 +146,20 @@ List<SpecialModel> _projectSpecialsLogic(List<SpecialModel> input, {bool include
 
         final end = current.add(duration);
         if (end.isAfter(now)) {
-           output.add(s.copyWith(startTime: current, endTime: end));
-           found = true;
-           break; // Found next
+          output.add(s.copyWith(startTime: current, endTime: end));
+          found = true;
+          break; // Found next
         }
       }
     }
   }
 
   // Sort
-  output.sort((a, b) => (a.startTime ?? DateTime.now()).compareTo(b.startTime ?? DateTime.now()));
-  
+  output.sort(
+    (a, b) => (a.startTime ?? DateTime.now()).compareTo(
+      b.startTime ?? DateTime.now(),
+    ),
+  );
+
   return output;
 }

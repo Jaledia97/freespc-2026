@@ -13,7 +13,12 @@ class EditSpecialScreen extends ConsumerStatefulWidget {
   final SpecialModel? special; // If null, create mode
   final bool createTemplateMode; // Default false
 
-  const EditSpecialScreen({super.key, required this.hallId, this.special, this.createTemplateMode = false});
+  const EditSpecialScreen({
+    super.key,
+    required this.hallId,
+    this.special,
+    this.createTemplateMode = false,
+  });
 
   @override
   ConsumerState<EditSpecialScreen> createState() => _EditSpecialScreenState();
@@ -24,10 +29,10 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
   late TextEditingController _titleCtrl;
   late TextEditingController _descCtrl;
   late TextEditingController _tagCtrl;
-  
+
   String? _imageUrl;
   bool _isUploading = false;
-  
+
   DateTime _startTime = DateTime.now().add(const Duration(hours: 1));
   DateTime? _endTime; // Optional End Time
   bool _hasEndTime = false;
@@ -36,12 +41,15 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
 
   // String _recurrence = 'none'; // Deprecated
   RecurrenceRule _recurrenceRule = const RecurrenceRule(frequency: 'none');
-  
+
   // Custom Recurrence State (for UI display)
   String get _recurrenceText {
     if (_recurrenceRule.frequency == 'none') return "Does not repeat";
     if (_recurrenceRule.frequency == 'daily') return "Daily";
-    if (_recurrenceRule.frequency == 'weekly' && _recurrenceRule.interval == 1 && _recurrenceRule.daysOfWeek.isEmpty) return "Weekly";
+    if (_recurrenceRule.frequency == 'weekly' &&
+        _recurrenceRule.interval == 1 &&
+        _recurrenceRule.daysOfWeek.isEmpty)
+      return "Weekly";
     if (_recurrenceRule.frequency == 'monthly') return "Monthly";
     if (_recurrenceRule.frequency == 'yearly') return "Yearly";
     return "Custom...";
@@ -51,8 +59,6 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
   bool _sendNotification = false;
   bool _isSaving = false;
 
-
-
   @override
   void initState() {
     super.initState();
@@ -60,7 +66,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     _descCtrl = TextEditingController(text: widget.special?.description ?? '');
     _tagCtrl = TextEditingController();
     _imageUrl = widget.special?.imageUrl;
-    
+
     // If creating new, _imageUrl starts null. We can't synchronously set default from async stream.
     // User can just pick one.
 
@@ -73,11 +79,15 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
       if (widget.special?.recurrenceRule != null) {
         _recurrenceRule = widget.special!.recurrenceRule!;
       } else {
-         // Legacy migration for edit
-         final old = widget.special?.recurrence ?? 'none';
-         if (old != 'none') {
-           _recurrenceRule = RecurrenceRule(frequency: old == 'weekly' ? 'weekly' : (old == 'monthly' ? 'monthly' : 'daily'));
-         }
+        // Legacy migration for edit
+        final old = widget.special?.recurrence ?? 'none';
+        if (old != 'none') {
+          _recurrenceRule = RecurrenceRule(
+            frequency: old == 'weekly'
+                ? 'weekly'
+                : (old == 'monthly' ? 'monthly' : 'daily'),
+          );
+        }
       }
     } else {
       // New Creation
@@ -86,7 +96,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
   }
 
   String _formatDateTime(DateTime dt) {
-     return "${dt.month}/${dt.day}/${dt.year}  ${TimeOfDay.fromDateTime(dt).format(context)}";
+    return "${dt.month}/${dt.day}/${dt.year}  ${TimeOfDay.fromDateTime(dt).format(context)}";
   }
 
   // --- Image Handling ---
@@ -99,8 +109,14 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.blueAccent),
-              title: const Text('Open Gallery', style: TextStyle(color: Colors.white)),
+              leading: const Icon(
+                Icons.photo_library,
+                color: Colors.blueAccent,
+              ),
+              title: const Text(
+                'Open Gallery',
+                style: TextStyle(color: Colors.white),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _uploadFromSource(ImageSource.gallery);
@@ -108,15 +124,21 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt, color: Colors.blueAccent),
-              title: const Text('Take Photo', style: TextStyle(color: Colors.white)),
+              title: const Text(
+                'Take Photo',
+                style: TextStyle(color: Colors.white),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _uploadFromSource(ImageSource.camera);
               },
             ),
-             ListTile(
+            ListTile(
               leading: const Icon(Icons.history, color: Colors.amber),
-              title: const Text('Asset Library', style: TextStyle(color: Colors.white)),
+              title: const Text(
+                'Asset Library',
+                style: TextStyle(color: Colors.white),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _showAssetLibrary();
@@ -129,36 +151,44 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
   }
 
   Future<void> _uploadFromSource(ImageSource source) async {
-     try {
-       final file = await ref.read(storageServiceProvider).pickImage(source: source);
-       if (file == null) return;
-       
-       setState(() => _isUploading = true);
-       
-       // Upload (Using 'special' type)
-       final url = await ref.read(storageServiceProvider).uploadHallImage(File(file.path), widget.hallId, 'special');
-       
-       // Save to Asset Library for reuse
-       await ref.read(hallRepositoryProvider).addToAssetLibrary(widget.hallId, url, 'special');
-       
-       setState(() {
-         _imageUrl = url;
-         _isUploading = false;
-       });
-       
-     } catch (e) {
-       setState(() => _isUploading = false);
-       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Upload Error: $e")));
-     }
+    try {
+      final file = await ref
+          .read(storageServiceProvider)
+          .pickImage(source: source);
+      if (file == null) return;
+
+      setState(() => _isUploading = true);
+
+      // Upload (Using 'special' type)
+      final url = await ref
+          .read(storageServiceProvider)
+          .uploadHallImage(File(file.path), widget.hallId, 'special');
+
+      // Save to Asset Library for reuse
+      await ref
+          .read(hallRepositoryProvider)
+          .addToAssetLibrary(widget.hallId, url, 'special');
+
+      setState(() {
+        _imageUrl = url;
+        _isUploading = false;
+      });
+    } catch (e) {
+      setState(() => _isUploading = false);
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Upload Error: $e")));
+    }
   }
-  
+
   void _showAssetLibrary() {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF141414),
       isScrollControlled: true,
       builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.7, 
+        initialChildSize: 0.7,
         maxChildSize: 0.9,
         builder: (_, scrollController) => Container(
           decoration: const BoxDecoration(
@@ -169,25 +199,48 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
             children: [
               const Padding(
                 padding: EdgeInsets.all(16),
-                child: Text("Select from Library", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text(
+                  "Select from Library",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               Expanded(
                 child: Consumer(
                   builder: (_, ref, child) {
                     // Use historic images instead of empty asset library
-                    final assetsStream = ref.watch(hallRepositoryProvider).getRecentSpecialImages(widget.hallId);
+                    final assetsStream = ref
+                        .watch(hallRepositoryProvider)
+                        .getRecentSpecialImages(widget.hallId);
                     return StreamBuilder<List<String>>(
-                      stream: assetsStream, 
+                      stream: assetsStream,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-                        
+                        if (snapshot.connectionState == ConnectionState.waiting)
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+
                         final images = snapshot.data ?? [];
-                        if (images.isEmpty) return const Center(child: Text("No stored images found.", style: TextStyle(color: Colors.white54)));
-                        
+                        if (images.isEmpty)
+                          return const Center(
+                            child: Text(
+                              "No stored images found.",
+                              style: TextStyle(color: Colors.white54),
+                            ),
+                          );
+
                         return GridView.builder(
                           controller: scrollController,
                           padding: const EdgeInsets.all(8),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 8, mainAxisSpacing: 8),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 8,
+                                mainAxisSpacing: 8,
+                              ),
                           itemCount: images.length,
                           itemBuilder: (ctx, i) {
                             return GestureDetector(
@@ -197,12 +250,15 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
-                                child: Image.network(images[i], fit: BoxFit.cover),
+                                child: Image.network(
+                                  images[i],
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             );
                           },
                         );
-                      }
+                      },
                     );
                   },
                 ),
@@ -239,13 +295,16 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: const Color(0xFF222222),
-              title: const Text("Create Custom Tag", style: TextStyle(color: Colors.white)),
+              title: const Text(
+                "Create Custom Tag",
+                style: TextStyle(color: Colors.white),
+              ),
               content: SizedBox(
                 width: double.maxFinite,
                 child: Consumer(
                   builder: (context, ref, child) {
                     final allTagsAsync = ref.watch(allCustomTagsProvider);
-                    
+
                     return allTagsAsync.when(
                       data: (tagsMap) {
                         return Autocomplete<String>(
@@ -254,9 +313,12 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                               return const Iterable<String>.empty();
                             }
                             // Filter non-default tags matching input
-                            return tagsMap.keys.where((tag) => 
-                              !DefaultTags.categories.contains(tag) && 
-                              tag.toLowerCase().contains(textEditingValue.text.toLowerCase())
+                            return tagsMap.keys.where(
+                              (tag) =>
+                                  !DefaultTags.categories.contains(tag) &&
+                                  tag.toLowerCase().contains(
+                                    textEditingValue.text.toLowerCase(),
+                                  ),
                             );
                           },
                           onSelected: (String selection) {
@@ -264,30 +326,41 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                             _addTag();
                             Navigator.pop(ctx);
                           },
-                          fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
-                            // Assign the external controller to our local one so ADD button still works
-                            textEditingController.addListener(() {
-                              _tagCtrl.text = textEditingController.text;
-                            });
-                            
-                            return TextField(
-                              controller: textEditingController,
-                              focusNode: focusNode,
-                              style: const TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
-                                hintText: "e.g. Halloween",
-                                hintStyle: const TextStyle(color: Colors.white54),
-                                filled: true,
-                                fillColor: const Color(0xFF1E1E1E),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                              ),
-                              autofocus: true,
-                              onSubmitted: (_) {
-                                _addTag();
-                                Navigator.pop(ctx);
+                          fieldViewBuilder:
+                              (
+                                context,
+                                textEditingController,
+                                focusNode,
+                                onFieldSubmitted,
+                              ) {
+                                // Assign the external controller to our local one so ADD button still works
+                                textEditingController.addListener(() {
+                                  _tagCtrl.text = textEditingController.text;
+                                });
+
+                                return TextField(
+                                  controller: textEditingController,
+                                  focusNode: focusNode,
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration: InputDecoration(
+                                    hintText: "e.g. Halloween",
+                                    hintStyle: const TextStyle(
+                                      color: Colors.white54,
+                                    ),
+                                    filled: true,
+                                    fillColor: const Color(0xFF1E1E1E),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                  ),
+                                  autofocus: true,
+                                  onSubmitted: (_) {
+                                    _addTag();
+                                    Navigator.pop(ctx);
+                                  },
+                                );
                               },
-                            );
-                          },
                           optionsViewBuilder: (context, onSelected, options) {
                             return Align(
                               alignment: Alignment.topLeft,
@@ -296,24 +369,42 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                                 color: const Color(0xFF333333),
                                 borderRadius: BorderRadius.circular(8),
                                 child: ConstrainedBox(
-                                  constraints: const BoxConstraints(maxHeight: 200, maxWidth: 300),
+                                  constraints: const BoxConstraints(
+                                    maxHeight: 200,
+                                    maxWidth: 300,
+                                  ),
                                   child: ListView.builder(
                                     padding: EdgeInsets.zero,
                                     shrinkWrap: true,
                                     itemCount: options.length,
-                                    itemBuilder: (BuildContext context, int index) {
-                                      final String option = options.elementAt(index);
-                                      final int count = tagsMap[option] ?? 0;
-                                      final trafficLabel = TagUtils.getTrafficLabel(count);
-                                      
-                                      return ListTile(
-                                        title: Text(option, style: const TextStyle(color: Colors.white)),
-                                        subtitle: Text(trafficLabel, style: const TextStyle(color: Colors.blueAccent, fontSize: 12)),
-                                        onTap: () {
-                                          onSelected(option);
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                          final String option = options
+                                              .elementAt(index);
+                                          final int count =
+                                              tagsMap[option] ?? 0;
+                                          final trafficLabel =
+                                              TagUtils.getTrafficLabel(count);
+
+                                          return ListTile(
+                                            title: Text(
+                                              option,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              trafficLabel,
+                                              style: const TextStyle(
+                                                color: Colors.blueAccent,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            onTap: () {
+                                              onSelected(option);
+                                            },
+                                          );
                                         },
-                                      );
-                                    },
                                   ),
                                 ),
                               ),
@@ -321,7 +412,8 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                           },
                         );
                       },
-                      loading: () => const Center(child: CircularProgressIndicator()),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
                       error: (_, __) => TextField(
                         controller: _tagCtrl,
                         style: const TextStyle(color: Colors.white),
@@ -330,7 +422,10 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                           hintStyle: const TextStyle(color: Colors.white54),
                           filled: true,
                           fillColor: const Color(0xFF1E1E1E),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                         autofocus: true,
                         onSubmitted: (_) {
@@ -348,7 +443,10 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                     _tagCtrl.clear();
                     Navigator.pop(ctx);
                   },
-                  child: const Text("CANCEL", style: TextStyle(color: Colors.grey)),
+                  child: const Text(
+                    "CANCEL",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
                 TextButton(
                   onPressed: () {
@@ -357,16 +455,22 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                       Navigator.pop(ctx);
                     }
                   },
-                  child: const Text("ADD", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    "ADD",
+                    style: TextStyle(
+                      color: Colors.blueAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             );
-          }
+          },
         );
       },
     );
   }
-  
+
   // --- Notification Warning ---
   Future<void> _handleNotificationToggle(bool? value) async {
     if (value == true) {
@@ -379,7 +483,10 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
             children: [
               Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 28),
               SizedBox(width: 12),
-              Text("Notification Warning", style: TextStyle(color: Colors.white)),
+              Text(
+                "Notification Warning",
+                style: TextStyle(color: Colors.white),
+              ),
             ],
           ),
           content: const Text(
@@ -388,17 +495,23 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(ctx, false), 
+              onPressed: () => Navigator.pop(ctx, false),
               child: const Text("CANCEL", style: TextStyle(color: Colors.grey)),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(ctx, true), 
-              child: const Text("I UNDERSTAND", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text(
+                "I UNDERSTAND",
+                style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),
       );
-      
+
       setState(() {
         _sendNotification = proceed ?? false;
       });
@@ -412,8 +525,10 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
   void _showPublishOptions() {
     if (!_formKey.currentState!.validate()) return;
     if (_imageUrl == null) {
-       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an image.')));
-       return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select an image.')));
+      return;
     }
 
     // Determine Context
@@ -423,81 +538,129 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF222222),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Padding(
               padding: EdgeInsets.all(16),
-              child: Text("Publish Options", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              child: Text(
+                "Publish Options",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            
+
             // OPTION 1: Post Live (Not available if strictly creating a template)
             if (!widget.createTemplateMode)
-            ListTile(
-              leading: const Icon(Icons.send, color: Colors.greenAccent),
-              title: Text(isEditingTemplate ? "Post Live (Copy)" : "Post Live", style: const TextStyle(color: Colors.white)),
-              subtitle: const Text("Visible to everyone immediately.", style: TextStyle(color: Colors.white54, fontSize: 12)),
-              onTap: () {
-                Navigator.pop(ctx);
-                _save(isTemplate: false, createCopy: isEditingTemplate); 
-              },
-            ),
+              ListTile(
+                leading: const Icon(Icons.send, color: Colors.greenAccent),
+                title: Text(
+                  isEditingTemplate ? "Post Live (Copy)" : "Post Live",
+                  style: const TextStyle(color: Colors.white),
+                ),
+                subtitle: const Text(
+                  "Visible to everyone immediately.",
+                  style: TextStyle(color: Colors.white54, fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _save(isTemplate: false, createCopy: isEditingTemplate);
+                },
+              ),
 
             // OPTION 2: Save as Template (Always available for new, or maintenance)
             if (isNew || isEditingTemplate || widget.createTemplateMode)
-            ListTile(
-              leading: const Icon(Icons.copy, color: Colors.blueAccent),
-              title: Text(isEditingTemplate ? "Save Changes" : "Save as Template", style: const TextStyle(color: Colors.white)),
-              subtitle: const Text("Save for future use. Hidden from feed.", style: TextStyle(color: Colors.white54, fontSize: 12)),
-              onTap: () {
-                Navigator.pop(ctx);
-                _save(isTemplate: true, createCopy: false);
-              },
-            ),
+              ListTile(
+                leading: const Icon(Icons.copy, color: Colors.blueAccent),
+                title: Text(
+                  isEditingTemplate ? "Save Changes" : "Save as Template",
+                  style: const TextStyle(color: Colors.white),
+                ),
+                subtitle: const Text(
+                  "Save for future use. Hidden from feed.",
+                  style: TextStyle(color: Colors.white54, fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _save(isTemplate: true, createCopy: false);
+                },
+              ),
 
             // OPTION 3: Post AND Save Template (Only for new specials)
             if (isNew && !widget.createTemplateMode)
-            ListTile(
-              leading: const Icon(Icons.library_add_check, color: Colors.amber),
-              title: const Text("Post to Feed & Save Logic", style: TextStyle(color: Colors.white)),
-              subtitle: const Text("Goes live AND saves a template copy.", style: TextStyle(color: Colors.white54, fontSize: 12)),
-              onTap: () {
-                Navigator.pop(ctx);
-                _save(isTemplate: false, createCopy: false, alsoSaveTemplate: true);
-              },
-            ),
-             
+              ListTile(
+                leading: const Icon(
+                  Icons.library_add_check,
+                  color: Colors.amber,
+                ),
+                title: const Text(
+                  "Post to Feed & Save Logic",
+                  style: TextStyle(color: Colors.white),
+                ),
+                subtitle: const Text(
+                  "Goes live AND saves a template copy.",
+                  style: TextStyle(color: Colors.white54, fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _save(
+                    isTemplate: false,
+                    createCopy: false,
+                    alsoSaveTemplate: true,
+                  );
+                },
+              ),
+
             // Editing Live Special
             if (!isNew && !isEditingTemplate)
-             ListTile(
-              leading: const Icon(Icons.save, color: Colors.blueAccent),
-              title: const Text("Save Changes", style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(ctx);
-                _save(isTemplate: false, createCopy: false);
-              },
-            ),
+              ListTile(
+                leading: const Icon(Icons.save, color: Colors.blueAccent),
+                title: const Text(
+                  "Save Changes",
+                  style: TextStyle(color: Colors.white),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _save(isTemplate: false, createCopy: false);
+                },
+              ),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _save({required bool isTemplate, required bool createCopy, bool alsoSaveTemplate = false}) async {
+  Future<void> _save({
+    required bool isTemplate,
+    required bool createCopy,
+    bool alsoSaveTemplate = false,
+  }) async {
     setState(() => _isSaving = true);
 
     try {
       // Midnight Rule: If no end time, default to 11:59:59 PM of the start date
-      final DateTime endTime = _hasEndTime 
-          ? _endTime! 
-          : DateTime(_startTime.year, _startTime.month, _startTime.day, 23, 59, 59);
+      final DateTime endTime = _hasEndTime
+          ? _endTime!
+          : DateTime(
+              _startTime.year,
+              _startTime.month,
+              _startTime.day,
+              23,
+              59,
+              59,
+            );
 
       final baseSpecial = SpecialModel(
-        id: createCopy ? '' : (widget.special?.id ?? ''), 
+        id: createCopy ? '' : (widget.special?.id ?? ''),
         hallId: widget.hallId,
-        hallName: '', 
+        hallName: '',
         title: _titleCtrl.text.trim(),
         description: _descCtrl.text.trim(),
         imageUrl: _imageUrl!,
@@ -513,37 +676,58 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
       // 1. Main Action
       if (baseSpecial.id.isEmpty) {
         // Create
-        await ref.read(hallRepositoryProvider).addSpecial(baseSpecial, sendNotification: _sendNotification && !isTemplate);
+        await ref
+            .read(hallRepositoryProvider)
+            .addSpecial(
+              baseSpecial,
+              sendNotification: _sendNotification && !isTemplate,
+            );
       } else {
         // Update
         // Preserve postedAt if updating
-        final updated = baseSpecial.copyWith(postedAt: widget.special?.postedAt ?? DateTime.now());
-        await ref.read(hallRepositoryProvider).updateSpecial(updated, sendNotification: false);
+        final updated = baseSpecial.copyWith(
+          postedAt: widget.special?.postedAt ?? DateTime.now(),
+        );
+        await ref
+            .read(hallRepositoryProvider)
+            .updateSpecial(updated, sendNotification: false);
       }
 
       // 2. Dual Creation (Post & Save Template)
       if (alsoSaveTemplate) {
         final templateCopy = baseSpecial.copyWith(id: '', isTemplate: true);
-        await ref.read(hallRepositoryProvider).addSpecial(templateCopy, sendNotification: false);
+        await ref
+            .read(hallRepositoryProvider)
+            .addSpecial(templateCopy, sendNotification: false);
       }
 
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
   }
 
   // --- New Date/Time Helpers ---
-  Widget _dateTimeField(String label, DateTime dt, {required bool isDate, bool isEnd = false}) {
+  Widget _dateTimeField(
+    String label,
+    DateTime dt, {
+    required bool isDate,
+    bool isEnd = false,
+  }) {
     return InkWell(
       onTap: () => isDate ? _pickDate(isEnd: isEnd) : _pickTime(isEnd: isEnd),
       borderRadius: BorderRadius.circular(8),
       child: InputDecorator(
         decoration: _inputDec(label, null),
         child: Text(
-          isDate ? "${dt.month}/${dt.day}/${dt.year}" : TimeOfDay.fromDateTime(dt).format(context),
+          isDate
+              ? "${dt.month}/${dt.day}/${dt.year}"
+              : TimeOfDay.fromDateTime(dt).format(context),
           style: const TextStyle(color: Colors.white),
         ),
       ),
@@ -553,16 +737,22 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
   Future<void> _pickDate({bool isEnd = false}) async {
     final initial = isEnd ? (_endTime ?? DateTime.now()) : _startTime;
     final date = await showDatePicker(
-      context: context, 
-      initialDate: initial, 
-      firstDate: DateTime(2020), 
-      lastDate: DateTime(2030)
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
     );
     if (date == null) return;
-    
+
     setState(() {
       final old = isEnd ? (_endTime ?? DateTime.now()) : _startTime;
-      final newDt = DateTime(date.year, date.month, date.day, old.hour, old.minute);
+      final newDt = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        old.hour,
+        old.minute,
+      );
       if (isEnd) {
         _endTime = newDt;
       } else {
@@ -573,12 +763,21 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
 
   Future<void> _pickTime({bool isEnd = false}) async {
     final initial = isEnd ? (_endTime ?? DateTime.now()) : _startTime;
-    final time = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(initial));
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial),
+    );
     if (time == null) return;
 
     setState(() {
       final old = isEnd ? (_endTime ?? DateTime.now()) : _startTime;
-      final newDt = DateTime(old.year, old.month, old.day, time.hour, time.minute);
+      final newDt = DateTime(
+        old.year,
+        old.month,
+        old.day,
+        time.hour,
+        time.minute,
+      );
       if (isEnd) {
         _endTime = newDt;
       } else {
@@ -592,19 +791,49 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF222222),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(title: const Text("Does not repeat", style: TextStyle(color: Colors.white)), onTap: () => _setRecurrence('none')),
-            ListTile(title: const Text("Daily", style: TextStyle(color: Colors.white)), onTap: () => _setRecurrence('daily')),
-            ListTile(title: const Text("Weekly", style: TextStyle(color: Colors.white)), onTap: () => _setRecurrence('weekly')),
-            ListTile(title: const Text("Monthly", style: TextStyle(color: Colors.white)), onTap: () => _setRecurrence('monthly')),
+            ListTile(
+              title: const Text(
+                "Does not repeat",
+                style: TextStyle(color: Colors.white),
+              ),
+              onTap: () => _setRecurrence('none'),
+            ),
+            ListTile(
+              title: const Text("Daily", style: TextStyle(color: Colors.white)),
+              onTap: () => _setRecurrence('daily'),
+            ),
+            ListTile(
+              title: const Text(
+                "Weekly",
+                style: TextStyle(color: Colors.white),
+              ),
+              onTap: () => _setRecurrence('weekly'),
+            ),
+            ListTile(
+              title: const Text(
+                "Monthly",
+                style: TextStyle(color: Colors.white),
+              ),
+              onTap: () => _setRecurrence('monthly'),
+            ),
             const Divider(),
             ListTile(
-              title: const Text("Custom...", style: TextStyle(color: Colors.white)), 
-              trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+              title: const Text(
+                "Custom...",
+                style: TextStyle(color: Colors.white),
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white54,
+                size: 16,
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 _showCustomRecurrencePicker();
@@ -618,14 +847,16 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
 
   void _setRecurrence(String frequency) {
     setState(() {
-       _recurrenceRule = RecurrenceRule(frequency: frequency, interval: 1);
+      _recurrenceRule = RecurrenceRule(frequency: frequency, interval: 1);
     });
     Navigator.pop(context);
   }
 
   void _showCustomRecurrencePicker() {
     // Temp State for Modal
-    String freq = _recurrenceRule.frequency == 'none' ? 'weekly' : _recurrenceRule.frequency;
+    String freq = _recurrenceRule.frequency == 'none'
+        ? 'weekly'
+        : _recurrenceRule.frequency;
     int interval = _recurrenceRule.interval;
     List<int> days = List.from(_recurrenceRule.daysOfWeek);
     String endCondition = _recurrenceRule.endCondition; // never, date, count
@@ -644,13 +875,23 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Custom Recurrence", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                const Text(
+                  "Custom Recurrence",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 24),
-                
+
                 // Frequency Row
                 Row(
                   children: [
-                    const Text("Repeats every", style: TextStyle(color: Colors.white, fontSize: 16)),
+                    const Text(
+                      "Repeats every",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                     const SizedBox(width: 16),
                     SizedBox(
                       width: 60,
@@ -662,7 +903,8 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                         decoration: _inputDec('', null),
                         onChanged: (v) {
                           final n = int.tryParse(v);
-                          if (n != null && n > 0) setModalState(() => interval = n);
+                          if (n != null && n > 0)
+                            setModalState(() => interval = n);
                         },
                       ),
                     ),
@@ -672,42 +914,82 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                       dropdownColor: const Color(0xFF222222),
                       underline: Container(),
                       items: const [
-                        DropdownMenuItem(value: 'daily', child: Text("day", style: TextStyle(color: Colors.white))),
-                        DropdownMenuItem(value: 'weekly', child: Text("week", style: TextStyle(color: Colors.white))),
-                        DropdownMenuItem(value: 'monthly', child: Text("month", style: TextStyle(color: Colors.white))),
-                        DropdownMenuItem(value: 'yearly', child: Text("year", style: TextStyle(color: Colors.white))),
-                      ], 
-                      onChanged: (v) => setModalState(() => freq = v!)
+                        DropdownMenuItem(
+                          value: 'daily',
+                          child: Text(
+                            "day",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: 'weekly',
+                          child: Text(
+                            "week",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: 'monthly',
+                          child: Text(
+                            "month",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: 'yearly',
+                          child: Text(
+                            "year",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                      onChanged: (v) => setModalState(() => freq = v!),
                     ),
                   ],
                 ),
-                
+
                 // Weekday Selector (Only if Weekly)
                 if (freq == 'weekly') ...[
-                   const SizedBox(height: 24),
-                   const Text("Repeats on", style: TextStyle(color: Colors.white, fontSize: 16)),
-                   const SizedBox(height: 12),
-                   Row(
-                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                     children: ['M', 'T', 'W', 'T', 'F', 'S', 'S'].asMap().entries.map((e) {
-                       final idx = e.key + 1; // 1-based
-                       final isSelected = days.contains(idx);
-                       return GestureDetector(
-                         onTap: () => setModalState(() {
-                           if (isSelected) {
-                             days.remove(idx);
-                           } else {
-                             days.add(idx);
-                           }
-                         }),
-                         child: CircleAvatar(
-                           radius: 20,
-                           backgroundColor: isSelected ? Colors.blueAccent : Colors.grey[800],
-                           child: Text(e.value, style: TextStyle(color: isSelected ? Colors.white : Colors.white54)),
-                         ),
-                       );
-                     }).toList(),
-                   ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "Repeats on",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+                        .asMap()
+                        .entries
+                        .map((e) {
+                          final idx = e.key + 1; // 1-based
+                          final isSelected = days.contains(idx);
+                          return GestureDetector(
+                            onTap: () => setModalState(() {
+                              if (isSelected) {
+                                days.remove(idx);
+                              } else {
+                                days.add(idx);
+                              }
+                            }),
+                            child: CircleAvatar(
+                              radius: 20,
+                              backgroundColor: isSelected
+                                  ? Colors.blueAccent
+                                  : Colors.grey[800],
+                              child: Text(
+                                e.value,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.white54,
+                                ),
+                              ),
+                            ),
+                          );
+                        })
+                        .toList(),
+                  ),
                 ],
 
                 const SizedBox(height: 24),
@@ -715,42 +997,64 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                 const SizedBox(height: 24),
 
                 // ENDS
-                const Text("Ends", style: TextStyle(color: Colors.white, fontSize: 16)),
+                const Text(
+                  "Ends",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
                 RadioListTile<String>(
-                  title: const Text("Never", style: TextStyle(color: Colors.white)),
+                  title: const Text(
+                    "Never",
+                    style: TextStyle(color: Colors.white),
+                  ),
                   value: 'never',
                   groupValue: endCondition,
                   activeColor: Colors.blueAccent,
                   onChanged: (v) => setModalState(() => endCondition = v!),
                 ),
                 RadioListTile<String>(
-                  title: const Text("On Date", style: TextStyle(color: Colors.white)),
+                  title: const Text(
+                    "On Date",
+                    style: TextStyle(color: Colors.white),
+                  ),
                   value: 'date',
                   groupValue: endCondition,
                   activeColor: Colors.blueAccent,
                   onChanged: (v) => setModalState(() => endCondition = v!),
                 ),
                 if (endCondition == 'date')
-                   Padding(
-                     padding: const EdgeInsets.only(left: 32, bottom: 8),
-                     child: InkWell(
-                        onTap: () async {
-                          final d = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime(2030));
-                          if (d != null) setModalState(() => endDate = d);
-                        },
-                        child: Text(
-                          endDate != null ? "${endDate!.month}/${endDate!.day}/${endDate!.year}" : "Select Date",
-                          style: const TextStyle(color: Colors.blueAccent, fontSize: 16, fontWeight: FontWeight.bold)
-                        )
-                     ),
-                   ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 32, bottom: 8),
+                    child: InkWell(
+                      onTap: () async {
+                        final d = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2030),
+                        );
+                        if (d != null) setModalState(() => endDate = d);
+                      },
+                      child: Text(
+                        endDate != null
+                            ? "${endDate!.month}/${endDate!.day}/${endDate!.year}"
+                            : "Select Date",
+                        style: const TextStyle(
+                          color: Colors.blueAccent,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
 
                 const Spacer(),
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                    ),
                     onPressed: () {
                       setState(() {
                         _recurrenceRule = RecurrenceRule(
@@ -763,34 +1067,53 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                         );
                       });
                       Navigator.pop(context);
-                    }, 
-                    child: const Text("Done", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
+                    },
+                    child: const Text(
+                      "Done",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           );
-        }
+        },
       ),
     );
   }
 
   String _getRecurrenceSummary() {
     if (_recurrenceRule.frequency == 'none') return '';
-    
+
     final unit = _recurrenceRule.frequency; // daily -> day
     final interval = _recurrenceRule.interval;
-    final intervalStr = interval > 1 ? "Every $interval ${unit}s" : "Every $unit"; // rough plural
-    
+    final intervalStr = interval > 1
+        ? "Every $interval ${unit}s"
+        : "Every $unit"; // rough plural
+
     String days = "";
-    if (_recurrenceRule.frequency == 'weekly' && _recurrenceRule.daysOfWeek.isNotEmpty) {
-      final map = {1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 7: 'Sun'};
+    if (_recurrenceRule.frequency == 'weekly' &&
+        _recurrenceRule.daysOfWeek.isNotEmpty) {
+      final map = {
+        1: 'Mon',
+        2: 'Tue',
+        3: 'Wed',
+        4: 'Thu',
+        5: 'Fri',
+        6: 'Sat',
+        7: 'Sun',
+      };
       days = " on ${_recurrenceRule.daysOfWeek.map((d) => map[d]).join(', ')}";
     }
 
     String end = "";
-    if (_recurrenceRule.endCondition == 'date' && _recurrenceRule.endDate != null) {
-      end = ", until ${_recurrenceRule.endDate!.month}/${_recurrenceRule.endDate!.day}";
+    if (_recurrenceRule.endCondition == 'date' &&
+        _recurrenceRule.endDate != null) {
+      end =
+          ", until ${_recurrenceRule.endDate!.month}/${_recurrenceRule.endDate!.day}";
     }
 
     return "$intervalStr$days$end";
@@ -801,16 +1124,34 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
-        title: Text(widget.special == null || widget.special!.id.isEmpty ? 'New Special' : 'Edit Special'),
+        title: Text(
+          widget.special == null || widget.special!.id.isEmpty
+              ? 'New Special'
+              : 'Edit Special',
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          if (_isSaving || _isUploading) 
-            const Center(child: Padding(padding: EdgeInsets.only(right: 16), child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
+          if (_isSaving || _isUploading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              ),
+            )
           else
             TextButton(
-              onPressed: _showPublishOptions, 
-              child: const Text("PUBLISH", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold))
+              onPressed: _showPublishOptions,
+              child: const Text(
+                "PUBLISH",
+                style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
         ],
       ),
@@ -821,7 +1162,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               // Image Section
+              // Image Section
               _label("Event Image"),
               const SizedBox(height: 12),
               GestureDetector(
@@ -832,27 +1173,46 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                   decoration: BoxDecoration(
                     color: Colors.grey[900],
                     borderRadius: BorderRadius.circular(12),
-                    image: _imageUrl != null 
-                        ? DecorationImage(image: NetworkImage(_imageUrl!), fit: BoxFit.cover)
+                    image: _imageUrl != null
+                        ? DecorationImage(
+                            image: NetworkImage(_imageUrl!),
+                            fit: BoxFit.cover,
+                          )
                         : null,
                     border: Border.all(color: Colors.grey[800]!),
                   ),
-                  child: _imageUrl == null 
-                      ? const Center(child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_a_photo, color: Colors.white54, size: 40),
-                            SizedBox(height: 8),
-                            Text("Upload Photo", style: TextStyle(color: Colors.white54)),
-                          ],
-                        ))
+                  child: _imageUrl == null
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add_a_photo,
+                                color: Colors.white54,
+                                size: 40,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                "Upload Photo",
+                                style: TextStyle(color: Colors.white54),
+                              ),
+                            ],
+                          ),
+                        )
                       : Container(
                           alignment: Alignment.bottomRight,
                           padding: const EdgeInsets.all(8),
                           child: Container(
                             padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                            child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                            decoration: const BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.edit,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
                         ),
                 ),
@@ -863,43 +1223,64 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
               Consumer(
                 builder: (context, ref, child) {
                   // Use historic images for quick select
-                  final assetsStream = ref.watch(hallRepositoryProvider).getRecentSpecialImages(widget.hallId);
+                  final assetsStream = ref
+                      .watch(hallRepositoryProvider)
+                      .getRecentSpecialImages(widget.hallId);
                   return StreamBuilder<List<String>>(
                     stream: assetsStream,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const SizedBox(height: 50, child: Center(child: CircularProgressIndicator()));
+                        return const SizedBox(
+                          height: 50,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
                       }
-                      
+
                       final images = snapshot.data ?? [];
                       if (images.isEmpty) return const SizedBox.shrink();
 
                       // Take top 4
                       final recent = images.take(4).toList();
-                      
+
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Quick Select (Recent): ", style: TextStyle(color: Colors.grey)),
+                          const Text(
+                            "Quick Select (Recent): ",
+                            style: TextStyle(color: Colors.grey),
+                          ),
                           const SizedBox(height: 8),
                           Row(
-                            children: recent.map((url) => GestureDetector(
-                              onTap: () => setState(() => _imageUrl = url),
-                              child: Container(
-                                margin: const EdgeInsets.only(right: 12),
-                                width: 50, 
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: _imageUrl == url ? Colors.green : Colors.transparent, width: 2),
-                                  image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
-                                ),
-                              ),
-                            )).toList(),
+                            children: recent
+                                .map(
+                                  (url) => GestureDetector(
+                                    onTap: () =>
+                                        setState(() => _imageUrl = url),
+                                    child: Container(
+                                      margin: const EdgeInsets.only(right: 12),
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: _imageUrl == url
+                                              ? Colors.green
+                                              : Colors.transparent,
+                                          width: 2,
+                                        ),
+                                        image: DecorationImage(
+                                          image: NetworkImage(url),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
                           ),
                         ],
                       );
-                    }
+                    },
                   );
                 },
               ),
@@ -908,21 +1289,34 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
               // Title
               _input("Title", _titleCtrl, hint: 'e.g. \$5 Burger Basket'),
               const SizedBox(height: 16),
-              
+
               // Description
-              _input("Description", _descCtrl, maxLines: 3, hint: 'e.g. Served with fries...'),
+              _input(
+                "Description",
+                _descCtrl,
+                maxLines: 3,
+                hint: 'e.g. Served with fries...',
+              ),
               const SizedBox(height: 24),
-              
+
               // Schedule Section (Collapsible)
               Card(
                 color: const Color(0xFF1E1E1E),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: ExpansionTile(
                   title: const Row(
                     children: [
                       Icon(Icons.calendar_month, color: Colors.blueAccent),
                       SizedBox(width: 12),
-                      Text("Schedule & Recurrence", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      Text(
+                        "Schedule & Recurrence",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                   childrenPadding: const EdgeInsets.all(16),
@@ -933,38 +1327,73 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                     // Start Date & Time
                     Row(
                       children: [
-                        Expanded(child: _dateTimeField("Start Date", _startTime, isDate: true)),
+                        Expanded(
+                          child: _dateTimeField(
+                            "Start Date",
+                            _startTime,
+                            isDate: true,
+                          ),
+                        ),
                         const SizedBox(width: 12),
-                        Expanded(child: _dateTimeField("Start Time", _startTime, isDate: false)),
+                        Expanded(
+                          child: _dateTimeField(
+                            "Start Time",
+                            _startTime,
+                            isDate: false,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
 
                     // End Date & Time (Optional)
                     CheckboxListTile(
-                       contentPadding: EdgeInsets.zero,
-                       title: const Text("Add Event End Time?", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                       subtitle: const Text("Use this if the event crosses midnight or spans multiple days. To stop a weekly special on a certain date, use Custom Recurrence instead.", style: TextStyle(color: Colors.white54, fontSize: 12)),
-                       value: _hasEndTime,
-                       checkColor: Colors.black,
-                       activeColor: Colors.blueAccent,
-                       onChanged: (val) {
-                         setState(() {
-                           _hasEndTime = val ?? false;
-                           if (_hasEndTime && _endTime == null) {
-                             _endTime = _startTime.add(const Duration(hours: 2));
-                           }
-                         });
-                       },
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text(
+                        "Add Event End Time?",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        "Use this if the event crosses midnight or spans multiple days. To stop a weekly special on a certain date, use Custom Recurrence instead.",
+                        style: TextStyle(color: Colors.white54, fontSize: 12),
+                      ),
+                      value: _hasEndTime,
+                      checkColor: Colors.black,
+                      activeColor: Colors.blueAccent,
+                      onChanged: (val) {
+                        setState(() {
+                          _hasEndTime = val ?? false;
+                          if (_hasEndTime && _endTime == null) {
+                            _endTime = _startTime.add(const Duration(hours: 2));
+                          }
+                        });
+                      },
                     ),
 
                     if (_hasEndTime) ...[
-                       const SizedBox(height: 8),
-                       Row(
+                      const SizedBox(height: 8),
+                      Row(
                         children: [
-                          Expanded(child: _dateTimeField("End Date", _endTime!, isDate: true, isEnd: true)),
+                          Expanded(
+                            child: _dateTimeField(
+                              "End Date",
+                              _endTime!,
+                              isDate: true,
+                              isEnd: true,
+                            ),
+                          ),
                           const SizedBox(width: 12),
-                          Expanded(child: _dateTimeField("End Time", _endTime!, isDate: false, isEnd: true)),
+                          Expanded(
+                            child: _dateTimeField(
+                              "End Time",
+                              _endTime!,
+                              isDate: false,
+                              isEnd: true,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -979,47 +1408,76 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                       borderRadius: BorderRadius.circular(8),
                       child: InputDecorator(
                         decoration: _inputDec('Repeats', null).copyWith(
-                          prefixIcon: const Icon(Icons.cached, color: Colors.greenAccent),
-                          suffixIcon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
+                          prefixIcon: const Icon(
+                            Icons.cached,
+                            color: Colors.greenAccent,
+                          ),
+                          suffixIcon: const Icon(
+                            Icons.arrow_drop_down,
+                            color: Colors.white54,
+                          ),
                         ),
-                        child: Text(_recurrenceText, style: const TextStyle(color: Colors.white)),
+                        child: Text(
+                          _recurrenceText,
+                          style: const TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
                     if (_recurrenceRule.frequency != 'none') ...[
-                       const SizedBox(height: 8),
-                       Text(
-                         _getRecurrenceSummary(), 
-                         style: const TextStyle(color: Colors.white54, fontSize: 12, fontStyle: FontStyle.italic)
-                       ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _getRecurrenceSummary(),
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
                     ],
                   ],
                 ),
               ),
 
               const SizedBox(height: 24),
-              
+
               // Push Notification Checkbox
               Container(
-                 decoration: BoxDecoration(
-                   color: _sendNotification ? Colors.amber.withValues(alpha: 0.1) : Colors.transparent,
-                   borderRadius: BorderRadius.circular(8),
-                   border: _sendNotification ? Border.all(color: Colors.amber.withValues(alpha: 0.5)) : null,
-                 ),
-                 child: CheckboxListTile(
-                    title: const Text("Send Push Notification?", style: TextStyle(color: Colors.white)),
-                    subtitle: _sendNotification 
-                       ? const Text("Warning: Only use for major events.", style: TextStyle(color: Colors.amber, fontSize: 12))
-                       : const Text("Notify nearby users about this special.", style: TextStyle(color: Colors.white54, fontSize: 12)),
-                    value: _sendNotification,
-                    checkColor: Colors.black,
-                    activeColor: Colors.amber, 
-                    onChanged: _handleNotificationToggle,
-                    secondary: Icon(Icons.notifications_active, color: _sendNotification ? Colors.amber : Colors.white54),
-                 ),
+                decoration: BoxDecoration(
+                  color: _sendNotification
+                      ? Colors.amber.withValues(alpha: 0.1)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                  border: _sendNotification
+                      ? Border.all(color: Colors.amber.withValues(alpha: 0.5))
+                      : null,
+                ),
+                child: CheckboxListTile(
+                  title: const Text(
+                    "Send Push Notification?",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  subtitle: _sendNotification
+                      ? const Text(
+                          "Warning: Only use for major events.",
+                          style: TextStyle(color: Colors.amber, fontSize: 12),
+                        )
+                      : const Text(
+                          "Notify nearby users about this special.",
+                          style: TextStyle(color: Colors.white54, fontSize: 12),
+                        ),
+                  value: _sendNotification,
+                  checkColor: Colors.black,
+                  activeColor: Colors.amber,
+                  onChanged: _handleNotificationToggle,
+                  secondary: Icon(
+                    Icons.notifications_active,
+                    color: _sendNotification ? Colors.amber : Colors.white54,
+                  ),
+                ),
               ),
 
               const SizedBox(height: 24),
-              
+
               // Template Checkbox REMOVED (Handled by Publish Dialog)
               /*
               Container(
@@ -1053,12 +1511,20 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                   ...DefaultTags.categories.map((tag) {
                     final isSelected = _selectedTags.contains(tag);
                     return FilterChip(
-                      label: Text(tag, style: TextStyle(color: isSelected ? Colors.white : Colors.white70)),
+                      label: Text(
+                        tag,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.white70,
+                        ),
+                      ),
                       selected: isSelected,
                       selectedColor: DefaultTags.getColorForTag(tag),
                       backgroundColor: Colors.grey[900],
                       checkmarkColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide.none,
+                      ),
                       onSelected: (selected) {
                         setState(() {
                           if (selected) {
@@ -1071,23 +1537,38 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                     );
                   }),
                   // Custom Tags currently selected
-                  ..._selectedTags.where((t) => !DefaultTags.categories.contains(t)).map((tag) {
-                    return FilterChip(
-                      label: Text(tag, style: const TextStyle(color: Colors.white)),
-                      selected: true,
-                      selectedColor: DefaultTags.getColorForTag(tag),
-                      checkmarkColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
-                      onSelected: (selected) {
-                        if (!selected) _removeTag(tag);
-                      },
-                    );
-                  }),
+                  ..._selectedTags
+                      .where((t) => !DefaultTags.categories.contains(t))
+                      .map((tag) {
+                        return FilterChip(
+                          label: Text(
+                            tag,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          selected: true,
+                          selectedColor: DefaultTags.getColorForTag(tag),
+                          checkmarkColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide.none,
+                          ),
+                          onSelected: (selected) {
+                            if (!selected) _removeTag(tag);
+                          },
+                        );
+                      }),
                   // Add Custom ActionChip
                   ActionChip(
-                    label: const Icon(Icons.add, color: Colors.blueAccent, size: 20),
+                    label: const Icon(
+                      Icons.add,
+                      color: Colors.blueAccent,
+                      size: 20,
+                    ),
                     backgroundColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.blueAccent)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: const BorderSide(color: Colors.blueAccent),
+                    ),
                     onPressed: _showAddCustomTagDialog,
                   ),
                 ],
@@ -1107,11 +1588,19 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
       hintStyle: const TextStyle(color: Colors.white24),
       filled: true,
       fillColor: const Color(0xFF1E1E1E),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide.none,
+      ),
     );
   }
 
-  Widget _input(String label, TextEditingController ctrl, {int maxLines = 1, String? hint}) {
+  Widget _input(
+    String label,
+    TextEditingController ctrl, {
+    int maxLines = 1,
+    String? hint,
+  }) {
     return TextFormField(
       controller: ctrl,
       maxLines: maxLines,
@@ -1123,7 +1612,10 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
         hintStyle: const TextStyle(color: Colors.white24),
         filled: true,
         fillColor: const Color(0xFF1E1E1E),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
       ),
       validator: (v) => label == "Title" && v!.isEmpty ? "Required" : null,
       onFieldSubmitted: (v) {
@@ -1133,6 +1625,13 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
   }
 
   Widget _label(String text) {
-    return Text(text, style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold));
+    return Text(
+      text,
+      style: const TextStyle(
+        color: Colors.white70,
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+      ),
+    );
   }
 }
