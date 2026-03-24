@@ -1082,4 +1082,113 @@ class HallRepository {
           return urls.toList();
         });
   }
+
+  // --- PAGINATION FUTURES ---
+  Future<List<SpecialModel>> fetchSpecialsPage({
+    DateTime? startAfterTimestamp,
+    int limit = 20,
+    Position? userLoc,
+  }) async {
+    Query query = _firestore
+        .collection('specials')
+        .where('isTemplate', isEqualTo: false)
+        .orderBy('postedAt', descending: true)
+        .limit(limit);
+
+    if (startAfterTimestamp != null) {
+      query = query.startAfter([Timestamp.fromDate(startAfterTimestamp)]);
+    }
+
+    final snap = await query.get();
+    var specials = snap.docs
+        .map((d) => SpecialModel.fromJson(d.data() as Map<String, dynamic>))
+        .toList();
+
+    // Project recurring events locally
+    specials = await compute(projectSpecialsComputed, specials);
+
+    if (userLoc != null) {
+      specials = specials.where((s) {
+        if (s.latitude == null || s.longitude == null) return true;
+        return Geolocator.distanceBetween(
+              userLoc.latitude,
+              userLoc.longitude,
+              s.latitude!,
+              s.longitude!,
+            ) <=
+            120700;
+      }).toList();
+    }
+    return specials;
+  }
+
+  Future<List<RaffleModel>> fetchRafflesPage({
+    DateTime? startAfterTimestamp,
+    int limit = 20,
+    Position? userLoc,
+  }) async {
+    Query query = _firestore
+        .collection('raffles')
+        .where('isActive', isEqualTo: true)
+        .orderBy('createdAt', descending: true)
+        .limit(limit);
+
+    if (startAfterTimestamp != null) {
+      query = query.startAfter([Timestamp.fromDate(startAfterTimestamp)]);
+    }
+
+    final snap = await query.get();
+    var raffles = snap.docs
+        .map((d) => RaffleModel.fromJson(d.data() as Map<String, dynamic>))
+        .toList();
+
+    if (userLoc != null) {
+      raffles = raffles.where((r) {
+        if (r.latitude == null || r.longitude == null) return true;
+        return Geolocator.distanceBetween(
+              userLoc.latitude,
+              userLoc.longitude,
+              r.latitude!,
+              r.longitude!,
+            ) <=
+            120700;
+      }).toList();
+    }
+    return raffles;
+  }
+
+  Future<List<TournamentModel>> fetchTournamentsPage({
+    DateTime? startAfterTimestamp,
+    int limit = 20,
+    Position? userLoc,
+  }) async {
+    Query query = _firestore
+        .collection('tournaments')
+        .where('status', isEqualTo: 'published')
+        .orderBy('createdAt', descending: true)
+        .limit(limit);
+
+    if (startAfterTimestamp != null) {
+      query = query.startAfter([Timestamp.fromDate(startAfterTimestamp)]);
+    }
+
+    final snap = await query.get();
+    var tourneys = snap.docs
+        .map((d) => TournamentModel.fromJson(d.data() as Map<String, dynamic>))
+        .toList();
+
+    if (userLoc != null) {
+      tourneys = tourneys.where((t) {
+        if (t.latitude == null || t.longitude == null) return true;
+        return Geolocator.distanceBetween(
+              userLoc.latitude,
+              userLoc.longitude,
+              t.latitude!,
+              t.longitude!,
+            ) <=
+            120700;
+      }).toList();
+    }
+    return tourneys;
+  }
 }

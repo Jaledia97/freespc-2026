@@ -23,6 +23,7 @@ import '../../../models/bingo_hall_model.dart'; // Add this for BingoHallModel
 import '../../profile/presentation/public_profile_screen.dart'; // For user routing
 import 'hall_profile_screen.dart'; // For hall routing
 import 'package:vibration/vibration.dart';
+import '../controllers/feed_pagination_controller.dart';
 
 final homeSearchUsersProvider =
     FutureProvider.family<List<PublicProfile>, String>((ref, query) async {
@@ -73,6 +74,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -82,20 +84,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _searchQuery = _searchController.text.trim().toLowerCase();
       });
     });
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 500) {
+        ref.read(feedPaginationControllerProvider.notifier).loadMore();
+      }
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   Future<void> _handleRefresh() async {
     Vibration.vibrate(duration: 40);
-    final userLocation = ref.read(userLocationStreamProvider).valueOrNull;
-    // Just re-fetching data logic (simulated by a short delay in real scenarios, or riverpod invalidation)
-    await Future.delayed(const Duration(milliseconds: 800));
-    ref.invalidate(hallRepositoryProvider);
+    await ref.read(feedPaginationControllerProvider.notifier).loadInitial();
   }
 
   void _onFilterTap(String filter) {
@@ -106,18 +113,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final userLocation = ref.watch(userLocationStreamProvider).valueOrNull;
-    final specialsStream = ref
-        .watch(hallRepositoryProvider)
-        .getSpecialsFeed(userLocation);
-    final rafflesStream = ref
-        .watch(hallRepositoryProvider)
-        .getActiveRafflesFeed(userLocation);
-    final tournamentsStream = ref
-        .watch(hallRepositoryProvider)
-        .getActiveTournamentsFeed(userLocation);
-    final currentUser = ref
-        .watch(authStateChangesProvider)
-        .value; // Placeholder for user
+    final currentUser = ref.watch(authStateChangesProvider).value;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -126,6 +122,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         color: Colors.amber,
         backgroundColor: const Color(0xFF1E1E1E),
         child: CustomScrollView(
+          controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics(),
           ),
@@ -293,117 +290,108 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
 
-            // 3. Unified S-Tier Feed
-            // For now, we manually combine the streams. In a full architecture, this is done in the Repository layer.
-            StreamBuilder(
-              stream:
-                  specialsStream, // Combining everything properly is complex in raw StreamBuilders, simulating raw assembly here:
-              builder: (context, specialsSnap) {
-                return StreamBuilder(
-                  stream: rafflesStream,
-                  builder: (context, rafflesSnap) {
-                    return StreamBuilder(
-                      stream: tournamentsStream,
-                      builder: (context, tourneysSnap) {
-                        if (specialsSnap.connectionState ==
-                            ConnectionState.waiting) {
-                          return const SliverFillRemaining(
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
+            // 3. Unified S-Tier Feed (Paginated via Notifier)
+            Builder(
+              builder: (context) {
+                final feedState = ref.watch(feedPaginationControllerProvider);
 
-                        List<FeedItem> allItems = [];
+                if (feedState.isLoading && feedState.items.isEmpty) {
+                  return const SliverFillRemaining(
+                    child: Center(
+                      child: CircularProgressIndicator(color: Colors.amber),
+                    ),
+                  );
+                }
 
-                        // Parse into FeedItems
-                        if (specialsSnap.hasData) {
-                          for (var s
-                              in specialsSnap.data as List<SpecialModel>) {
-                            if (_selectedFilter == 'All' ||
-                                _selectedFilter == 'Specials') {
-                              allItems.add(FeedItem.special(s));
-                            } else if (_selectedFilter == 'RSVPs' &&
-                                currentUser != null &&
-                                s.interestedUserIds.contains(currentUser.uid)) {
-                              allItems.add(FeedItem.special(s));
-                            }
-                          }
-                        }
-                        if (rafflesSnap.hasData) {
-                          for (var r in rafflesSnap.data as List<RaffleModel>) {
-                            if (_selectedFilter == 'All' ||
-                                _selectedFilter == 'Raffles') {
-                              allItems.add(FeedItem.raffle(r));
-                            } else if (_selectedFilter == 'RSVPs' &&
-                                currentUser != null &&
-                                r.interestedUserIds.contains(currentUser.uid)) {
-                              allItems.add(FeedItem.raffle(r));
-                            }
-                          }
-                        }
-                        if (tourneysSnap.hasData) {
-                          for (var t
-                              in tourneysSnap.data as List<TournamentModel>) {
-                            if (_selectedFilter == 'All' ||
-                                _selectedFilter == 'Tournaments') {
-                              allItems.add(FeedItem.tournament(t));
-                            } else if (_selectedFilter == 'RSVPs' &&
-                                currentUser != null &&
-                                t.interestedUserIds.contains(currentUser.uid)) {
-                              allItems.add(FeedItem.tournament(t));
-                            }
-                          }
-                        }
-
-                        // Use FeedRepository to sort algorithmically
-                        allItems = ref
-                            .read(feedRepositoryProvider)
-                            .sortFeedByHype(allItems, null, []);
-
-                        if (_isSearching && _searchQuery.isNotEmpty) {
-                          return _buildSearchResultsOverlay(allItems);
-                        }
-
-                        if (allItems.isEmpty) {
-                          return const SliverFillRemaining(
-                            child: Center(
-                              child: Text(
-                                "No feed activity. Tell your squad to post!",
-                                style: TextStyle(color: Colors.white54),
-                              ),
-                            ),
-                          );
-                        }
-
-                        return SliverList(
-                          delegate: SliverChildBuilderDelegate((
-                            context,
-                            index,
-                          ) {
-                            final item = allItems[index];
-
-                            return item.map(
-                              tournament: (t) => TournamentFeedCard(
-                                tournament: t.data,
-                                fullWidth: true,
-                              ),
-                              raffle: (r) => RaffleFeedCard(
-                                raffle: r.data,
-                                fullWidth: true,
-                              ),
-                              special: (s) => SpecialCard(
-                                special: s.data,
-                                fullWidth: true,
-                                isFeatured: false,
-                              ),
-                              checkIn: (c) => const SizedBox.shrink(),
-                              winPost: (w) => const SizedBox.shrink(),
-                              textPost: (tp) => const SizedBox.shrink(),
-                            );
-                          }, childCount: allItems.length),
-                        );
-                      },
+                List<FeedItem> allItems = [];
+                for (var item in feedState.items) {
+                  if (_selectedFilter == 'All') {
+                    allItems.add(item);
+                  } else {
+                    bool include = item.map(
+                      tournament: (t) =>
+                          _selectedFilter == 'Tournaments' ||
+                          (_selectedFilter == 'RSVPs' &&
+                              currentUser != null &&
+                              t.data.interestedUserIds.contains(
+                                currentUser.uid,
+                              )),
+                      raffle: (r) =>
+                          _selectedFilter == 'Raffles' ||
+                          (_selectedFilter == 'RSVPs' &&
+                              currentUser != null &&
+                              r.data.interestedUserIds.contains(
+                                currentUser.uid,
+                              )),
+                      special: (s) =>
+                          _selectedFilter == 'Specials' ||
+                          (_selectedFilter == 'RSVPs' &&
+                              currentUser != null &&
+                              s.data.interestedUserIds.contains(
+                                currentUser.uid,
+                              )),
+                      checkIn: (c) => false,
+                      winPost: (w) => false,
+                      textPost: (tp) => false,
                     );
-                  },
+                    if (include) allItems.add(item);
+                  }
+                }
+
+                if (_isSearching && _searchQuery.isNotEmpty) {
+                  return _buildSearchResultsOverlay(allItems);
+                }
+
+                if (allItems.isEmpty) {
+                  return const SliverFillRemaining(
+                    child: Center(
+                      child: Text(
+                        "No feed activity. Tell your squad to post!",
+                        style: TextStyle(color: Colors.white54),
+                      ),
+                    ),
+                  );
+                }
+
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if (index == allItems.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.amber,
+                            ),
+                          ),
+                        );
+                      }
+
+                      final item = allItems[index];
+
+                      return item.map(
+                        tournament: (t) => TournamentFeedCard(
+                          tournament: t.data,
+                          fullWidth: true,
+                        ),
+                        raffle: (r) =>
+                            RaffleFeedCard(raffle: r.data, fullWidth: true),
+                        special: (s) => SpecialCard(
+                          special: s.data,
+                          fullWidth: true,
+                          isFeatured: false,
+                        ),
+                        checkIn: (c) => const SizedBox.shrink(),
+                        winPost: (w) => const SizedBox.shrink(),
+                        textPost: (tp) => const SizedBox.shrink(),
+                      );
+                    },
+                    childCount:
+                        allItems.length +
+                        (feedState.isLoading && feedState.items.isNotEmpty
+                            ? 1
+                            : 0),
+                  ),
                 );
               },
             ),
