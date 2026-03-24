@@ -67,7 +67,7 @@ void main() async {
       ?.createNotificationChannel(channel);
 
   await flutterLocalNotificationsPlugin.initialize(
-    initializationSettings: const InitializationSettings(
+    settings: const InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(),
     ),
