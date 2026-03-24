@@ -8,6 +8,7 @@ import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/auth_wrapper.dart';
 import 'features/settings/data/display_settings_repository.dart';
+import 'features/messaging/presentation/chat_screen.dart';
 
 import 'dart:async'; // Added
 import 'package:app_links/app_links.dart'; // Added
@@ -24,6 +25,20 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void handleNotificationDeepLink(Map<String, dynamic> data) {
+  if (data['type'] == 'new_message' && data['chatId'] != null) {
+    final chatName = data['chatName'] ?? 'Chat';
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (context) =>
+            ChatScreen(chatId: data['chatId'], chatName: chatName),
+      ),
+    );
+  }
+}
 
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'high_importance_channel', // id
@@ -49,6 +64,21 @@ void main() async {
         AndroidFlutterLocalNotificationsPlugin
       >()
       ?.createNotificationChannel(channel);
+
+  await flutterLocalNotificationsPlugin.initialize(
+    const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      iOS: DarwinInitializationSettings(),
+    ),
+    onDidReceiveNotificationResponse: (NotificationResponse response) {
+      if (response.payload != null) {
+        try {
+          final data = Map<String, dynamic>.from(jsonDecode(response.payload!));
+          handleNotificationDeepLink(data);
+        } catch (_) {}
+      }
+    },
+  );
 
   await FirebaseMessaging.instance.requestPermission(
     alert: true,
@@ -90,6 +120,7 @@ void main() async {
             presentSound: true,
           ),
         ),
+        payload: jsonEncode(message.data),
       );
     }
   });
@@ -99,6 +130,19 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  // Handle Terminated Deep Links
+  final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+  if (initialMessage != null) {
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      handleNotificationDeepLink(initialMessage.data);
+    });
+  }
+
+  // Handle Background Deep Links
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    handleNotificationDeepLink(message.data);
+  });
 
   final prefs = await SharedPreferences.getInstance();
 
@@ -221,6 +265,7 @@ class _MyAppState extends ConsumerState<MyApp> {
 
     return MaterialApp(
       title: 'FreeSPC',
+      navigatorKey: navigatorKey,
       themeMode: themeMode,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
