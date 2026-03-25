@@ -144,6 +144,12 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
             ? 0
             : (widget.raffle?.soldTickets ?? 0),
         isTemplate: _isTemplate,
+        templateId: widget.isCreatingFromTemplate
+            ? widget.raffle?.id
+            : widget.raffle?.templateId,
+        isCancelled: widget.isCreatingFromTemplate
+            ? false
+            : (widget.raffle?.isCancelled ?? false),
         recurrenceRule: _isTemplate ? _recurrenceRule : null,
       );
 
@@ -306,7 +312,7 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
         child: Form(
           key: _formKey,
           child: Column(
@@ -520,10 +526,142 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
                     child: CircularProgressIndicator(),
                   ),
                 ),
+
+              if (widget.raffle != null &&
+                  !widget.raffle!.isTemplate &&
+                  widget.raffle!.templateId != null) ...[
+                const SizedBox(height: 40),
+                if (widget.raffle!.isCancelled)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.greenAccent,
+                        side: const BorderSide(color: Colors.greenAccent),
+                      ),
+                      icon: const Icon(Icons.restore),
+                      label: const Text("Restore Occurrence"),
+                      onPressed: _restoreOccurrence,
+                    ),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.redAccent,
+                        side: const BorderSide(color: Colors.redAccent),
+                      ),
+                      icon: const Icon(Icons.cancel),
+                      label: const Text("Cancel this Occurrence"),
+                      onPressed: _cancelOccurrence,
+                    ),
+                  ),
+              ],
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _cancelOccurrence() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF222222),
+        title: const Text(
+          "Cancel Occurrence?",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          "This specific raffle will be removed from the feed. The master template will remain active.",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("GO BACK", style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              "CANCEL RAFFLE",
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final cancelled = widget.raffle!.copyWith(isCancelled: true);
+      await ref.read(hallRepositoryProvider).updateRaffle(cancelled);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  Future<void> _restoreOccurrence() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF222222),
+        title: const Text(
+          "Restore Occurrence?",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          "This specific raffle will be restored to the feed.",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("GO BACK", style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              "RESTORE RAFFLE",
+              style: TextStyle(
+                color: Colors.greenAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final restored = widget.raffle!.copyWith(isCancelled: false);
+      await ref.read(hallRepositoryProvider).updateRaffle(restored);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+        setState(() => _isSaving = false);
+      }
+    }
   }
 }

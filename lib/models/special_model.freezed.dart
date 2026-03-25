@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$SpecialModel {
 
  String get id; String get hallId; String get hallName; String get title; String get description; String get imageUrl; DateTime get postedAt; DateTime? get startTime; DateTime? get endTime; double? get latitude; double? get longitude; List<String> get tags; String get recurrence;// Deprecated, use recurrenceRule
- RecurrenceRule? get recurrenceRule; bool get isTemplate; DateTime? get archivedAt; List<String> get reactionUserIds; List<String> get interestedUserIds; int get commentCount; String? get latestComment;
+ RecurrenceRule? get recurrenceRule; bool get isTemplate; String? get templateId; bool get isCancelled; DateTime? get archivedAt; List<String> get reactionUserIds; List<String> get interestedUserIds; int get commentCount; String? get latestComment;
 /// Create a copy of SpecialModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $SpecialModelCopyWith<SpecialModel> get copyWith => _$SpecialModelCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SpecialModel&&(identical(other.id, id) || other.id == id)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.postedAt, postedAt) || other.postedAt == postedAt)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.recurrence, recurrence) || other.recurrence == recurrence)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt)&&const DeepCollectionEquality().equals(other.reactionUserIds, reactionUserIds)&&const DeepCollectionEquality().equals(other.interestedUserIds, interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SpecialModel&&(identical(other.id, id) || other.id == id)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.postedAt, postedAt) || other.postedAt == postedAt)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.recurrence, recurrence) || other.recurrence == recurrence)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.isCancelled, isCancelled) || other.isCancelled == isCancelled)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt)&&const DeepCollectionEquality().equals(other.reactionUserIds, reactionUserIds)&&const DeepCollectionEquality().equals(other.interestedUserIds, interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,hallId,hallName,title,description,imageUrl,postedAt,startTime,endTime,latitude,longitude,const DeepCollectionEquality().hash(tags),recurrence,recurrenceRule,isTemplate,archivedAt,const DeepCollectionEquality().hash(reactionUserIds),const DeepCollectionEquality().hash(interestedUserIds),commentCount,latestComment]);
+int get hashCode => Object.hashAll([runtimeType,id,hallId,hallName,title,description,imageUrl,postedAt,startTime,endTime,latitude,longitude,const DeepCollectionEquality().hash(tags),recurrence,recurrenceRule,isTemplate,templateId,isCancelled,archivedAt,const DeepCollectionEquality().hash(reactionUserIds),const DeepCollectionEquality().hash(interestedUserIds),commentCount,latestComment]);
 
 @override
 String toString() {
-  return 'SpecialModel(id: $id, hallId: $hallId, hallName: $hallName, title: $title, description: $description, imageUrl: $imageUrl, postedAt: $postedAt, startTime: $startTime, endTime: $endTime, latitude: $latitude, longitude: $longitude, tags: $tags, recurrence: $recurrence, recurrenceRule: $recurrenceRule, isTemplate: $isTemplate, archivedAt: $archivedAt, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, latestComment: $latestComment)';
+  return 'SpecialModel(id: $id, hallId: $hallId, hallName: $hallName, title: $title, description: $description, imageUrl: $imageUrl, postedAt: $postedAt, startTime: $startTime, endTime: $endTime, latitude: $latitude, longitude: $longitude, tags: $tags, recurrence: $recurrence, recurrenceRule: $recurrenceRule, isTemplate: $isTemplate, templateId: $templateId, isCancelled: $isCancelled, archivedAt: $archivedAt, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, latestComment: $latestComment)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $SpecialModelCopyWith<$Res>  {
   factory $SpecialModelCopyWith(SpecialModel value, $Res Function(SpecialModel) _then) = _$SpecialModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String hallId, String hallName, String title, String description, String imageUrl, DateTime postedAt, DateTime? startTime, DateTime? endTime, double? latitude, double? longitude, List<String> tags, String recurrence, RecurrenceRule? recurrenceRule, bool isTemplate, DateTime? archivedAt, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, String? latestComment
+ String id, String hallId, String hallName, String title, String description, String imageUrl, DateTime postedAt, DateTime? startTime, DateTime? endTime, double? latitude, double? longitude, List<String> tags, String recurrence, RecurrenceRule? recurrenceRule, bool isTemplate, String? templateId, bool isCancelled, DateTime? archivedAt, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, String? latestComment
 });
 
 
@@ -66,7 +66,7 @@ class _$SpecialModelCopyWithImpl<$Res>
 
 /// Create a copy of SpecialModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? hallId = null,Object? hallName = null,Object? title = null,Object? description = null,Object? imageUrl = null,Object? postedAt = null,Object? startTime = freezed,Object? endTime = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? tags = null,Object? recurrence = null,Object? recurrenceRule = freezed,Object? isTemplate = null,Object? archivedAt = freezed,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? latestComment = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? hallId = null,Object? hallName = null,Object? title = null,Object? description = null,Object? imageUrl = null,Object? postedAt = null,Object? startTime = freezed,Object? endTime = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? tags = null,Object? recurrence = null,Object? recurrenceRule = freezed,Object? isTemplate = null,Object? templateId = freezed,Object? isCancelled = null,Object? archivedAt = freezed,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? latestComment = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
@@ -83,6 +83,8 @@ as double?,tags: null == tags ? _self.tags : tags // ignore: cast_nullable_to_no
 as List<String>,recurrence: null == recurrence ? _self.recurrence : recurrence // ignore: cast_nullable_to_non_nullable
 as String,recurrenceRule: freezed == recurrenceRule ? _self.recurrenceRule : recurrenceRule // ignore: cast_nullable_to_non_nullable
 as RecurrenceRule?,isTemplate: null == isTemplate ? _self.isTemplate : isTemplate // ignore: cast_nullable_to_non_nullable
+as bool,templateId: freezed == templateId ? _self.templateId : templateId // ignore: cast_nullable_to_non_nullable
+as String?,isCancelled: null == isCancelled ? _self.isCancelled : isCancelled // ignore: cast_nullable_to_non_nullable
 as bool,archivedAt: freezed == archivedAt ? _self.archivedAt : archivedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,reactionUserIds: null == reactionUserIds ? _self.reactionUserIds : reactionUserIds // ignore: cast_nullable_to_non_nullable
 as List<String>,interestedUserIds: null == interestedUserIds ? _self.interestedUserIds : interestedUserIds // ignore: cast_nullable_to_non_nullable
@@ -185,10 +187,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String hallId,  String hallName,  String title,  String description,  String imageUrl,  DateTime postedAt,  DateTime? startTime,  DateTime? endTime,  double? latitude,  double? longitude,  List<String> tags,  String recurrence,  RecurrenceRule? recurrenceRule,  bool isTemplate,  DateTime? archivedAt,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  String? latestComment)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String hallId,  String hallName,  String title,  String description,  String imageUrl,  DateTime postedAt,  DateTime? startTime,  DateTime? endTime,  double? latitude,  double? longitude,  List<String> tags,  String recurrence,  RecurrenceRule? recurrenceRule,  bool isTemplate,  String? templateId,  bool isCancelled,  DateTime? archivedAt,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  String? latestComment)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SpecialModel() when $default != null:
-return $default(_that.id,_that.hallId,_that.hallName,_that.title,_that.description,_that.imageUrl,_that.postedAt,_that.startTime,_that.endTime,_that.latitude,_that.longitude,_that.tags,_that.recurrence,_that.recurrenceRule,_that.isTemplate,_that.archivedAt,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.latestComment);case _:
+return $default(_that.id,_that.hallId,_that.hallName,_that.title,_that.description,_that.imageUrl,_that.postedAt,_that.startTime,_that.endTime,_that.latitude,_that.longitude,_that.tags,_that.recurrence,_that.recurrenceRule,_that.isTemplate,_that.templateId,_that.isCancelled,_that.archivedAt,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.latestComment);case _:
   return orElse();
 
 }
@@ -206,10 +208,10 @@ return $default(_that.id,_that.hallId,_that.hallName,_that.title,_that.descripti
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String hallId,  String hallName,  String title,  String description,  String imageUrl,  DateTime postedAt,  DateTime? startTime,  DateTime? endTime,  double? latitude,  double? longitude,  List<String> tags,  String recurrence,  RecurrenceRule? recurrenceRule,  bool isTemplate,  DateTime? archivedAt,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  String? latestComment)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String hallId,  String hallName,  String title,  String description,  String imageUrl,  DateTime postedAt,  DateTime? startTime,  DateTime? endTime,  double? latitude,  double? longitude,  List<String> tags,  String recurrence,  RecurrenceRule? recurrenceRule,  bool isTemplate,  String? templateId,  bool isCancelled,  DateTime? archivedAt,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  String? latestComment)  $default,) {final _that = this;
 switch (_that) {
 case _SpecialModel():
-return $default(_that.id,_that.hallId,_that.hallName,_that.title,_that.description,_that.imageUrl,_that.postedAt,_that.startTime,_that.endTime,_that.latitude,_that.longitude,_that.tags,_that.recurrence,_that.recurrenceRule,_that.isTemplate,_that.archivedAt,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.latestComment);case _:
+return $default(_that.id,_that.hallId,_that.hallName,_that.title,_that.description,_that.imageUrl,_that.postedAt,_that.startTime,_that.endTime,_that.latitude,_that.longitude,_that.tags,_that.recurrence,_that.recurrenceRule,_that.isTemplate,_that.templateId,_that.isCancelled,_that.archivedAt,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.latestComment);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -226,10 +228,10 @@ return $default(_that.id,_that.hallId,_that.hallName,_that.title,_that.descripti
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String hallId,  String hallName,  String title,  String description,  String imageUrl,  DateTime postedAt,  DateTime? startTime,  DateTime? endTime,  double? latitude,  double? longitude,  List<String> tags,  String recurrence,  RecurrenceRule? recurrenceRule,  bool isTemplate,  DateTime? archivedAt,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  String? latestComment)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String hallId,  String hallName,  String title,  String description,  String imageUrl,  DateTime postedAt,  DateTime? startTime,  DateTime? endTime,  double? latitude,  double? longitude,  List<String> tags,  String recurrence,  RecurrenceRule? recurrenceRule,  bool isTemplate,  String? templateId,  bool isCancelled,  DateTime? archivedAt,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  String? latestComment)?  $default,) {final _that = this;
 switch (_that) {
 case _SpecialModel() when $default != null:
-return $default(_that.id,_that.hallId,_that.hallName,_that.title,_that.description,_that.imageUrl,_that.postedAt,_that.startTime,_that.endTime,_that.latitude,_that.longitude,_that.tags,_that.recurrence,_that.recurrenceRule,_that.isTemplate,_that.archivedAt,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.latestComment);case _:
+return $default(_that.id,_that.hallId,_that.hallName,_that.title,_that.description,_that.imageUrl,_that.postedAt,_that.startTime,_that.endTime,_that.latitude,_that.longitude,_that.tags,_that.recurrence,_that.recurrenceRule,_that.isTemplate,_that.templateId,_that.isCancelled,_that.archivedAt,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.latestComment);case _:
   return null;
 
 }
@@ -241,7 +243,7 @@ return $default(_that.id,_that.hallId,_that.hallName,_that.title,_that.descripti
 
 @JsonSerializable(explicitToJson: true)
 class _SpecialModel extends SpecialModel {
-  const _SpecialModel({required this.id, required this.hallId, required this.hallName, required this.title, required this.description, required this.imageUrl, required this.postedAt, this.startTime, this.endTime, this.latitude, this.longitude, final  List<String> tags = const [], this.recurrence = 'none', this.recurrenceRule, this.isTemplate = false, this.archivedAt, final  List<String> reactionUserIds = const [], final  List<String> interestedUserIds = const [], this.commentCount = 0, this.latestComment}): _tags = tags,_reactionUserIds = reactionUserIds,_interestedUserIds = interestedUserIds,super._();
+  const _SpecialModel({required this.id, required this.hallId, required this.hallName, required this.title, required this.description, required this.imageUrl, required this.postedAt, this.startTime, this.endTime, this.latitude, this.longitude, final  List<String> tags = const [], this.recurrence = 'none', this.recurrenceRule, this.isTemplate = false, this.templateId, this.isCancelled = false, this.archivedAt, final  List<String> reactionUserIds = const [], final  List<String> interestedUserIds = const [], this.commentCount = 0, this.latestComment}): _tags = tags,_reactionUserIds = reactionUserIds,_interestedUserIds = interestedUserIds,super._();
   factory _SpecialModel.fromJson(Map<String, dynamic> json) => _$SpecialModelFromJson(json);
 
 @override final  String id;
@@ -266,6 +268,8 @@ class _SpecialModel extends SpecialModel {
 // Deprecated, use recurrenceRule
 @override final  RecurrenceRule? recurrenceRule;
 @override@JsonKey() final  bool isTemplate;
+@override final  String? templateId;
+@override@JsonKey() final  bool isCancelled;
 @override final  DateTime? archivedAt;
  final  List<String> _reactionUserIds;
 @override@JsonKey() List<String> get reactionUserIds {
@@ -297,16 +301,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SpecialModel&&(identical(other.id, id) || other.id == id)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.postedAt, postedAt) || other.postedAt == postedAt)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.recurrence, recurrence) || other.recurrence == recurrence)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt)&&const DeepCollectionEquality().equals(other._reactionUserIds, _reactionUserIds)&&const DeepCollectionEquality().equals(other._interestedUserIds, _interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SpecialModel&&(identical(other.id, id) || other.id == id)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.postedAt, postedAt) || other.postedAt == postedAt)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.recurrence, recurrence) || other.recurrence == recurrence)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.isCancelled, isCancelled) || other.isCancelled == isCancelled)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt)&&const DeepCollectionEquality().equals(other._reactionUserIds, _reactionUserIds)&&const DeepCollectionEquality().equals(other._interestedUserIds, _interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,hallId,hallName,title,description,imageUrl,postedAt,startTime,endTime,latitude,longitude,const DeepCollectionEquality().hash(_tags),recurrence,recurrenceRule,isTemplate,archivedAt,const DeepCollectionEquality().hash(_reactionUserIds),const DeepCollectionEquality().hash(_interestedUserIds),commentCount,latestComment]);
+int get hashCode => Object.hashAll([runtimeType,id,hallId,hallName,title,description,imageUrl,postedAt,startTime,endTime,latitude,longitude,const DeepCollectionEquality().hash(_tags),recurrence,recurrenceRule,isTemplate,templateId,isCancelled,archivedAt,const DeepCollectionEquality().hash(_reactionUserIds),const DeepCollectionEquality().hash(_interestedUserIds),commentCount,latestComment]);
 
 @override
 String toString() {
-  return 'SpecialModel(id: $id, hallId: $hallId, hallName: $hallName, title: $title, description: $description, imageUrl: $imageUrl, postedAt: $postedAt, startTime: $startTime, endTime: $endTime, latitude: $latitude, longitude: $longitude, tags: $tags, recurrence: $recurrence, recurrenceRule: $recurrenceRule, isTemplate: $isTemplate, archivedAt: $archivedAt, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, latestComment: $latestComment)';
+  return 'SpecialModel(id: $id, hallId: $hallId, hallName: $hallName, title: $title, description: $description, imageUrl: $imageUrl, postedAt: $postedAt, startTime: $startTime, endTime: $endTime, latitude: $latitude, longitude: $longitude, tags: $tags, recurrence: $recurrence, recurrenceRule: $recurrenceRule, isTemplate: $isTemplate, templateId: $templateId, isCancelled: $isCancelled, archivedAt: $archivedAt, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, latestComment: $latestComment)';
 }
 
 
@@ -317,7 +321,7 @@ abstract mixin class _$SpecialModelCopyWith<$Res> implements $SpecialModelCopyWi
   factory _$SpecialModelCopyWith(_SpecialModel value, $Res Function(_SpecialModel) _then) = __$SpecialModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String hallId, String hallName, String title, String description, String imageUrl, DateTime postedAt, DateTime? startTime, DateTime? endTime, double? latitude, double? longitude, List<String> tags, String recurrence, RecurrenceRule? recurrenceRule, bool isTemplate, DateTime? archivedAt, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, String? latestComment
+ String id, String hallId, String hallName, String title, String description, String imageUrl, DateTime postedAt, DateTime? startTime, DateTime? endTime, double? latitude, double? longitude, List<String> tags, String recurrence, RecurrenceRule? recurrenceRule, bool isTemplate, String? templateId, bool isCancelled, DateTime? archivedAt, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, String? latestComment
 });
 
 
@@ -334,7 +338,7 @@ class __$SpecialModelCopyWithImpl<$Res>
 
 /// Create a copy of SpecialModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? hallId = null,Object? hallName = null,Object? title = null,Object? description = null,Object? imageUrl = null,Object? postedAt = null,Object? startTime = freezed,Object? endTime = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? tags = null,Object? recurrence = null,Object? recurrenceRule = freezed,Object? isTemplate = null,Object? archivedAt = freezed,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? latestComment = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? hallId = null,Object? hallName = null,Object? title = null,Object? description = null,Object? imageUrl = null,Object? postedAt = null,Object? startTime = freezed,Object? endTime = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? tags = null,Object? recurrence = null,Object? recurrenceRule = freezed,Object? isTemplate = null,Object? templateId = freezed,Object? isCancelled = null,Object? archivedAt = freezed,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? latestComment = freezed,}) {
   return _then(_SpecialModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
@@ -351,6 +355,8 @@ as double?,tags: null == tags ? _self._tags : tags // ignore: cast_nullable_to_n
 as List<String>,recurrence: null == recurrence ? _self.recurrence : recurrence // ignore: cast_nullable_to_non_nullable
 as String,recurrenceRule: freezed == recurrenceRule ? _self.recurrenceRule : recurrenceRule // ignore: cast_nullable_to_non_nullable
 as RecurrenceRule?,isTemplate: null == isTemplate ? _self.isTemplate : isTemplate // ignore: cast_nullable_to_non_nullable
+as bool,templateId: freezed == templateId ? _self.templateId : templateId // ignore: cast_nullable_to_non_nullable
+as String?,isCancelled: null == isCancelled ? _self.isCancelled : isCancelled // ignore: cast_nullable_to_non_nullable
 as bool,archivedAt: freezed == archivedAt ? _self.archivedAt : archivedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,reactionUserIds: null == reactionUserIds ? _self._reactionUserIds : reactionUserIds // ignore: cast_nullable_to_non_nullable
 as List<String>,interestedUserIds: null == interestedUserIds ? _self._interestedUserIds : interestedUserIds // ignore: cast_nullable_to_non_nullable

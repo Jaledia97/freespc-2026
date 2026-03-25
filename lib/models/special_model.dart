@@ -24,6 +24,8 @@ abstract class SpecialModel with _$SpecialModel {
     @Default('none') String recurrence, // Deprecated, use recurrenceRule
     RecurrenceRule? recurrenceRule,
     @Default(false) bool isTemplate,
+    String? templateId,
+    @Default(false) bool isCancelled,
     DateTime? archivedAt,
     @Default([]) List<String> reactionUserIds,
     @Default([]) List<String> interestedUserIds,

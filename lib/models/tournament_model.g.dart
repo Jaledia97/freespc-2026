@@ -25,6 +25,8 @@ _TournamentModel _$TournamentModelFromJson(Map<String, dynamic> json) =>
               json['recurrenceRule'] as Map<String, dynamic>,
             ),
       isTemplate: json['isTemplate'] as bool? ?? false,
+      templateId: json['templateId'] as String?,
+      isCancelled: json['isCancelled'] as bool? ?? false,
       archivedAt: json['archivedAt'] == null
           ? null
           : DateTime.parse(json['archivedAt'] as String),
@@ -61,6 +63,8 @@ Map<String, dynamic> _$TournamentModelToJson(_TournamentModel instance) =>
       'endTime': instance.endTime?.toIso8601String(),
       'recurrenceRule': instance.recurrenceRule?.toJson(),
       'isTemplate': instance.isTemplate,
+      'templateId': instance.templateId,
+      'isCancelled': instance.isCancelled,
       'archivedAt': instance.archivedAt?.toIso8601String(),
       'games': instance.games.map((e) => e.toJson()).toList(),
       'reactionUserIds': instance.reactionUserIds,

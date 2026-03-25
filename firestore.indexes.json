@@ -45,6 +45,34 @@
                     "order": "DESCENDING"
                 }
             ]
+        },
+        {
+            "collectionGroup": "specials",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "hallId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "postedAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "tournaments",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "hallId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "DESCENDING"
+                }
+            ]
         }
     ],
     "fieldOverrides": []

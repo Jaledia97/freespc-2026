@@ -90,6 +90,7 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
               .where(
                 (r) =>
                     !r.isTemplate &&
+                    !r.isCancelled &&
                     (r.endsAt.isAfter(now) || isSameDay(r.endsAt, now)),
               )
               .toList();
@@ -97,9 +98,10 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
           final expired = raffles
               .where(
                 (r) =>
-                    !r.isTemplate &&
-                    r.endsAt.isBefore(now) &&
-                    !isSameDay(r.endsAt, now),
+                    (!r.isTemplate &&
+                        r.endsAt.isBefore(now) &&
+                        !isSameDay(r.endsAt, now)) ||
+                    r.isCancelled,
               )
               .toList();
 
@@ -179,7 +181,7 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       itemCount: raffles.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
@@ -206,12 +208,39 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
                 ),
               ),
             ),
-            title: Text(
-              raffle.name,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    raffle.name,
+                    style: TextStyle(
+                      color: raffle.isCancelled ? Colors.grey : Colors.white,
+                      fontWeight: FontWeight.bold,
+                      decoration: raffle.isCancelled ? TextDecoration.lineThrough : null,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (raffle.isCancelled)
+                  Container(
+                    margin: const EdgeInsets.only(left: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: Colors.redAccent),
+                    ),
+                    child: const Text(
+                      "CANCELLED",
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

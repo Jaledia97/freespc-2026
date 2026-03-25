@@ -19,6 +19,8 @@ abstract class RaffleModel with _$RaffleModel {
     @Default(0) int soldTickets,
     required DateTime endsAt, // Draw Time
     @Default(false) bool isTemplate,
+    String? templateId,
+    @Default(false) bool isCancelled,
     DateTime? archivedAt,
     RecurrenceRule? recurrenceRule, // For templates to auto-schedule
     @Default([]) List<String> reactionUserIds,

@@ -2,6 +2,17 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+67] - 2026-03-25 - Raffle Recurrence & CMS UI Overhaul
+
+### Added
+- **Raffle Recurrence Engine**: Architected the `Template` engine natively into `RaffleModel` driving automated backend NodeJS triggers via `onRaffleWritten` logic.
+- **Occurrence Restoration**: Formalized soft-delete states (`isCancelled`) dynamically routing cancelled events securely to the expired tab with stark `[CANCELLED]` visual chips.
+- **Occurrence Lifecycles**: Built synchronized `Restore Occurrence` state buttons strictly bound to the CMS natively.
+
+### Fixed
+- **OS Layout Clipping**: Performed a massive UI sweep enforcing absolute `100px` bottom-padding limits onto every CMS ScrollView and Feed List Array globally, conclusively shielding Editor elements from native Apple and Android software navigation bars.
+- **Legacy Modals**: Stripped disjointed "Use As Copy" and standard publish sheets natively, unifying everything under secure Editor form routing logic.
+
 ## [0.0.1+66] - 2026-03-24 - Privacy Hub & Push Notification Deep Links
 
 ### Added

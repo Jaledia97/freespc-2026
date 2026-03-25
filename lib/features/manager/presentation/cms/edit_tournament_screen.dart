@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../../../../models/special_model.dart'; // For RecurrenceRule
+import '../../../../core/widgets/glass_container.dart';
 import '../../repositories/tournament_repository.dart';
 
 class EditTournamentScreen extends ConsumerStatefulWidget {
@@ -40,7 +41,8 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
   DateTime _startTime = DateTime.now().add(const Duration(hours: 1));
   DateTime? _endTime;
   bool _hasEndTime = false;
-  RecurrenceRule _recurrenceRule = const RecurrenceRule(frequency: 'none');
+  bool _isTemplate = false;
+  RecurrenceRule _recurrenceRule = const RecurrenceRule(frequency: 'weekly');
 
   // Games State
   List<TournamentGame> _games = [];
@@ -61,14 +63,14 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
       _startTime = widget.tournament!.startTime ?? DateTime.now();
       _endTime = widget.tournament!.endTime;
       _hasEndTime = _endTime != null;
+      _isTemplate = widget.tournament!.isTemplate;
       _recurrenceRule =
           widget.tournament!.recurrenceRule ??
-          const RecurrenceRule(frequency: 'none');
+          const RecurrenceRule(frequency: 'weekly');
       _games = List.from(widget.tournament!.games);
       _imageUrl = widget.tournament!.imageUrl;
     } else {
-      // Default games?
-      // _games = [const TournamentGame(id: '1', title: 'Regular Game', value: 100)];
+      _isTemplate = widget.createTemplateMode;
     }
   }
 
@@ -80,11 +82,39 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
     super.dispose();
   }
 
-  String get _recurrenceText {
+  String _getHumanReadableRecurrence() {
     if (_recurrenceRule.frequency == 'none') return "Does not repeat";
-    if (_recurrenceRule.frequency == 'daily') return "Daily";
-    if (_recurrenceRule.frequency == 'weekly') return "Weekly";
-    return "Custom...";
+    final sf = _recurrenceRule.frequency == 'daily'
+        ? 'day'
+        : _recurrenceRule.frequency.replaceAll('ly', '');
+    final freqStr = _recurrenceRule.interval > 1
+        ? "every ${_recurrenceRule.interval} ${sf}s"
+        : "every $sf";
+    String daysStr = "";
+    if (_recurrenceRule.frequency == 'weekly' &&
+        _recurrenceRule.daysOfWeek.isNotEmpty) {
+      final map = {
+        1: 'Mon',
+        2: 'Tue',
+        3: 'Wed',
+        4: 'Thu',
+        5: 'Fri',
+        6: 'Sat',
+        7: 'Sun',
+      };
+      daysStr =
+          " on ${_recurrenceRule.daysOfWeek.map((e) => map[e]).join(', ')}";
+    }
+    String endStr = " forever";
+    if (_recurrenceRule.endCondition == 'date' &&
+        _recurrenceRule.endDate != null) {
+      endStr =
+          " until ${_recurrenceRule.endDate!.month}/${_recurrenceRule.endDate!.day}/${_recurrenceRule.endDate!.year}";
+    } else if (_recurrenceRule.endCondition == 'count' &&
+        _recurrenceRule.occurrenceCount != null) {
+      endStr = " for ${_recurrenceRule.occurrenceCount} occurrences";
+    }
+    return "Auto-publishes $freqStr$daysStr$endStr.";
   }
 
   @override
@@ -129,7 +159,7 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
 
   Widget _buildDetailsTab() {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       children: [
         // Image Picker
         GestureDetector(
@@ -279,25 +309,330 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
 
               const Divider(color: Colors.white10),
 
-              // Recurrence
-              ListTile(
+              // Recurrence Toggle
+              SwitchListTile(
                 contentPadding: EdgeInsets.zero,
+                activeThumbColor: Colors.blueAccent,
                 title: const Text(
-                  "Recurrence",
+                  "Set as Recurring Template",
                   style: TextStyle(color: Colors.white),
                 ),
-                subtitle: Text(
-                  _recurrenceText,
-                  style: const TextStyle(color: Colors.white54),
+                subtitle: const Text(
+                  "Auto-generates events instead of publishing directly.",
+                  style: TextStyle(color: Colors.white54, fontSize: 12),
                 ),
-                trailing: Icon(
-                  Icons.repeat,
-                  color: _recurrenceRule.frequency != 'none'
-                      ? Colors.green
-                      : Colors.grey,
-                ),
-                onTap: _showRecurrencePicker, // Minimal implementation for now
+                value: _isTemplate,
+                onChanged: (val) {
+                  setState(() => _isTemplate = val);
+                },
               ),
+              if (_isTemplate) ...[
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: GlassContainer(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Expanded(
+                              child: Text(
+                                "Frequency",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            DropdownButton<String>(
+                              value:
+                                  [
+                                    'daily',
+                                    'weekly',
+                                    'monthly',
+                                    'yearly',
+                                  ].contains(_recurrenceRule.frequency)
+                                  ? _recurrenceRule.frequency
+                                  : 'weekly',
+                              dropdownColor: const Color(0xFF222222),
+                              style: const TextStyle(color: Colors.blueAccent),
+                              underline: const SizedBox(),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'daily',
+                                  child: Text("Daily"),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'weekly',
+                                  child: Text("Weekly"),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'monthly',
+                                  child: Text("Monthly"),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'yearly',
+                                  child: Text("Yearly"),
+                                ),
+                              ],
+                              onChanged: (v) {
+                                if (v != null)
+                                  setState(
+                                    () => _recurrenceRule = _recurrenceRule
+                                        .copyWith(frequency: v),
+                                  );
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Text(
+                              "Repeat every ",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            SizedBox(
+                              width: 50,
+                              child: TextFormField(
+                                initialValue: _recurrenceRule.interval
+                                    .toString(),
+                                keyboardType: TextInputType.number,
+                                style: const TextStyle(color: Colors.white),
+                                textAlign: TextAlign.center,
+                                decoration: const InputDecoration(
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.all(8),
+                                  border: OutlineInputBorder(),
+                                ),
+                                onChanged: (val) {
+                                  final i = int.tryParse(val);
+                                  if (i != null && i > 0) {
+                                    setState(
+                                      () => _recurrenceRule = _recurrenceRule
+                                          .copyWith(interval: i),
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                "${_recurrenceRule.frequency.replaceAll('ly', 'ie')}s",
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_recurrenceRule.frequency == 'weekly') ...[
+                          const SizedBox(height: 16),
+                          const Text(
+                            "Repeat on:",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: List.generate(7, (idx) {
+                              final orderToLabel = [
+                                'S',
+                                'M',
+                                'T',
+                                'W',
+                                'T',
+                                'F',
+                                'S',
+                              ];
+                              final orderToNum = [7, 1, 2, 3, 4, 5, 6];
+                              final dNum = orderToNum[idx];
+                              final isSelected = _recurrenceRule.daysOfWeek
+                                  .contains(dNum);
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    final list = List<int>.from(
+                                      _recurrenceRule.daysOfWeek,
+                                    );
+                                    if (isSelected)
+                                      list.remove(dNum);
+                                    else
+                                      list.add(dNum);
+                                    _recurrenceRule = _recurrenceRule.copyWith(
+                                      daysOfWeek: list,
+                                    );
+                                  });
+                                },
+                                child: CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: isSelected
+                                      ? Colors.blueAccent
+                                      : Colors.white10,
+                                  child: Text(
+                                    orderToLabel[idx],
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.grey,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            const Expanded(
+                              child: Text(
+                                "Ends",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            DropdownButton<String>(
+                              value: _recurrenceRule.endCondition,
+                              dropdownColor: const Color(0xFF222222),
+                              style: const TextStyle(color: Colors.blueAccent),
+                              underline: const SizedBox(),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'never',
+                                  child: Text("Never"),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'date',
+                                  child: Text("On Date"),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'count',
+                                  child: Text("After Occurrences"),
+                                ),
+                              ],
+                              onChanged: (v) {
+                                if (v != null)
+                                  setState(
+                                    () => _recurrenceRule = _recurrenceRule
+                                        .copyWith(endCondition: v),
+                                  );
+                              },
+                            ),
+                          ],
+                        ),
+                        if (_recurrenceRule.endCondition == 'date') ...[
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () async {
+                                final d = await showDatePicker(
+                                  context: context,
+                                  initialDate:
+                                      _recurrenceRule.endDate ?? DateTime.now(),
+                                  firstDate: DateTime.now(),
+                                  lastDate: DateTime(2030),
+                                );
+                                if (d != null)
+                                  setState(
+                                    () => _recurrenceRule = _recurrenceRule
+                                        .copyWith(endDate: d),
+                                  );
+                              },
+                              child: Text(
+                                _recurrenceRule.endDate != null
+                                    ? "${_recurrenceRule.endDate!.month}/${_recurrenceRule.endDate!.day}/${_recurrenceRule.endDate!.year}"
+                                    : "Select Date",
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (_recurrenceRule.endCondition == 'count') ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SizedBox(
+                                width: 60,
+                                child: TextFormField(
+                                  initialValue:
+                                      (_recurrenceRule.occurrenceCount ?? 1)
+                                          .toString(),
+                                  keyboardType: TextInputType.number,
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration: const InputDecoration(
+                                    isDense: true,
+                                    contentPadding: EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: 8,
+                                    ),
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onChanged: (val) {
+                                    final i = int.tryParse(val);
+                                    if (i != null && i > 0)
+                                      setState(
+                                        () => _recurrenceRule = _recurrenceRule
+                                            .copyWith(occurrenceCount: i),
+                                      );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "times",
+                                style: TextStyle(color: Colors.white54),
+                              ),
+                            ],
+                          ),
+                        ],
+                        const Divider(color: Colors.white24, height: 32),
+                        Text(
+                          "Summary: ${_getHumanReadableRecurrence()}",
+                          style: const TextStyle(
+                            color: Colors.amber,
+                            fontStyle: FontStyle.italic,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              if (widget.tournament != null &&
+                  !widget.tournament!.isTemplate &&
+                  widget.tournament!.templateId != null) ...[
+                const SizedBox(height: 40),
+                if (widget.tournament!.isCancelled)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.greenAccent,
+                        side: const BorderSide(color: Colors.greenAccent),
+                      ),
+                      icon: const Icon(Icons.restore),
+                      label: const Text("Restore Occurrence"),
+                      onPressed: _restoreOccurrence,
+                    ),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.redAccent,
+                        side: const BorderSide(color: Colors.redAccent),
+                      ),
+                      icon: const Icon(Icons.cancel),
+                      label: const Text("Cancel this Occurrence"),
+                      onPressed: _cancelOccurrence,
+                    ),
+                  ),
+              ],
             ],
           ),
         ),
@@ -307,7 +642,7 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
 
   Widget _buildSetupTab() {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -445,41 +780,6 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
     return "$hour:$min $ampm";
   }
 
-  void _showRecurrencePicker() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1E1E1E),
-      builder: (_) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            title: const Text(
-              "Does not repeat",
-              style: TextStyle(color: Colors.white),
-            ),
-            onTap: () => _setRecurrence('none'),
-          ),
-          ListTile(
-            title: const Text("Daily", style: TextStyle(color: Colors.white)),
-            onTap: () => _setRecurrence('daily'),
-          ),
-          ListTile(
-            title: const Text("Weekly", style: TextStyle(color: Colors.white)),
-            onTap: () => _setRecurrence('weekly'),
-          ),
-          // Custom not implemented fully yet
-        ],
-      ),
-    );
-  }
-
-  void _setRecurrence(String freq) {
-    setState(() {
-      _recurrenceRule = RecurrenceRule(frequency: freq);
-    });
-    Navigator.pop(context);
-  }
-
   void _showAddGameDialog() {
     final titleCtrl = TextEditingController();
     final valCtrl = TextEditingController(text: '10');
@@ -596,10 +896,10 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
         imageUrl: imageUrl, // Save URL
         startTime: _startTime,
         endTime: _endTime,
-        recurrenceRule: _recurrenceRule,
-        isTemplate:
-            widget.createTemplateMode ||
-            (widget.tournament?.isTemplate ?? false),
+        recurrenceRule: _isTemplate
+            ? _recurrenceRule
+            : const RecurrenceRule(frequency: 'none'),
+        isTemplate: _isTemplate,
         games: _games,
       );
 
@@ -613,6 +913,108 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
     } catch (e) {
       if (mounted) {
         print("ERROR SAVING TOURNAMENT: $e");
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  Future<void> _cancelOccurrence() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF222222),
+        title: const Text(
+          "Cancel Occurrence?",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          "This specific tournament will be removed from the feed. The master template will remain active.",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("GO BACK", style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              "CANCEL TOURNAMENT",
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final cancelled = widget.tournament!.copyWith(isCancelled: true);
+      await ref
+          .read(tournamentRepositoryProvider)
+          .saveTournament(widget.hallId, cancelled);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  Future<void> _restoreOccurrence() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF222222),
+        title: const Text(
+          "Restore Occurrence?",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          "This specific tournament will be restored to the feed.",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("GO BACK", style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              "RESTORE TOURNAMENT",
+              style: TextStyle(
+                color: Colors.greenAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final restored = widget.tournament!.copyWith(isCancelled: false);
+      await ref
+          .read(tournamentRepositoryProvider)
+          .saveTournament(widget.hallId, restored);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("Error: $e")));

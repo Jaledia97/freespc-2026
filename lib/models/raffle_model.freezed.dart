@@ -17,7 +17,7 @@ mixin _$RaffleModel {
 
  String get id; String get hallId; String get name;// Was title
  String get description; String get imageUrl; int get maxTickets; int get soldTickets; DateTime get endsAt;// Draw Time
- bool get isTemplate; DateTime? get archivedAt; RecurrenceRule? get recurrenceRule;// For templates to auto-schedule
+ bool get isTemplate; String? get templateId; bool get isCancelled; DateTime? get archivedAt; RecurrenceRule? get recurrenceRule;// For templates to auto-schedule
  List<String> get reactionUserIds; List<String> get interestedUserIds; int get commentCount; DateTime? get createdAt; String? get latestComment;
 /// Create a copy of RaffleModel
 /// with the given fields replaced by the non-null parameter values.
@@ -31,16 +31,16 @@ $RaffleModelCopyWith<RaffleModel> get copyWith => _$RaffleModelCopyWithImpl<Raff
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RaffleModel&&(identical(other.id, id) || other.id == id)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.maxTickets, maxTickets) || other.maxTickets == maxTickets)&&(identical(other.soldTickets, soldTickets) || other.soldTickets == soldTickets)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&const DeepCollectionEquality().equals(other.reactionUserIds, reactionUserIds)&&const DeepCollectionEquality().equals(other.interestedUserIds, interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RaffleModel&&(identical(other.id, id) || other.id == id)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.maxTickets, maxTickets) || other.maxTickets == maxTickets)&&(identical(other.soldTickets, soldTickets) || other.soldTickets == soldTickets)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.isCancelled, isCancelled) || other.isCancelled == isCancelled)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&const DeepCollectionEquality().equals(other.reactionUserIds, reactionUserIds)&&const DeepCollectionEquality().equals(other.interestedUserIds, interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,hallId,name,description,imageUrl,maxTickets,soldTickets,endsAt,isTemplate,archivedAt,recurrenceRule,const DeepCollectionEquality().hash(reactionUserIds),const DeepCollectionEquality().hash(interestedUserIds),commentCount,createdAt,latestComment);
+int get hashCode => Object.hash(runtimeType,id,hallId,name,description,imageUrl,maxTickets,soldTickets,endsAt,isTemplate,templateId,isCancelled,archivedAt,recurrenceRule,const DeepCollectionEquality().hash(reactionUserIds),const DeepCollectionEquality().hash(interestedUserIds),commentCount,createdAt,latestComment);
 
 @override
 String toString() {
-  return 'RaffleModel(id: $id, hallId: $hallId, name: $name, description: $description, imageUrl: $imageUrl, maxTickets: $maxTickets, soldTickets: $soldTickets, endsAt: $endsAt, isTemplate: $isTemplate, archivedAt: $archivedAt, recurrenceRule: $recurrenceRule, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, createdAt: $createdAt, latestComment: $latestComment)';
+  return 'RaffleModel(id: $id, hallId: $hallId, name: $name, description: $description, imageUrl: $imageUrl, maxTickets: $maxTickets, soldTickets: $soldTickets, endsAt: $endsAt, isTemplate: $isTemplate, templateId: $templateId, isCancelled: $isCancelled, archivedAt: $archivedAt, recurrenceRule: $recurrenceRule, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, createdAt: $createdAt, latestComment: $latestComment)';
 }
 
 
@@ -51,7 +51,7 @@ abstract mixin class $RaffleModelCopyWith<$Res>  {
   factory $RaffleModelCopyWith(RaffleModel value, $Res Function(RaffleModel) _then) = _$RaffleModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String hallId, String name, String description, String imageUrl, int maxTickets, int soldTickets, DateTime endsAt, bool isTemplate, DateTime? archivedAt, RecurrenceRule? recurrenceRule, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, DateTime? createdAt, String? latestComment
+ String id, String hallId, String name, String description, String imageUrl, int maxTickets, int soldTickets, DateTime endsAt, bool isTemplate, String? templateId, bool isCancelled, DateTime? archivedAt, RecurrenceRule? recurrenceRule, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, DateTime? createdAt, String? latestComment
 });
 
 
@@ -68,7 +68,7 @@ class _$RaffleModelCopyWithImpl<$Res>
 
 /// Create a copy of RaffleModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? hallId = null,Object? name = null,Object? description = null,Object? imageUrl = null,Object? maxTickets = null,Object? soldTickets = null,Object? endsAt = null,Object? isTemplate = null,Object? archivedAt = freezed,Object? recurrenceRule = freezed,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? createdAt = freezed,Object? latestComment = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? hallId = null,Object? name = null,Object? description = null,Object? imageUrl = null,Object? maxTickets = null,Object? soldTickets = null,Object? endsAt = null,Object? isTemplate = null,Object? templateId = freezed,Object? isCancelled = null,Object? archivedAt = freezed,Object? recurrenceRule = freezed,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? createdAt = freezed,Object? latestComment = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
@@ -79,6 +79,8 @@ as String,maxTickets: null == maxTickets ? _self.maxTickets : maxTickets // igno
 as int,soldTickets: null == soldTickets ? _self.soldTickets : soldTickets // ignore: cast_nullable_to_non_nullable
 as int,endsAt: null == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
 as DateTime,isTemplate: null == isTemplate ? _self.isTemplate : isTemplate // ignore: cast_nullable_to_non_nullable
+as bool,templateId: freezed == templateId ? _self.templateId : templateId // ignore: cast_nullable_to_non_nullable
+as String?,isCancelled: null == isCancelled ? _self.isCancelled : isCancelled // ignore: cast_nullable_to_non_nullable
 as bool,archivedAt: freezed == archivedAt ? _self.archivedAt : archivedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,recurrenceRule: freezed == recurrenceRule ? _self.recurrenceRule : recurrenceRule // ignore: cast_nullable_to_non_nullable
 as RecurrenceRule?,reactionUserIds: null == reactionUserIds ? _self.reactionUserIds : reactionUserIds // ignore: cast_nullable_to_non_nullable
@@ -183,10 +185,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String hallId,  String name,  String description,  String imageUrl,  int maxTickets,  int soldTickets,  DateTime endsAt,  bool isTemplate,  DateTime? archivedAt,  RecurrenceRule? recurrenceRule,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  DateTime? createdAt,  String? latestComment)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String hallId,  String name,  String description,  String imageUrl,  int maxTickets,  int soldTickets,  DateTime endsAt,  bool isTemplate,  String? templateId,  bool isCancelled,  DateTime? archivedAt,  RecurrenceRule? recurrenceRule,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  DateTime? createdAt,  String? latestComment)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RaffleModel() when $default != null:
-return $default(_that.id,_that.hallId,_that.name,_that.description,_that.imageUrl,_that.maxTickets,_that.soldTickets,_that.endsAt,_that.isTemplate,_that.archivedAt,_that.recurrenceRule,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.createdAt,_that.latestComment);case _:
+return $default(_that.id,_that.hallId,_that.name,_that.description,_that.imageUrl,_that.maxTickets,_that.soldTickets,_that.endsAt,_that.isTemplate,_that.templateId,_that.isCancelled,_that.archivedAt,_that.recurrenceRule,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.createdAt,_that.latestComment);case _:
   return orElse();
 
 }
@@ -204,10 +206,10 @@ return $default(_that.id,_that.hallId,_that.name,_that.description,_that.imageUr
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String hallId,  String name,  String description,  String imageUrl,  int maxTickets,  int soldTickets,  DateTime endsAt,  bool isTemplate,  DateTime? archivedAt,  RecurrenceRule? recurrenceRule,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  DateTime? createdAt,  String? latestComment)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String hallId,  String name,  String description,  String imageUrl,  int maxTickets,  int soldTickets,  DateTime endsAt,  bool isTemplate,  String? templateId,  bool isCancelled,  DateTime? archivedAt,  RecurrenceRule? recurrenceRule,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  DateTime? createdAt,  String? latestComment)  $default,) {final _that = this;
 switch (_that) {
 case _RaffleModel():
-return $default(_that.id,_that.hallId,_that.name,_that.description,_that.imageUrl,_that.maxTickets,_that.soldTickets,_that.endsAt,_that.isTemplate,_that.archivedAt,_that.recurrenceRule,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.createdAt,_that.latestComment);case _:
+return $default(_that.id,_that.hallId,_that.name,_that.description,_that.imageUrl,_that.maxTickets,_that.soldTickets,_that.endsAt,_that.isTemplate,_that.templateId,_that.isCancelled,_that.archivedAt,_that.recurrenceRule,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.createdAt,_that.latestComment);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -224,10 +226,10 @@ return $default(_that.id,_that.hallId,_that.name,_that.description,_that.imageUr
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String hallId,  String name,  String description,  String imageUrl,  int maxTickets,  int soldTickets,  DateTime endsAt,  bool isTemplate,  DateTime? archivedAt,  RecurrenceRule? recurrenceRule,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  DateTime? createdAt,  String? latestComment)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String hallId,  String name,  String description,  String imageUrl,  int maxTickets,  int soldTickets,  DateTime endsAt,  bool isTemplate,  String? templateId,  bool isCancelled,  DateTime? archivedAt,  RecurrenceRule? recurrenceRule,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  DateTime? createdAt,  String? latestComment)?  $default,) {final _that = this;
 switch (_that) {
 case _RaffleModel() when $default != null:
-return $default(_that.id,_that.hallId,_that.name,_that.description,_that.imageUrl,_that.maxTickets,_that.soldTickets,_that.endsAt,_that.isTemplate,_that.archivedAt,_that.recurrenceRule,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.createdAt,_that.latestComment);case _:
+return $default(_that.id,_that.hallId,_that.name,_that.description,_that.imageUrl,_that.maxTickets,_that.soldTickets,_that.endsAt,_that.isTemplate,_that.templateId,_that.isCancelled,_that.archivedAt,_that.recurrenceRule,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.createdAt,_that.latestComment);case _:
   return null;
 
 }
@@ -239,7 +241,7 @@ return $default(_that.id,_that.hallId,_that.name,_that.description,_that.imageUr
 
 @JsonSerializable(explicitToJson: true)
 class _RaffleModel extends RaffleModel {
-  const _RaffleModel({required this.id, required this.hallId, required this.name, required this.description, required this.imageUrl, this.maxTickets = 100, this.soldTickets = 0, required this.endsAt, this.isTemplate = false, this.archivedAt, this.recurrenceRule, final  List<String> reactionUserIds = const [], final  List<String> interestedUserIds = const [], this.commentCount = 0, this.createdAt, this.latestComment}): _reactionUserIds = reactionUserIds,_interestedUserIds = interestedUserIds,super._();
+  const _RaffleModel({required this.id, required this.hallId, required this.name, required this.description, required this.imageUrl, this.maxTickets = 100, this.soldTickets = 0, required this.endsAt, this.isTemplate = false, this.templateId, this.isCancelled = false, this.archivedAt, this.recurrenceRule, final  List<String> reactionUserIds = const [], final  List<String> interestedUserIds = const [], this.commentCount = 0, this.createdAt, this.latestComment}): _reactionUserIds = reactionUserIds,_interestedUserIds = interestedUserIds,super._();
   factory _RaffleModel.fromJson(Map<String, dynamic> json) => _$RaffleModelFromJson(json);
 
 @override final  String id;
@@ -253,6 +255,8 @@ class _RaffleModel extends RaffleModel {
 @override final  DateTime endsAt;
 // Draw Time
 @override@JsonKey() final  bool isTemplate;
+@override final  String? templateId;
+@override@JsonKey() final  bool isCancelled;
 @override final  DateTime? archivedAt;
 @override final  RecurrenceRule? recurrenceRule;
 // For templates to auto-schedule
@@ -288,16 +292,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RaffleModel&&(identical(other.id, id) || other.id == id)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.maxTickets, maxTickets) || other.maxTickets == maxTickets)&&(identical(other.soldTickets, soldTickets) || other.soldTickets == soldTickets)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&const DeepCollectionEquality().equals(other._reactionUserIds, _reactionUserIds)&&const DeepCollectionEquality().equals(other._interestedUserIds, _interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RaffleModel&&(identical(other.id, id) || other.id == id)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.maxTickets, maxTickets) || other.maxTickets == maxTickets)&&(identical(other.soldTickets, soldTickets) || other.soldTickets == soldTickets)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.isCancelled, isCancelled) || other.isCancelled == isCancelled)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&const DeepCollectionEquality().equals(other._reactionUserIds, _reactionUserIds)&&const DeepCollectionEquality().equals(other._interestedUserIds, _interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,hallId,name,description,imageUrl,maxTickets,soldTickets,endsAt,isTemplate,archivedAt,recurrenceRule,const DeepCollectionEquality().hash(_reactionUserIds),const DeepCollectionEquality().hash(_interestedUserIds),commentCount,createdAt,latestComment);
+int get hashCode => Object.hash(runtimeType,id,hallId,name,description,imageUrl,maxTickets,soldTickets,endsAt,isTemplate,templateId,isCancelled,archivedAt,recurrenceRule,const DeepCollectionEquality().hash(_reactionUserIds),const DeepCollectionEquality().hash(_interestedUserIds),commentCount,createdAt,latestComment);
 
 @override
 String toString() {
-  return 'RaffleModel(id: $id, hallId: $hallId, name: $name, description: $description, imageUrl: $imageUrl, maxTickets: $maxTickets, soldTickets: $soldTickets, endsAt: $endsAt, isTemplate: $isTemplate, archivedAt: $archivedAt, recurrenceRule: $recurrenceRule, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, createdAt: $createdAt, latestComment: $latestComment)';
+  return 'RaffleModel(id: $id, hallId: $hallId, name: $name, description: $description, imageUrl: $imageUrl, maxTickets: $maxTickets, soldTickets: $soldTickets, endsAt: $endsAt, isTemplate: $isTemplate, templateId: $templateId, isCancelled: $isCancelled, archivedAt: $archivedAt, recurrenceRule: $recurrenceRule, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, createdAt: $createdAt, latestComment: $latestComment)';
 }
 
 
@@ -308,7 +312,7 @@ abstract mixin class _$RaffleModelCopyWith<$Res> implements $RaffleModelCopyWith
   factory _$RaffleModelCopyWith(_RaffleModel value, $Res Function(_RaffleModel) _then) = __$RaffleModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String hallId, String name, String description, String imageUrl, int maxTickets, int soldTickets, DateTime endsAt, bool isTemplate, DateTime? archivedAt, RecurrenceRule? recurrenceRule, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, DateTime? createdAt, String? latestComment
+ String id, String hallId, String name, String description, String imageUrl, int maxTickets, int soldTickets, DateTime endsAt, bool isTemplate, String? templateId, bool isCancelled, DateTime? archivedAt, RecurrenceRule? recurrenceRule, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, DateTime? createdAt, String? latestComment
 });
 
 
@@ -325,7 +329,7 @@ class __$RaffleModelCopyWithImpl<$Res>
 
 /// Create a copy of RaffleModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? hallId = null,Object? name = null,Object? description = null,Object? imageUrl = null,Object? maxTickets = null,Object? soldTickets = null,Object? endsAt = null,Object? isTemplate = null,Object? archivedAt = freezed,Object? recurrenceRule = freezed,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? createdAt = freezed,Object? latestComment = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? hallId = null,Object? name = null,Object? description = null,Object? imageUrl = null,Object? maxTickets = null,Object? soldTickets = null,Object? endsAt = null,Object? isTemplate = null,Object? templateId = freezed,Object? isCancelled = null,Object? archivedAt = freezed,Object? recurrenceRule = freezed,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? createdAt = freezed,Object? latestComment = freezed,}) {
   return _then(_RaffleModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
@@ -336,6 +340,8 @@ as String,maxTickets: null == maxTickets ? _self.maxTickets : maxTickets // igno
 as int,soldTickets: null == soldTickets ? _self.soldTickets : soldTickets // ignore: cast_nullable_to_non_nullable
 as int,endsAt: null == endsAt ? _self.endsAt : endsAt // ignore: cast_nullable_to_non_nullable
 as DateTime,isTemplate: null == isTemplate ? _self.isTemplate : isTemplate // ignore: cast_nullable_to_non_nullable
+as bool,templateId: freezed == templateId ? _self.templateId : templateId // ignore: cast_nullable_to_non_nullable
+as String?,isCancelled: null == isCancelled ? _self.isCancelled : isCancelled // ignore: cast_nullable_to_non_nullable
 as bool,archivedAt: freezed == archivedAt ? _self.archivedAt : archivedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,recurrenceRule: freezed == recurrenceRule ? _self.recurrenceRule : recurrenceRule // ignore: cast_nullable_to_non_nullable
 as RecurrenceRule?,reactionUserIds: null == reactionUserIds ? _self._reactionUserIds : reactionUserIds // ignore: cast_nullable_to_non_nullable

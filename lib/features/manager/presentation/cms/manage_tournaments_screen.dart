@@ -67,7 +67,7 @@ class _ManageTournamentsScreenState
               tabs: const [
                 Tab(text: "Active"),
                 Tab(text: "Expired"),
-                Tab(text: "Templates"),
+                Tab(text: "Recurring"),
               ],
             ),
           ),
@@ -87,7 +87,7 @@ class _ManageTournamentsScreenState
             backgroundColor: Colors.blueAccent,
             label: Text(
               _tabController.index == 2
-                  ? "Create Template"
+                  ? "Create Recurring"
                   : "Create Tournament",
               style: const TextStyle(color: Colors.white),
             ),
@@ -121,6 +121,10 @@ class _ManageTournamentsScreenState
                   if (end != null && end.isBefore(now)) {
                     isExpired = true;
                   }
+                }
+
+                if (t.isCancelled) {
+                  isExpired = true;
                 }
 
                 if (isExpired) {
@@ -157,7 +161,7 @@ class _ManageTournamentsScreenState
                   _buildList(
                     templates,
                     hallId,
-                    "No templates saved.",
+                    "No recurring events saved.",
                     isTemplate: true,
                   ),
                 ],
@@ -198,27 +202,22 @@ class _ManageTournamentsScreenState
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final tournament = items[index];
 
         return GestureDetector(
           onTap: () {
-            if (isTemplate) {
-              // Copy Logic could be here, or just Edit
-              _createCopy(hallId, tournament);
-            } else {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => EditTournamentScreen(
-                    hallId: hallId,
-                    tournament: tournament,
-                  ),
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => EditTournamentScreen(
+                  hallId: hallId,
+                  tournament: tournament,
                 ),
-              );
-            }
+              ),
+            );
           },
           child: Card(
             margin: const EdgeInsets.only(bottom: 12),
@@ -239,9 +238,45 @@ class _ManageTournamentsScreenState
                   color: Colors.purpleAccent,
                 ),
               ),
-              title: Text(
-                tournament.title,
-                style: const TextStyle(color: Colors.white),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      tournament.title,
+                      style: TextStyle(
+                        color: tournament.isCancelled
+                            ? Colors.grey
+                            : Colors.white,
+                        decoration: tournament.isCancelled
+                            ? TextDecoration.lineThrough
+                            : null,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (tournament.isCancelled)
+                    Container(
+                      margin: const EdgeInsets.only(left: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: Colors.redAccent),
+                      ),
+                      child: const Text(
+                        "CANCELLED",
+                        style: TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
               ),
               subtitle: Text(
                 isTemplate
@@ -254,12 +289,6 @@ class _ManageTournamentsScreenState
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (isArchived)
-                    IconButton(
-                      icon: const Icon(Icons.copy, color: Colors.greenAccent),
-                      tooltip: "Use as Copy",
-                      onPressed: () => _createCopy(hallId, tournament),
-                    ),
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.blueAccent),
                     onPressed: () {

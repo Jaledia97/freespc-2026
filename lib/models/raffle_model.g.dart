@@ -16,6 +16,8 @@ _RaffleModel _$RaffleModelFromJson(Map<String, dynamic> json) => _RaffleModel(
   soldTickets: (json['soldTickets'] as num?)?.toInt() ?? 0,
   endsAt: DateTime.parse(json['endsAt'] as String),
   isTemplate: json['isTemplate'] as bool? ?? false,
+  templateId: json['templateId'] as String?,
+  isCancelled: json['isCancelled'] as bool? ?? false,
   archivedAt: json['archivedAt'] == null
       ? null
       : DateTime.parse(json['archivedAt'] as String),
@@ -50,6 +52,8 @@ Map<String, dynamic> _$RaffleModelToJson(_RaffleModel instance) =>
       'soldTickets': instance.soldTickets,
       'endsAt': instance.endsAt.toIso8601String(),
       'isTemplate': instance.isTemplate,
+      'templateId': instance.templateId,
+      'isCancelled': instance.isCancelled,
       'archivedAt': instance.archivedAt?.toIso8601String(),
       'recurrenceRule': instance.recurrenceRule?.toJson(),
       'reactionUserIds': instance.reactionUserIds,

@@ -33,6 +33,8 @@ _SpecialModel _$SpecialModelFromJson(Map<String, dynamic> json) =>
               json['recurrenceRule'] as Map<String, dynamic>,
             ),
       isTemplate: json['isTemplate'] as bool? ?? false,
+      templateId: json['templateId'] as String?,
+      isCancelled: json['isCancelled'] as bool? ?? false,
       archivedAt: json['archivedAt'] == null
           ? null
           : DateTime.parse(json['archivedAt'] as String),
@@ -67,6 +69,8 @@ Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
       'recurrence': instance.recurrence,
       'recurrenceRule': instance.recurrenceRule?.toJson(),
       'isTemplate': instance.isTemplate,
+      'templateId': instance.templateId,
+      'isCancelled': instance.isCancelled,
       'archivedAt': instance.archivedAt?.toIso8601String(),
       'reactionUserIds': instance.reactionUserIds,
       'interestedUserIds': instance.interestedUserIds,

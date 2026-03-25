@@ -7,6 +7,7 @@ import '../../../../models/special_model.dart';
 import '../../../../services/storage_service.dart';
 import 'package:freespc/core/constants/default_tags.dart';
 import 'package:freespc/core/utils/tag_utils.dart';
+import '../../../../core/widgets/glass_container.dart';
 
 class EditSpecialScreen extends ConsumerStatefulWidget {
   final String hallId;
@@ -39,8 +40,8 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
 
   List<String> _selectedTags = ['Specials'];
 
-  // String _recurrence = 'none'; // Deprecated
-  RecurrenceRule _recurrenceRule = const RecurrenceRule(frequency: 'none');
+  bool _isTemplate = false;
+  RecurrenceRule _recurrenceRule = const RecurrenceRule(frequency: 'weekly');
 
   // Custom Recurrence State (for UI display)
   String get _recurrenceText {
@@ -75,7 +76,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
       _endTime = widget.special!.endTime;
       _hasEndTime = _endTime != null;
       _selectedTags = List.from(widget.special!.tags);
-      // _recurrence = widget.special?.recurrence ?? 'none';
+      _isTemplate = widget.special!.isTemplate;
       if (widget.special?.recurrenceRule != null) {
         _recurrenceRule = widget.special!.recurrenceRule!;
       } else {
@@ -91,7 +92,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
       }
     } else {
       // New Creation
-      // _isTemplate = widget.createTemplateMode; // Removed unused
+      _isTemplate = widget.createTemplateMode;
     }
   }
 
@@ -522,126 +523,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     }
   }
 
-  void _showPublishOptions() {
-    if (!_formKey.currentState!.validate()) return;
-    if (_imageUrl == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please select an image.')));
-      return;
-    }
-
-    // Determine Context
-    final isNew = widget.special == null || widget.special!.id.isEmpty;
-    final isEditingTemplate = !isNew && (widget.special?.isTemplate ?? false);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF222222),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                "Publish Options",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-            // OPTION 1: Post Live (Not available if strictly creating a template)
-            if (!widget.createTemplateMode)
-              ListTile(
-                leading: const Icon(Icons.send, color: Colors.greenAccent),
-                title: Text(
-                  isEditingTemplate ? "Post Live (Copy)" : "Post Live",
-                  style: const TextStyle(color: Colors.white),
-                ),
-                subtitle: const Text(
-                  "Visible to everyone immediately.",
-                  style: TextStyle(color: Colors.white54, fontSize: 12),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _save(isTemplate: false, createCopy: isEditingTemplate);
-                },
-              ),
-
-            // OPTION 2: Save as Template (Always available for new, or maintenance)
-            if (isNew || isEditingTemplate || widget.createTemplateMode)
-              ListTile(
-                leading: const Icon(Icons.copy, color: Colors.blueAccent),
-                title: Text(
-                  isEditingTemplate ? "Save Changes" : "Save as Template",
-                  style: const TextStyle(color: Colors.white),
-                ),
-                subtitle: const Text(
-                  "Save for future use. Hidden from feed.",
-                  style: TextStyle(color: Colors.white54, fontSize: 12),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _save(isTemplate: true, createCopy: false);
-                },
-              ),
-
-            // OPTION 3: Post AND Save Template (Only for new specials)
-            if (isNew && !widget.createTemplateMode)
-              ListTile(
-                leading: const Icon(
-                  Icons.library_add_check,
-                  color: Colors.amber,
-                ),
-                title: const Text(
-                  "Post to Feed & Save Logic",
-                  style: TextStyle(color: Colors.white),
-                ),
-                subtitle: const Text(
-                  "Goes live AND saves a template copy.",
-                  style: TextStyle(color: Colors.white54, fontSize: 12),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _save(
-                    isTemplate: false,
-                    createCopy: false,
-                    alsoSaveTemplate: true,
-                  );
-                },
-              ),
-
-            // Editing Live Special
-            if (!isNew && !isEditingTemplate)
-              ListTile(
-                leading: const Icon(Icons.save, color: Colors.blueAccent),
-                title: const Text(
-                  "Save Changes",
-                  style: TextStyle(color: Colors.white),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _save(isTemplate: false, createCopy: false);
-                },
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _save({
-    required bool isTemplate,
-    required bool createCopy,
-    bool alsoSaveTemplate = false,
-  }) async {
+  Future<void> _save() async {
     setState(() => _isSaving = true);
 
     try {
@@ -658,7 +540,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
             );
 
       final baseSpecial = SpecialModel(
-        id: createCopy ? '' : (widget.special?.id ?? ''),
+        id: widget.special?.id ?? '',
         hallId: widget.hallId,
         hallName: '',
         title: _titleCtrl.text.trim(),
@@ -668,9 +550,13 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
         startTime: _startTime,
         endTime: endTime,
         tags: _selectedTags,
-        recurrence: _recurrenceRule.frequency, // Legacy support
-        recurrenceRule: _recurrenceRule,
-        isTemplate: isTemplate,
+        recurrence: _isTemplate
+            ? _recurrenceRule.frequency
+            : 'none', // Legacy support
+        recurrenceRule: _isTemplate
+            ? _recurrenceRule
+            : const RecurrenceRule(frequency: 'none'),
+        isTemplate: _isTemplate,
       );
 
       // 1. Main Action
@@ -680,7 +566,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
             .read(hallRepositoryProvider)
             .addSpecial(
               baseSpecial,
-              sendNotification: _sendNotification && !isTemplate,
+              sendNotification: _sendNotification && !_isTemplate,
             );
       } else {
         // Update
@@ -693,13 +579,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
             .updateSpecial(updated, sendNotification: false);
       }
 
-      // 2. Dual Creation (Post & Save Template)
-      if (alsoSaveTemplate) {
-        final templateCopy = baseSpecial.copyWith(id: '', isTemplate: true);
-        await ref
-            .read(hallRepositoryProvider)
-            .addSpecial(templateCopy, sendNotification: false);
-      }
+      // Dual Creation logic removed; handled by single toggle & cloud triggers.
 
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -786,315 +666,15 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     });
   }
 
-  // --- Recurrence Helpers ---
-  void _showRecurrenceOptions() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF222222),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text(
-                "Does not repeat",
-                style: TextStyle(color: Colors.white),
-              ),
-              onTap: () => _setRecurrence('none'),
-            ),
-            ListTile(
-              title: const Text("Daily", style: TextStyle(color: Colors.white)),
-              onTap: () => _setRecurrence('daily'),
-            ),
-            ListTile(
-              title: const Text(
-                "Weekly",
-                style: TextStyle(color: Colors.white),
-              ),
-              onTap: () => _setRecurrence('weekly'),
-            ),
-            ListTile(
-              title: const Text(
-                "Monthly",
-                style: TextStyle(color: Colors.white),
-              ),
-              onTap: () => _setRecurrence('monthly'),
-            ),
-            const Divider(),
-            ListTile(
-              title: const Text(
-                "Custom...",
-                style: TextStyle(color: Colors.white),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.white54,
-                size: 16,
-              ),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showCustomRecurrencePicker();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _setRecurrence(String frequency) {
-    setState(() {
-      _recurrenceRule = RecurrenceRule(frequency: frequency, interval: 1);
-    });
-    Navigator.pop(context);
-  }
-
-  void _showCustomRecurrencePicker() {
-    // Temp State for Modal
-    String freq = _recurrenceRule.frequency == 'none'
-        ? 'weekly'
-        : _recurrenceRule.frequency;
-    int interval = _recurrenceRule.interval;
-    List<int> days = List.from(_recurrenceRule.daysOfWeek);
-    String endCondition = _recurrenceRule.endCondition; // never, date, count
-    DateTime? endDate = _recurrenceRule.endDate;
-    int? count = _recurrenceRule.occurrenceCount;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color(0xFF141414),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setModalState) {
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.85,
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Custom Recurrence",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Frequency Row
-                Row(
-                  children: [
-                    const Text(
-                      "Repeats every",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                    const SizedBox(width: 16),
-                    SizedBox(
-                      width: 60,
-                      child: TextFormField(
-                        initialValue: interval.toString(),
-                        keyboardType: TextInputType.number,
-                        style: const TextStyle(color: Colors.white),
-                        textAlign: TextAlign.center,
-                        decoration: _inputDec('', null),
-                        onChanged: (v) {
-                          final n = int.tryParse(v);
-                          if (n != null && n > 0)
-                            setModalState(() => interval = n);
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    DropdownButton<String>(
-                      value: freq,
-                      dropdownColor: const Color(0xFF222222),
-                      underline: Container(),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'daily',
-                          child: Text(
-                            "day",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        DropdownMenuItem(
-                          value: 'weekly',
-                          child: Text(
-                            "week",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        DropdownMenuItem(
-                          value: 'monthly',
-                          child: Text(
-                            "month",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        DropdownMenuItem(
-                          value: 'yearly',
-                          child: Text(
-                            "year",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
-                      onChanged: (v) => setModalState(() => freq = v!),
-                    ),
-                  ],
-                ),
-
-                // Weekday Selector (Only if Weekly)
-                if (freq == 'weekly') ...[
-                  const SizedBox(height: 24),
-                  const Text(
-                    "Repeats on",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                        .asMap()
-                        .entries
-                        .map((e) {
-                          final idx = e.key + 1; // 1-based
-                          final isSelected = days.contains(idx);
-                          return GestureDetector(
-                            onTap: () => setModalState(() {
-                              if (isSelected) {
-                                days.remove(idx);
-                              } else {
-                                days.add(idx);
-                              }
-                            }),
-                            child: CircleAvatar(
-                              radius: 20,
-                              backgroundColor: isSelected
-                                  ? Colors.blueAccent
-                                  : Colors.grey[800],
-                              child: Text(
-                                e.value,
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : Colors.white54,
-                                ),
-                              ),
-                            ),
-                          );
-                        })
-                        .toList(),
-                  ),
-                ],
-
-                const SizedBox(height: 24),
-                const Divider(color: Colors.white24),
-                const SizedBox(height: 24),
-
-                // ENDS
-                const Text(
-                  "Ends",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-                RadioListTile<String>(
-                  title: const Text(
-                    "Never",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  value: 'never',
-                  groupValue: endCondition,
-                  activeColor: Colors.blueAccent,
-                  onChanged: (v) => setModalState(() => endCondition = v!),
-                ),
-                RadioListTile<String>(
-                  title: const Text(
-                    "On Date",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  value: 'date',
-                  groupValue: endCondition,
-                  activeColor: Colors.blueAccent,
-                  onChanged: (v) => setModalState(() => endCondition = v!),
-                ),
-                if (endCondition == 'date')
-                  Padding(
-                    padding: const EdgeInsets.only(left: 32, bottom: 8),
-                    child: InkWell(
-                      onTap: () async {
-                        final d = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime(2030),
-                        );
-                        if (d != null) setModalState(() => endDate = d);
-                      },
-                      child: Text(
-                        endDate != null
-                            ? "${endDate!.month}/${endDate!.day}/${endDate!.year}"
-                            : "Select Date",
-                        style: const TextStyle(
-                          color: Colors.blueAccent,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                const Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _recurrenceRule = RecurrenceRule(
-                          frequency: freq,
-                          interval: interval,
-                          daysOfWeek: days,
-                          endCondition: endCondition,
-                          endDate: endDate,
-                          occurrenceCount: count,
-                        );
-                      });
-                      Navigator.pop(context);
-                    },
-                    child: const Text(
-                      "Done",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  String _getRecurrenceSummary() {
-    if (_recurrenceRule.frequency == 'none') return '';
-
-    final unit = _recurrenceRule.frequency; // daily -> day
-    final interval = _recurrenceRule.interval;
-    final intervalStr = interval > 1
-        ? "Every $interval ${unit}s"
-        : "Every $unit"; // rough plural
-
-    String days = "";
+  String _getHumanReadableRecurrence() {
+    if (_recurrenceRule.frequency == 'none') return "Does not repeat";
+    final sf = _recurrenceRule.frequency == 'daily'
+        ? 'day'
+        : _recurrenceRule.frequency.replaceAll('ly', '');
+    final freqStr = _recurrenceRule.interval > 1
+        ? "every ${_recurrenceRule.interval} ${sf}s"
+        : "every $sf";
+    String daysStr = "";
     if (_recurrenceRule.frequency == 'weekly' &&
         _recurrenceRule.daysOfWeek.isNotEmpty) {
       final map = {
@@ -1106,17 +686,19 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
         6: 'Sat',
         7: 'Sun',
       };
-      days = " on ${_recurrenceRule.daysOfWeek.map((d) => map[d]).join(', ')}";
+      daysStr =
+          " on ${_recurrenceRule.daysOfWeek.map((e) => map[e]).join(', ')}";
     }
-
-    String end = "";
+    String endStr = " forever";
     if (_recurrenceRule.endCondition == 'date' &&
         _recurrenceRule.endDate != null) {
-      end =
-          ", until ${_recurrenceRule.endDate!.month}/${_recurrenceRule.endDate!.day}";
+      endStr =
+          " until ${_recurrenceRule.endDate!.month}/${_recurrenceRule.endDate!.day}/${_recurrenceRule.endDate!.year}";
+    } else if (_recurrenceRule.endCondition == 'count' &&
+        _recurrenceRule.occurrenceCount != null) {
+      endStr = " for ${_recurrenceRule.occurrenceCount} occurrences";
     }
-
-    return "$intervalStr$days$end";
+    return "Auto-publishes $freqStr$daysStr$endStr.";
   }
 
   @override
@@ -1144,7 +726,16 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
             )
           else
             TextButton(
-              onPressed: _showPublishOptions,
+              onPressed: () {
+                if (!_formKey.currentState!.validate()) return;
+                if (_imageUrl == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please select an image.')),
+                  );
+                  return;
+                }
+                _save();
+              },
               child: const Text(
                 "PUBLISH",
                 style: TextStyle(
@@ -1156,7 +747,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
         child: Form(
           key: _formKey,
           child: Column(
@@ -1402,35 +993,313 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                     const Divider(color: Colors.white24),
                     const SizedBox(height: 16),
 
-                    // Recurrence Picker
-                    InkWell(
-                      onTap: _showRecurrenceOptions,
-                      borderRadius: BorderRadius.circular(8),
-                      child: InputDecorator(
-                        decoration: _inputDec('Repeats', null).copyWith(
-                          prefixIcon: const Icon(
-                            Icons.cached,
-                            color: Colors.greenAccent,
-                          ),
-                          suffixIcon: const Icon(
-                            Icons.arrow_drop_down,
-                            color: Colors.white54,
-                          ),
-                        ),
-                        child: Text(
-                          _recurrenceText,
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                    // Recurrence Toggle
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      activeThumbColor: Colors.blueAccent,
+                      title: const Text(
+                        "Set as Recurring Template",
+                        style: TextStyle(color: Colors.white),
                       ),
+                      subtitle: const Text(
+                        "Auto-generates events instead of publishing directly.",
+                        style: TextStyle(color: Colors.white54, fontSize: 12),
+                      ),
+                      value: _isTemplate,
+                      onChanged: (val) {
+                        setState(() => _isTemplate = val);
+                      },
                     ),
-                    if (_recurrenceRule.frequency != 'none') ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        _getRecurrenceSummary(),
-                        style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
+                    if (_isTemplate) ...[
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: GlassContainer(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text(
+                                      "Frequency",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                  DropdownButton<String>(
+                                    value:
+                                        [
+                                          'daily',
+                                          'weekly',
+                                          'monthly',
+                                          'yearly',
+                                        ].contains(_recurrenceRule.frequency)
+                                        ? _recurrenceRule.frequency
+                                        : 'weekly',
+                                    dropdownColor: const Color(0xFF222222),
+                                    style: const TextStyle(
+                                      color: Colors.blueAccent,
+                                    ),
+                                    underline: const SizedBox(),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: 'daily',
+                                        child: Text("Daily"),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'weekly',
+                                        child: Text("Weekly"),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'monthly',
+                                        child: Text("Monthly"),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'yearly',
+                                        child: Text("Yearly"),
+                                      ),
+                                    ],
+                                    onChanged: (v) {
+                                      if (v != null)
+                                        setState(
+                                          () =>
+                                              _recurrenceRule = _recurrenceRule
+                                                  .copyWith(frequency: v),
+                                        );
+                                    },
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  const Text(
+                                    "Repeat every ",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  SizedBox(
+                                    width: 50,
+                                    child: TextFormField(
+                                      initialValue: _recurrenceRule.interval
+                                          .toString(),
+                                      keyboardType: TextInputType.number,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      decoration: const InputDecoration(
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.all(8),
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      onChanged: (val) {
+                                        final i = int.tryParse(val);
+                                        if (i != null && i > 0) {
+                                          setState(
+                                            () => _recurrenceRule =
+                                                _recurrenceRule.copyWith(
+                                                  interval: i,
+                                                ),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Text(
+                                      "${_recurrenceRule.frequency.replaceAll('ly', 'ie')}s",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (_recurrenceRule.frequency == 'weekly') ...[
+                                const SizedBox(height: 16),
+                                const Text(
+                                  "Repeat on:",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                const SizedBox(height: 8),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: List.generate(7, (idx) {
+                                    final orderToLabel = [
+                                      'S',
+                                      'M',
+                                      'T',
+                                      'W',
+                                      'T',
+                                      'F',
+                                      'S',
+                                    ];
+                                    final orderToNum = [7, 1, 2, 3, 4, 5, 6];
+                                    final dNum = orderToNum[idx];
+                                    final isSelected = _recurrenceRule
+                                        .daysOfWeek
+                                        .contains(dNum);
+                                    return GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          final list = List<int>.from(
+                                            _recurrenceRule.daysOfWeek,
+                                          );
+                                          if (isSelected)
+                                            list.remove(dNum);
+                                          else
+                                            list.add(dNum);
+                                          _recurrenceRule = _recurrenceRule
+                                              .copyWith(daysOfWeek: list);
+                                        });
+                                      },
+                                      child: CircleAvatar(
+                                        radius: 16,
+                                        backgroundColor: isSelected
+                                            ? Colors.blueAccent
+                                            : Colors.white10,
+                                        child: Text(
+                                          orderToLabel[idx],
+                                          style: TextStyle(
+                                            color: isSelected
+                                                ? Colors.white
+                                                : Colors.grey,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              ],
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text(
+                                      "Ends",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                  DropdownButton<String>(
+                                    value: _recurrenceRule.endCondition,
+                                    dropdownColor: const Color(0xFF222222),
+                                    style: const TextStyle(
+                                      color: Colors.blueAccent,
+                                    ),
+                                    underline: const SizedBox(),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: 'never',
+                                        child: Text("Never"),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'date',
+                                        child: Text("On Date"),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'count',
+                                        child: Text("After Occurrences"),
+                                      ),
+                                    ],
+                                    onChanged: (v) {
+                                      if (v != null)
+                                        setState(
+                                          () =>
+                                              _recurrenceRule = _recurrenceRule
+                                                  .copyWith(endCondition: v),
+                                        );
+                                    },
+                                  ),
+                                ],
+                              ),
+                              if (_recurrenceRule.endCondition == 'date') ...[
+                                const SizedBox(height: 8),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: () async {
+                                      final d = await showDatePicker(
+                                        context: context,
+                                        initialDate:
+                                            _recurrenceRule.endDate ??
+                                            DateTime.now(),
+                                        firstDate: DateTime.now(),
+                                        lastDate: DateTime(2030),
+                                      );
+                                      if (d != null)
+                                        setState(
+                                          () =>
+                                              _recurrenceRule = _recurrenceRule
+                                                  .copyWith(endDate: d),
+                                        );
+                                    },
+                                    child: Text(
+                                      _recurrenceRule.endDate != null
+                                          ? "${_recurrenceRule.endDate!.month}/${_recurrenceRule.endDate!.day}/${_recurrenceRule.endDate!.year}"
+                                          : "Select Date",
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              if (_recurrenceRule.endCondition == 'count') ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    SizedBox(
+                                      width: 60,
+                                      child: TextFormField(
+                                        initialValue:
+                                            (_recurrenceRule.occurrenceCount ??
+                                                    1)
+                                                .toString(),
+                                        keyboardType: TextInputType.number,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                        decoration: const InputDecoration(
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.symmetric(
+                                            vertical: 12,
+                                            horizontal: 8,
+                                          ),
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        onChanged: (val) {
+                                          final i = int.tryParse(val);
+                                          if (i != null && i > 0)
+                                            setState(
+                                              () => _recurrenceRule =
+                                                  _recurrenceRule.copyWith(
+                                                    occurrenceCount: i,
+                                                  ),
+                                            );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      "times",
+                                      style: TextStyle(color: Colors.white54),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              const Divider(color: Colors.white24, height: 32),
+                              Text(
+                                "Summary: ${_getHumanReadableRecurrence()}",
+                                style: const TextStyle(
+                                  color: Colors.amber,
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -1573,6 +1442,39 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                   ),
                 ],
               ),
+              if (widget.special != null &&
+                  !widget.special!.isTemplate &&
+                  widget.special!.templateId != null) ...[
+                const SizedBox(height: 40),
+                if (widget.special!.isCancelled)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.greenAccent,
+                        side: const BorderSide(color: Colors.greenAccent),
+                      ),
+                      icon: const Icon(Icons.restore),
+                      label: const Text("Restore Occurrence"),
+                      onPressed: _restoreOccurrence,
+                    ),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.redAccent,
+                        side: const BorderSide(color: Colors.redAccent),
+                      ),
+                      icon: const Icon(Icons.cancel),
+                      label: const Text("Cancel this Occurrence"),
+                      onPressed: _cancelOccurrence,
+                    ),
+                  ),
+              ],
             ],
           ),
         ),
@@ -1633,5 +1535,103 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
         fontWeight: FontWeight.bold,
       ),
     );
+  }
+
+  Future<void> _cancelOccurrence() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF222222),
+        title: const Text(
+          "Cancel Occurrence?",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          "This specific event will be removed from the feed. The master template will remain active.",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("GO BACK", style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              "CANCEL EVENT",
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final cancelledSpecial = widget.special!.copyWith(isCancelled: true);
+      await ref.read(hallRepositoryProvider).updateSpecial(cancelledSpecial);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  Future<void> _restoreOccurrence() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF222222),
+        title: const Text(
+          "Restore Occurrence?",
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          "This specific event will be un-cancelled and return to the main feed.",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("GO BACK", style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              "RESTORE EVENT",
+              style: TextStyle(
+                color: Colors.greenAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final restoredSpecial = widget.special!.copyWith(isCancelled: false);
+      await ref.read(hallRepositoryProvider).updateSpecial(restoredSpecial);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+        setState(() => _isSaving = false);
+      }
+    }
   }
 }

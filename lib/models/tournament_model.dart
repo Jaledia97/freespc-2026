@@ -20,6 +20,8 @@ abstract class TournamentModel with _$TournamentModel {
     DateTime? endTime,
     RecurrenceRule? recurrenceRule,
     @Default(false) bool isTemplate,
+    String? templateId,
+    @Default(false) bool isCancelled,
     DateTime? archivedAt,
     @Default([]) List<TournamentGame> games,
     @Default([]) List<String> reactionUserIds,

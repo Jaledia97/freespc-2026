@@ -106,6 +106,7 @@ class HallRepository {
     return _firestore
         .collection('specials')
         .where('isTemplate', isEqualTo: false) // EXCLUDE TEMPLATES
+        .where('isCancelled', isEqualTo: false) // EXCLUDE CANCELLED
         .limit(100) // SAFETY LIMIT
         .snapshots()
         .asyncMap((snapshot) async {
@@ -181,6 +182,7 @@ class HallRepository {
     return _firestore
         .collection('tournaments')
         .where('isTemplate', isEqualTo: false)
+        .where('isCancelled', isEqualTo: false)
         .snapshots()
         .map((snapshot) {
           final now = DateTime.now();

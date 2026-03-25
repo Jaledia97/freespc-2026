@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TournamentModel {
 
- String get id; String get hallId; String get title; String? get imageUrl; String get description; DateTime? get startTime; DateTime? get endTime; RecurrenceRule? get recurrenceRule; bool get isTemplate; DateTime? get archivedAt; List<TournamentGame> get games; List<String> get reactionUserIds; List<String> get interestedUserIds; int get commentCount; DateTime? get createdAt; String? get latestComment;
+ String get id; String get hallId; String get title; String? get imageUrl; String get description; DateTime? get startTime; DateTime? get endTime; RecurrenceRule? get recurrenceRule; bool get isTemplate; String? get templateId; bool get isCancelled; DateTime? get archivedAt; List<TournamentGame> get games; List<String> get reactionUserIds; List<String> get interestedUserIds; int get commentCount; DateTime? get createdAt; String? get latestComment;
 /// Create a copy of TournamentModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $TournamentModelCopyWith<TournamentModel> get copyWith => _$TournamentModelCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TournamentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.title, title) || other.title == title)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt)&&const DeepCollectionEquality().equals(other.games, games)&&const DeepCollectionEquality().equals(other.reactionUserIds, reactionUserIds)&&const DeepCollectionEquality().equals(other.interestedUserIds, interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TournamentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.title, title) || other.title == title)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.isCancelled, isCancelled) || other.isCancelled == isCancelled)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt)&&const DeepCollectionEquality().equals(other.games, games)&&const DeepCollectionEquality().equals(other.reactionUserIds, reactionUserIds)&&const DeepCollectionEquality().equals(other.interestedUserIds, interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,hallId,title,imageUrl,description,startTime,endTime,recurrenceRule,isTemplate,archivedAt,const DeepCollectionEquality().hash(games),const DeepCollectionEquality().hash(reactionUserIds),const DeepCollectionEquality().hash(interestedUserIds),commentCount,createdAt,latestComment);
+int get hashCode => Object.hash(runtimeType,id,hallId,title,imageUrl,description,startTime,endTime,recurrenceRule,isTemplate,templateId,isCancelled,archivedAt,const DeepCollectionEquality().hash(games),const DeepCollectionEquality().hash(reactionUserIds),const DeepCollectionEquality().hash(interestedUserIds),commentCount,createdAt,latestComment);
 
 @override
 String toString() {
-  return 'TournamentModel(id: $id, hallId: $hallId, title: $title, imageUrl: $imageUrl, description: $description, startTime: $startTime, endTime: $endTime, recurrenceRule: $recurrenceRule, isTemplate: $isTemplate, archivedAt: $archivedAt, games: $games, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, createdAt: $createdAt, latestComment: $latestComment)';
+  return 'TournamentModel(id: $id, hallId: $hallId, title: $title, imageUrl: $imageUrl, description: $description, startTime: $startTime, endTime: $endTime, recurrenceRule: $recurrenceRule, isTemplate: $isTemplate, templateId: $templateId, isCancelled: $isCancelled, archivedAt: $archivedAt, games: $games, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, createdAt: $createdAt, latestComment: $latestComment)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $TournamentModelCopyWith<$Res>  {
   factory $TournamentModelCopyWith(TournamentModel value, $Res Function(TournamentModel) _then) = _$TournamentModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String hallId, String title, String? imageUrl, String description, DateTime? startTime, DateTime? endTime, RecurrenceRule? recurrenceRule, bool isTemplate, DateTime? archivedAt, List<TournamentGame> games, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, DateTime? createdAt, String? latestComment
+ String id, String hallId, String title, String? imageUrl, String description, DateTime? startTime, DateTime? endTime, RecurrenceRule? recurrenceRule, bool isTemplate, String? templateId, bool isCancelled, DateTime? archivedAt, List<TournamentGame> games, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, DateTime? createdAt, String? latestComment
 });
 
 
@@ -65,7 +65,7 @@ class _$TournamentModelCopyWithImpl<$Res>
 
 /// Create a copy of TournamentModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? hallId = null,Object? title = null,Object? imageUrl = freezed,Object? description = null,Object? startTime = freezed,Object? endTime = freezed,Object? recurrenceRule = freezed,Object? isTemplate = null,Object? archivedAt = freezed,Object? games = null,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? createdAt = freezed,Object? latestComment = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? hallId = null,Object? title = null,Object? imageUrl = freezed,Object? description = null,Object? startTime = freezed,Object? endTime = freezed,Object? recurrenceRule = freezed,Object? isTemplate = null,Object? templateId = freezed,Object? isCancelled = null,Object? archivedAt = freezed,Object? games = null,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? createdAt = freezed,Object? latestComment = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
@@ -76,6 +76,8 @@ as String,startTime: freezed == startTime ? _self.startTime : startTime // ignor
 as DateTime?,endTime: freezed == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
 as DateTime?,recurrenceRule: freezed == recurrenceRule ? _self.recurrenceRule : recurrenceRule // ignore: cast_nullable_to_non_nullable
 as RecurrenceRule?,isTemplate: null == isTemplate ? _self.isTemplate : isTemplate // ignore: cast_nullable_to_non_nullable
+as bool,templateId: freezed == templateId ? _self.templateId : templateId // ignore: cast_nullable_to_non_nullable
+as String?,isCancelled: null == isCancelled ? _self.isCancelled : isCancelled // ignore: cast_nullable_to_non_nullable
 as bool,archivedAt: freezed == archivedAt ? _self.archivedAt : archivedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,games: null == games ? _self.games : games // ignore: cast_nullable_to_non_nullable
 as List<TournamentGame>,reactionUserIds: null == reactionUserIds ? _self.reactionUserIds : reactionUserIds // ignore: cast_nullable_to_non_nullable
@@ -180,10 +182,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String hallId,  String title,  String? imageUrl,  String description,  DateTime? startTime,  DateTime? endTime,  RecurrenceRule? recurrenceRule,  bool isTemplate,  DateTime? archivedAt,  List<TournamentGame> games,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  DateTime? createdAt,  String? latestComment)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String hallId,  String title,  String? imageUrl,  String description,  DateTime? startTime,  DateTime? endTime,  RecurrenceRule? recurrenceRule,  bool isTemplate,  String? templateId,  bool isCancelled,  DateTime? archivedAt,  List<TournamentGame> games,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  DateTime? createdAt,  String? latestComment)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TournamentModel() when $default != null:
-return $default(_that.id,_that.hallId,_that.title,_that.imageUrl,_that.description,_that.startTime,_that.endTime,_that.recurrenceRule,_that.isTemplate,_that.archivedAt,_that.games,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.createdAt,_that.latestComment);case _:
+return $default(_that.id,_that.hallId,_that.title,_that.imageUrl,_that.description,_that.startTime,_that.endTime,_that.recurrenceRule,_that.isTemplate,_that.templateId,_that.isCancelled,_that.archivedAt,_that.games,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.createdAt,_that.latestComment);case _:
   return orElse();
 
 }
@@ -201,10 +203,10 @@ return $default(_that.id,_that.hallId,_that.title,_that.imageUrl,_that.descripti
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String hallId,  String title,  String? imageUrl,  String description,  DateTime? startTime,  DateTime? endTime,  RecurrenceRule? recurrenceRule,  bool isTemplate,  DateTime? archivedAt,  List<TournamentGame> games,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  DateTime? createdAt,  String? latestComment)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String hallId,  String title,  String? imageUrl,  String description,  DateTime? startTime,  DateTime? endTime,  RecurrenceRule? recurrenceRule,  bool isTemplate,  String? templateId,  bool isCancelled,  DateTime? archivedAt,  List<TournamentGame> games,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  DateTime? createdAt,  String? latestComment)  $default,) {final _that = this;
 switch (_that) {
 case _TournamentModel():
-return $default(_that.id,_that.hallId,_that.title,_that.imageUrl,_that.description,_that.startTime,_that.endTime,_that.recurrenceRule,_that.isTemplate,_that.archivedAt,_that.games,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.createdAt,_that.latestComment);case _:
+return $default(_that.id,_that.hallId,_that.title,_that.imageUrl,_that.description,_that.startTime,_that.endTime,_that.recurrenceRule,_that.isTemplate,_that.templateId,_that.isCancelled,_that.archivedAt,_that.games,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.createdAt,_that.latestComment);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -221,10 +223,10 @@ return $default(_that.id,_that.hallId,_that.title,_that.imageUrl,_that.descripti
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String hallId,  String title,  String? imageUrl,  String description,  DateTime? startTime,  DateTime? endTime,  RecurrenceRule? recurrenceRule,  bool isTemplate,  DateTime? archivedAt,  List<TournamentGame> games,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  DateTime? createdAt,  String? latestComment)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String hallId,  String title,  String? imageUrl,  String description,  DateTime? startTime,  DateTime? endTime,  RecurrenceRule? recurrenceRule,  bool isTemplate,  String? templateId,  bool isCancelled,  DateTime? archivedAt,  List<TournamentGame> games,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  DateTime? createdAt,  String? latestComment)?  $default,) {final _that = this;
 switch (_that) {
 case _TournamentModel() when $default != null:
-return $default(_that.id,_that.hallId,_that.title,_that.imageUrl,_that.description,_that.startTime,_that.endTime,_that.recurrenceRule,_that.isTemplate,_that.archivedAt,_that.games,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.createdAt,_that.latestComment);case _:
+return $default(_that.id,_that.hallId,_that.title,_that.imageUrl,_that.description,_that.startTime,_that.endTime,_that.recurrenceRule,_that.isTemplate,_that.templateId,_that.isCancelled,_that.archivedAt,_that.games,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.createdAt,_that.latestComment);case _:
   return null;
 
 }
@@ -236,7 +238,7 @@ return $default(_that.id,_that.hallId,_that.title,_that.imageUrl,_that.descripti
 
 @JsonSerializable(explicitToJson: true)
 class _TournamentModel extends TournamentModel {
-  const _TournamentModel({required this.id, required this.hallId, required this.title, this.imageUrl, this.description = '', this.startTime, this.endTime, this.recurrenceRule, this.isTemplate = false, this.archivedAt, final  List<TournamentGame> games = const [], final  List<String> reactionUserIds = const [], final  List<String> interestedUserIds = const [], this.commentCount = 0, this.createdAt, this.latestComment}): _games = games,_reactionUserIds = reactionUserIds,_interestedUserIds = interestedUserIds,super._();
+  const _TournamentModel({required this.id, required this.hallId, required this.title, this.imageUrl, this.description = '', this.startTime, this.endTime, this.recurrenceRule, this.isTemplate = false, this.templateId, this.isCancelled = false, this.archivedAt, final  List<TournamentGame> games = const [], final  List<String> reactionUserIds = const [], final  List<String> interestedUserIds = const [], this.commentCount = 0, this.createdAt, this.latestComment}): _games = games,_reactionUserIds = reactionUserIds,_interestedUserIds = interestedUserIds,super._();
   factory _TournamentModel.fromJson(Map<String, dynamic> json) => _$TournamentModelFromJson(json);
 
 @override final  String id;
@@ -248,6 +250,8 @@ class _TournamentModel extends TournamentModel {
 @override final  DateTime? endTime;
 @override final  RecurrenceRule? recurrenceRule;
 @override@JsonKey() final  bool isTemplate;
+@override final  String? templateId;
+@override@JsonKey() final  bool isCancelled;
 @override final  DateTime? archivedAt;
  final  List<TournamentGame> _games;
 @override@JsonKey() List<TournamentGame> get games {
@@ -287,16 +291,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TournamentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.title, title) || other.title == title)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt)&&const DeepCollectionEquality().equals(other._games, _games)&&const DeepCollectionEquality().equals(other._reactionUserIds, _reactionUserIds)&&const DeepCollectionEquality().equals(other._interestedUserIds, _interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TournamentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.title, title) || other.title == title)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.isCancelled, isCancelled) || other.isCancelled == isCancelled)&&(identical(other.archivedAt, archivedAt) || other.archivedAt == archivedAt)&&const DeepCollectionEquality().equals(other._games, _games)&&const DeepCollectionEquality().equals(other._reactionUserIds, _reactionUserIds)&&const DeepCollectionEquality().equals(other._interestedUserIds, _interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,hallId,title,imageUrl,description,startTime,endTime,recurrenceRule,isTemplate,archivedAt,const DeepCollectionEquality().hash(_games),const DeepCollectionEquality().hash(_reactionUserIds),const DeepCollectionEquality().hash(_interestedUserIds),commentCount,createdAt,latestComment);
+int get hashCode => Object.hash(runtimeType,id,hallId,title,imageUrl,description,startTime,endTime,recurrenceRule,isTemplate,templateId,isCancelled,archivedAt,const DeepCollectionEquality().hash(_games),const DeepCollectionEquality().hash(_reactionUserIds),const DeepCollectionEquality().hash(_interestedUserIds),commentCount,createdAt,latestComment);
 
 @override
 String toString() {
-  return 'TournamentModel(id: $id, hallId: $hallId, title: $title, imageUrl: $imageUrl, description: $description, startTime: $startTime, endTime: $endTime, recurrenceRule: $recurrenceRule, isTemplate: $isTemplate, archivedAt: $archivedAt, games: $games, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, createdAt: $createdAt, latestComment: $latestComment)';
+  return 'TournamentModel(id: $id, hallId: $hallId, title: $title, imageUrl: $imageUrl, description: $description, startTime: $startTime, endTime: $endTime, recurrenceRule: $recurrenceRule, isTemplate: $isTemplate, templateId: $templateId, isCancelled: $isCancelled, archivedAt: $archivedAt, games: $games, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, createdAt: $createdAt, latestComment: $latestComment)';
 }
 
 
@@ -307,7 +311,7 @@ abstract mixin class _$TournamentModelCopyWith<$Res> implements $TournamentModel
   factory _$TournamentModelCopyWith(_TournamentModel value, $Res Function(_TournamentModel) _then) = __$TournamentModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String hallId, String title, String? imageUrl, String description, DateTime? startTime, DateTime? endTime, RecurrenceRule? recurrenceRule, bool isTemplate, DateTime? archivedAt, List<TournamentGame> games, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, DateTime? createdAt, String? latestComment
+ String id, String hallId, String title, String? imageUrl, String description, DateTime? startTime, DateTime? endTime, RecurrenceRule? recurrenceRule, bool isTemplate, String? templateId, bool isCancelled, DateTime? archivedAt, List<TournamentGame> games, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, DateTime? createdAt, String? latestComment
 });
 
 
@@ -324,7 +328,7 @@ class __$TournamentModelCopyWithImpl<$Res>
 
 /// Create a copy of TournamentModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? hallId = null,Object? title = null,Object? imageUrl = freezed,Object? description = null,Object? startTime = freezed,Object? endTime = freezed,Object? recurrenceRule = freezed,Object? isTemplate = null,Object? archivedAt = freezed,Object? games = null,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? createdAt = freezed,Object? latestComment = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? hallId = null,Object? title = null,Object? imageUrl = freezed,Object? description = null,Object? startTime = freezed,Object? endTime = freezed,Object? recurrenceRule = freezed,Object? isTemplate = null,Object? templateId = freezed,Object? isCancelled = null,Object? archivedAt = freezed,Object? games = null,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? createdAt = freezed,Object? latestComment = freezed,}) {
   return _then(_TournamentModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
@@ -335,6 +339,8 @@ as String,startTime: freezed == startTime ? _self.startTime : startTime // ignor
 as DateTime?,endTime: freezed == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
 as DateTime?,recurrenceRule: freezed == recurrenceRule ? _self.recurrenceRule : recurrenceRule // ignore: cast_nullable_to_non_nullable
 as RecurrenceRule?,isTemplate: null == isTemplate ? _self.isTemplate : isTemplate // ignore: cast_nullable_to_non_nullable
+as bool,templateId: freezed == templateId ? _self.templateId : templateId // ignore: cast_nullable_to_non_nullable
+as String?,isCancelled: null == isCancelled ? _self.isCancelled : isCancelled // ignore: cast_nullable_to_non_nullable
 as bool,archivedAt: freezed == archivedAt ? _self.archivedAt : archivedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,games: null == games ? _self._games : games // ignore: cast_nullable_to_non_nullable
 as List<TournamentGame>,reactionUserIds: null == reactionUserIds ? _self._reactionUserIds : reactionUserIds // ignore: cast_nullable_to_non_nullable
