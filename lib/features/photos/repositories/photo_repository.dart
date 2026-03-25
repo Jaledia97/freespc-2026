@@ -19,18 +19,7 @@ final unreadPendingPhotosCountProvider = StreamProvider<int>((ref) {
 
   final repo = ref.watch(photoRepositoryProvider);
   return repo.getPendingHallPhotos(user.homeBaseId!).map((photos) {
-    if (user.lastViewedPhotoApprovals == null) {
-      return photos
-          .where((p) => p.pendingHallIds.contains(user.homeBaseId!))
-          .length;
-    }
-    return photos
-        .where(
-          (p) =>
-              p.pendingHallIds.contains(user.homeBaseId!) &&
-              p.timestamp.isAfter(user.lastViewedPhotoApprovals!),
-        )
-        .length;
+    return photos.length; 
   });
 });
 

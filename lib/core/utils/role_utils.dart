@@ -7,6 +7,7 @@ class RoleUtils {
   static const String manager = 'manager';
   static const String worker = 'worker';
   static const String player = 'player';
+  static const String pendingOwner = 'pending_owner';
 
   // App-Level Permissions
   static bool isSuperAdmin(UserModel user) {
@@ -19,6 +20,10 @@ class RoleUtils {
 
   static bool isOwner(UserModel user) {
     return user.role == owner;
+  }
+
+  static bool isPendingOwner(UserModel user) {
+    return user.role == pendingOwner;
   }
 
   // Hall-Level Permissions

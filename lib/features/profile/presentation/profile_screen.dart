@@ -54,6 +54,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         actions: [
           IconButton(
             icon: const NotificationBadge(
+              showForGeneral: false,
               showForManager: false,
               child: Icon(Icons.chat_bubble_outline),
             ),

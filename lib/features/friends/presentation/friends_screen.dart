@@ -8,6 +8,7 @@ import '../../../services/auth_service.dart';
 import '../../../models/public_profile.dart';
 import '../repositories/friends_repository.dart';
 import 'find_friends_screen.dart';
+import 'widgets/create_squad_sheet.dart';
 import '../../messaging/presentation/messaging_hub_screen.dart';
 import '../../messaging/repositories/messaging_repository.dart';
 import '../../messaging/presentation/chat_screen.dart';
@@ -112,6 +113,17 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                         isScrollControlled: true,
                         backgroundColor: Colors.transparent,
                         builder: (context) => const FindFriendsScreen(),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.group_add),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => const CreateSquadSheet(),
                       );
                     },
                   ),

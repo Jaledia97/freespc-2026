@@ -716,7 +716,7 @@ as int,
 /// @nodoc
 mixin _$SquadBonusConfig {
 
- bool get isSquadBonusActive; double get squadBonusMultiplier; DateTime? get startTime; DateTime? get endTime;
+ bool get isSquadBonusActive; double get squadBonusMultiplier; int get gracePeriodMinutes; int get assemblyDurationMinutes; int get assemblyDropAmount; DateTime? get startTime; DateTime? get endTime;
 /// Create a copy of SquadBonusConfig
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -729,16 +729,16 @@ $SquadBonusConfigCopyWith<SquadBonusConfig> get copyWith => _$SquadBonusConfigCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SquadBonusConfig&&(identical(other.isSquadBonusActive, isSquadBonusActive) || other.isSquadBonusActive == isSquadBonusActive)&&(identical(other.squadBonusMultiplier, squadBonusMultiplier) || other.squadBonusMultiplier == squadBonusMultiplier)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SquadBonusConfig&&(identical(other.isSquadBonusActive, isSquadBonusActive) || other.isSquadBonusActive == isSquadBonusActive)&&(identical(other.squadBonusMultiplier, squadBonusMultiplier) || other.squadBonusMultiplier == squadBonusMultiplier)&&(identical(other.gracePeriodMinutes, gracePeriodMinutes) || other.gracePeriodMinutes == gracePeriodMinutes)&&(identical(other.assemblyDurationMinutes, assemblyDurationMinutes) || other.assemblyDurationMinutes == assemblyDurationMinutes)&&(identical(other.assemblyDropAmount, assemblyDropAmount) || other.assemblyDropAmount == assemblyDropAmount)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,isSquadBonusActive,squadBonusMultiplier,startTime,endTime);
+int get hashCode => Object.hash(runtimeType,isSquadBonusActive,squadBonusMultiplier,gracePeriodMinutes,assemblyDurationMinutes,assemblyDropAmount,startTime,endTime);
 
 @override
 String toString() {
-  return 'SquadBonusConfig(isSquadBonusActive: $isSquadBonusActive, squadBonusMultiplier: $squadBonusMultiplier, startTime: $startTime, endTime: $endTime)';
+  return 'SquadBonusConfig(isSquadBonusActive: $isSquadBonusActive, squadBonusMultiplier: $squadBonusMultiplier, gracePeriodMinutes: $gracePeriodMinutes, assemblyDurationMinutes: $assemblyDurationMinutes, assemblyDropAmount: $assemblyDropAmount, startTime: $startTime, endTime: $endTime)';
 }
 
 
@@ -749,7 +749,7 @@ abstract mixin class $SquadBonusConfigCopyWith<$Res>  {
   factory $SquadBonusConfigCopyWith(SquadBonusConfig value, $Res Function(SquadBonusConfig) _then) = _$SquadBonusConfigCopyWithImpl;
 @useResult
 $Res call({
- bool isSquadBonusActive, double squadBonusMultiplier, DateTime? startTime, DateTime? endTime
+ bool isSquadBonusActive, double squadBonusMultiplier, int gracePeriodMinutes, int assemblyDurationMinutes, int assemblyDropAmount, DateTime? startTime, DateTime? endTime
 });
 
 
@@ -766,11 +766,14 @@ class _$SquadBonusConfigCopyWithImpl<$Res>
 
 /// Create a copy of SquadBonusConfig
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isSquadBonusActive = null,Object? squadBonusMultiplier = null,Object? startTime = freezed,Object? endTime = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isSquadBonusActive = null,Object? squadBonusMultiplier = null,Object? gracePeriodMinutes = null,Object? assemblyDurationMinutes = null,Object? assemblyDropAmount = null,Object? startTime = freezed,Object? endTime = freezed,}) {
   return _then(_self.copyWith(
 isSquadBonusActive: null == isSquadBonusActive ? _self.isSquadBonusActive : isSquadBonusActive // ignore: cast_nullable_to_non_nullable
 as bool,squadBonusMultiplier: null == squadBonusMultiplier ? _self.squadBonusMultiplier : squadBonusMultiplier // ignore: cast_nullable_to_non_nullable
-as double,startTime: freezed == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
+as double,gracePeriodMinutes: null == gracePeriodMinutes ? _self.gracePeriodMinutes : gracePeriodMinutes // ignore: cast_nullable_to_non_nullable
+as int,assemblyDurationMinutes: null == assemblyDurationMinutes ? _self.assemblyDurationMinutes : assemblyDurationMinutes // ignore: cast_nullable_to_non_nullable
+as int,assemblyDropAmount: null == assemblyDropAmount ? _self.assemblyDropAmount : assemblyDropAmount // ignore: cast_nullable_to_non_nullable
+as int,startTime: freezed == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
 as DateTime?,endTime: freezed == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
@@ -857,10 +860,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isSquadBonusActive,  double squadBonusMultiplier,  DateTime? startTime,  DateTime? endTime)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isSquadBonusActive,  double squadBonusMultiplier,  int gracePeriodMinutes,  int assemblyDurationMinutes,  int assemblyDropAmount,  DateTime? startTime,  DateTime? endTime)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SquadBonusConfig() when $default != null:
-return $default(_that.isSquadBonusActive,_that.squadBonusMultiplier,_that.startTime,_that.endTime);case _:
+return $default(_that.isSquadBonusActive,_that.squadBonusMultiplier,_that.gracePeriodMinutes,_that.assemblyDurationMinutes,_that.assemblyDropAmount,_that.startTime,_that.endTime);case _:
   return orElse();
 
 }
@@ -878,10 +881,10 @@ return $default(_that.isSquadBonusActive,_that.squadBonusMultiplier,_that.startT
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isSquadBonusActive,  double squadBonusMultiplier,  DateTime? startTime,  DateTime? endTime)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isSquadBonusActive,  double squadBonusMultiplier,  int gracePeriodMinutes,  int assemblyDurationMinutes,  int assemblyDropAmount,  DateTime? startTime,  DateTime? endTime)  $default,) {final _that = this;
 switch (_that) {
 case _SquadBonusConfig():
-return $default(_that.isSquadBonusActive,_that.squadBonusMultiplier,_that.startTime,_that.endTime);case _:
+return $default(_that.isSquadBonusActive,_that.squadBonusMultiplier,_that.gracePeriodMinutes,_that.assemblyDurationMinutes,_that.assemblyDropAmount,_that.startTime,_that.endTime);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -898,10 +901,10 @@ return $default(_that.isSquadBonusActive,_that.squadBonusMultiplier,_that.startT
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isSquadBonusActive,  double squadBonusMultiplier,  DateTime? startTime,  DateTime? endTime)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isSquadBonusActive,  double squadBonusMultiplier,  int gracePeriodMinutes,  int assemblyDurationMinutes,  int assemblyDropAmount,  DateTime? startTime,  DateTime? endTime)?  $default,) {final _that = this;
 switch (_that) {
 case _SquadBonusConfig() when $default != null:
-return $default(_that.isSquadBonusActive,_that.squadBonusMultiplier,_that.startTime,_that.endTime);case _:
+return $default(_that.isSquadBonusActive,_that.squadBonusMultiplier,_that.gracePeriodMinutes,_that.assemblyDurationMinutes,_that.assemblyDropAmount,_that.startTime,_that.endTime);case _:
   return null;
 
 }
@@ -913,11 +916,14 @@ return $default(_that.isSquadBonusActive,_that.squadBonusMultiplier,_that.startT
 
 @JsonSerializable(explicitToJson: true)
 class _SquadBonusConfig implements SquadBonusConfig {
-  const _SquadBonusConfig({this.isSquadBonusActive = false, this.squadBonusMultiplier = 1.5, this.startTime, this.endTime});
+  const _SquadBonusConfig({this.isSquadBonusActive = false, this.squadBonusMultiplier = 1.5, this.gracePeriodMinutes = 3, this.assemblyDurationMinutes = 15, this.assemblyDropAmount = 100, this.startTime, this.endTime});
   factory _SquadBonusConfig.fromJson(Map<String, dynamic> json) => _$SquadBonusConfigFromJson(json);
 
 @override@JsonKey() final  bool isSquadBonusActive;
 @override@JsonKey() final  double squadBonusMultiplier;
+@override@JsonKey() final  int gracePeriodMinutes;
+@override@JsonKey() final  int assemblyDurationMinutes;
+@override@JsonKey() final  int assemblyDropAmount;
 @override final  DateTime? startTime;
 @override final  DateTime? endTime;
 
@@ -934,16 +940,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SquadBonusConfig&&(identical(other.isSquadBonusActive, isSquadBonusActive) || other.isSquadBonusActive == isSquadBonusActive)&&(identical(other.squadBonusMultiplier, squadBonusMultiplier) || other.squadBonusMultiplier == squadBonusMultiplier)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SquadBonusConfig&&(identical(other.isSquadBonusActive, isSquadBonusActive) || other.isSquadBonusActive == isSquadBonusActive)&&(identical(other.squadBonusMultiplier, squadBonusMultiplier) || other.squadBonusMultiplier == squadBonusMultiplier)&&(identical(other.gracePeriodMinutes, gracePeriodMinutes) || other.gracePeriodMinutes == gracePeriodMinutes)&&(identical(other.assemblyDurationMinutes, assemblyDurationMinutes) || other.assemblyDurationMinutes == assemblyDurationMinutes)&&(identical(other.assemblyDropAmount, assemblyDropAmount) || other.assemblyDropAmount == assemblyDropAmount)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,isSquadBonusActive,squadBonusMultiplier,startTime,endTime);
+int get hashCode => Object.hash(runtimeType,isSquadBonusActive,squadBonusMultiplier,gracePeriodMinutes,assemblyDurationMinutes,assemblyDropAmount,startTime,endTime);
 
 @override
 String toString() {
-  return 'SquadBonusConfig(isSquadBonusActive: $isSquadBonusActive, squadBonusMultiplier: $squadBonusMultiplier, startTime: $startTime, endTime: $endTime)';
+  return 'SquadBonusConfig(isSquadBonusActive: $isSquadBonusActive, squadBonusMultiplier: $squadBonusMultiplier, gracePeriodMinutes: $gracePeriodMinutes, assemblyDurationMinutes: $assemblyDurationMinutes, assemblyDropAmount: $assemblyDropAmount, startTime: $startTime, endTime: $endTime)';
 }
 
 
@@ -954,7 +960,7 @@ abstract mixin class _$SquadBonusConfigCopyWith<$Res> implements $SquadBonusConf
   factory _$SquadBonusConfigCopyWith(_SquadBonusConfig value, $Res Function(_SquadBonusConfig) _then) = __$SquadBonusConfigCopyWithImpl;
 @override @useResult
 $Res call({
- bool isSquadBonusActive, double squadBonusMultiplier, DateTime? startTime, DateTime? endTime
+ bool isSquadBonusActive, double squadBonusMultiplier, int gracePeriodMinutes, int assemblyDurationMinutes, int assemblyDropAmount, DateTime? startTime, DateTime? endTime
 });
 
 
@@ -971,11 +977,14 @@ class __$SquadBonusConfigCopyWithImpl<$Res>
 
 /// Create a copy of SquadBonusConfig
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isSquadBonusActive = null,Object? squadBonusMultiplier = null,Object? startTime = freezed,Object? endTime = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isSquadBonusActive = null,Object? squadBonusMultiplier = null,Object? gracePeriodMinutes = null,Object? assemblyDurationMinutes = null,Object? assemblyDropAmount = null,Object? startTime = freezed,Object? endTime = freezed,}) {
   return _then(_SquadBonusConfig(
 isSquadBonusActive: null == isSquadBonusActive ? _self.isSquadBonusActive : isSquadBonusActive // ignore: cast_nullable_to_non_nullable
 as bool,squadBonusMultiplier: null == squadBonusMultiplier ? _self.squadBonusMultiplier : squadBonusMultiplier // ignore: cast_nullable_to_non_nullable
-as double,startTime: freezed == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
+as double,gracePeriodMinutes: null == gracePeriodMinutes ? _self.gracePeriodMinutes : gracePeriodMinutes // ignore: cast_nullable_to_non_nullable
+as int,assemblyDurationMinutes: null == assemblyDurationMinutes ? _self.assemblyDurationMinutes : assemblyDurationMinutes // ignore: cast_nullable_to_non_nullable
+as int,assemblyDropAmount: null == assemblyDropAmount ? _self.assemblyDropAmount : assemblyDropAmount // ignore: cast_nullable_to_non_nullable
+as int,startTime: freezed == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
 as DateTime?,endTime: freezed == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));

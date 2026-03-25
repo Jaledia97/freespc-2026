@@ -2,6 +2,14 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+68] - 2026-03-25 - Squad Creation & External Recruitment
+
+### Added
+- **Squad Creation**: Rebuilt the `FriendsScreen` SliverAppBar injecting a dedicated "Create Squad" entry point. Users can organically form squads mapped inherently to their live `friendsProfilesProvider`.
+- **Backend Array Management**: Constructed `squad_repository.dart` guaranteeing atomic, multi-collection Batch Writes simultaneously across `users/` and `public_profiles/` architectures instantly.
+- **External Recruitment SDK**: Integrated `share_plus` into the `CreateSquadSheet` allowing Captains to physically generate and ping OS-level deep-links (`freespc://add_friend?uid=...`) globally.
+- **Minimum Array Lock**: Engineered a robust front-end validation explicitly restricting squad initialization to 51% bounds logic (4 selected members minimum before execution unlocks).
+
 ## [0.0.1+67] - 2026-03-25 - Raffle Recurrence & CMS UI Overhaul
 
 ### Added

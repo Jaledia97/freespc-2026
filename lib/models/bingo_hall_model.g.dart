@@ -121,6 +121,10 @@ _SquadBonusConfig _$SquadBonusConfigFromJson(Map<String, dynamic> json) =>
       isSquadBonusActive: json['isSquadBonusActive'] as bool? ?? false,
       squadBonusMultiplier:
           (json['squadBonusMultiplier'] as num?)?.toDouble() ?? 1.5,
+      gracePeriodMinutes: (json['gracePeriodMinutes'] as num?)?.toInt() ?? 3,
+      assemblyDurationMinutes:
+          (json['assemblyDurationMinutes'] as num?)?.toInt() ?? 15,
+      assemblyDropAmount: (json['assemblyDropAmount'] as num?)?.toInt() ?? 100,
       startTime: json['startTime'] == null
           ? null
           : DateTime.parse(json['startTime'] as String),
@@ -133,6 +137,9 @@ Map<String, dynamic> _$SquadBonusConfigToJson(_SquadBonusConfig instance) =>
     <String, dynamic>{
       'isSquadBonusActive': instance.isSquadBonusActive,
       'squadBonusMultiplier': instance.squadBonusMultiplier,
+      'gracePeriodMinutes': instance.gracePeriodMinutes,
+      'assemblyDurationMinutes': instance.assemblyDurationMinutes,
+      'assemblyDropAmount': instance.assemblyDropAmount,
       'startTime': instance.startTime?.toIso8601String(),
       'endTime': instance.endTime?.toIso8601String(),
     };

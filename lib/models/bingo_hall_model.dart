@@ -88,6 +88,9 @@ abstract class SquadBonusConfig with _$SquadBonusConfig {
   const factory SquadBonusConfig({
     @Default(false) bool isSquadBonusActive,
     @Default(1.5) double squadBonusMultiplier,
+    @Default(3) int gracePeriodMinutes,
+    @Default(15) int assemblyDurationMinutes,
+    @Default(100) int assemblyDropAmount,
     DateTime? startTime,
     DateTime? endTime,
   }) = _SquadBonusConfig;

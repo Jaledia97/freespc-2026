@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/auth_service.dart';
+import '../../manager/presentation/claim_venue_screen.dart';
 import 'blocked_users_screen.dart';
 
 class AccountSettingsScreen extends ConsumerWidget {
@@ -169,6 +170,41 @@ class AccountSettingsScreen extends ConsumerWidget {
                       }
                     },
                   ),
+                ),
+                const SizedBox(height: 24),
+
+                const Text(
+                  "Business Portal",
+                  style: TextStyle(
+                    color: Colors.amber,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Divider(color: Colors.amber),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                    'Register Business / Hall Portal',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  subtitle: const Text(
+                    'Claim and verify your venue to unlock the management CMS.',
+                    style: TextStyle(color: Colors.white38, fontSize: 12),
+                  ),
+                  leading: const Icon(Icons.storefront, color: Colors.amber),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white54,
+                    size: 16,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ClaimVenueScreen(),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 48),
 

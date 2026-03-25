@@ -32,6 +32,7 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
 
   bool _isSquadBonusActive = false;
   late TextEditingController _squadMultiplierController;
+  double _gracePeriodValue = 3.0;
   DateTime? _squadStartTime;
   DateTime? _squadEndTime;
 
@@ -69,6 +70,7 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
     _squadMultiplierController = TextEditingController(
       text: squadConfig.squadBonusMultiplier.toString(),
     );
+    _gracePeriodValue = squadConfig.gracePeriodMinutes.toDouble().clamp(1.0, 10.0);
     _squadStartTime = squadConfig.startTime;
     _squadEndTime = squadConfig.endTime;
   }
@@ -110,6 +112,7 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
         isSquadBonusActive: _isSquadBonusActive,
         squadBonusMultiplier:
             double.tryParse(_squadMultiplierController.text.trim()) ?? 1.5,
+        gracePeriodMinutes: _gracePeriodValue.toInt(),
         startTime: _squadStartTime,
         endTime: _squadEndTime,
       );
@@ -280,7 +283,7 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
               onChanged: (val) => setState(() => _isSquadBonusActive = val),
             ),
 
-            if (_isSquadBonusActive)
+            if (_isSquadBonusActive) ...[
               Padding(
                 padding: const EdgeInsets.only(left: 16, bottom: 16),
                 child: _buildNumberField(
@@ -291,6 +294,37 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
                   isDouble: true,
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.only(left: 16, bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Grace Period: \${_gracePeriodValue.toInt()} Minutes",
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    Slider(
+                      value: _gracePeriodValue,
+                      min: 1,
+                      max: 10,
+                      divisions: 9,
+                      activeColor: Colors.amber,
+                      inactiveColor: Colors.white12,
+                      onChanged: (val) {
+                        setState(() => _gracePeriodValue = val);
+                      },
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 4),
+                      child: Text(
+                        "How long can a squad drop below the capacity threshold (e.g., stepping outside) before their payout timer resets?",
+                        style: TextStyle(color: Colors.white38, fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

@@ -56,6 +56,7 @@ abstract class UserModel with _$UserModel {
     lastViewedPhotoApprovals, // Track when the worker last viewed pending photos
     @Default([]) List<String> fcmTokens, // Device tokens for push notifications
     @Default([]) List<String> squadIds,
+    String? pendingVenueClaimId, // Added for B2B Verification Funnel Tracking
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, Object?> json) =>
