@@ -8,6 +8,9 @@ import '../repositories/messaging_repository.dart';
 import 'chat_screen.dart';
 import 'new_chat_screen.dart';
 import '../../notifications/presentation/notifications_screen.dart';
+import '../../../../main.dart'; // For flutterLocalNotificationsPlugin
+import 'package:intl/intl.dart';
+import '../../settings/data/display_settings_repository.dart';
 
 final userChatsProvider = StreamProvider((ref) {
   final user = ref.watch(userProfileProvider).value;
@@ -26,6 +29,13 @@ class MessagingHubScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Clear OS local notifications safely
+    try {
+      flutterLocalNotificationsPlugin.cancelAll();
+    } catch (e) {
+      debugPrint("Failed to wipe notification tray natively: $e");
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
       appBar: AppBar(
@@ -55,6 +65,7 @@ class _MessagesTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final chatsAsync = ref.watch(userChatsProvider);
     final friendsAsync = ref.watch(friendsProfilesProvider);
+    final timeFormat = ref.watch(timeFormatProvider);
 
     return Column(
       children: [
@@ -295,7 +306,7 @@ class _MessagesTab extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            _formatDate(chat.lastMessageAt),
+                            _formatDate(chat.lastMessageAt, timeFormat == TimeFormat.h24),
                             style: TextStyle(
                               color: hasUnread
                                   ? Colors.blueAccent
@@ -358,12 +369,16 @@ class _MessagesTab extends ConsumerWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime date, bool use24HourClock) {
     final now = DateTime.now();
     if (date.year == now.year &&
         date.month == now.month &&
         date.day == now.day) {
-      return "${date.hour}:${date.minute.toString().padLeft(2, '0')}";
+      if (use24HourClock) {
+        return "${date.hour}:${date.minute.toString().padLeft(2, '0')}";
+      } else {
+        return DateFormat('h:mm a').format(date);
+      }
     }
     return "${date.month}/${date.day}";
   }

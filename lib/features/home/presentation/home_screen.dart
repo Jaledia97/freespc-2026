@@ -16,6 +16,7 @@ import '../../friends/presentation/friends_screen.dart';
 import '../../friends/presentation/find_friends_screen.dart';
 import '../../messaging/presentation/messaging_hub_screen.dart';
 import '../../notifications/presentation/notifications_screen.dart';
+import '../../../core/widgets/notification_badge.dart';
 import '../../../services/auth_service.dart';
 import 'hall_search_screen.dart';
 import '../../../models/public_profile.dart'; // Add this for PublicProfile
@@ -160,7 +161,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.chat_bubble_outline),
+                  icon: const NotificationBadge(
+                    showForGeneral: false,
+                    showForManager: false,
+                    child: Icon(Icons.chat_bubble_outline),
+                  ),
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(

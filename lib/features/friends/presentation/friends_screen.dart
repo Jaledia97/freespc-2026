@@ -13,6 +13,7 @@ import '../../messaging/presentation/messaging_hub_screen.dart';
 import '../../messaging/repositories/messaging_repository.dart';
 import '../../messaging/presentation/chat_screen.dart';
 import '../../profile/presentation/public_profile_screen.dart';
+import '../../../core/widgets/notification_badge.dart';
 
 // Provides a list of PublicProfiles for the user's accepted friends
 final friendsProfilesProvider = StreamProvider<List<PublicProfile>>((ref) {
@@ -128,7 +129,11 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.chat_bubble_outline),
+                    icon: const NotificationBadge(
+                      showForGeneral: false,
+                      showForManager: false,
+                      child: Icon(Icons.chat_bubble_outline),
+                    ),
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(

@@ -13,6 +13,7 @@ import 'features/messaging/presentation/chat_screen.dart';
 import 'dart:async'; // Added
 import 'dart:convert'; // Added
 import 'package:app_links/app_links.dart'; // Added
+import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart'; // Added
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Added
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,8 +21,82 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print("Handling a background message: ${message.messageId}");
+  WidgetsFlutterBinding.ensureInitialized();
+  // Firebase initialization aggressively mounts Firestore offline sockets Native Android.
+  // Explicitly removed so purely SharedPreferences array strings execute preventing Foreground send Deadlocks seamlessly.
+  if (message.notification == null) {
+    await _showLocalNotification(message);
+  }
+}
+
+Future<void> _showLocalNotification(RemoteMessage message) async {
+  print("--- BACKGROUND NOTIFICATION WAKE ---");
+  print("Platform: $defaultTargetPlatform");
+  if (defaultTargetPlatform != TargetPlatform.android) return;
+
+  final data = message.data;
+  print("Data Payload: $data");
+  
+  final isMessage = data['type'] == 'new_message';
+  if (!isMessage) {
+    print("Not a new_message type. Returning.");
+    return;
+  }
+
+  final chatId = data['chatId'] ?? 'general';
+  final title = data['title'] ?? 'New Message';
+  final body = data['body'] ?? '';
+  final senderName = data['senderName'] ?? title;
+
+  print("Loading SharedPreferences...");
+  final prefs = await SharedPreferences.getInstance();
+  final historyKey = 'chat_history_$chatId';
+  
+  List<String> history = prefs.getStringList(historyKey) ?? [];
+  history.add("$senderName: $body");
+  
+  if (history.length > 7) {
+    history.removeRange(0, history.length - 7);
+  }
+  await prefs.setStringList(historyKey, history);
+  print("Saved History: $history");
+
+  final inboxStyle = InboxStyleInformation(
+    history,
+    contentTitle: title,
+    summaryText: "${history.length} new messages",
+  );
+
+  print("Initializing Local Notifications...");
+  final flnp = FlutterLocalNotificationsPlugin();
+  await flnp.initialize(
+    settings: const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    ),
+  );
+
+  print("Triggering flnp.show()...");
+  try {
+    await flnp.show(
+      id: chatId.hashCode, // One unique expanding card per Conversation natively
+      title: title,
+      body: body,
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          'high_importance_channel', 
+          'High Importance Notifications',
+          styleInformation: inboxStyle,
+          priority: Priority.high,
+          importance: Importance.max,
+          groupKey: chatId,
+        ),
+      ),
+      payload: jsonEncode(data),
+    );
+    print("SUCCESS: Notification Drawn Locally!");
+  } catch (e) {
+    print("FATAL ERROR IN BACKGROUND ISOLATE: $e");
+  }
 }
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -102,8 +177,16 @@ void main() async {
     AndroidNotification? android = message.notification?.android;
 
     if (notification != null && android != null) {
+      int notificationId = notification.hashCode; // Unique constraint per message payload
+      String? threadId;
+
+      if (message.data['type'] == 'new_message' && message.data['chatId'] != null) {
+        threadId = message.data['chatId'];
+        notificationId = threadId.hashCode;
+      }
+
       flutterLocalNotificationsPlugin.show(
-        id: notification.hashCode,
+        id: notificationId,
         title: notification.title,
         body: notification.body,
         notificationDetails: NotificationDetails(
@@ -114,15 +197,20 @@ void main() async {
             icon: '@mipmap/ic_launcher',
             priority: Priority.high,
             importance: Importance.max,
+            groupKey: threadId,
           ),
-          iOS: const DarwinNotificationDetails(
+          iOS: DarwinNotificationDetails(
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
+            threadIdentifier: threadId,
           ),
         ),
         payload: jsonEncode(message.data),
       );
+    } else if (notification == null && message.data.isNotEmpty) {
+      // Offline/Data-only Foreground Pass-through tracking InboxStyle arrays perfectly
+      _showLocalNotification(message);
     }
   });
 

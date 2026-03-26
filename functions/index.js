@@ -36,18 +36,38 @@ exports.sendNotificationOnCreate = onDocumentCreated(
 
         console.log(`Found ${tokens.length} tokens for user ${userId}. Sending message...`);
 
-        // Prepare the push notification payload
+        const threadId = (notificationData.metadata && notificationData.metadata.chatId) 
+            ? notificationData.metadata.chatId 
+            : event.params.notificationId;
+
+        // Strip the root 'notification' property entirely.
+        // This forces Android into a Data-Only background isolated state,
+        // allowing FreeSpc to natively build InboxStyle expanded message cards exactly like Messenger. 
+        // iOS will read the 'alert' natively via the nested APNs parameter seamlessly.
+        
         const payload = {
-            notification: {
-                title: notificationData.title || "New Notification",
-                body: notificationData.body || "",
-            },
             data: {
                 type: notificationData.type || "system",
                 notificationId: event.params.notificationId,
-                ...(notificationData.metadata || {}), // Spread custom payload (e.g. chatId)
+                title: notificationData.title || "New Notification",
+                body: notificationData.body || "",
+                ...(notificationData.metadata || {}), 
             },
-            tokens: tokens, // sendEachForMulticast uses an array of tokens
+            android: {
+                priority: "high",
+            },
+            apns: {
+                payload: {
+                    aps: {
+                        alert: {
+                            title: notificationData.title || "New Message",
+                            body: notificationData.body || "",
+                        },
+                        "thread-id": threadId,
+                    }
+                }
+            },
+            tokens: tokens, 
         };
 
         try {

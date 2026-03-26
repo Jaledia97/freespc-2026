@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/auth_service.dart';
 import '../../../core/widgets/glass_container.dart';
 import 'register_screen.dart';
+import 'auth_wrapper.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -101,9 +102,16 @@ class LoginScreen extends ConsumerWidget {
                               imageUrl:
                                   "https://upload.wikimedia.org/wikipedia/commons/3/31/Apple_logo_white.svg",
                               onTap: () async {
-                                await ref
+                                final cred = await ref
                                     .read(authServiceProvider)
                                     .signInWithApple();
+                                if (cred != null && context.mounted) {
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const AuthWrapper()),
+                                    (route) => false,
+                                  );
+                                }
                               },
                               isDark: true,
                             ),
@@ -112,10 +120,17 @@ class LoginScreen extends ConsumerWidget {
                             _SocialButton(
                               imageUrl:
                                   "https://cdn-icons-png.flaticon.com/512/300/300221.png",
-                              onTap: () {
-                                ref
+                              onTap: () async {
+                                final cred = await ref
                                     .read(authServiceProvider)
                                     .signInWithGoogle();
+                                if (cred != null && context.mounted) {
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const AuthWrapper()),
+                                    (route) => false,
+                                  );
+                                }
                               },
                             ),
 
@@ -124,9 +139,16 @@ class LoginScreen extends ConsumerWidget {
                               imageUrl:
                                   "https://cdn-icons-png.flaticon.com/512/5968/5968764.png",
                               onTap: () async {
-                                await ref
+                                final cred = await ref
                                     .read(authServiceProvider)
                                     .signInWithFacebook();
+                                if (cred != null && context.mounted) {
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const AuthWrapper()),
+                                    (route) => false,
+                                  );
+                                }
                               },
                             ),
                           ],

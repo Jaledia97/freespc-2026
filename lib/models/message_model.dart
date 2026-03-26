@@ -18,8 +18,15 @@ abstract class MessageModel with _$MessageModel {
     String? replyToText,
     String? replyToSenderName,
     // Rich Embedded Widget data
-    String? payloadType, // 'tournament', 'raffle', etc
+    String? payloadType, // 'tournament', 'raffle', 'image', 'video', 'gif'
     String? payloadId,
+    // Media Attachments
+    String? mediaUrl,
+    String? thumbnailUrl,
+    double? aspectRatio,
+    // Action tracking
+    @Default({}) Map<String, String> reactions, // userId -> emoji
+    @Default([]) List<String> deletedBy, // users who hid message locally
   }) = _MessageModel;
 
   factory MessageModel.fromJson(Map<String, Object?> json) =>

@@ -18,6 +18,19 @@ _MessageModel _$MessageModelFromJson(Map<String, dynamic> json) =>
       replyToSenderName: json['replyToSenderName'] as String?,
       payloadType: json['payloadType'] as String?,
       payloadId: json['payloadId'] as String?,
+      mediaUrl: json['mediaUrl'] as String?,
+      thumbnailUrl: json['thumbnailUrl'] as String?,
+      aspectRatio: (json['aspectRatio'] as num?)?.toDouble(),
+      reactions:
+          (json['reactions'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(k, e as String),
+          ) ??
+          const {},
+      deletedBy:
+          (json['deletedBy'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$MessageModelToJson(_MessageModel instance) =>
@@ -32,4 +45,9 @@ Map<String, dynamic> _$MessageModelToJson(_MessageModel instance) =>
       'replyToSenderName': instance.replyToSenderName,
       'payloadType': instance.payloadType,
       'payloadId': instance.payloadId,
+      'mediaUrl': instance.mediaUrl,
+      'thumbnailUrl': instance.thumbnailUrl,
+      'aspectRatio': instance.aspectRatio,
+      'reactions': instance.reactions,
+      'deletedBy': instance.deletedBy,
     };

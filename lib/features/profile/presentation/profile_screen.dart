@@ -16,6 +16,7 @@ import '../../wallet/presentation/my_raffles_screen.dart'; // Import MyRafflesSc
 import '../../home/presentation/upcoming_games_screen.dart'; // Import UpcomingGamesScreen
 import '../../friends/presentation/friends_screen.dart'; // Import FriendsScreen
 import '../../messaging/presentation/messaging_hub_screen.dart';
+import '../../auth/presentation/login_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -223,7 +224,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       body: userAsync.when(
         data: (user) {
           if (user == null) {
-            return const Center(child: Text("User not found"));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("You are logged out.", style: TextStyle(color: Colors.white54)),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (route) => false,
+                      );
+                    },
+                    child: const Text("Login / Sign Up"),
+                  ),
+                ],
+              ),
+            );
           }
           return CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(

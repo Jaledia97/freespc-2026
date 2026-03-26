@@ -2,6 +2,19 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+70] - 2026-03-26 - S-Tier Media Chat Experience (Phases 39-43)
+
+### Added
+- **Native Media Compression**: Engineered severe local client compression workflows using `flutter_image_compress` and `video_compress`, intercepting and tightly downscaling massive user gallery files before triggering Firebase Storage uploads to aggressively protect native bandwidth.
+- **Zero-Cost GIF CDN Routing**: Bypassed Firebase Storage completely for GIF interactions. Integrated `giphy_get` to exclusively map isolated 3rd-party CDN URL strings over the messaging payload, bringing GIF backend storage expenses exactly down to $0 organically.
+- **Video Thumbnails & Fullscreen Player**: Restricted raw video auto-playback natively. Chat screens now purely render deeply-compressed pre-extracted Thumbnails enveloped in a darkened "Play Button" Stack which gracefully invokes a synchronous `Chewie` fullscreen `VideoPlayerDialog` natively when engaged.
+- **Group Chat Avatar Stacking**: Completely replaced the generic read receipt logic explicitly mapping an intelligent `Future.wait` overlapping `Stack` boundary rendering exactly up to 5 concurrent miniaturized 14x14 CircleAvatars dynamically mimicking native iMessage cluster formats gracefully seamlessly.
+- **Message Action Hooks**: Linked native `GestureDetector` payloads to long-press executions triggering a universal `MessageActionSheet`. Bound `deleteMessageLocally` to hide elements dynamically masking explicit arrays securely.
+
+### Changed
+- **Swipe Tuning**: Recalibrated the native `Dismissible` bounds replacing the default `0.4` threshold with an immediate `0.1` threshold explicitly, vastly decreasing swipe friction naturally.
+- **Dynamic Text Masking**: Isolated raw string texts (e.g., "Sent a photo") cleanly rendering purely the physical CDN UI cards when media arrays define explicit `.mediaUrl` payload locks conditionally neatly cleanly smoothly securely.
+
 ## [0.0.1+69] - 2026-03-26 - The 13-Part Social Architecture Scaling (Phases 18-30)
 
 ### Added

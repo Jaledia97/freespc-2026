@@ -11,6 +11,7 @@ import '../../../models/tournament_participation_model.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../home/repositories/hall_repository.dart';
 import '../../messaging/presentation/messaging_hub_screen.dart';
+import '../../../core/widgets/notification_badge.dart';
 
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
@@ -27,7 +28,11 @@ class WalletScreen extends ConsumerWidget {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.chat_bubble_outline),
+            icon: const NotificationBadge(
+              showForGeneral: false,
+              showForManager: false,
+              child: Icon(Icons.chat_bubble_outline),
+            ),
             onPressed: () {
               Navigator.push(
                 context,
