@@ -352,21 +352,50 @@ class AuthService {
           .collection('public_profiles')
           .where('username', isGreaterThanOrEqualTo: term)
           .where('username', isLessThanOrEqualTo: '$term\uf8ff')
-          .limit(50)
+          .limit(25)
           .get();
 
-      return snapshot.docs
+      var results = snapshot.docs
           .map((doc) {
             try {
               return PublicProfile.fromJson(doc.data());
             } catch (e) {
-              print("Error parsing public profile ${doc.id}: $e");
               return null;
             }
           })
           .where((profile) => profile != null)
           .cast<PublicProfile>()
           .toList();
+
+      // Typo-Tolerant Fallback: If exact prefix fails, pull general subset and perform stripped-substring fuzzy matching
+      if (results.length < 3) {
+        final fallbackSnap = await _firestore.collection('public_profiles').limit(50).get();
+        final rawQuery = term.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+
+        final fallbackResults = fallbackSnap.docs
+            .map((doc) {
+              try {
+                return PublicProfile.fromJson(doc.data());
+              } catch (_) {
+                return null;
+              }
+            })
+            .whereType<PublicProfile>()
+            .where((profile) {
+              final rawUsername = profile.username.toLowerCase().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+              final rawFirst = profile.firstName.toLowerCase().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+              return rawUsername.contains(rawQuery) || rawFirst.contains(rawQuery);
+            })
+            .toList();
+
+        for (var profile in fallbackResults) {
+          if (!results.any((r) => r.uid == profile.uid)) {
+            results.add(profile);
+          }
+        }
+      }
+
+      return results;
     } catch (e) {
       print("Error searching users: $e");
       return [];

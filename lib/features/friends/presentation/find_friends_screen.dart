@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:async';
 
 import '../../../services/auth_service.dart';
 import '../../scan/presentation/scan_screen.dart';
@@ -229,6 +230,7 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
   List<PublicProfile> _suggestedResults = [];
   bool _isSearching = false;
   bool _hasSearched = false;
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -243,6 +245,13 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
         _suggestedResults = results;
       });
     }
+  }
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _performSearch(query);
+    });
   }
 
   Future<void> _performSearch(String query) async {
@@ -275,6 +284,7 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -312,6 +322,7 @@ class _ManualSearchSectionState extends ConsumerState<_ManualSearchSection> {
                 onPressed: () => _performSearch(_searchController.text),
               ),
             ),
+            onChanged: _onSearchChanged,
             onSubmitted: _performSearch,
           ),
         ),

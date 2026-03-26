@@ -1,5 +1,6 @@
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const moment = require("moment-timezone");
 admin.initializeApp();
@@ -278,3 +279,112 @@ exports.onRaffleWritten = onDocumentWritten("raffles/{docId}", async (event) => 
         }
     }
 });
+
+// --- B2B SUPERADMIN VERIFICATION ---
+exports.onApproveClaim = onCall(async (request) => {
+    // 1. Authenticate Request
+    if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Endpoint requires authentication.');
+    }
+    
+    // Check if caller is superadmin (assuming role check or specific UID mapping if needed)
+    const callerId = request.auth.uid;
+    const db = admin.firestore();
+    const callerDoc = await db.collection("users").doc(callerId).get();
+    
+    if (!callerDoc.exists || callerDoc.data().role !== "superadmin") {
+        throw new HttpsError('permission-denied', 'Only Superadmins can approve B2B claims.');
+    }
+
+    const { claimId } = request.data;
+    if (!claimId) {
+         throw new HttpsError('invalid-argument', 'The "claimId" parameter is required.');
+    }
+
+    // 2. Fetch Claim
+    const claimRef = db.collection("venue_claims").doc(claimId);
+    const claimDoc = await claimRef.get();
+    
+    if (!claimDoc.exists) {
+        throw new HttpsError('not-found', 'Venue claim document not found.');
+    }
+    
+    const claimData = claimDoc.data();
+    if (claimData.status !== 'pending') {
+         throw new HttpsError('failed-precondition', 'Claim is not in a pending state.');
+    }
+
+    // 3. Execute Batch Role Elevation
+    const batch = db.batch();
+    const targetUserId = claimData.userId;
+    const venueId = claimData.requestedVenueId;
+    
+    // Update Claim Status
+    batch.update(claimRef, { status: 'approved' });
+    
+    // Elevate Target User
+    const userRef = db.collection("users").doc(targetUserId);
+    batch.update(userRef, {
+        role: 'owner',
+        homeBaseId: venueId
+    });
+    
+    await batch.commit();
+    return { success: true, message: `User \${targetUserId} elevated to Owner of \${venueId}.` };
+});
+
+exports.onRejectClaim = onCall(async (request) => {
+    // 1. Authenticate Request
+    if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Endpoint requires authentication.');
+    }
+    
+    const callerId = request.auth.uid;
+    const db = admin.firestore();
+    const callerDoc = await db.collection("users").doc(callerId).get();
+    
+    if (!callerDoc.exists || callerDoc.data().role !== "superadmin") {
+        throw new HttpsError('permission-denied', 'Only Superadmins can reject B2B claims.');
+    }
+
+    const { claimId } = request.data;
+    if (!claimId) {
+         throw new HttpsError('invalid-argument', 'The "claimId" parameter is required.');
+    }
+
+    // 2. Execute Reject
+    const claimRef = db.collection("venue_claims").doc(claimId);
+    await claimRef.update({ status: 'rejected' });
+    
+    return { success: true, message: `Claim \${claimId} securely rejected.` };
+});
+
+// --- TYPO-TOLERANT SEARCH (TYPESENSE/ALGOLIA SYNC) ---
+exports.syncProfileToSearch = onDocumentWritten("public_profiles/{uid}", async (event) => {
+    const snapshot = event.data;
+    if (!snapshot) {
+        console.log(`Profile \${event.params.uid} deleted. Remove from search index proxy...`);
+        // await searchClient.deleteObject(event.params.uid);
+        return;
+    }
+    
+    const afterData = snapshot.after ? snapshot.after.data() : null;
+    if (!afterData) return;
+    
+    console.log(`Syncing Profile \${event.params.uid} to Typo-Tolerant Search provider...`);
+    
+    // Scaffold payload matching Algolia/Typesense schema
+    const searchPayload = {
+        objectID: event.params.uid,
+        username: afterData.username,
+        firstName: afterData.firstName,
+        lastName: afterData.lastName,
+        photoUrl: afterData.photoUrl,
+        _tags: [afterData.role], // Role-based filtering capabilities
+    };
+    
+    // TODO: Connect Algolia client instance and push `searchPayload` natively.
+    // await index.saveObject(searchPayload);
+    console.log(`Search payload scaffolded securely for \${afterData.username}.`);
+});
+

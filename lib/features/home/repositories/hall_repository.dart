@@ -717,6 +717,7 @@ class HallRepository {
       }
     } catch (e) {
       print("Error toggling interaction: $e");
+      throw Exception('Failed to synchronize interaction state to backend: $e');
     }
   }
 

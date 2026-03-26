@@ -16,7 +16,9 @@ T _$identity<T>(T value) => value;
 mixin _$MessageModel {
 
  String get id; String get chatId; String get senderId; String get text; DateTime get createdAt;// Reply data
- String? get replyToMessageId; String? get replyToText; String? get replyToSenderName;
+ String? get replyToMessageId; String? get replyToText; String? get replyToSenderName;// Rich Embedded Widget data
+ String? get payloadType;// 'tournament', 'raffle', etc
+ String? get payloadId;
 /// Create a copy of MessageModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +31,16 @@ $MessageModelCopyWith<MessageModel> get copyWith => _$MessageModelCopyWithImpl<M
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MessageModel&&(identical(other.id, id) || other.id == id)&&(identical(other.chatId, chatId) || other.chatId == chatId)&&(identical(other.senderId, senderId) || other.senderId == senderId)&&(identical(other.text, text) || other.text == text)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.replyToMessageId, replyToMessageId) || other.replyToMessageId == replyToMessageId)&&(identical(other.replyToText, replyToText) || other.replyToText == replyToText)&&(identical(other.replyToSenderName, replyToSenderName) || other.replyToSenderName == replyToSenderName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MessageModel&&(identical(other.id, id) || other.id == id)&&(identical(other.chatId, chatId) || other.chatId == chatId)&&(identical(other.senderId, senderId) || other.senderId == senderId)&&(identical(other.text, text) || other.text == text)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.replyToMessageId, replyToMessageId) || other.replyToMessageId == replyToMessageId)&&(identical(other.replyToText, replyToText) || other.replyToText == replyToText)&&(identical(other.replyToSenderName, replyToSenderName) || other.replyToSenderName == replyToSenderName)&&(identical(other.payloadType, payloadType) || other.payloadType == payloadType)&&(identical(other.payloadId, payloadId) || other.payloadId == payloadId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,chatId,senderId,text,createdAt,replyToMessageId,replyToText,replyToSenderName);
+int get hashCode => Object.hash(runtimeType,id,chatId,senderId,text,createdAt,replyToMessageId,replyToText,replyToSenderName,payloadType,payloadId);
 
 @override
 String toString() {
-  return 'MessageModel(id: $id, chatId: $chatId, senderId: $senderId, text: $text, createdAt: $createdAt, replyToMessageId: $replyToMessageId, replyToText: $replyToText, replyToSenderName: $replyToSenderName)';
+  return 'MessageModel(id: $id, chatId: $chatId, senderId: $senderId, text: $text, createdAt: $createdAt, replyToMessageId: $replyToMessageId, replyToText: $replyToText, replyToSenderName: $replyToSenderName, payloadType: $payloadType, payloadId: $payloadId)';
 }
 
 
@@ -49,7 +51,7 @@ abstract mixin class $MessageModelCopyWith<$Res>  {
   factory $MessageModelCopyWith(MessageModel value, $Res Function(MessageModel) _then) = _$MessageModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String chatId, String senderId, String text, DateTime createdAt, String? replyToMessageId, String? replyToText, String? replyToSenderName
+ String id, String chatId, String senderId, String text, DateTime createdAt, String? replyToMessageId, String? replyToText, String? replyToSenderName, String? payloadType, String? payloadId
 });
 
 
@@ -66,7 +68,7 @@ class _$MessageModelCopyWithImpl<$Res>
 
 /// Create a copy of MessageModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? chatId = null,Object? senderId = null,Object? text = null,Object? createdAt = null,Object? replyToMessageId = freezed,Object? replyToText = freezed,Object? replyToSenderName = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? chatId = null,Object? senderId = null,Object? text = null,Object? createdAt = null,Object? replyToMessageId = freezed,Object? replyToText = freezed,Object? replyToSenderName = freezed,Object? payloadType = freezed,Object? payloadId = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,chatId: null == chatId ? _self.chatId : chatId // ignore: cast_nullable_to_non_nullable
@@ -76,6 +78,8 @@ as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: 
 as DateTime,replyToMessageId: freezed == replyToMessageId ? _self.replyToMessageId : replyToMessageId // ignore: cast_nullable_to_non_nullable
 as String?,replyToText: freezed == replyToText ? _self.replyToText : replyToText // ignore: cast_nullable_to_non_nullable
 as String?,replyToSenderName: freezed == replyToSenderName ? _self.replyToSenderName : replyToSenderName // ignore: cast_nullable_to_non_nullable
+as String?,payloadType: freezed == payloadType ? _self.payloadType : payloadType // ignore: cast_nullable_to_non_nullable
+as String?,payloadId: freezed == payloadId ? _self.payloadId : payloadId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -161,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String chatId,  String senderId,  String text,  DateTime createdAt,  String? replyToMessageId,  String? replyToText,  String? replyToSenderName)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String chatId,  String senderId,  String text,  DateTime createdAt,  String? replyToMessageId,  String? replyToText,  String? replyToSenderName,  String? payloadType,  String? payloadId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MessageModel() when $default != null:
-return $default(_that.id,_that.chatId,_that.senderId,_that.text,_that.createdAt,_that.replyToMessageId,_that.replyToText,_that.replyToSenderName);case _:
+return $default(_that.id,_that.chatId,_that.senderId,_that.text,_that.createdAt,_that.replyToMessageId,_that.replyToText,_that.replyToSenderName,_that.payloadType,_that.payloadId);case _:
   return orElse();
 
 }
@@ -182,10 +186,10 @@ return $default(_that.id,_that.chatId,_that.senderId,_that.text,_that.createdAt,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String chatId,  String senderId,  String text,  DateTime createdAt,  String? replyToMessageId,  String? replyToText,  String? replyToSenderName)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String chatId,  String senderId,  String text,  DateTime createdAt,  String? replyToMessageId,  String? replyToText,  String? replyToSenderName,  String? payloadType,  String? payloadId)  $default,) {final _that = this;
 switch (_that) {
 case _MessageModel():
-return $default(_that.id,_that.chatId,_that.senderId,_that.text,_that.createdAt,_that.replyToMessageId,_that.replyToText,_that.replyToSenderName);case _:
+return $default(_that.id,_that.chatId,_that.senderId,_that.text,_that.createdAt,_that.replyToMessageId,_that.replyToText,_that.replyToSenderName,_that.payloadType,_that.payloadId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +206,10 @@ return $default(_that.id,_that.chatId,_that.senderId,_that.text,_that.createdAt,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String chatId,  String senderId,  String text,  DateTime createdAt,  String? replyToMessageId,  String? replyToText,  String? replyToSenderName)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String chatId,  String senderId,  String text,  DateTime createdAt,  String? replyToMessageId,  String? replyToText,  String? replyToSenderName,  String? payloadType,  String? payloadId)?  $default,) {final _that = this;
 switch (_that) {
 case _MessageModel() when $default != null:
-return $default(_that.id,_that.chatId,_that.senderId,_that.text,_that.createdAt,_that.replyToMessageId,_that.replyToText,_that.replyToSenderName);case _:
+return $default(_that.id,_that.chatId,_that.senderId,_that.text,_that.createdAt,_that.replyToMessageId,_that.replyToText,_that.replyToSenderName,_that.payloadType,_that.payloadId);case _:
   return null;
 
 }
@@ -217,7 +221,7 @@ return $default(_that.id,_that.chatId,_that.senderId,_that.text,_that.createdAt,
 @JsonSerializable()
 
 class _MessageModel extends MessageModel {
-  const _MessageModel({required this.id, required this.chatId, required this.senderId, required this.text, required this.createdAt, this.replyToMessageId, this.replyToText, this.replyToSenderName}): super._();
+  const _MessageModel({required this.id, required this.chatId, required this.senderId, required this.text, required this.createdAt, this.replyToMessageId, this.replyToText, this.replyToSenderName, this.payloadType, this.payloadId}): super._();
   factory _MessageModel.fromJson(Map<String, dynamic> json) => _$MessageModelFromJson(json);
 
 @override final  String id;
@@ -229,6 +233,10 @@ class _MessageModel extends MessageModel {
 @override final  String? replyToMessageId;
 @override final  String? replyToText;
 @override final  String? replyToSenderName;
+// Rich Embedded Widget data
+@override final  String? payloadType;
+// 'tournament', 'raffle', etc
+@override final  String? payloadId;
 
 /// Create a copy of MessageModel
 /// with the given fields replaced by the non-null parameter values.
@@ -243,16 +251,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MessageModel&&(identical(other.id, id) || other.id == id)&&(identical(other.chatId, chatId) || other.chatId == chatId)&&(identical(other.senderId, senderId) || other.senderId == senderId)&&(identical(other.text, text) || other.text == text)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.replyToMessageId, replyToMessageId) || other.replyToMessageId == replyToMessageId)&&(identical(other.replyToText, replyToText) || other.replyToText == replyToText)&&(identical(other.replyToSenderName, replyToSenderName) || other.replyToSenderName == replyToSenderName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MessageModel&&(identical(other.id, id) || other.id == id)&&(identical(other.chatId, chatId) || other.chatId == chatId)&&(identical(other.senderId, senderId) || other.senderId == senderId)&&(identical(other.text, text) || other.text == text)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.replyToMessageId, replyToMessageId) || other.replyToMessageId == replyToMessageId)&&(identical(other.replyToText, replyToText) || other.replyToText == replyToText)&&(identical(other.replyToSenderName, replyToSenderName) || other.replyToSenderName == replyToSenderName)&&(identical(other.payloadType, payloadType) || other.payloadType == payloadType)&&(identical(other.payloadId, payloadId) || other.payloadId == payloadId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,chatId,senderId,text,createdAt,replyToMessageId,replyToText,replyToSenderName);
+int get hashCode => Object.hash(runtimeType,id,chatId,senderId,text,createdAt,replyToMessageId,replyToText,replyToSenderName,payloadType,payloadId);
 
 @override
 String toString() {
-  return 'MessageModel(id: $id, chatId: $chatId, senderId: $senderId, text: $text, createdAt: $createdAt, replyToMessageId: $replyToMessageId, replyToText: $replyToText, replyToSenderName: $replyToSenderName)';
+  return 'MessageModel(id: $id, chatId: $chatId, senderId: $senderId, text: $text, createdAt: $createdAt, replyToMessageId: $replyToMessageId, replyToText: $replyToText, replyToSenderName: $replyToSenderName, payloadType: $payloadType, payloadId: $payloadId)';
 }
 
 
@@ -263,7 +271,7 @@ abstract mixin class _$MessageModelCopyWith<$Res> implements $MessageModelCopyWi
   factory _$MessageModelCopyWith(_MessageModel value, $Res Function(_MessageModel) _then) = __$MessageModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String chatId, String senderId, String text, DateTime createdAt, String? replyToMessageId, String? replyToText, String? replyToSenderName
+ String id, String chatId, String senderId, String text, DateTime createdAt, String? replyToMessageId, String? replyToText, String? replyToSenderName, String? payloadType, String? payloadId
 });
 
 
@@ -280,7 +288,7 @@ class __$MessageModelCopyWithImpl<$Res>
 
 /// Create a copy of MessageModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? chatId = null,Object? senderId = null,Object? text = null,Object? createdAt = null,Object? replyToMessageId = freezed,Object? replyToText = freezed,Object? replyToSenderName = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? chatId = null,Object? senderId = null,Object? text = null,Object? createdAt = null,Object? replyToMessageId = freezed,Object? replyToText = freezed,Object? replyToSenderName = freezed,Object? payloadType = freezed,Object? payloadId = freezed,}) {
   return _then(_MessageModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,chatId: null == chatId ? _self.chatId : chatId // ignore: cast_nullable_to_non_nullable
@@ -290,6 +298,8 @@ as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: 
 as DateTime,replyToMessageId: freezed == replyToMessageId ? _self.replyToMessageId : replyToMessageId // ignore: cast_nullable_to_non_nullable
 as String?,replyToText: freezed == replyToText ? _self.replyToText : replyToText // ignore: cast_nullable_to_non_nullable
 as String?,replyToSenderName: freezed == replyToSenderName ? _self.replyToSenderName : replyToSenderName // ignore: cast_nullable_to_non_nullable
+as String?,payloadType: freezed == payloadType ? _self.payloadType : payloadType // ignore: cast_nullable_to_non_nullable
+as String?,payloadId: freezed == payloadId ? _self.payloadId : payloadId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

@@ -16,6 +16,8 @@ _MessageModel _$MessageModelFromJson(Map<String, dynamic> json) =>
       replyToMessageId: json['replyToMessageId'] as String?,
       replyToText: json['replyToText'] as String?,
       replyToSenderName: json['replyToSenderName'] as String?,
+      payloadType: json['payloadType'] as String?,
+      payloadId: json['payloadId'] as String?,
     );
 
 Map<String, dynamic> _$MessageModelToJson(_MessageModel instance) =>
@@ -28,4 +30,6 @@ Map<String, dynamic> _$MessageModelToJson(_MessageModel instance) =>
       'replyToMessageId': instance.replyToMessageId,
       'replyToText': instance.replyToText,
       'replyToSenderName': instance.replyToSenderName,
+      'payloadType': instance.payloadType,
+      'payloadId': instance.payloadId,
     };

@@ -255,6 +255,17 @@ class _MyAppState extends ConsumerState<MyApp> {
       ref.invalidate(pendingInviteProvider);
       return;
     }
+
+    // Deferred Feed Deep-Link Routing
+    final type = uri.queryParameters['type'];
+    final docId = uri.queryParameters['id'];
+    if (uri.toString().contains('feed') && type != null && docId != null) {
+      print("Deep Link Detected: Deferred Feed Routing -> type:$type id:$docId");
+      await prefs.setString('pending_feed_type', type);
+      await prefs.setString('pending_feed_id', docId);
+      ref.invalidate(pendingInviteProvider);
+      return;
+    }
   }
 
   @override

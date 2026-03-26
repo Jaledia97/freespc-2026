@@ -10,6 +10,7 @@ import 'login_screen.dart';
 import '../../settings/data/display_settings_repository.dart'; // Added for sharedPreferencesProvider
 import '../../friends/repositories/friends_repository.dart'; // Added
 import '../../../models/public_profile.dart'; // Added
+import '../../home/presentation/widgets/comments_bottom_sheet.dart';
 
 class AuthWrapper extends ConsumerStatefulWidget {
   const AuthWrapper({super.key});
@@ -71,7 +72,8 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     return authState.when(
       data: (user) {
         if (user == null) {
-          return const LoginScreen();
+          // GUEST MODE: Allow unauthenticated users into the app instantly.
+          return const _AuthHandler(child: MainLayout());
         }
 
         // The user is logged in. Before we even check `hasProfileAsync`,
@@ -157,6 +159,32 @@ class _AuthHandlerState extends ConsumerState<_AuthHandler> {
         barrierDismissible: false,
         builder: (ctx) => _AddFriendDialog(friendUid: friendUid, prefs: prefs),
       );
+    }
+    
+    // 3. Deferred Deep Link Interceptor (Post-Auth Routing)
+    final feedType = prefs.getString('pending_feed_type');
+    final feedId = prefs.getString('pending_feed_id');
+    if (feedType != null && feedId != null && mounted) {
+      prefs.remove('pending_feed_type');
+      prefs.remove('pending_feed_id');
+      
+      final user = ref.read(authStateChangesProvider).value;
+      if (user != null) {
+         showModalBottomSheet(
+           context: context,
+           isScrollControlled: true,
+           backgroundColor: Colors.transparent,
+           builder: (ctx) => CommentsBottomSheet(
+             collectionName: feedType,
+             docId: feedId,
+             currentUser: user,
+           ),
+         );
+      } else {
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text("Account required to interact with this payload natively.")),
+         );
+      }
     }
   }
 

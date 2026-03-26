@@ -747,6 +747,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                 fontSize: 16,
                                               ),
                                             ),
+                                            
+                                            // Rich Embedded Widget Visualizer
+                                            if (msg.payloadType != null && msg.payloadId != null)
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 8.0),
+                                                child: _EmbeddedWidgetCard(
+                                                  payloadType: msg.payloadType!,
+                                                  payloadId: msg.payloadId!,
+                                                  isMe: isMe,
+                                                ),
+                                              ),
                                           ],
                                         ),
                                       ),
@@ -934,3 +945,149 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 }
+
+class _EmbeddedWidgetCard extends StatelessWidget {
+  final String payloadType;
+  final String payloadId;
+  final bool isMe;
+
+  const _EmbeddedWidgetCard({
+    required this.payloadType,
+    required this.payloadId,
+    required this.isMe,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    IconData icon;
+    String label;
+    Color color;
+
+    switch (payloadType) {
+      case 'tournament':
+        icon = Icons.emoji_events;
+        label = 'Tournament Highlight';
+        color = Colors.amber;
+        break;
+      case 'raffle':
+        icon = Icons.local_activity;
+        label = 'Raffle Drop';
+        color = Colors.purpleAccent;
+        break;
+      case 'special':
+        icon = Icons.local_offer;
+        label = 'Exclusive Special';
+        color = Colors.greenAccent;
+        break;
+      case 'checkIn':
+        icon = Icons.location_on;
+        label = 'Live Check-In';
+        color = Colors.redAccent;
+        break;
+      default:
+        icon = Icons.bolt;
+        label = 'Feed Event';
+        color = Colors.blueAccent;
+    }
+
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 240),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isMe ? Colors.white.withOpacity(0.15) : Colors.black.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 16),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Event ID: \$payloadId",
+            style: const TextStyle(color: Colors.white70, fontSize: 11),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            height: 32,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color.withOpacity(0.2),
+                foregroundColor: color,
+                elevation: 0,
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                // Interactive trigger - spawn bottom sheet keeping user in DM context
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Color(0xFF1E1E1E),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                  ),
+                  builder: (ctx) => Container(
+                    padding: const EdgeInsets.all(24),
+                    height: 250,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          "\$label Validation",
+                          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Accessing Payload: \$payloadId",
+                          style: const TextStyle(color: Colors.white54, fontSize: 13),
+                        ),
+                        const Spacer(),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: color,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Interacted with \$payloadType natively from DM!')),
+                            );
+                          },
+                          child: const Text("Confirm Action", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              child: const Text('View Payload', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
