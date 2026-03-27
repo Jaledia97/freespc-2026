@@ -17,6 +17,7 @@ import '../../../models/message_model.dart'; // Ensure message model is imported
 import 'widgets/message_action_sheet.dart';
 import 'widgets/video_player_dialog.dart';
 import 'group_settings_screen.dart';
+import '../../../core/constants/api_keys.dart';
 import 'package:vibration/vibration.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../main.dart'; // For flutterLocalNotificationsPlugin
@@ -184,14 +185,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
         decoration: const BoxDecoration(
           color: Color(0xFF1E1E1E),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+        child: SafeArea(
+          bottom: true,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
             ListTile(
               leading: const Icon(Icons.camera_alt, color: Colors.blueAccent),
               title: const Text("Camera", style: TextStyle(color: Colors.white)),
@@ -226,7 +231,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
           ],
         ),
-      ),
+      ))),
     );
   }
 
@@ -262,7 +267,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     
     final gif = await GiphyGet.getGif(
       context: context,
-      apiKey: "8st7vK1eN8f6HbdYfJ51c2rXU4W8YZb8", // Public test key, developer must replace it in production
+      apiKey: ApiKeys.giphyKey,
     );
     
     if (gif != null && gif.images?.original?.url != null) {

@@ -45,3 +45,6 @@ app.*.map.json
 /android/app/release
 
 functions/node_modules/
+
+# Secure API Keys
+lib/core/constants/api_keys.dart
