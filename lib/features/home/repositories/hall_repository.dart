@@ -722,6 +722,58 @@ class HallRepository {
   }
 
   // --- Comments ---
+  Future<void> checkIn({
+    required String userId,
+    required String hallId,
+    required String hallName,
+  }) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      if (!userDoc.exists) return;
+
+      final userData = userDoc.data()!;
+      final userName =
+          userData['username'] ?? userData['firstName'] ?? 'Player';
+      final String? photoUrl = userData['photoUrl'];
+
+      final feedRef = _firestore
+          .collection('bingo_halls')
+          .doc(hallId)
+          .collection('feed')
+          .doc();
+
+      final batch = _firestore.batch();
+
+      batch.set(feedRef, {
+        'id': feedRef.id,
+        'type': 'checkIn',
+        'title': "Checked In!",
+        'description': "$userName is playing at $hallName!",
+        'userId': userId,
+        'userName': userName,
+        'userProfilePicture': photoUrl,
+        'hallId': hallId,
+        'hallName': hallName,
+        'createdAt': FieldValue.serverTimestamp(),
+        'reactionUserIds': [],
+        'interestedUserIds': [],
+        'commentCount': 0,
+        'latestComment': null,
+      });
+
+      batch.update(_firestore.collection('users').doc(userId), {
+        'currentCheckInHallId': hallId,
+      });
+      batch.update(_firestore.collection('public_profiles').doc(userId), {
+        'currentCheckInHallId': hallId,
+      });
+
+      await batch.commit();
+    } catch (e) {
+      print('Check-in failed: $e');
+    }
+  }
+
   Stream<List<CommentModel>> getComments(String collectionName, String docId) {
     return _firestore
         .collection(collectionName)
@@ -759,6 +811,43 @@ class HallRepository {
       'commentCount': FieldValue.increment(1),
       'latestComment': snippetPayload,
     });
+
+    // Explicitly notify the Post/Comment Author
+    try {
+      final postDoc = await _firestore.collection(collectionName).doc(docId).get();
+      if (postDoc.exists) {
+        final postData = postDoc.data() as Map<String, dynamic>;
+        String? targetUserId;
+        String? threadGroupStr = docId;
+
+        if (comment.parentId != null) {
+          final parentDoc = await _firestore.collection(collectionName).doc(docId).collection('comments').doc(comment.parentId).get();
+          targetUserId = parentDoc.data()?['authorId'] as String?;
+          threadGroupStr = comment.parentId!;
+        } else {
+          targetUserId = (postData['userId'] ?? postData['authorId']) as String?;
+        }
+            
+        if (targetUserId != null && targetUserId != comment.authorId) {
+          final notifRef = _firestore.collection('users').doc(targetUserId).collection('notifications').doc();
+          await notifRef.set({
+            'id': notifRef.id,
+            'userId': targetUserId,
+            'title': comment.parentId != null ? "New Reply" : "New Comment",
+            'body': "${comment.authorName} commented: ${comment.text}",
+            'type': 'new_comment',
+            'createdAt': FieldValue.serverTimestamp(),
+            'isRead': false,
+            'metadata': {
+              'postId': threadGroupStr,
+              'collectionName': collectionName,
+            }
+          });
+        }
+      }
+    } catch (e) {
+      print("Error sending comment notification: \$e");
+    }
   }
 
   Future<void> updateComment(
@@ -789,6 +878,61 @@ class HallRepository {
     await _firestore.collection(collectionName).doc(docId).update({
       'commentCount': FieldValue.increment(-1),
     });
+  }
+
+  Future<void> reactToComment(
+    String collectionName,
+    String targetId,
+    String commentId,
+    String userId,
+    String emoji,
+  ) async {
+    final commentRef = _firestore
+        .collection(collectionName)
+        .doc(targetId)
+        .collection('comments')
+        .doc(commentId);
+
+    final doc = await commentRef.get();
+    if (!doc.exists) return;
+    final data = doc.data() as Map<String, dynamic>;
+    final currentReactions = (data['reactions'] as Map<String, dynamic>?) ?? {};
+
+    if (currentReactions[userId] == emoji) {
+      await commentRef.set({
+        'reactions': {userId: FieldValue.delete()}
+      }, SetOptions(merge: true));
+    } else {
+      await commentRef.set({
+        'reactions': {userId: emoji}
+      }, SetOptions(merge: true));
+
+      // Quietly notify the target comment author
+      try {
+        final targetUserId = data['authorId'] as String?;
+        if (targetUserId != null && targetUserId != userId) {
+          final userDoc = await _firestore.collection('users').doc(userId).get();
+          final userData = userDoc.data() ?? {};
+          final reactorsName = userData['username'] ?? userData['firstName'] ?? 'Someone';
+          
+          final notifRef = _firestore.collection('users').doc(targetUserId).collection('notifications').doc();
+          await notifRef.set({
+            'id': notifRef.id,
+            'userId': targetUserId,
+            'title': "New Reaction",
+            'body': "$reactorsName reacted $emoji to your comment.",
+            'type': 'new_reaction',
+            'createdAt': FieldValue.serverTimestamp(),
+            'isRead': false,
+            'metadata': {
+              'commentId': targetId, // Groups elegantly natively with main Post id or standard thread
+            }
+          });
+        }
+      } catch (e) {
+        print("Error sending reaction notification: \$e");
+      }
+    }
   }
 
   Future<UserModel?> getWorkerFromQr(String qrToken) async {

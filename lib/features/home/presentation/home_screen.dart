@@ -25,6 +25,8 @@ import '../../profile/presentation/public_profile_screen.dart'; // For user rout
 import 'hall_profile_screen.dart'; // For hall routing
 import 'package:vibration/vibration.dart';
 import '../controllers/feed_pagination_controller.dart';
+import '../../../services/consumer_beacon_service.dart';
+import '../../../core/widgets/glass_container.dart';
 
 final homeSearchUsersProvider =
     FutureProvider.family<List<PublicProfile>, String>((ref, query) async {
@@ -92,6 +94,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.read(feedPaginationControllerProvider.notifier).loadMore();
       }
     });
+
+    // Start Beacon Scanner silently in foreground
+    Future.microtask(() {
+      ref.read(consumerBeaconServiceProvider.notifier).startListeningForVenues();
+    });
   }
 
   @override
@@ -115,6 +122,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final userLocation = ref.watch(userLocationStreamProvider).valueOrNull;
     final currentUser = ref.watch(authStateChangesProvider).value;
+
+    // Listen for Squelch-passed Beacon discoveries natively
+    ref.listen<BeaconScanState>(
+      consumerBeaconServiceProvider,
+      (previous, next) {
+        if (previous?.hasTriggeredCheckIn != true &&
+            next.hasTriggeredCheckIn &&
+            next.detectedHall != null) {
+          _showBeaconCheckInModal(context, next.detectedHall!);
+        }
+      },
+    );
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -193,64 +212,68 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             setState(() => _isSearching = true);
                           }
                         },
-                        child: AnimatedContainer(
+                        child: AnimatedSize(
                           duration: const Duration(milliseconds: 300),
-                          width: _isSearching
-                              ? MediaQuery.of(context).size.width * 0.7
-                              : 50,
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(25),
-                            border: Border.all(color: Colors.white24),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: _isSearching
-                                ? MainAxisAlignment.start
-                                : MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.search,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                              if (_isSearching) ...[
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: TextField(
-                                    controller: _searchController,
-                                    autofocus: true,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText: 'Search FreeSpc...',
-                                      hintStyle: TextStyle(
-                                        color: Colors.white.withOpacity(0.5),
+                          curve: Curves.easeOutCubic,
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            width: _isSearching
+                                ? MediaQuery.of(context).size.width * 0.7
+                                : 50,
+                            margin: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(color: Colors.white24),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: _isSearching
+                                  ? MainAxisAlignment.start
+                                  : MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.search,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                                if (_isSearching) ...[
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _searchController,
+                                      autofocus: true,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
                                       ),
-                                      border: InputBorder.none,
-                                      isDense: true,
-                                      contentPadding: EdgeInsets.zero,
+                                      decoration: InputDecoration(
+                                        hintText: 'Search FreeSpc...',
+                                        hintStyle: TextStyle(
+                                          color: Colors.white.withOpacity(0.5),
+                                        ),
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.zero,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _isSearching = false;
-                                      _searchController.clear();
-                                    });
-                                  },
-                                  child: const Icon(
-                                    Icons.close,
-                                    color: Colors.white54,
-                                    size: 16,
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _isSearching = false;
+                                        _searchController.clear();
+                                      });
+                                    },
+                                    child: const Icon(
+                                      Icons.close,
+                                      color: Colors.white54,
+                                      size: 16,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
                         ),
                       );
@@ -617,6 +640,113 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         const SizedBox(height: 16),
       ],
+    );
+  }
+
+  void _showBeaconCheckInModal(BuildContext context, BingoHallModel hall) {
+    Vibration.vibrate(pattern: [0, 50, 100, 50]); // Double pulse success
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return GlassContainer(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Icon(
+                Icons.bluetooth_connected,
+                color: Colors.cyanAccent,
+                size: 48,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "You've Arrived!",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Welcome to ${hall.name}",
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    
+                    // Actually perform the Check In natively
+                    final currentUser = ref.read(authStateChangesProvider).value;
+                    if (currentUser != null) {
+                      await ref.read(hallRepositoryProvider).checkIn(
+                            userId: currentUser.uid,
+                            hallId: hall.id,
+                            hallName: hall.name,
+                          );
+                      
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Successfully checked into ${hall.name}!"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.cyanAccent,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    "Check In",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  // Allow scanning again later
+                  ref.read(consumerBeaconServiceProvider.notifier).resetCheckInState();
+                },
+                child: const Text(
+                  "Not right now",
+                  style: TextStyle(color: Colors.white54),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
     );
   }
 }

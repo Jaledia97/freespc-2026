@@ -8,6 +8,7 @@ class CommentModel {
   final String? authorAvatarUrl;
   final DateTime createdAt;
   final String? parentId;
+  final Map<String, String> reactions;
 
   CommentModel({
     required this.id,
@@ -17,6 +18,7 @@ class CommentModel {
     this.authorAvatarUrl,
     required this.createdAt,
     this.parentId,
+    this.reactions = const {},
   });
 
   factory CommentModel.fromFirestore(DocumentSnapshot doc) {
@@ -29,6 +31,7 @@ class CommentModel {
       authorAvatarUrl: data['authorAvatarUrl'],
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       parentId: data['parentId'],
+      reactions: (data['reactions'] as Map<String, dynamic>?)?.map((k, v) => MapEntry(k, v.toString())) ?? {},
     );
   }
 
@@ -40,6 +43,7 @@ class CommentModel {
       'authorAvatarUrl': authorAvatarUrl,
       'createdAt': FieldValue.serverTimestamp(),
       if (parentId != null) 'parentId': parentId,
+      'reactions': reactions,
     };
   }
 }

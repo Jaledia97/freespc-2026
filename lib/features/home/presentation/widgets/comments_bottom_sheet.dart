@@ -80,6 +80,33 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: ["❤️", "🔥", "😂", "😢", "😡", "👍"].map((emoji) {
+                    return GestureDetector(
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await ref.read(hallRepositoryProvider).reactToComment(
+                          widget.collectionName,
+                          widget.docId,
+                          comment.id,
+                          widget.currentUser.uid,
+                          emoji,
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        padding: const EdgeInsets.all(12),
+                        decoration: const BoxDecoration(color: Colors.white10, shape: BoxShape.circle),
+                        child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const Divider(color: Colors.white24),
               if (comment.authorId == widget.currentUser.uid) ...[
                 ListTile(
                   leading: const Icon(Icons.edit, color: Colors.white),
@@ -504,6 +531,51 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
     );
   }
 
+  List<Widget> _buildReactionChips(CommentModel comment) {
+    final Map<String, int> counts = {};
+    final Map<String, bool> userReacted = {};
+
+    for (var entry in comment.reactions.entries) {
+      final uid = entry.key;
+      final emoji = entry.value;
+      counts[emoji] = (counts[emoji] ?? 0) + 1;
+      if (uid == widget.currentUser.uid) userReacted[emoji] = true;
+    }
+
+    return counts.entries.map((entry) {
+      final emoji = entry.key;
+      final count = entry.value;
+      final isMine = userReacted[emoji] == true;
+
+      return GestureDetector(
+        onTap: () async {
+          await ref.read(hallRepositoryProvider).reactToComment(
+            widget.collectionName, widget.docId, comment.id, widget.currentUser.uid, emoji);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: isMine ? Colors.blueAccent.withValues(alpha: 0.2) : Colors.white10,
+            borderRadius: BorderRadius.circular(12),
+            border: isMine ? Border.all(color: Colors.blueAccent.withValues(alpha: 0.5)) : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 14)),
+              const SizedBox(width: 4),
+              Text(count.toString(), style: TextStyle(
+                color: isMine ? Colors.blueAccent : Colors.white70,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              )),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+  }
+
   Widget _buildCommentRow(CommentModel comment, {bool isChild = false}) {
     return GestureDetector(
       onLongPress: () => _showCommentOptions(comment),
@@ -564,21 +636,84 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                       fontSize: isChild ? 13 : 14,
                     ),
                   ),
-                  if (!isChild) ...[
-                    const SizedBox(height: 6),
-                    GestureDetector(
-                      onTap: () =>
-                          _initiateReply(comment.id, comment.authorName),
-                      child: const Text(
-                        "Reply",
-                        style: TextStyle(
-                          color: Colors.white54,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  if (comment.reactions.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: _buildReactionChips(comment),
                     ),
                   ],
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          await ref.read(hallRepositoryProvider).reactToComment(
+                            widget.collectionName,
+                            widget.docId,
+                            comment.id,
+                            widget.currentUser.uid,
+                            "❤️",
+                          );
+                        },
+                        onLongPress: () => _showCommentOptions(comment),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                comment.reactions[widget.currentUser.uid] == "❤️"
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: comment.reactions[widget.currentUser.uid] == "❤️"
+                                    ? Colors.redAccent
+                                    : Colors.white54,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                "Like",
+                                style: TextStyle(
+                                  color: comment.reactions[widget.currentUser.uid] == "❤️"
+                                      ? Colors.redAccent
+                                      : Colors.white54,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (!isChild) ...[
+                        const SizedBox(width: 16),
+                        GestureDetector(
+                          onTap: () => _initiateReply(comment.id, comment.authorName),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              "Reply",
+                              style: TextStyle(
+                                color: Colors.white54,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),

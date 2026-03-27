@@ -2,6 +2,17 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+71] - 2026-03-27 - End-to-End Bluetooth Check-in & S-Tier Notifications (Phases 47-52)
+
+### Added
+- **Native Bluetooth Scanning**: Engineered `ConsumerBeaconService` executing continuous foreground BLE broadcasts locally filtering out rogue beacons via an aggressive 3-ping `>-85 RSSI` squelch algorithm. Validated iOS/Android OS location permissons.
+- **Glassmorphic Check-Ins**: Designed highly interactive Bottom Sheets explicitly surfacing when Squelch passes. Users can instantly execute a `checkIn` mutation natively attaching `userName` and `userProfilePicture` onto their target Hall's public Feed.
+- **S-Tier Comment Reactions**: Overhauled Comment UI injecting native Facebook-styled dynamic Reaction models (❤️🔥😂😢😡👍). Backed by atomic `SetOptions(merge: true)` Cloud Firestore routines.
+- **Dynamic Notification Batching**: Intercepted Notification Spam directly inside `lib/main.dart` Android Channels utilizing `setOnlyAlertOnce: true`. Comments and Reactions dynamically bundle over their parent `threadId` silently preventing secondary haptic rings.
+
+### Fixed
+- **RenderFlex Physics**: Swapped a constraint-locking `AnimatedContainer` with fluid `AnimatedSize` encapsulating the Search Pill intelligently eliminating horizontal layout overflow errors definitively.
+
 ## [0.0.1+70] - 2026-03-26 - S-Tier Media Chat Experience (Phases 39-43)
 
 ### Added

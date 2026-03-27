@@ -36,25 +36,38 @@ Future<void> _showLocalNotification(RemoteMessage message) async {
 
   final data = message.data;
   print("Data Payload: $data");
-  
-  final isMessage = data['type'] == 'new_message';
-  if (!isMessage) {
-    print("Not a new_message type. Returning.");
+
+  final type = data['type'] ?? 'system';
+  if (type != 'new_message' && type != 'new_comment' && type != 'new_reaction') {
+    print("Unhandled data message type: $type. Returning.");
     return;
   }
 
-  final chatId = data['chatId'] ?? 'general';
-  final title = data['title'] ?? 'New Message';
-  final body = data['body'] ?? '';
-  final senderName = data['senderName'] ?? title;
+  String threadId = 'general';
+  String title = data['title'] ?? 'New Notification';
+  String body = data['body'] ?? '';
+  String summarySuffix = 'new notifications';
+
+  if (type == 'new_message') {
+    threadId = data['chatId'] ?? 'general';
+    final senderName = data['senderName'] ?? title;
+    body = "$senderName: $body";
+    summarySuffix = 'new messages';
+  } else if (type == 'new_comment') {
+    threadId = data['postId'] ?? data['docId'] ?? 'comments';
+    summarySuffix = 'new comments';
+  } else if (type == 'new_reaction') {
+    threadId = data['commentId'] ?? data['docId'] ?? 'reactions';
+    summarySuffix = 'new reactions';
+  }
 
   print("Loading SharedPreferences...");
   final prefs = await SharedPreferences.getInstance();
-  final historyKey = 'chat_history_$chatId';
-  
+  final historyKey = 'notification_history_$threadId';
+
   List<String> history = prefs.getStringList(historyKey) ?? [];
-  history.add("$senderName: $body");
-  
+  history.add(body);
+
   if (history.length > 7) {
     history.removeRange(0, history.length - 7);
   }
@@ -64,7 +77,7 @@ Future<void> _showLocalNotification(RemoteMessage message) async {
   final inboxStyle = InboxStyleInformation(
     history,
     contentTitle: title,
-    summaryText: "${history.length} new messages",
+    summaryText: "${history.length} $summarySuffix",
   );
 
   print("Initializing Local Notifications...");
@@ -75,20 +88,21 @@ Future<void> _showLocalNotification(RemoteMessage message) async {
     ),
   );
 
-  print("Triggering flnp.show()...");
+  print("Triggering flnp.show() for thread: $threadId...");
   try {
     await flnp.show(
-      id: chatId.hashCode, // One unique expanding card per Conversation natively
+      id: threadId.hashCode, // One unique expanding card per Thread natively
       title: title,
       body: body,
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
-          'high_importance_channel', 
+          'high_importance_channel',
           'High Importance Notifications',
           styleInformation: inboxStyle,
           priority: Priority.high,
           importance: Importance.max,
-          groupKey: chatId,
+          groupKey: threadId,
+          onlyAlertOnce: true, // Silently updates the card without redundant ring constraints!
         ),
       ),
       payload: jsonEncode(data),
