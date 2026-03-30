@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/tournament_model.dart';
 // For RecurrenceRule logic
 
+import '../../../services/auth_service.dart';
+import '../../../services/session_context_controller.dart';
+
 final tournamentRepositoryProvider = Provider(
-  (ref) => TournamentRepository(FirebaseFirestore.instance),
+  (ref) => TournamentRepository(FirebaseFirestore.instance, ref),
 );
 
 final hallTournamentsProvider =
@@ -18,8 +21,9 @@ final tournamentsFeedProvider = StreamProvider<List<TournamentModel>>((ref) {
 
 class TournamentRepository {
   final FirebaseFirestore _firestore;
+  final Ref _ref;
 
-  TournamentRepository(this._firestore);
+  TournamentRepository(this._firestore, this._ref);
 
   // Stream All Tournaments (Active, Expired, Templates)
   Stream<List<TournamentModel>> streamTournaments(String hallId) {
@@ -42,7 +46,25 @@ class TournamentRepository {
         .doc(hallId)
         .collection('tournaments');
 
-    var data = Map<String, dynamic>.from(tournament.toJson());
+    final session = _ref.read(sessionContextProvider);
+    final user = _ref.read(userProfileProvider).value;
+
+    TournamentModel processedTournament = tournament;
+    if (session.isBusiness) {
+      processedTournament = tournament.copyWith(
+        authorType: 'venue',
+        authorId: session.activeVenueId,
+        postedByUid: user?.uid,
+      );
+    } else {
+      processedTournament = tournament.copyWith(
+        authorType: 'user',
+        authorId: user?.uid,
+        postedByUid: user?.uid,
+      );
+    }
+
+    var data = Map<String, dynamic>.from(processedTournament.toJson());
 
     // Manual Fix 1: RecurrenceRule
     if (tournament.recurrenceRule != null) {
@@ -54,22 +76,22 @@ class TournamentRepository {
       data['games'] = tournament.games.map((g) => g.toJson()).toList();
     }
 
-    if (tournament.id.isEmpty) {
+    if (processedTournament.id.isEmpty) {
       final docRef = collection.doc();
-      final newTournament = tournament.copyWith(id: docRef.id);
+      final finalTournament = processedTournament.copyWith(id: docRef.id);
 
       // Re-apply fixes
-      var newData = Map<String, dynamic>.from(newTournament.toJson());
-      if (newTournament.recurrenceRule != null) {
-        newData['recurrenceRule'] = newTournament.recurrenceRule!.toJson();
+      var newData = Map<String, dynamic>.from(finalTournament.toJson());
+      if (finalTournament.recurrenceRule != null) {
+        newData['recurrenceRule'] = finalTournament.recurrenceRule!.toJson();
       }
-      if (newTournament.games.isNotEmpty) {
-        newData['games'] = newTournament.games.map((g) => g.toJson()).toList();
+      if (finalTournament.games.isNotEmpty) {
+        newData['games'] = finalTournament.games.map((g) => g.toJson()).toList();
       }
 
       await docRef.set(newData);
     } else {
-      await collection.doc(tournament.id).set(data, SetOptions(merge: true));
+      await collection.doc(processedTournament.id).set(data, SetOptions(merge: true));
     }
   }
 

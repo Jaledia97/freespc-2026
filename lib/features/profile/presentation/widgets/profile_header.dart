@@ -238,42 +238,7 @@ class _ProfileHeaderState extends ConsumerState<ProfileHeader> {
           const SizedBox(height: 16),
         ],
 
-        // Home Hall Section
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "Home Hall",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            if (user.homeBaseId != null)
-              GestureDetector(
-                onTap: () {
-                  ref
-                      .read(hallRepositoryProvider)
-                      .toggleHomeBase(
-                        user.uid,
-                        user.homeBaseId!,
-                        user.homeBaseId,
-                      );
-                },
-                child: const Text(
-                  "UNSET",
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        _HomeBaseDisplay(homeBaseId: user.homeBaseId),
+        const SizedBox(height: 16),
 
         const SizedBox(height: 16),
 
@@ -322,59 +287,3 @@ class _ProfileHeaderState extends ConsumerState<ProfileHeader> {
   }
 }
 
-class _HomeBaseDisplay extends ConsumerWidget {
-  final String? homeBaseId;
-
-  const _HomeBaseDisplay({required this.homeBaseId});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (homeBaseId == null) {
-      return const Text(
-        "No Home Base Set",
-        style: TextStyle(
-          color: Colors.white38,
-          fontSize: 14,
-          fontWeight: FontWeight.normal,
-        ),
-      );
-    }
-
-    final hallAsync = ref.watch(hallStreamProvider(homeBaseId!));
-
-    return hallAsync.when(
-      data: (hall) {
-        if (hall == null) {
-          return const Text(
-            "Unknown Hall",
-            style: TextStyle(
-              color: Colors.redAccent,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          );
-        }
-        return Text(
-          hall.name,
-          style: const TextStyle(
-            color: Colors.blueAccent,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        );
-      },
-      loading: () => const SizedBox(
-        width: 14,
-        height: 14,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: Colors.blueGrey,
-        ),
-      ),
-      error: (_, __) => const Text(
-        "Error loading hall",
-        style: TextStyle(color: Colors.red, fontSize: 12),
-      ),
-    );
-  }
-}

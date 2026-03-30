@@ -39,7 +39,7 @@ class SuperadminDashboardScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
-        error: (error, _) => Center(child: Text("Error: \$error", style: const TextStyle(color: Colors.red))),
+        error: (error, _) => Center(child: Text("Error: $error", style: const TextStyle(color: Colors.red))),
       ),
     );
   }
@@ -76,7 +76,7 @@ class _VenueClaimCardState extends ConsumerState<_VenueClaimCard> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: \$e"), backgroundColor: Colors.red),
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -132,11 +132,11 @@ class _VenueClaimCardState extends ConsumerState<_VenueClaimCard> {
           children: [
             Row(
               children: [
-                const Icon(Icons.businessCenter, color: Colors.blueAccent, size: 20),
+                const Icon(Icons.business_center, color: Colors.blueAccent, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    "Venue ID: \${widget.claim.requestedVenueId}",
+                    "Venue ID: ${widget.claim.requestedVenueId}",
                     style: const TextStyle(color: Colors.white, fontWeight: superBold, fontSize: 16),
                   ),
                 ),
@@ -144,11 +144,11 @@ class _VenueClaimCardState extends ConsumerState<_VenueClaimCard> {
             ),
             const SizedBox(height: 8),
             Text(
-              "User ID: \${widget.claim.userId}",
+              "User ID: ${widget.claim.userId}",
               style: const TextStyle(color: Colors.white54, fontSize: 13),
             ),
             Text(
-              "Submitted: \${widget.claim.submittedAt.toLocal().toString().split('.').first}",
+              "Submitted: ${widget.claim.submittedAt.toLocal().toString().split('.').first}",
               style: const TextStyle(color: Colors.white54, fontSize: 13),
             ),
             const SizedBox(height: 16),

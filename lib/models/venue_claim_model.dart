@@ -5,7 +5,9 @@ part 'venue_claim_model.freezed.dart';
 part 'venue_claim_model.g.dart';
 
 @freezed
-class VenueClaimModel with _$VenueClaimModel {
+abstract class VenueClaimModel with _$VenueClaimModel {
+  const VenueClaimModel._();
+
   const factory VenueClaimModel({
     required String id,
     required String userId,

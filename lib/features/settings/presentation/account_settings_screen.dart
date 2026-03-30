@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/auth_service.dart';
 import '../../manager/presentation/claim_venue_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../models/venue_team_member_model.dart';
+import '../../../services/session_context_controller.dart';
+import '../../admin/presentation/superadmin_dashboard_screen.dart';
+import '../../admin/presentation/spoof_workspace_screen.dart';
 import 'blocked_users_screen.dart';
 
 class AccountSettingsScreen extends ConsumerWidget {
@@ -27,11 +32,49 @@ class AccountSettingsScreen extends ConsumerWidget {
                 style: TextStyle(color: Colors.white),
               ),
             );
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (user.systemRole == 'admin' || user.systemRole == 'superadmin') ...[
+                  const Text(
+                    "Platform Administration",
+                    style: TextStyle(
+                      color: Colors.purpleAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Divider(color: Colors.purpleAccent),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text(
+                      'Superadmin CMS Hub',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    subtitle: const Text(
+                      'Manage platform-wide venues, claims, and users.',
+                      style: TextStyle(color: Colors.white38, fontSize: 12),
+                    ),
+                    leading: const Icon(Icons.admin_panel_settings, color: Colors.purpleAccent),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white54,
+                      size: 16,
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SuperadminDashboardScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
                 const Text(
                   "Privacy",
                   style: TextStyle(
@@ -174,13 +217,49 @@ class AccountSettingsScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 const Text(
-                  "Business Portal",
+                  "Your Workspaces",
                   style: TextStyle(
                     color: Colors.amber,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const Divider(color: Colors.amber),
+                StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance.collectionGroup('team').where('uid', isEqualTo: user.uid).snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text("No active workspaces.", style: TextStyle(color: Colors.white54)),
+                      );
+                    }
+                    return Column(
+                      children: snapshot.data!.docs.map((doc) {
+                        final teamData = VenueTeamMemberModel.fromJson(doc.data() as Map<String, dynamic>);
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.work, color: Colors.amber),
+                          title: Text(teamData.venueName, style: const TextStyle(color: Colors.white)),
+                          subtitle: Text(teamData.assignedRole.toUpperCase(), style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+                          onTap: () {
+                            ref.read(sessionContextProvider.notifier).switchToBusiness(
+                              teamData.venueId,
+                              teamData.venueName,
+                              teamData.assignedRole,
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Switched context to ${teamData.venueName}")));
+                            Navigator.of(context).popUntil((route) => route.isFirst);
+                          },
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text(
@@ -206,7 +285,41 @@ class AccountSettingsScreen extends ConsumerWidget {
                     );
                   },
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 24),
+
+                if (user.systemRole == 'superadmin') ...[
+                  const Text(
+                    "God Mode (Superadmin)",
+                    style: TextStyle(
+                      color: Colors.purpleAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Divider(color: Colors.purpleAccent),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text(
+                      'Spoof Workspace Context',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    subtitle: const Text(
+                      'Force inject active B2B session routing.',
+                      style: TextStyle(color: Colors.white38, fontSize: 12),
+                    ),
+                    leading: const Icon(Icons.security, color: Colors.purpleAccent),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SpoofWorkspaceScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
+                const SizedBox(height: 24),
 
                 const Text(
                   "Danger Zone",
@@ -277,6 +390,7 @@ class AccountSettingsScreen extends ConsumerWidget {
                   },
                 ),
               ],
+            ),
             ),
           );
         },

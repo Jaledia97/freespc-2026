@@ -9,6 +9,7 @@ class NotificationBadge extends ConsumerWidget {
   final bool showForGeneral;
   final bool showForManager;
   final bool showForMessages;
+  final bool showForBusiness; // New param for B2B Alerts
 
   const NotificationBadge({
     super.key,
@@ -16,6 +17,7 @@ class NotificationBadge extends ConsumerWidget {
     this.showForGeneral = true,
     this.showForManager = true,
     this.showForMessages = true,
+    this.showForBusiness = false,
   });
 
   @override
@@ -25,6 +27,11 @@ class NotificationBadge extends ConsumerWidget {
     if (showForGeneral) {
       final generalCount = ref.watch(unreadNotificationsCountProvider);
       count += generalCount;
+    }
+
+    if (showForBusiness) {
+      final b2bCount = ref.watch(unreadB2BNotificationsCountProvider);
+      count += b2bCount;
     }
 
     if (showForManager) {

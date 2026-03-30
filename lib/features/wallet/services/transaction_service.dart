@@ -1,14 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../services/session_context_controller.dart';
+import '../../../services/auth_service.dart';
+
 final transactionServiceProvider = Provider(
-  (ref) => TransactionService(FirebaseFirestore.instance),
+  (ref) => TransactionService(FirebaseFirestore.instance, ref),
 );
 
 class TransactionService {
   final FirebaseFirestore _firestore;
+  final Ref _ref;
 
-  TransactionService(this._firestore);
+  TransactionService(this._firestore, this._ref);
 
   Future<void> awardPoints({
     required String userId,
@@ -19,6 +23,13 @@ class TransactionService {
   }) async {
     if (hallId.isEmpty) {
       throw Exception("Invalid Hall ID (Empty)");
+    }
+
+    final currentUser = _ref.read(userProfileProvider).value;
+    if (currentUser != null && userId == currentUser.uid) {
+      if (_ref.read(sessionContextProvider).isBusiness) {
+        throw Exception("Point accrual is locked. You cannot earn consumer rewards while on-duty.");
+      }
     }
     final userRef = _firestore.collection('users').doc(userId);
     final hallRef = _firestore.collection('bingo_halls').doc(hallId);

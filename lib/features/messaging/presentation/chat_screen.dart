@@ -35,6 +35,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _msgController = TextEditingController();
   final FocusNode _msgFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   bool _isSending = false;
   String?
   _lastSeenMessageId; // Hook to rigidly track stream yields against array limitations
@@ -49,10 +50,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   // Reading state management
   StreamSubscription<DocumentSnapshot>? _chatSub;
+  
+  // Pagination Engine State
+  int _messageLimit = 50;
+  DateTime? _cutoffDate;
+  bool _isLoadingArchive = false;
+  List<MessageModel>? _cachedMessages;
 
   @override
   void initState() {
     super.initState();
+    // Cold Storage Boundary: Default to 30 days ago
+    _cutoffDate = DateTime.now().subtract(const Duration(days: 30));
+    
+    // Dynamically increase limit within the 30-day view as they scroll naturally
+    _scrollController.addListener(() {
+      if (_scrollController.hasClients && _scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+         if (!_isLoadingArchive && _messageLimit < 500) {
+           setState(() {
+             _isLoadingArchive = true;
+             _messageLimit += 50;
+           });
+           Future.delayed(const Duration(milliseconds: 1000), () {
+             if (mounted) {
+               setState(() {
+                 _isLoadingArchive = false;
+               });
+             }
+           });
+         }
+      }
+    });
+
     // Clear OS local notifications safely
     try {
       flutterLocalNotificationsPlugin.cancelAll();
@@ -89,6 +118,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _typingTimer?.cancel();
     _msgController.dispose();
     _msgFocusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -442,10 +472,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Only stream the last 50 messages to keep rendering fast
+    // Only stream up to the governed limit to keep memory arrays stable and prevent massive reads.
     final messagesStream = ref
         .watch(messagingRepositoryProvider)
-        .streamChatMessages(widget.chatId, limit: 50);
+        .streamChatMessages(
+          widget.chatId,
+          limit: _messageLimit,
+          cutoffDate: _cutoffDate,
+        );
     final currentUser = ref.watch(userProfileProvider).value;
 
     return Scaffold(
@@ -592,10 +626,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 child: StreamBuilder(
                   stream: messagesStream,
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
+                    if (snapshot.hasData) {
+                      _cachedMessages = snapshot.data as List<MessageModel>?;
+                    }
+
+                    final bool isInitialLoading = snapshot.connectionState == ConnectionState.waiting && _cachedMessages == null;
+
+                    if (isInitialLoading) {
                       return const Center(child: CircularProgressIndicator());
                     }
-                    if (snapshot.hasError) {
+                    if (snapshot.hasError && _cachedMessages == null) {
                       return Center(
                         child: Text(
                           "Error: ${snapshot.error}",
@@ -604,7 +644,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       );
                     }
 
-                    List<MessageModel> messages = snapshot.data ?? [];
+                    List<MessageModel> messages = snapshot.hasData 
+                        ? (snapshot.data as List<MessageModel>? ?? []) 
+                        : (_cachedMessages ?? []);
                     messages = messages.where((m) => !m.deletedBy.contains(currentUser?.uid)).toList();
 
                     if (chat != null &&
@@ -648,11 +690,79 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       );
                     }
 
-                    return ListView.builder(
-                      padding: EdgeInsets.zero,
-                      reverse: true, // Show newest at the bottom
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) {
+                    return NotificationListener<ScrollNotification>(
+                      onNotification: (ScrollNotification scrollInfo) {
+                        // Intercept OS-level Overscroll physics to parse a Pull-To-Refresh equivalent naturally.
+                        if (!_isLoadingArchive &&
+                            scrollInfo.metrics.pixels >
+                                scrollInfo.metrics.maxScrollExtent + 60) {
+                          if (messages.length >= _messageLimit ||
+                              _cutoffDate != null) {
+                            setState(() => _isLoadingArchive = true);
+
+                            Future.delayed(const Duration(milliseconds: 600),
+                                () {
+                              if (!mounted) return;
+                              setState(() {
+                                if (_cutoffDate != null) {
+                                  _cutoffDate = null;
+                                  _messageLimit = messages.length + 100;
+                                } else {
+                                  _messageLimit += 100;
+                                }
+                                _isLoadingArchive = false;
+                              });
+                            });
+                          }
+                        }
+                        return false;
+                      },
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: EdgeInsets.zero,
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
+                        reverse: true, // Show newest at the bottom
+                        itemCount: messages.length + 1,
+                        itemBuilder: (context, index) {
+                          // Render the Archive Pagination Pill at the absolute top of the physical scroll bounds
+                          if (index == messages.length) {
+                            if (messages.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+
+                            if (messages.length >= _messageLimit ||
+                                _cutoffDate != null) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 40.0,
+                                ),
+                                child: Center(
+                                  child: AnimatedOpacity(
+                                    opacity: _isLoadingArchive ? 1.0 : 0.4,
+                                    duration: const Duration(milliseconds: 200),
+                                    child: _isLoadingArchive
+                                        ? const SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.blueAccent,
+                                          ),
+                                        )
+                                        : const Icon(
+                                          Icons.keyboard_arrow_down,
+                                          color: Colors.white24,
+                                          size: 32,
+                                        ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          }
+
                         final msg = messages[index];
                         final isMe = msg.senderId == currentUser?.uid;
 
@@ -1051,8 +1161,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           ],
                         );
                       },
-                    );
-                  },
+                    ),
+                  );
+                },
                 ),
               ),
 

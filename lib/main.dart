@@ -118,18 +118,6 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void handleNotificationDeepLink(Map<String, dynamic> data) {
-  if (data['type'] == 'new_message' && data['chatId'] != null) {
-    final chatName = data['chatName'] ?? 'Chat';
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(
-        builder: (context) =>
-            ChatScreen(chatId: data['chatId'], chatName: chatName),
-      ),
-    );
-  }
-}
-
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'high_importance_channel', // id
   'High Importance Notifications', // title
@@ -137,6 +125,21 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'This channel is used for important notifications.', // description
   importance: Importance.max,
 );
+
+void Function(Map<String, dynamic>)? onNotificationTap;
+
+void handleNotificationDeepLink(Map<String, dynamic> data) {
+  if (onNotificationTap != null) {
+    onNotificationTap!(data);
+  } else {
+    SharedPreferences.getInstance().then((prefs) {
+      if (data['type'] == 'b2b_alert' || data['targetVenueId'] != null) {
+        final venueId = data['targetVenueId'] ?? data['venueId'];
+        if (venueId != null) prefs.setString('pending_b2b_context', venueId);
+      }
+    });
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -234,19 +237,6 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Handle Terminated Deep Links
-  final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-  if (initialMessage != null) {
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      handleNotificationDeepLink(initialMessage.data);
-    });
-  }
-
-  // Handle Background Deep Links
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    handleNotificationDeepLink(message.data);
-  });
-
   final prefs = await SharedPreferences.getInstance();
 
   // Temporary Migration Script for Main Account
@@ -271,7 +261,8 @@ void main() async {
         'firstName': data['firstName'] ?? 'Admin',
         'lastName': data['lastName'] ?? '',
         'currentPoints': data['currentPoints'] ?? 0,
-        'role': data['role'] ?? 'superadmin',
+        // Map the legacy role to the new architecture if systemRole isn't set yet
+        'systemRole': data['systemRole'] ?? data['role'] ?? 'user',
       }, SetOptions(merge: true));
 
       await db.collection("public_profiles").doc(user.uid).set({
@@ -315,6 +306,7 @@ class _MyAppState extends ConsumerState<MyApp> {
   void initState() {
     super.initState();
     _initDeepLinks();
+    onNotificationTap = _handleNotificationDeepLink;
   }
 
   @override
@@ -336,6 +328,42 @@ class _MyAppState extends ConsumerState<MyApp> {
     _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
       _handleLink(uri);
     });
+
+    // Handle Firebase Push Notification Deep Links inside ProviderScope
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        _handleNotificationDeepLink(initialMessage.data);
+      });
+    }
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      _handleNotificationDeepLink(message.data);
+    });
+  }
+
+  void _handleNotificationDeepLink(Map<String, dynamic> data) async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Check if the notification is a B2B alert that demands a context switch
+    if (data['type'] == 'b2b_alert' || data['targetVenueId'] != null) {
+      final venueId = data['targetVenueId'] ?? data['venueId'];
+      if (venueId != null) {
+        await prefs.setString('pending_b2b_context', venueId);
+        ref.invalidate(pendingInviteProvider);
+      }
+    }
+
+    // Default chat routing
+    if (data['type'] == 'new_message' && data['chatId'] != null) {
+      final chatName = data['chatName'] ?? 'Chat';
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (context) =>
+              ChatScreen(chatId: data['chatId'], chatName: chatName),
+        ),
+      );
+    }
   }
 
   void _handleLink(Uri uri) async {

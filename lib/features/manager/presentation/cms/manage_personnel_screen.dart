@@ -2,25 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../models/user_model.dart';
 import '../../../../models/bingo_hall_model.dart';
+import '../../../../models/venue_team_member_model.dart';
 import '../../../../core/utils/role_utils.dart';
 import '../../repositories/personnel_repository.dart';
+import '../../../../services/session_context_controller.dart';
 import 'invite_staff_sheet.dart';
+import '../../../../services/auth_service.dart';
+import '../../../home/repositories/hall_repository.dart';
 
 class ManagePersonnelScreen extends ConsumerWidget {
-  final String hallId;
-  final BingoHallModel hall;
-  final UserModel currentUser;
-
-  const ManagePersonnelScreen({
-    super.key,
-    required this.hallId,
-    required this.hall,
-    required this.currentUser,
-  });
+  const ManagePersonnelScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(sessionContextProvider);
+
+    if (!session.isBusiness || session.activeVenueId == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF121212),
+        body: Center(
+          child: Text(
+            "Access Denied: No Active Venue Session",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
+    
+    final currentUserAsync = ref.watch(userProfileProvider);
+    final hallId = session.activeVenueId!;
     final staffStream = ref.watch(staffStreamProvider(hallId));
+    final hallAsync = ref.watch(hallStreamProvider(hallId));
+
+    if (currentUserAsync.value == null || hallAsync.value == null) {
+        return const Scaffold(
+          backgroundColor: Color(0xFF141414),
+          body: Center(child: CircularProgressIndicator()),
+        );
+    }
+
+    final currentUser = currentUserAsync.value!;
+    final hall = hallAsync.value!;
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
@@ -29,20 +51,22 @@ class ManagePersonnelScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (_) =>
-                InviteStaffSheet(hallId: hallId, hallName: hall.name),
-          );
-        },
-        label: const Text("Invite Staff"),
-        icon: const Icon(Icons.person_add),
-        backgroundColor: Colors.cyan,
-      ),
+      floatingActionButton: RoleUtils.canManagePersonnel(currentUser, session, hallId)
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) =>
+                      InviteStaffSheet(hallId: hallId, hallName: hall.name),
+                );
+              },
+              label: const Text("Invite Staff"),
+              icon: const Icon(Icons.person_add),
+              backgroundColor: Colors.cyan,
+            )
+          : null,
       body: staffStream.when(
         data: (staff) {
           if (staff.isEmpty) {
@@ -54,23 +78,16 @@ class ManagePersonnelScreen extends ConsumerWidget {
             );
           }
 
-          // Group by Role priority
-          final owners = staff.where((u) => u.role == RoleUtils.owner).toList();
-          final managers = staff
-              .where((u) => u.role == RoleUtils.manager)
-              .toList();
-          final workers = staff
-              .where((u) => u.role == RoleUtils.worker)
-              .toList();
-          final pending = staff
-              .where((u) => u.role == RoleUtils.player)
-              .toList(); // "Players" attached to hall are pending staff
+          // Group by assignedRole priority
+          final owners = staff.where((u) => u.assignedRole == RoleUtils.owner).toList();
+          final managers = staff.where((u) => u.assignedRole == RoleUtils.manager).toList();
+          final workers = staff.where((u) => u.assignedRole == RoleUtils.worker).toList();
 
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
               if (owners.isNotEmpty)
-                _buildSection(context, ref, "Owners", owners, Colors.amber),
+                _buildSection(context, ref, "Owners", owners, Colors.amber, session, currentUser, hallId),
               if (managers.isNotEmpty)
                 _buildSection(
                   context,
@@ -78,6 +95,9 @@ class ManagePersonnelScreen extends ConsumerWidget {
                   "Managers",
                   managers,
                   Colors.purpleAccent,
+                  session,
+                  currentUser,
+                  hallId,
                 ),
               if (workers.isNotEmpty)
                 _buildSection(
@@ -86,14 +106,9 @@ class ManagePersonnelScreen extends ConsumerWidget {
                   "Workers",
                   workers,
                   Colors.greenAccent,
-                ),
-              if (pending.isNotEmpty)
-                _buildSection(
-                  context,
-                  ref,
-                  "Pending Assignment",
-                  pending,
-                  Colors.grey,
+                  session,
+                  currentUser,
+                  hallId,
                 ),
               const SizedBox(height: 80), // Fab space
             ],
@@ -111,8 +126,11 @@ class ManagePersonnelScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     String title,
-    List<UserModel> users,
+    List<VenueTeamMemberModel> users,
     Color color,
+    SessionState session,
+    UserModel currentUser,
+    String hallId,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,14 +146,14 @@ class ManagePersonnelScreen extends ConsumerWidget {
             ),
           ),
         ),
-        ...users.map((user) => _buildUserTile(context, ref, user)),
+        ...users.map((user) => _buildUserTile(context, ref, user, session, currentUser, hallId)),
         const SizedBox(height: 16),
       ],
     );
   }
 
-  Widget _buildUserTile(BuildContext context, WidgetRef ref, UserModel user) {
-    final bool canEdit = _canEditUser(currentUser, user);
+  Widget _buildUserTile(BuildContext context, WidgetRef ref, VenueTeamMemberModel user, SessionState session, UserModel currentUser, String hallId) {
+    final bool canEdit = _canEditUser(currentUser, session, user);
 
     return Card(
       color: const Color(0xFF1E1E1E),
@@ -147,7 +165,7 @@ class ManagePersonnelScreen extends ConsumerWidget {
               : null,
           backgroundColor: Colors.grey[800],
           child: user.photoUrl == null
-              ? Text(user.username[0].toUpperCase())
+              ? Text(user.username.isNotEmpty ? user.username[0].toUpperCase() : '?')
               : null,
         ),
         title: Text(
@@ -157,33 +175,33 @@ class ManagePersonnelScreen extends ConsumerWidget {
           style: const TextStyle(color: Colors.white),
         ),
         subtitle: Text(
-          "@${user.username} • ${user.phoneNumber ?? 'No Phone'}",
+          "@${user.username}",
           style: const TextStyle(color: Colors.white54),
         ),
         trailing: canEdit
             ? IconButton(
                 icon: const Icon(Icons.edit, color: Colors.white54),
-                onPressed: () => _showEditRoleDialog(context, ref, user),
+                onPressed: () => _showEditRoleDialog(context, ref, user, currentUser, hallId),
               )
             : null,
       ),
     );
   }
 
-  bool _canEditUser(UserModel admin, UserModel target) {
+  bool _canEditUser(UserModel admin, SessionState session, VenueTeamMemberModel target) {
     // SuperAdmin can edit everyone
     if (RoleUtils.isSuperAdmin(admin)) return true;
 
-    // Owner can edit Managers, Workers, Players
-    if (RoleUtils.isOwner(admin)) {
-      if (target.role == RoleUtils.owner)
-        return false; // Cannot edit other owners (unless super owner?)
+    // Owner can edit Managers, Workers
+    if (RoleUtils.isOwner(admin, session)) {
+      if (target.assignedRole == RoleUtils.owner)
+        return false; // Cannot edit other owners (unless super admin)
       return true;
     }
 
-    // Manager can edit Workers, Players
-    if (admin.role == RoleUtils.manager) {
-      if ([RoleUtils.owner, RoleUtils.manager].contains(target.role))
+    // Manager can edit Workers
+    if (session.isBusiness && session.activeRole == RoleUtils.manager) {
+      if ([RoleUtils.owner, RoleUtils.manager].contains(target.assignedRole))
         return false;
       return true;
     }
@@ -194,8 +212,11 @@ class ManagePersonnelScreen extends ConsumerWidget {
   void _showEditRoleDialog(
     BuildContext context,
     WidgetRef ref,
-    UserModel user,
+    VenueTeamMemberModel user,
+    UserModel currentUser,
+    String hallId,
   ) {
+    final session = ref.read(sessionContextProvider);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -208,15 +229,16 @@ class ManagePersonnelScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (RoleUtils.isSuperAdmin(currentUser) ||
-                RoleUtils.isOwner(currentUser))
-              _roleOption(ctx, ref, user, "Manager", RoleUtils.manager),
-            _roleOption(ctx, ref, user, "Worker", RoleUtils.worker),
+                RoleUtils.isOwner(currentUser, session))
+              _roleOption(ctx, ref, user, "Manager", RoleUtils.manager, hallId),
+            _roleOption(ctx, ref, user, "Worker", RoleUtils.worker, hallId),
             _roleOption(
               ctx,
               ref,
               user,
               "Remove from Hall",
               "REMOVE",
+              hallId,
               isDestructive: true,
             ),
           ],
@@ -234,9 +256,10 @@ class ManagePersonnelScreen extends ConsumerWidget {
   Widget _roleOption(
     BuildContext context,
     WidgetRef ref,
-    UserModel user,
+    VenueTeamMemberModel user,
     String label,
-    String roleValue, {
+    String roleValue,
+    String hallId, {
     bool isDestructive = false,
   }) {
     return ListTile(
@@ -247,18 +270,18 @@ class ManagePersonnelScreen extends ConsumerWidget {
       onTap: () async {
         Navigator.pop(context);
         if (isDestructive) {
-          await ref.read(personnelRepositoryProvider).removeStaff(user.uid);
+          await ref.read(personnelRepositoryProvider).removeStaff(hallId, user.uid);
         } else {
           await ref
               .read(personnelRepositoryProvider)
-              .updateRole(user.uid, roleValue);
+              .updateRole(hallId, user.uid, roleValue);
         }
       },
     );
   }
 }
 
-final staffStreamProvider = StreamProvider.family<List<UserModel>, String>((
+final staffStreamProvider = StreamProvider.family<List<VenueTeamMemberModel>, String>((
   ref,
   hallId,
 ) {

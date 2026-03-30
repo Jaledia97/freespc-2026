@@ -6,6 +6,11 @@ import 'profile/presentation/profile_screen.dart';
 import 'wallet/presentation/wallet_screen.dart';
 import 'my_halls/presentation/my_halls_screen.dart';
 import '../core/widgets/notification_badge.dart';
+import '../services/session_context_controller.dart';
+import 'manager/presentation/manager_dashboard_screen.dart';
+import 'manager/presentation/venue_ledger_screen.dart';
+import 'manager/presentation/venue_activity_screen.dart';
+import 'manager/presentation/cms/manage_personnel_screen.dart';
 
 final bottomNavIndexProvider = StateProvider<int>((ref) => 0);
 
@@ -15,27 +20,39 @@ class MainLayout extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = ref.watch(bottomNavIndexProvider);
+    final session = ref.watch(sessionContextProvider);
 
-    final screens = const [
-      HomeScreen(), // 0
-      WalletScreen(), // 1
-      MyHallsScreen(), // 2
-      ProfileScreen(), // 3
-    ];
+    final isBusiness = session.isBusiness;
+
+    final screens = isBusiness
+        ? const [
+            VenueActivityScreen(),
+            VenueLedgerScreen(),
+            ManagerDashboardScreen(),
+            ManagePersonnelScreen(),
+          ]
+        : const [
+            HomeScreen(),
+            WalletScreen(),
+            MyHallsScreen(),
+            ProfileScreen(),
+          ];
 
     return Scaffold(
       extendBody: true,
       body: screens[currentIndex],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ScanScreen()),
-          );
-        },
-        shape: const CircleBorder(),
-        child: const Icon(Icons.qr_code_scanner),
-      ),
+      floatingActionButton: isBusiness 
+          ? null 
+          : FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ScanScreen()),
+                );
+              },
+              shape: const CircleBorder(),
+              child: const Icon(Icons.qr_code_scanner),
+            ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
@@ -46,44 +63,32 @@ class MainLayout extends ConsumerWidget {
           children: <Widget>[
             IconButton(
               icon: Icon(
-                Icons.home,
-                color: currentIndex == 0
-                    ? Theme.of(context).primaryColor
-                    : null,
+                isBusiness ? Icons.dashboard : Icons.home,
+                color: currentIndex == 0 ? Theme.of(context).primaryColor : null,
               ),
-              onPressed: () =>
-                  ref.read(bottomNavIndexProvider.notifier).state = 0,
+              onPressed: () => ref.read(bottomNavIndexProvider.notifier).state = 0,
             ),
             IconButton(
               icon: Icon(
-                Icons.account_balance_wallet,
-                color: currentIndex == 1
-                    ? Theme.of(context).primaryColor
-                    : null,
+                isBusiness ? Icons.library_books : Icons.account_balance_wallet,
+                color: currentIndex == 1 ? Theme.of(context).primaryColor : null,
               ),
-              onPressed: () =>
-                  ref.read(bottomNavIndexProvider.notifier).state = 1,
+              onPressed: () => ref.read(bottomNavIndexProvider.notifier).state = 1,
             ),
-            const SizedBox(width: 48), // Spacer for FAB
+            if (!isBusiness) const SizedBox(width: 48), // Spacer for FAB
             IconButton(
               icon: Icon(
-                Icons.favorite,
-                color: currentIndex == 2
-                    ? Theme.of(context).primaryColor
-                    : null,
+                isBusiness ? Icons.admin_panel_settings : Icons.favorite,
+                color: currentIndex == 2 ? Theme.of(context).primaryColor : null,
               ),
-              onPressed: () =>
-                  ref.read(bottomNavIndexProvider.notifier).state = 2,
+              onPressed: () => ref.read(bottomNavIndexProvider.notifier).state = 2,
             ),
             IconButton(
               icon: Icon(
-                Icons.person,
-                color: currentIndex == 3
-                    ? Theme.of(context).primaryColor
-                    : null,
+                isBusiness ? Icons.people : Icons.person,
+                color: currentIndex == 3 ? Theme.of(context).primaryColor : null,
               ),
-              onPressed: () =>
-                  ref.read(bottomNavIndexProvider.notifier).state = 3,
+              onPressed: () => ref.read(bottomNavIndexProvider.notifier).state = 3,
             ),
           ],
         ),

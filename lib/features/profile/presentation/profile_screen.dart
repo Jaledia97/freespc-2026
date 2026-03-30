@@ -4,10 +4,9 @@ import '../../../services/auth_service.dart';
 import '../../home/repositories/hall_repository.dart';
 import '../../wallet/repositories/wallet_repository.dart';
 import 'widgets/profile_header.dart';
-import '../../manager/presentation/pin_entry_screen.dart';
-import '../../settings/presentation/display_settings_screen.dart';
 import '../../settings/presentation/account_settings_screen.dart'; // Added
 import '../../settings/presentation/privacy_settings_screen.dart';
+import '../../settings/presentation/display_settings_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'public_profile_screen.dart';
 import '../../../core/utils/role_utils.dart'; // Import RoleUtils
@@ -74,10 +73,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               child: Icon(Icons.settings),
             ),
             onPressed: () {
-              // Extract values BEFORE the list
               final user = userAsync.value; // Safe
-              final role = user?.role;
-              final overrideRole = ref.watch(roleOverrideProvider);
+              final role = user?.systemRole;
 
               showModalBottomSheet(
                 context: context,
@@ -87,59 +84,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Manager Mode Switch (Conditional)
-                        if (user != null && RoleUtils.canAccessDashboard(user))
-                          ListTile(
-                            leading: const Icon(
-                              Icons.admin_panel_settings,
-                              color: Colors.blueAccent,
-                            ),
-                            title: const Text(
-                              'Switch to Manager Mode',
-                              style: TextStyle(color: Colors.blueAccent),
-                            ),
-                            onTap: () {
-                              Navigator.pop(context); // Close sheet
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const PinEntryScreen(),
-                                ),
-                              );
-                            },
-                          ),
-
-                        // Super Admin: View As
-                        if (role == 'super-admin' ||
-                            role == 'superadmin' ||
-                            overrideRole != null)
-                          ExpansionTile(
-                            leading: const Icon(
-                              Icons.visibility,
-                              color: Colors.purpleAccent,
-                            ),
-                            title: Text(
-                              overrideRole != null
-                                  ? 'Viewing as: $overrideRole'
-                                  : 'View As...',
-                              style: const TextStyle(
-                                color: Colors.purpleAccent,
-                              ),
-                            ),
-                            children: [
-                              _roleOption(
-                                context,
-                                ref,
-                                'super-admin',
-                                'Super Admin (Reset)',
-                              ),
-                              _roleOption(context, ref, 'owner', 'Owner'),
-                              _roleOption(context, ref, 'admin', 'Admin'),
-                              _roleOption(context, ref, 'manager', 'Manager'),
-                              _roleOption(context, ref, 'worker', 'Worker'),
-                              _roleOption(context, ref, 'player', 'Player'),
-                            ],
-                          ),
+                        // Workspaces are now handled via AccountSettingsScreen
 
                         ListTile(
                           leading: const Icon(
@@ -430,10 +375,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   child: Column(
                     children: [
                       // 5. Developer Tools (Collapsible) - RESTRICTED
-                      if (user.role == 'super-admin' ||
-                          user.role == 'superadmin' ||
-                          ref.read(roleOverrideProvider) == 'super-admin' ||
-                          ref.read(roleOverrideProvider) == 'superadmin')
+                      if (user.systemRole == 'super-admin' ||
+                          user.systemRole == 'superadmin')
                         Theme(
                           data: Theme.of(
                             context,
@@ -664,25 +607,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ],
         ),
       ),
-    );
-  }
-
-  PopupMenuItem<String> _roleOption(
-    BuildContext context,
-    WidgetRef ref,
-    String role,
-    String label,
-  ) {
-    return PopupMenuItem<String>(
-      child: Text(label),
-      onTap: () {
-        if (role == 'super-admin') {
-          ref.read(roleOverrideProvider.notifier).state = null;
-        } else {
-          ref.read(roleOverrideProvider.notifier).state = role;
-        }
-        // Cannot cleanly pop and snackbar from here without using a post-frame callback, but basic assignment is fine
-      },
     );
   }
 }

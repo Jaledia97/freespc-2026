@@ -63,7 +63,6 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
     try {
       // Elevate User Role to Pending
       await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-        'role': RoleUtils.pendingOwner,
         'pendingVenueClaimId': _selectedVenueId ?? 'NEW_VENUE',
       });
 

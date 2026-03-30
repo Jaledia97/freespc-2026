@@ -30,6 +30,9 @@ _WinPostModel _$WinPostModelFromJson(Map<String, dynamic> json) =>
               .toList() ??
           const [],
       commentCount: (json['commentCount'] as num?)?.toInt() ?? 0,
+      authorType: json['authorType'] as String? ?? 'user',
+      authorId: json['authorId'] as String?,
+      postedByUid: json['postedByUid'] as String?,
       latestComment: json['latestComment'] as String?,
     );
 
@@ -49,5 +52,8 @@ Map<String, dynamic> _$WinPostModelToJson(_WinPostModel instance) =>
       'reactionUserIds': instance.reactionUserIds,
       'interestedUserIds': instance.interestedUserIds,
       'commentCount': instance.commentCount,
+      'authorType': instance.authorType,
+      'authorId': instance.authorId,
+      'postedByUid': instance.postedByUid,
       'latestComment': instance.latestComment,
     };

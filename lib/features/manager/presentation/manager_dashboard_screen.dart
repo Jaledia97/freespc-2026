@@ -17,6 +17,7 @@ import '../../home/repositories/hall_repository.dart';
 import '../../../../models/bingo_hall_model.dart';
 
 import '../../../../core/utils/role_utils.dart';
+import '../../../../services/session_context_controller.dart';
 
 class ManagerDashboardScreen extends ConsumerStatefulWidget {
   const ManagerDashboardScreen({super.key});
@@ -76,7 +77,9 @@ class _ManagerDashboardScreenState
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProfileProvider);
     final user = userAsync.value;
-    final homeHallId = user?.homeBaseId;
+    
+    final session = ref.watch(sessionContextProvider);
+    final homeHallId = session.activeVenueId;
 
     // Fetch hall details to get Beacon Code & specific Name
     final hallAsync = homeHallId != null
@@ -99,8 +102,19 @@ class _ManagerDashboardScreenState
           elevation: 0,
           actions: [
             IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.notifications_none),
+              onPressed: () {
+                // TODO: Navigate to Business Alerts Screen
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Business Alerts coming soon')),
+                );
+              },
+              icon: const NotificationBadge(
+                showForBusiness: true,
+                showForGeneral: false,
+                showForManager: false,
+                showForMessages: false,
+                child: Icon(Icons.notifications_none),
+              ),
             ),
           ],
         ),
@@ -212,7 +226,7 @@ class _ManagerDashboardScreenState
                     children: [
                       // CMS PROFILE (Manager+)
                       if (homeHallId != null &&
-                          RoleUtils.canManageGames(user, homeHallId))
+                          RoleUtils.canManageGames(user, session, homeHallId))
                         _buildModuleCard(
                           context,
                           title: "Hall Profile",
@@ -230,7 +244,7 @@ class _ManagerDashboardScreenState
 
                       // SPECIALS (Manager+)
                       if (homeHallId != null &&
-                          RoleUtils.canManageGames(user, homeHallId))
+                          RoleUtils.canManageGames(user, session, homeHallId))
                         _buildModuleCard(
                           context,
                           title: "Manage Events",
@@ -246,7 +260,7 @@ class _ManagerDashboardScreenState
                         ),
 
                       // FINANCIALS (Owner Only - Placeholder)
-                      if (RoleUtils.isOwner(user))
+                      if (RoleUtils.isOwner(user, session))
                         _buildModuleCard(
                           context,
                           title: "Financials",
@@ -266,7 +280,7 @@ class _ManagerDashboardScreenState
 
                       // RAFFLES (Manager+)
                       if (homeHallId != null &&
-                          RoleUtils.canManageGames(user, homeHallId))
+                          RoleUtils.canManageGames(user, session, homeHallId))
                         _buildModuleCard(
                           context,
                           title: "Manage Raffles",
@@ -284,7 +298,7 @@ class _ManagerDashboardScreenState
 
                       // TOURNAMENTS (Manager+)
                       if (homeHallId != null &&
-                          RoleUtils.canManageGames(user, homeHallId))
+                          RoleUtils.canManageGames(user, session, homeHallId))
                         _buildModuleCard(
                           context,
                           title: "Tournaments",
@@ -301,7 +315,7 @@ class _ManagerDashboardScreenState
 
                       // PHOTOS (Worker+)
                       if (homeHallId != null &&
-                          RoleUtils.canScanAndVerify(user, homeHallId))
+                          RoleUtils.canScanAndVerify(user, session, homeHallId))
                         _buildModuleCard(
                           context,
                           title: "Photo Approvals",
@@ -322,7 +336,7 @@ class _ManagerDashboardScreenState
 
                       // STORE (Manager+)
                       if (homeHallId != null &&
-                          RoleUtils.canManageGames(user, homeHallId))
+                          RoleUtils.canManageGames(user, session, homeHallId))
                         _buildModuleCard(
                           context,
                           title: "Manage Store",
@@ -340,7 +354,7 @@ class _ManagerDashboardScreenState
 
                       // LOYALTY SETTINGS (Owner Only)
                       if (homeHallId != null &&
-                          (RoleUtils.isOwner(user) ||
+                          (RoleUtils.isOwner(user, session) ||
                               RoleUtils.isSuperAdmin(user)) &&
                           hall != null)
                         _buildModuleCard(
@@ -362,7 +376,7 @@ class _ManagerDashboardScreenState
 
                       // BLUETOOTH SETTINGS (Owner/SuperAdmin)
                       if (homeHallId != null &&
-                          (RoleUtils.isOwner(user) ||
+                          (RoleUtils.isOwner(user, session) ||
                               RoleUtils.isSuperAdmin(user)) &&
                           hall != null)
                         _buildModuleCard(
@@ -386,7 +400,7 @@ class _ManagerDashboardScreenState
                       // Logic: Owners can manage managers/workers. Managers can manage workers.
                       // RoleUtils.canManagePersonnel handles this check.
                       if (homeHallId != null &&
-                          RoleUtils.canManagePersonnel(user, homeHallId) &&
+                          RoleUtils.canManagePersonnel(user, session, homeHallId) &&
                           hall != null)
                         _buildModuleCard(
                           context,
@@ -397,11 +411,7 @@ class _ManagerDashboardScreenState
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => ManagePersonnelScreen(
-                                hallId: homeHallId,
-                                hall: hall,
-                                currentUser: user,
-                              ),
+                              builder: (_) => const ManagePersonnelScreen(),
                             ),
                           ),
                         ),

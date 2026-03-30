@@ -2,6 +2,23 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+72] - 2026-03-30 - Multi-Entity RBAC & B2B Switcher Architecture
+
+### Added
+- **Multi-Entity Switcher**: Replaced the global `role` model with a rigorous `VenueTeamMemberModel` subcollection architecture. Users are explicitly mapped to individual venues via specific `assignedRole` ('owner', 'manager', 'worker') clearances.
+- **Session Context Controller**: Engineered a core Riverpod controller isolating users inside a `'personal'` (Consumer) context by default. B2B Context transitions securely reroute the application shell to specialized Business Navigations exclusively when active.
+- **Spoof Workspace Matrix**: Created a dedicated `SpoofWorkspaceScreen` allowing `superadmin` accounts to seamlessly inject themselves into any active Venue context natively bypassing traditional permission gates via exact 20-character IDs or partial string queries.
+- **Personnel CMS**: Developed `ManagePersonnelScreen` and deployed `mutateStaffRole` Cloud Function routines orchestrating real-time promotion, demotion, and firing of staff with rigorous "Orphan Lock" protections preventing the demotion of a venue's final Owner.
+- **Global Platform Roles**: Promoted `systemRole` ('user', 'admin', 'superadmin') to the frontend state, dynamically rendering Platform Administration hubs securely bypassing normal B2B gates.
+
+### Changed
+- **Content Authorship Alignment**: Rewired all User-Generated Content modules (Specials, Tournaments, TextPosts) to programmatically map `authorType: 'venue'` and `authorId: activeVenueId` upon creation while in B2B contexts, fundamentally shifting data ownership from standard users strictly onto the Host Venues.
+- **Business Dashboard Feeds**: Replaced placeholder routing screens with a highly optimized `VenueActivityScreen` dynamically pulling live stream feeds exclusively for the targeted `ActiveVenueId` directly from standard Firestore providers.
+
+### Fixed
+- **Rule Alignment**: Redeployed strict `firestore.rules` dropping legacy `role` syntax traversing `collectionGroup('team')` indices and securely resolving the "Role Array" Firebase errors natively.
+- **SuperAdmin CMS Exceptions**: Resolved `AdminRepository.getPendingClaims` fatal stream mapping errors tearing the dashboard UI by wrapping `try-catch` structures preventing a single deformed legacy document from generating an `AsyncError` global crash.
+
 ## [0.0.1+71] - 2026-03-27 - End-to-End Bluetooth Check-in & S-Tier Notifications (Phases 47-52)
 
 ### Added

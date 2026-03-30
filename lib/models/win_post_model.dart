@@ -20,6 +20,9 @@ abstract class WinPostModel with _$WinPostModel {
     @Default([]) List<String> reactionUserIds,
     @Default([]) List<String> interestedUserIds,
     @Default(0) int commentCount,
+    @Default('user') String authorType,
+    String? authorId,
+    String? postedByUid,
     String? latestComment,
   }) = _WinPostModel;
 

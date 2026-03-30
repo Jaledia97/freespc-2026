@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../home/repositories/hall_repository.dart';
 import '../../../../services/auth_service.dart';
+import '../../../../services/session_context_controller.dart';
 import '../../../../models/special_model.dart';
 import 'edit_special_screen.dart';
 
@@ -115,25 +116,24 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final userAsync = ref.watch(userProfileProvider);
+    final session = ref.watch(sessionContextProvider);
 
-    return userAsync.when(
-      data: (user) {
-        if (user == null || user.homeBaseId == null) {
-          return const Scaffold(
-            backgroundColor: Color(0xFF141414),
-            body: Center(
-              child: Text(
-                "No Hall Assigned to User",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          );
-        }
-        final hallId = user.homeBaseId!;
-        final specialsAsync = ref.watch(hallSpecialsProvider(hallId));
+    if (!session.isBusiness || session.activeVenueId == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF141414),
+        body: Center(
+          child: Text(
+            "No Hall Assigned to User",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
+    
+    final hallId = session.activeVenueId!;
+    final specialsAsync = ref.watch(hallSpecialsProvider(hallId));
 
-        return Scaffold(
+    return Scaffold(
           backgroundColor: const Color(0xFF141414),
           appBar: _isSelectionMode
               ? AppBar(
@@ -277,16 +277,6 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
             ),
           ),
         );
-      },
-      loading: () => const Scaffold(
-        backgroundColor: Color(0xFF141414),
-        body: Center(child: CircularProgressIndicator()),
-      ),
-      error: (e, st) => Scaffold(
-        backgroundColor: const Color(0xFF141414),
-        body: Center(child: Text("Auth Error: $e")),
-      ),
-    );
   }
 
   Widget _buildList(

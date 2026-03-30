@@ -307,12 +307,11 @@ exports.onApproveClaim = onCall(async (request) => {
         throw new HttpsError('unauthenticated', 'Endpoint requires authentication.');
     }
     
-    // Check if caller is superadmin (assuming role check or specific UID mapping if needed)
     const callerId = request.auth.uid;
     const db = admin.firestore();
     const callerDoc = await db.collection("users").doc(callerId).get();
     
-    if (!callerDoc.exists || callerDoc.data().role !== "superadmin") {
+    if (!callerDoc.exists || callerDoc.data().systemRole !== "superadmin") {
         throw new HttpsError('permission-denied', 'Only Superadmins can approve B2B claims.');
     }
 
@@ -334,7 +333,7 @@ exports.onApproveClaim = onCall(async (request) => {
          throw new HttpsError('failed-precondition', 'Claim is not in a pending state.');
     }
 
-    // 3. Execute Batch Role Elevation
+    // 3. Execute Batch Role Elevation via Team Subcollection
     const batch = db.batch();
     const targetUserId = claimData.userId;
     const venueId = claimData.requestedVenueId;
@@ -342,15 +341,37 @@ exports.onApproveClaim = onCall(async (request) => {
     // Update Claim Status
     batch.update(claimRef, { status: 'approved' });
     
-    // Elevate Target User
+    // Fetch target user data for Team Model
+    const targetUserDoc = await db.collection("users").doc(targetUserId).get();
+    const targetData = targetUserDoc.data();
+    
+    // Fetch Venue Name for Team Model
+    const venueDoc = await db.collection("bingo_halls").doc(venueId).get();
+    const venueName = venueDoc.exists ? venueDoc.data().name : "Unknown Venue";
+
+    // Elevate Target User by creating an Owner VenueTeamMemberModel
+    const teamRef = db.collection("venues").doc(venueId).collection("team").doc(targetUserId);
+    batch.set(teamRef, {
+        uid: targetUserId,
+        firstName: targetData.firstName || "",
+        lastName: targetData.lastName || "",
+        username: targetData.username || "",
+        photoUrl: targetData.photoUrl || null,
+        venueId: venueId,
+        venueName: venueName,
+        assignedRole: "owner",
+        addedAt: admin.firestore.FieldValue.serverTimestamp(),
+        addedByUid: callerId
+    });
+    
+    // Clear legacy pending claim from root user document
     const userRef = db.collection("users").doc(targetUserId);
     batch.update(userRef, {
-        role: 'owner',
-        homeBaseId: venueId
+        pendingVenueClaimId: admin.firestore.FieldValue.delete()
     });
     
     await batch.commit();
-    return { success: true, message: `User \${targetUserId} elevated to Owner of \${venueId}.` };
+    return { success: true, message: `User ${targetUserId} elevated to Owner of ${venueId}.` };
 });
 
 exports.onRejectClaim = onCall(async (request) => {
@@ -363,7 +384,7 @@ exports.onRejectClaim = onCall(async (request) => {
     const db = admin.firestore();
     const callerDoc = await db.collection("users").doc(callerId).get();
     
-    if (!callerDoc.exists || callerDoc.data().role !== "superadmin") {
+    if (!callerDoc.exists || callerDoc.data().systemRole !== "superadmin") {
         throw new HttpsError('permission-denied', 'Only Superadmins can reject B2B claims.');
     }
 
@@ -374,9 +395,113 @@ exports.onRejectClaim = onCall(async (request) => {
 
     // 2. Execute Reject
     const claimRef = db.collection("venue_claims").doc(claimId);
-    await claimRef.update({ status: 'rejected' });
     
-    return { success: true, message: `Claim \${claimId} securely rejected.` };
+    const claimDoc = await claimRef.get();
+    if (claimDoc.exists) {
+        const targetUserId = claimDoc.data().userId;
+        const userRef = db.collection("users").doc(targetUserId);
+        
+        const batch = db.batch();
+        batch.update(claimRef, { status: 'rejected' });
+        batch.update(userRef, { pendingVenueClaimId: admin.firestore.FieldValue.delete() });
+        await batch.commit();
+    }
+    
+    return { success: true, message: `Claim ${claimId} securely rejected.` };
+});
+
+// --- STAFF LIFECYCLE MANAGEMENT ---
+
+exports.joinVenue = onCall(async (request) => {
+    if (!request.auth) throw new HttpsError('unauthenticated', 'User must be logged in.');
+    const callerId = request.auth.uid;
+    const { venueId } = request.data;
+    if (!venueId) throw new HttpsError('invalid-argument', 'venueId required.');
+    
+    const db = admin.firestore();
+    const venueRef = db.collection("bingo_halls").doc(venueId);
+    const venueDoc = await venueRef.get();
+    if (!venueDoc.exists) throw new HttpsError('not-found', 'Venue not found.');
+    
+    const callerDoc = await db.collection("users").doc(callerId).get();
+    const targetData = callerDoc.data();
+    
+    const teamRef = db.collection("venues").doc(venueId).collection("team").doc(callerId);
+    const teamDoc = await teamRef.get();
+    if (teamDoc.exists) {
+        return { success: true, message: 'Already a member' };
+    }
+    
+    await teamRef.set({
+        uid: callerId,
+        firstName: targetData.firstName || "",
+        lastName: targetData.lastName || "",
+        username: targetData.username || "",
+        photoUrl: targetData.photoUrl || null,
+        venueId: venueId,
+        venueName: venueDoc.data().name,
+        assignedRole: "worker", // default
+        addedAt: admin.firestore.FieldValue.serverTimestamp(),
+        addedByUid: callerId // self-joined via link
+    });
+    
+    return { success: true, message: 'Joined successfully' };
+});
+
+exports.mutateStaffRole = onCall(async (request) => {
+    if (!request.auth) throw new HttpsError('unauthenticated', 'User must be logged in.');
+    const callerId = request.auth.uid;
+    const { venueId, targetUid, newRole } = request.data; // newRole can be 'manager', 'worker', or 'REMOVE'
+    
+    if (!venueId || !targetUid || !newRole) {
+        throw new HttpsError('invalid-argument', 'Missing parameters.');
+    }
+    
+    const db = admin.firestore();
+    
+    // Check Caller Role
+    const callerTeamDoc = await db.collection("venues").doc(venueId).collection("team").doc(callerId).get();
+    const callerSystemRoleDoc = await db.collection("users").doc(callerId).get();
+    const isSuperAdmin = callerSystemRoleDoc.exists && callerSystemRoleDoc.data().systemRole === 'superadmin';
+    
+    if (!callerTeamDoc.exists && !isSuperAdmin) {
+         return { success: false, message: 'You are not a member of this team.' };
+    }
+    const callerRole = isSuperAdmin ? 'owner' : callerTeamDoc.data().assignedRole;
+    
+    if (callerRole === 'worker') {
+        throw new HttpsError('permission-denied', 'Workers cannot mutate roles.');
+    }
+    
+    const targetTeamRef = db.collection("venues").doc(venueId).collection("team").doc(targetUid);
+    const targetTeamDoc = await targetTeamRef.get();
+    if (!targetTeamDoc.exists) throw new HttpsError('not-found', 'Target user is not on the team.');
+    const targetRole = targetTeamDoc.data().assignedRole;
+    
+    // Authorization Matrix
+    if (callerRole === 'manager' && (targetRole === 'owner' || targetRole === 'manager' || newRole === 'owner')) {
+        throw new HttpsError('permission-denied', 'Managers can only mutate workers.');
+    }
+    if (targetRole === 'owner' && !isSuperAdmin && callerId !== targetUid) {
+        // Only super admin or self can demote owner
+        throw new HttpsError('permission-denied', 'Cannot mutate another owner.');
+    }
+    
+    // Orphan Lock Check
+    if (targetRole === 'owner' && newRole !== 'owner') {
+        const teamDocs = await db.collection("venues").doc(venueId).collection("team").where("assignedRole", "==", "owner").get();
+        if (teamDocs.size <= 1) {
+             throw new HttpsError('failed-precondition', 'Cannot demote/remove the last owner of a venue.');
+        }
+    }
+    
+    if (newRole === 'REMOVE') {
+        await targetTeamRef.delete();
+        return { success: true, message: 'Staff removed.' };
+    } else {
+        await targetTeamRef.update({ assignedRole: newRole });
+        return { success: true, message: 'Role updated.' };
+    }
 });
 
 // --- TYPO-TOLERANT SEARCH (TYPESENSE/ALGOLIA SYNC) ---

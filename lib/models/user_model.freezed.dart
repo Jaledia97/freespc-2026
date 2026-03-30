@@ -15,8 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserModel {
 
- String get uid; String get email; String get firstName; String get lastName; String get username; DateTime get birthday; String? get phoneNumber; String? get recoveryEmail; String get role;// superadmin, admin, owner, manager, worker, player
- int get currentPoints; String? get homeBaseId; String? get qrToken; String? get bio; String? get photoUrl; String? get bannerUrl; List<String> get following; String get realNameVisibility;// 'Private', 'Friends Only', 'Everyone'
+ String get uid; String get email; String get firstName; String get lastName; String get username; DateTime get birthday; String? get phoneNumber; String? get recoveryEmail; int get currentPoints; String get systemRole;// superadmin, admin, user
+ String? get qrToken; String? get bio; String? get photoUrl; String? get bannerUrl; List<String> get following; String get realNameVisibility;// 'Private', 'Friends Only', 'Everyone'
  String get onlineStatus; String? get currentCheckInHallId; List<String> get blockedUsers;// Array of User IDs this user has blocked
  List<String> get customCategories;// Array of Custom Tags/Categories the user has saved
 @NullableTimestampConverter() DateTime? get lastViewedPhotoApprovals;// Track when the worker last viewed pending photos
@@ -34,16 +34,16 @@ $UserModelCopyWith<UserModel> get copyWith => _$UserModelCopyWithImpl<UserModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.email, email) || other.email == email)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.birthday, birthday) || other.birthday == birthday)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.recoveryEmail, recoveryEmail) || other.recoveryEmail == recoveryEmail)&&(identical(other.role, role) || other.role == role)&&(identical(other.currentPoints, currentPoints) || other.currentPoints == currentPoints)&&(identical(other.homeBaseId, homeBaseId) || other.homeBaseId == homeBaseId)&&(identical(other.qrToken, qrToken) || other.qrToken == qrToken)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&const DeepCollectionEquality().equals(other.following, following)&&(identical(other.realNameVisibility, realNameVisibility) || other.realNameVisibility == realNameVisibility)&&(identical(other.onlineStatus, onlineStatus) || other.onlineStatus == onlineStatus)&&(identical(other.currentCheckInHallId, currentCheckInHallId) || other.currentCheckInHallId == currentCheckInHallId)&&const DeepCollectionEquality().equals(other.blockedUsers, blockedUsers)&&const DeepCollectionEquality().equals(other.customCategories, customCategories)&&(identical(other.lastViewedPhotoApprovals, lastViewedPhotoApprovals) || other.lastViewedPhotoApprovals == lastViewedPhotoApprovals)&&const DeepCollectionEquality().equals(other.fcmTokens, fcmTokens)&&const DeepCollectionEquality().equals(other.squadIds, squadIds)&&(identical(other.pendingVenueClaimId, pendingVenueClaimId) || other.pendingVenueClaimId == pendingVenueClaimId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.email, email) || other.email == email)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.birthday, birthday) || other.birthday == birthday)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.recoveryEmail, recoveryEmail) || other.recoveryEmail == recoveryEmail)&&(identical(other.currentPoints, currentPoints) || other.currentPoints == currentPoints)&&(identical(other.systemRole, systemRole) || other.systemRole == systemRole)&&(identical(other.qrToken, qrToken) || other.qrToken == qrToken)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&const DeepCollectionEquality().equals(other.following, following)&&(identical(other.realNameVisibility, realNameVisibility) || other.realNameVisibility == realNameVisibility)&&(identical(other.onlineStatus, onlineStatus) || other.onlineStatus == onlineStatus)&&(identical(other.currentCheckInHallId, currentCheckInHallId) || other.currentCheckInHallId == currentCheckInHallId)&&const DeepCollectionEquality().equals(other.blockedUsers, blockedUsers)&&const DeepCollectionEquality().equals(other.customCategories, customCategories)&&(identical(other.lastViewedPhotoApprovals, lastViewedPhotoApprovals) || other.lastViewedPhotoApprovals == lastViewedPhotoApprovals)&&const DeepCollectionEquality().equals(other.fcmTokens, fcmTokens)&&const DeepCollectionEquality().equals(other.squadIds, squadIds)&&(identical(other.pendingVenueClaimId, pendingVenueClaimId) || other.pendingVenueClaimId == pendingVenueClaimId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,uid,email,firstName,lastName,username,birthday,phoneNumber,recoveryEmail,role,currentPoints,homeBaseId,qrToken,bio,photoUrl,bannerUrl,const DeepCollectionEquality().hash(following),realNameVisibility,onlineStatus,currentCheckInHallId,const DeepCollectionEquality().hash(blockedUsers),const DeepCollectionEquality().hash(customCategories),lastViewedPhotoApprovals,const DeepCollectionEquality().hash(fcmTokens),const DeepCollectionEquality().hash(squadIds),pendingVenueClaimId]);
+int get hashCode => Object.hashAll([runtimeType,uid,email,firstName,lastName,username,birthday,phoneNumber,recoveryEmail,currentPoints,systemRole,qrToken,bio,photoUrl,bannerUrl,const DeepCollectionEquality().hash(following),realNameVisibility,onlineStatus,currentCheckInHallId,const DeepCollectionEquality().hash(blockedUsers),const DeepCollectionEquality().hash(customCategories),lastViewedPhotoApprovals,const DeepCollectionEquality().hash(fcmTokens),const DeepCollectionEquality().hash(squadIds),pendingVenueClaimId]);
 
 @override
 String toString() {
-  return 'UserModel(uid: $uid, email: $email, firstName: $firstName, lastName: $lastName, username: $username, birthday: $birthday, phoneNumber: $phoneNumber, recoveryEmail: $recoveryEmail, role: $role, currentPoints: $currentPoints, homeBaseId: $homeBaseId, qrToken: $qrToken, bio: $bio, photoUrl: $photoUrl, bannerUrl: $bannerUrl, following: $following, realNameVisibility: $realNameVisibility, onlineStatus: $onlineStatus, currentCheckInHallId: $currentCheckInHallId, blockedUsers: $blockedUsers, customCategories: $customCategories, lastViewedPhotoApprovals: $lastViewedPhotoApprovals, fcmTokens: $fcmTokens, squadIds: $squadIds, pendingVenueClaimId: $pendingVenueClaimId)';
+  return 'UserModel(uid: $uid, email: $email, firstName: $firstName, lastName: $lastName, username: $username, birthday: $birthday, phoneNumber: $phoneNumber, recoveryEmail: $recoveryEmail, currentPoints: $currentPoints, systemRole: $systemRole, qrToken: $qrToken, bio: $bio, photoUrl: $photoUrl, bannerUrl: $bannerUrl, following: $following, realNameVisibility: $realNameVisibility, onlineStatus: $onlineStatus, currentCheckInHallId: $currentCheckInHallId, blockedUsers: $blockedUsers, customCategories: $customCategories, lastViewedPhotoApprovals: $lastViewedPhotoApprovals, fcmTokens: $fcmTokens, squadIds: $squadIds, pendingVenueClaimId: $pendingVenueClaimId)';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $UserModelCopyWith<$Res>  {
   factory $UserModelCopyWith(UserModel value, $Res Function(UserModel) _then) = _$UserModelCopyWithImpl;
 @useResult
 $Res call({
- String uid, String email, String firstName, String lastName, String username, DateTime birthday, String? phoneNumber, String? recoveryEmail, String role, int currentPoints, String? homeBaseId, String? qrToken, String? bio, String? photoUrl, String? bannerUrl, List<String> following, String realNameVisibility, String onlineStatus, String? currentCheckInHallId, List<String> blockedUsers, List<String> customCategories,@NullableTimestampConverter() DateTime? lastViewedPhotoApprovals, List<String> fcmTokens, List<String> squadIds, String? pendingVenueClaimId
+ String uid, String email, String firstName, String lastName, String username, DateTime birthday, String? phoneNumber, String? recoveryEmail, int currentPoints, String systemRole, String? qrToken, String? bio, String? photoUrl, String? bannerUrl, List<String> following, String realNameVisibility, String onlineStatus, String? currentCheckInHallId, List<String> blockedUsers, List<String> customCategories,@NullableTimestampConverter() DateTime? lastViewedPhotoApprovals, List<String> fcmTokens, List<String> squadIds, String? pendingVenueClaimId
 });
 
 
@@ -71,7 +71,7 @@ class _$UserModelCopyWithImpl<$Res>
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? email = null,Object? firstName = null,Object? lastName = null,Object? username = null,Object? birthday = null,Object? phoneNumber = freezed,Object? recoveryEmail = freezed,Object? role = null,Object? currentPoints = null,Object? homeBaseId = freezed,Object? qrToken = freezed,Object? bio = freezed,Object? photoUrl = freezed,Object? bannerUrl = freezed,Object? following = null,Object? realNameVisibility = null,Object? onlineStatus = null,Object? currentCheckInHallId = freezed,Object? blockedUsers = null,Object? customCategories = null,Object? lastViewedPhotoApprovals = freezed,Object? fcmTokens = null,Object? squadIds = null,Object? pendingVenueClaimId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? email = null,Object? firstName = null,Object? lastName = null,Object? username = null,Object? birthday = null,Object? phoneNumber = freezed,Object? recoveryEmail = freezed,Object? currentPoints = null,Object? systemRole = null,Object? qrToken = freezed,Object? bio = freezed,Object? photoUrl = freezed,Object? bannerUrl = freezed,Object? following = null,Object? realNameVisibility = null,Object? onlineStatus = null,Object? currentCheckInHallId = freezed,Object? blockedUsers = null,Object? customCategories = null,Object? lastViewedPhotoApprovals = freezed,Object? fcmTokens = null,Object? squadIds = null,Object? pendingVenueClaimId = freezed,}) {
   return _then(_self.copyWith(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -81,10 +81,9 @@ as String,username: null == username ? _self.username : username // ignore: cast
 as String,birthday: null == birthday ? _self.birthday : birthday // ignore: cast_nullable_to_non_nullable
 as DateTime,phoneNumber: freezed == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
 as String?,recoveryEmail: freezed == recoveryEmail ? _self.recoveryEmail : recoveryEmail // ignore: cast_nullable_to_non_nullable
-as String?,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
-as String,currentPoints: null == currentPoints ? _self.currentPoints : currentPoints // ignore: cast_nullable_to_non_nullable
-as int,homeBaseId: freezed == homeBaseId ? _self.homeBaseId : homeBaseId // ignore: cast_nullable_to_non_nullable
-as String?,qrToken: freezed == qrToken ? _self.qrToken : qrToken // ignore: cast_nullable_to_non_nullable
+as String?,currentPoints: null == currentPoints ? _self.currentPoints : currentPoints // ignore: cast_nullable_to_non_nullable
+as int,systemRole: null == systemRole ? _self.systemRole : systemRole // ignore: cast_nullable_to_non_nullable
+as String,qrToken: freezed == qrToken ? _self.qrToken : qrToken // ignore: cast_nullable_to_non_nullable
 as String?,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
 as String?,photoUrl: freezed == photoUrl ? _self.photoUrl : photoUrl // ignore: cast_nullable_to_non_nullable
 as String?,bannerUrl: freezed == bannerUrl ? _self.bannerUrl : bannerUrl // ignore: cast_nullable_to_non_nullable
@@ -183,10 +182,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  String email,  String firstName,  String lastName,  String username,  DateTime birthday,  String? phoneNumber,  String? recoveryEmail,  String role,  int currentPoints,  String? homeBaseId,  String? qrToken,  String? bio,  String? photoUrl,  String? bannerUrl,  List<String> following,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId,  List<String> blockedUsers,  List<String> customCategories, @NullableTimestampConverter()  DateTime? lastViewedPhotoApprovals,  List<String> fcmTokens,  List<String> squadIds,  String? pendingVenueClaimId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  String email,  String firstName,  String lastName,  String username,  DateTime birthday,  String? phoneNumber,  String? recoveryEmail,  int currentPoints,  String systemRole,  String? qrToken,  String? bio,  String? photoUrl,  String? bannerUrl,  List<String> following,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId,  List<String> blockedUsers,  List<String> customCategories, @NullableTimestampConverter()  DateTime? lastViewedPhotoApprovals,  List<String> fcmTokens,  List<String> squadIds,  String? pendingVenueClaimId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
-return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.username,_that.birthday,_that.phoneNumber,_that.recoveryEmail,_that.role,_that.currentPoints,_that.homeBaseId,_that.qrToken,_that.bio,_that.photoUrl,_that.bannerUrl,_that.following,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId,_that.blockedUsers,_that.customCategories,_that.lastViewedPhotoApprovals,_that.fcmTokens,_that.squadIds,_that.pendingVenueClaimId);case _:
+return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.username,_that.birthday,_that.phoneNumber,_that.recoveryEmail,_that.currentPoints,_that.systemRole,_that.qrToken,_that.bio,_that.photoUrl,_that.bannerUrl,_that.following,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId,_that.blockedUsers,_that.customCategories,_that.lastViewedPhotoApprovals,_that.fcmTokens,_that.squadIds,_that.pendingVenueClaimId);case _:
   return orElse();
 
 }
@@ -204,10 +203,10 @@ return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.usern
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  String email,  String firstName,  String lastName,  String username,  DateTime birthday,  String? phoneNumber,  String? recoveryEmail,  String role,  int currentPoints,  String? homeBaseId,  String? qrToken,  String? bio,  String? photoUrl,  String? bannerUrl,  List<String> following,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId,  List<String> blockedUsers,  List<String> customCategories, @NullableTimestampConverter()  DateTime? lastViewedPhotoApprovals,  List<String> fcmTokens,  List<String> squadIds,  String? pendingVenueClaimId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  String email,  String firstName,  String lastName,  String username,  DateTime birthday,  String? phoneNumber,  String? recoveryEmail,  int currentPoints,  String systemRole,  String? qrToken,  String? bio,  String? photoUrl,  String? bannerUrl,  List<String> following,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId,  List<String> blockedUsers,  List<String> customCategories, @NullableTimestampConverter()  DateTime? lastViewedPhotoApprovals,  List<String> fcmTokens,  List<String> squadIds,  String? pendingVenueClaimId)  $default,) {final _that = this;
 switch (_that) {
 case _UserModel():
-return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.username,_that.birthday,_that.phoneNumber,_that.recoveryEmail,_that.role,_that.currentPoints,_that.homeBaseId,_that.qrToken,_that.bio,_that.photoUrl,_that.bannerUrl,_that.following,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId,_that.blockedUsers,_that.customCategories,_that.lastViewedPhotoApprovals,_that.fcmTokens,_that.squadIds,_that.pendingVenueClaimId);case _:
+return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.username,_that.birthday,_that.phoneNumber,_that.recoveryEmail,_that.currentPoints,_that.systemRole,_that.qrToken,_that.bio,_that.photoUrl,_that.bannerUrl,_that.following,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId,_that.blockedUsers,_that.customCategories,_that.lastViewedPhotoApprovals,_that.fcmTokens,_that.squadIds,_that.pendingVenueClaimId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -224,10 +223,10 @@ return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.usern
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  String email,  String firstName,  String lastName,  String username,  DateTime birthday,  String? phoneNumber,  String? recoveryEmail,  String role,  int currentPoints,  String? homeBaseId,  String? qrToken,  String? bio,  String? photoUrl,  String? bannerUrl,  List<String> following,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId,  List<String> blockedUsers,  List<String> customCategories, @NullableTimestampConverter()  DateTime? lastViewedPhotoApprovals,  List<String> fcmTokens,  List<String> squadIds,  String? pendingVenueClaimId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  String email,  String firstName,  String lastName,  String username,  DateTime birthday,  String? phoneNumber,  String? recoveryEmail,  int currentPoints,  String systemRole,  String? qrToken,  String? bio,  String? photoUrl,  String? bannerUrl,  List<String> following,  String realNameVisibility,  String onlineStatus,  String? currentCheckInHallId,  List<String> blockedUsers,  List<String> customCategories, @NullableTimestampConverter()  DateTime? lastViewedPhotoApprovals,  List<String> fcmTokens,  List<String> squadIds,  String? pendingVenueClaimId)?  $default,) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
-return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.username,_that.birthday,_that.phoneNumber,_that.recoveryEmail,_that.role,_that.currentPoints,_that.homeBaseId,_that.qrToken,_that.bio,_that.photoUrl,_that.bannerUrl,_that.following,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId,_that.blockedUsers,_that.customCategories,_that.lastViewedPhotoApprovals,_that.fcmTokens,_that.squadIds,_that.pendingVenueClaimId);case _:
+return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.username,_that.birthday,_that.phoneNumber,_that.recoveryEmail,_that.currentPoints,_that.systemRole,_that.qrToken,_that.bio,_that.photoUrl,_that.bannerUrl,_that.following,_that.realNameVisibility,_that.onlineStatus,_that.currentCheckInHallId,_that.blockedUsers,_that.customCategories,_that.lastViewedPhotoApprovals,_that.fcmTokens,_that.squadIds,_that.pendingVenueClaimId);case _:
   return null;
 
 }
@@ -239,7 +238,7 @@ return $default(_that.uid,_that.email,_that.firstName,_that.lastName,_that.usern
 @JsonSerializable()
 
 class _UserModel implements UserModel {
-  const _UserModel({required this.uid, required this.email, required this.firstName, required this.lastName, required this.username, required this.birthday, this.phoneNumber, this.recoveryEmail, this.role = 'player', this.currentPoints = 0, this.homeBaseId, this.qrToken, this.bio, this.photoUrl, this.bannerUrl, final  List<String> following = const [], this.realNameVisibility = 'Private', this.onlineStatus = 'Online', this.currentCheckInHallId, final  List<String> blockedUsers = const [], final  List<String> customCategories = const [], @NullableTimestampConverter() this.lastViewedPhotoApprovals, final  List<String> fcmTokens = const [], final  List<String> squadIds = const [], this.pendingVenueClaimId}): _following = following,_blockedUsers = blockedUsers,_customCategories = customCategories,_fcmTokens = fcmTokens,_squadIds = squadIds;
+  const _UserModel({required this.uid, required this.email, required this.firstName, required this.lastName, required this.username, required this.birthday, this.phoneNumber, this.recoveryEmail, this.currentPoints = 0, this.systemRole = 'user', this.qrToken, this.bio, this.photoUrl, this.bannerUrl, final  List<String> following = const [], this.realNameVisibility = 'Private', this.onlineStatus = 'Online', this.currentCheckInHallId, final  List<String> blockedUsers = const [], final  List<String> customCategories = const [], @NullableTimestampConverter() this.lastViewedPhotoApprovals, final  List<String> fcmTokens = const [], final  List<String> squadIds = const [], this.pendingVenueClaimId}): _following = following,_blockedUsers = blockedUsers,_customCategories = customCategories,_fcmTokens = fcmTokens,_squadIds = squadIds;
   factory _UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
 
 @override final  String uid;
@@ -250,10 +249,9 @@ class _UserModel implements UserModel {
 @override final  DateTime birthday;
 @override final  String? phoneNumber;
 @override final  String? recoveryEmail;
-@override@JsonKey() final  String role;
-// superadmin, admin, owner, manager, worker, player
 @override@JsonKey() final  int currentPoints;
-@override final  String? homeBaseId;
+@override@JsonKey() final  String systemRole;
+// superadmin, admin, user
 @override final  String? qrToken;
 @override final  String? bio;
 @override final  String? photoUrl;
@@ -320,16 +318,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.email, email) || other.email == email)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.birthday, birthday) || other.birthday == birthday)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.recoveryEmail, recoveryEmail) || other.recoveryEmail == recoveryEmail)&&(identical(other.role, role) || other.role == role)&&(identical(other.currentPoints, currentPoints) || other.currentPoints == currentPoints)&&(identical(other.homeBaseId, homeBaseId) || other.homeBaseId == homeBaseId)&&(identical(other.qrToken, qrToken) || other.qrToken == qrToken)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&const DeepCollectionEquality().equals(other._following, _following)&&(identical(other.realNameVisibility, realNameVisibility) || other.realNameVisibility == realNameVisibility)&&(identical(other.onlineStatus, onlineStatus) || other.onlineStatus == onlineStatus)&&(identical(other.currentCheckInHallId, currentCheckInHallId) || other.currentCheckInHallId == currentCheckInHallId)&&const DeepCollectionEquality().equals(other._blockedUsers, _blockedUsers)&&const DeepCollectionEquality().equals(other._customCategories, _customCategories)&&(identical(other.lastViewedPhotoApprovals, lastViewedPhotoApprovals) || other.lastViewedPhotoApprovals == lastViewedPhotoApprovals)&&const DeepCollectionEquality().equals(other._fcmTokens, _fcmTokens)&&const DeepCollectionEquality().equals(other._squadIds, _squadIds)&&(identical(other.pendingVenueClaimId, pendingVenueClaimId) || other.pendingVenueClaimId == pendingVenueClaimId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.email, email) || other.email == email)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.birthday, birthday) || other.birthday == birthday)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.recoveryEmail, recoveryEmail) || other.recoveryEmail == recoveryEmail)&&(identical(other.currentPoints, currentPoints) || other.currentPoints == currentPoints)&&(identical(other.systemRole, systemRole) || other.systemRole == systemRole)&&(identical(other.qrToken, qrToken) || other.qrToken == qrToken)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&const DeepCollectionEquality().equals(other._following, _following)&&(identical(other.realNameVisibility, realNameVisibility) || other.realNameVisibility == realNameVisibility)&&(identical(other.onlineStatus, onlineStatus) || other.onlineStatus == onlineStatus)&&(identical(other.currentCheckInHallId, currentCheckInHallId) || other.currentCheckInHallId == currentCheckInHallId)&&const DeepCollectionEquality().equals(other._blockedUsers, _blockedUsers)&&const DeepCollectionEquality().equals(other._customCategories, _customCategories)&&(identical(other.lastViewedPhotoApprovals, lastViewedPhotoApprovals) || other.lastViewedPhotoApprovals == lastViewedPhotoApprovals)&&const DeepCollectionEquality().equals(other._fcmTokens, _fcmTokens)&&const DeepCollectionEquality().equals(other._squadIds, _squadIds)&&(identical(other.pendingVenueClaimId, pendingVenueClaimId) || other.pendingVenueClaimId == pendingVenueClaimId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,uid,email,firstName,lastName,username,birthday,phoneNumber,recoveryEmail,role,currentPoints,homeBaseId,qrToken,bio,photoUrl,bannerUrl,const DeepCollectionEquality().hash(_following),realNameVisibility,onlineStatus,currentCheckInHallId,const DeepCollectionEquality().hash(_blockedUsers),const DeepCollectionEquality().hash(_customCategories),lastViewedPhotoApprovals,const DeepCollectionEquality().hash(_fcmTokens),const DeepCollectionEquality().hash(_squadIds),pendingVenueClaimId]);
+int get hashCode => Object.hashAll([runtimeType,uid,email,firstName,lastName,username,birthday,phoneNumber,recoveryEmail,currentPoints,systemRole,qrToken,bio,photoUrl,bannerUrl,const DeepCollectionEquality().hash(_following),realNameVisibility,onlineStatus,currentCheckInHallId,const DeepCollectionEquality().hash(_blockedUsers),const DeepCollectionEquality().hash(_customCategories),lastViewedPhotoApprovals,const DeepCollectionEquality().hash(_fcmTokens),const DeepCollectionEquality().hash(_squadIds),pendingVenueClaimId]);
 
 @override
 String toString() {
-  return 'UserModel(uid: $uid, email: $email, firstName: $firstName, lastName: $lastName, username: $username, birthday: $birthday, phoneNumber: $phoneNumber, recoveryEmail: $recoveryEmail, role: $role, currentPoints: $currentPoints, homeBaseId: $homeBaseId, qrToken: $qrToken, bio: $bio, photoUrl: $photoUrl, bannerUrl: $bannerUrl, following: $following, realNameVisibility: $realNameVisibility, onlineStatus: $onlineStatus, currentCheckInHallId: $currentCheckInHallId, blockedUsers: $blockedUsers, customCategories: $customCategories, lastViewedPhotoApprovals: $lastViewedPhotoApprovals, fcmTokens: $fcmTokens, squadIds: $squadIds, pendingVenueClaimId: $pendingVenueClaimId)';
+  return 'UserModel(uid: $uid, email: $email, firstName: $firstName, lastName: $lastName, username: $username, birthday: $birthday, phoneNumber: $phoneNumber, recoveryEmail: $recoveryEmail, currentPoints: $currentPoints, systemRole: $systemRole, qrToken: $qrToken, bio: $bio, photoUrl: $photoUrl, bannerUrl: $bannerUrl, following: $following, realNameVisibility: $realNameVisibility, onlineStatus: $onlineStatus, currentCheckInHallId: $currentCheckInHallId, blockedUsers: $blockedUsers, customCategories: $customCategories, lastViewedPhotoApprovals: $lastViewedPhotoApprovals, fcmTokens: $fcmTokens, squadIds: $squadIds, pendingVenueClaimId: $pendingVenueClaimId)';
 }
 
 
@@ -340,7 +338,7 @@ abstract mixin class _$UserModelCopyWith<$Res> implements $UserModelCopyWith<$Re
   factory _$UserModelCopyWith(_UserModel value, $Res Function(_UserModel) _then) = __$UserModelCopyWithImpl;
 @override @useResult
 $Res call({
- String uid, String email, String firstName, String lastName, String username, DateTime birthday, String? phoneNumber, String? recoveryEmail, String role, int currentPoints, String? homeBaseId, String? qrToken, String? bio, String? photoUrl, String? bannerUrl, List<String> following, String realNameVisibility, String onlineStatus, String? currentCheckInHallId, List<String> blockedUsers, List<String> customCategories,@NullableTimestampConverter() DateTime? lastViewedPhotoApprovals, List<String> fcmTokens, List<String> squadIds, String? pendingVenueClaimId
+ String uid, String email, String firstName, String lastName, String username, DateTime birthday, String? phoneNumber, String? recoveryEmail, int currentPoints, String systemRole, String? qrToken, String? bio, String? photoUrl, String? bannerUrl, List<String> following, String realNameVisibility, String onlineStatus, String? currentCheckInHallId, List<String> blockedUsers, List<String> customCategories,@NullableTimestampConverter() DateTime? lastViewedPhotoApprovals, List<String> fcmTokens, List<String> squadIds, String? pendingVenueClaimId
 });
 
 
@@ -357,7 +355,7 @@ class __$UserModelCopyWithImpl<$Res>
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? email = null,Object? firstName = null,Object? lastName = null,Object? username = null,Object? birthday = null,Object? phoneNumber = freezed,Object? recoveryEmail = freezed,Object? role = null,Object? currentPoints = null,Object? homeBaseId = freezed,Object? qrToken = freezed,Object? bio = freezed,Object? photoUrl = freezed,Object? bannerUrl = freezed,Object? following = null,Object? realNameVisibility = null,Object? onlineStatus = null,Object? currentCheckInHallId = freezed,Object? blockedUsers = null,Object? customCategories = null,Object? lastViewedPhotoApprovals = freezed,Object? fcmTokens = null,Object? squadIds = null,Object? pendingVenueClaimId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? email = null,Object? firstName = null,Object? lastName = null,Object? username = null,Object? birthday = null,Object? phoneNumber = freezed,Object? recoveryEmail = freezed,Object? currentPoints = null,Object? systemRole = null,Object? qrToken = freezed,Object? bio = freezed,Object? photoUrl = freezed,Object? bannerUrl = freezed,Object? following = null,Object? realNameVisibility = null,Object? onlineStatus = null,Object? currentCheckInHallId = freezed,Object? blockedUsers = null,Object? customCategories = null,Object? lastViewedPhotoApprovals = freezed,Object? fcmTokens = null,Object? squadIds = null,Object? pendingVenueClaimId = freezed,}) {
   return _then(_UserModel(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -367,10 +365,9 @@ as String,username: null == username ? _self.username : username // ignore: cast
 as String,birthday: null == birthday ? _self.birthday : birthday // ignore: cast_nullable_to_non_nullable
 as DateTime,phoneNumber: freezed == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
 as String?,recoveryEmail: freezed == recoveryEmail ? _self.recoveryEmail : recoveryEmail // ignore: cast_nullable_to_non_nullable
-as String?,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
-as String,currentPoints: null == currentPoints ? _self.currentPoints : currentPoints // ignore: cast_nullable_to_non_nullable
-as int,homeBaseId: freezed == homeBaseId ? _self.homeBaseId : homeBaseId // ignore: cast_nullable_to_non_nullable
-as String?,qrToken: freezed == qrToken ? _self.qrToken : qrToken // ignore: cast_nullable_to_non_nullable
+as String?,currentPoints: null == currentPoints ? _self.currentPoints : currentPoints // ignore: cast_nullable_to_non_nullable
+as int,systemRole: null == systemRole ? _self.systemRole : systemRole // ignore: cast_nullable_to_non_nullable
+as String,qrToken: freezed == qrToken ? _self.qrToken : qrToken // ignore: cast_nullable_to_non_nullable
 as String?,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
 as String?,photoUrl: freezed == photoUrl ? _self.photoUrl : photoUrl // ignore: cast_nullable_to_non_nullable
 as String?,bannerUrl: freezed == bannerUrl ? _self.bannerUrl : bannerUrl // ignore: cast_nullable_to_non_nullable

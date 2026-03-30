@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // Added
 import 'package:cloud_firestore/cloud_firestore.dart'; // Added
 // Added
 import '../../../services/auth_service.dart';
+import '../../../services/session_context_controller.dart'; // Added
 import '../../main_layout.dart';
 import '../../onboarding/presentation/onboarding_screen.dart';
 import 'login_screen.dart';
@@ -184,6 +185,55 @@ class _AuthHandlerState extends ConsumerState<_AuthHandler> {
          ScaffoldMessenger.of(context).showSnackBar(
            const SnackBar(content: Text("Account required to interact with this payload natively.")),
          );
+      }
+    }
+
+    // 4. Force state transition for B2B Venue Alerts
+    final b2bVenueId = prefs.getString('pending_b2b_context');
+    if (b2bVenueId != null) {
+      prefs.remove('pending_b2b_context');
+      final user = ref.read(authStateChangesProvider).value;
+      if (user != null) {
+        final teamDoc = await FirebaseFirestore.instance
+            .collection('venues')
+            .doc(b2bVenueId)
+            .collection('team')
+            .doc(user.uid)
+            .get();
+        if (teamDoc.exists) {
+            final data = teamDoc.data()!;
+            ref.read(sessionContextProvider.notifier).switchToBusiness(
+                b2bVenueId,
+                data['venueName'] ?? 'Business Mode',
+                data['assignedRole'] ?? 'worker',
+                isSuperAdmin: false,
+            );
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Switched to ${data['venueName']} from Notification"), backgroundColor: Colors.amber, behavior: SnackBarBehavior.floating),
+              );
+            }
+        } else {
+            // Check superadmin fallback
+            final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+            if (userDoc.exists && userDoc.data()?['systemRole'] == 'superadmin') {
+                ref.read(sessionContextProvider.notifier).switchToBusiness(
+                    b2bVenueId,
+                    'Superadmin Override',
+                    'owner',
+                    isSuperAdmin: true,
+                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Superadmin Override: Switched to Venue Context"), backgroundColor: Colors.amber, behavior: SnackBarBehavior.floating),
+                  );
+                }
+            } else if (mounted) {
+                 ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Access Denied: You are not authorized for this workspace!"), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating),
+                 );
+            }
+        }
       }
     }
   }

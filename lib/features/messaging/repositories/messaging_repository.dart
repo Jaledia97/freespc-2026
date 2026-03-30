@@ -81,18 +81,23 @@ class MessagingRepository {
   Stream<List<MessageModel>> streamChatMessages(
     String chatId, {
     int limit = 50,
+    DateTime? cutoffDate,
   }) {
     final userProfile = _ref.watch(userProfileProvider).value;
     final blockedUsers = userProfile?.blockedUsers ?? [];
 
-    return _firestore
+    Query<Map<String, dynamic>> query = _firestore
         .collection('chats')
         .doc(chatId)
         .collection('messages')
-        .orderBy('createdAt', descending: true)
-        .limit(limit)
-        .snapshots()
-        .map((snapshot) {
+        .orderBy('createdAt', descending: true);
+
+    if (cutoffDate != null) {
+      query = query.where('createdAt',
+          isGreaterThanOrEqualTo: cutoffDate.toIso8601String());
+    }
+
+    return query.limit(limit).snapshots().map((snapshot) {
           final messages = snapshot.docs
               .map((doc) => MessageModel.fromJson(doc.data()))
               .toList();

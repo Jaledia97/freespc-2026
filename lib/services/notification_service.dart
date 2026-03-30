@@ -19,10 +19,22 @@ final userNotificationsProvider = StreamProvider<List<NotificationModel>>((
   return ref.watch(notificationServiceProvider).getUserNotifications(user.uid);
 });
 
-/// Provides a count of unread system notifications (doesn't include Pending Photos count)
+/// Provides a count of unread system notifications (doesn't include Pending Photos count or B2B Alerts)
 final unreadNotificationsCountProvider = Provider<int>((ref) {
   final notificationsAsync = ref.watch(userNotificationsProvider);
-  return notificationsAsync.value?.where((n) => !n.isRead).length ?? 0;
+  return notificationsAsync.value
+          ?.where((n) => !n.isRead && !n.type.startsWith('b2b_'))
+          .length ??
+      0;
+});
+
+/// Provides a count of unread B2B notifications (Manager Dashboard)
+final unreadB2BNotificationsCountProvider = Provider<int>((ref) {
+  final notificationsAsync = ref.watch(userNotificationsProvider);
+  return notificationsAsync.value
+          ?.where((n) => !n.isRead && n.type.startsWith('b2b_'))
+          .length ??
+      0;
 });
 
 class NotificationService {

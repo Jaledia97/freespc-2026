@@ -1,4 +1,5 @@
 import '../../models/user_model.dart';
+import '../../services/session_context_controller.dart';
 
 class RoleUtils {
   static const String superadmin = 'superadmin';
@@ -6,69 +7,57 @@ class RoleUtils {
   static const String owner = 'owner';
   static const String manager = 'manager';
   static const String worker = 'worker';
-  static const String player = 'player';
-  static const String pendingOwner = 'pending_owner';
 
   // App-Level Permissions
   static bool isSuperAdmin(UserModel user) {
-    return user.role == superadmin;
+    return user.systemRole == superadmin;
   }
 
   static bool isAdmin(UserModel user) {
-    return user.role == superadmin || user.role == admin;
-  }
-
-  static bool isOwner(UserModel user) {
-    return user.role == owner;
+    return user.systemRole == superadmin || user.systemRole == admin;
   }
 
   static bool isPendingOwner(UserModel user) {
-    return user.role == pendingOwner;
+    return user.pendingVenueClaimId != null;
   }
 
   // Hall-Level Permissions
-  // Note: App-level admins usually have implicit access to all halls for support purposes.
-
-  static bool canManageHall(UserModel user, String hallId) {
+  static bool isOwner(UserModel user, SessionState session) {
     if (isSuperAdmin(user)) return true;
-    if ([owner, manager].contains(user.role) && user.homeBaseId == hallId)
-      return true;
-    return false;
+    return session.isBusiness && session.activeRole == owner;
   }
 
-  static bool canManageFinancials(UserModel user, String hallId) {
+  static bool canManageHall(UserModel user, SessionState session, String hallId) {
     if (isSuperAdmin(user)) return true;
-    if (user.role == owner && user.homeBaseId == hallId) return true;
-    return false;
+    if (session.activeVenueId != hallId) return false;
+    return session.isBusiness && [owner, manager].contains(session.activeRole);
   }
 
-  static bool canManagePersonnel(UserModel user, String hallId) {
+  static bool canManageFinancials(UserModel user, SessionState session, String hallId) {
     if (isSuperAdmin(user)) return true;
-    if (user.role == owner && user.homeBaseId == hallId) return true;
-    return false;
+    if (session.activeVenueId != hallId) return false;
+    return session.isBusiness && session.activeRole == owner;
   }
 
-  static bool canManageSpecials(UserModel user, String hallId) {
+  static bool canManagePersonnel(UserModel user, SessionState session, String hallId) {
+    if (isSuperAdmin(user)) return true;
+    if (session.activeVenueId != hallId) return false;
+    return session.isBusiness && [owner, manager].contains(session.activeRole);
+  }
+
+  static bool canManageSpecials(UserModel user, SessionState session, String hallId) {
     if (isAdmin(user)) return true; // Admins can help setup
-    if ([owner, manager].contains(user.role) && user.homeBaseId == hallId)
-      return true;
-    return false;
+    if (session.activeVenueId != hallId) return false;
+    return session.isBusiness && [owner, manager].contains(session.activeRole);
   }
 
-  static bool canManageGames(UserModel user, String hallId) {
-    return canManageSpecials(user, hallId);
+  static bool canManageGames(UserModel user, SessionState session, String hallId) {
+    return canManageSpecials(user, session, hallId);
   }
 
-  static bool canScanAndVerify(UserModel user, String hallId) {
+  static bool canScanAndVerify(UserModel user, SessionState session, String hallId) {
     if (isAdmin(user)) return true;
-    if ([owner, manager, worker].contains(user.role) &&
-        user.homeBaseId == hallId)
-      return true;
-    return false;
-  }
-
-  static bool canAccessDashboard(UserModel user) {
-    // Anyone worker or above can access the dashboard, but tiles will be hidden
-    return [superadmin, admin, owner, manager, worker].contains(user.role);
+    if (session.activeVenueId != hallId) return false;
+    return session.isBusiness && [owner, manager, worker].contains(session.activeRole);
   }
 }

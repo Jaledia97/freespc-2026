@@ -29,7 +29,7 @@ class ScanActionDialog extends ConsumerStatefulWidget {
 
 class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
   DialogState _state = DialogState.checking;
-  UserModel? _verifiedWorker;
+  Map<String, dynamic>? _verifiedWorker;
   String? _targetHallId;
   TournamentModel? _activeTournament; // Track active tournament
   PublicProfile? _friendProfile;
@@ -74,9 +74,9 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
         .read(hallRepositoryProvider)
         .getWorkerFromQr(widget.content);
 
-    if (worker != null && worker.homeBaseId != null) {
+    if (worker != null && worker['homeBaseId'] != null) {
       // Worker Found! Now check for active tournament
-      final hallId = worker.homeBaseId!;
+      final hallId = worker['homeBaseId'] as String;
       final tournament = await ref
           .read(tournamentRepositoryProvider)
           .getActiveTournament(hallId);
@@ -159,7 +159,7 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
                   const Icon(Icons.verified_user, color: Colors.blue, size: 24),
                   const SizedBox(width: 8),
                   Text(
-                    "Verified: ${_verifiedWorker!.firstName}",
+                    "Verified: ${_verifiedWorker!['firstName']}",
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -386,8 +386,8 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
               hallId: _targetHallId!,
               points: points,
               description:
-                  "$description (${_verifiedWorker!.firstName})", // include worker name
-              authorizedByWorkerId: _verifiedWorker?.uid,
+                  "$description (${_verifiedWorker!['firstName']})", // include worker name
+              authorizedByWorkerId: _verifiedWorker?['uid'],
             );
 
         setState(() => _state = DialogState.success);

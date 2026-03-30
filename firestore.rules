@@ -16,17 +16,19 @@ service cloud.firestore {
     }
 
     // Check if the user has an elevated role (manager, owner, admin, superadmin)
-    function isManager() {
-      // NOTE: This relies on the role being securely set.
-      // Since we are now protecting the role field, this is safe to use.
-      let role = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
-      return request.auth != null && (role == 'manager' || role == 'owner' || role == 'admin' || role == 'superadmin');
+    function isSystemAdmin() {
+      // NOTE: We now use systemRole for global platform administration.
+      let systemRole = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.systemRole;
+      return request.auth != null && (systemRole == 'admin' || systemRole == 'superadmin');
     }
 
-    // Check if the user is a superadmin
+    // Backwards-compatible alias for legacy rules relying on global staff override
+    function isManager() {
+      return isSystemAdmin();
+    }
     function isSuperAdmin() {
-      let role = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
-      return request.auth != null && role == 'superadmin';
+      let systemRole = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.systemRole;
+      return request.auth != null && systemRole == 'superadmin';
     }
 
     // Allow authenticated users to interact seamlessly with public feed posts
@@ -56,10 +58,10 @@ service cloud.firestore {
       // Create: Allow initial creation.
       allow create: if isOwner(userId);
 
-      // Update: Prevent changing 'role', 'currentPoints', or 'qrToken'
+      // Update: Prevent changing 'systemRole', 'role', 'currentPoints', or 'qrToken'
       // effectively locking the "sensitive" fields.
       allow update: if isOwner(userId) 
-                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'currentPoints', 'qrToken']));
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['systemRole', 'role', 'currentPoints', 'qrToken']));
                     
       // Subcollections
       match /memberships/{hallId} {
@@ -115,7 +117,24 @@ service cloud.firestore {
       // Store Items Subcollection
       match /store_items/{itemId} {
         allow read: if true;
-        allow write: if isManager();
+        allow write: if isSystemAdmin();
+      }
+      
+      // Team Members Subcollection (Multi-Entity Switcher RBAC)
+      match /team/{userId} {
+        allow read: if true;
+        allow write: if isSystemAdmin();
+      }
+    }
+    
+    // 3.5. VENUES (Alias for BINGO HALLS in new RBAC)
+    match /venues/{venueId} {
+      allow read: if true;
+      allow write: if isSystemAdmin();
+      
+      match /team/{userId} {
+        allow read: if true;
+        allow write: if isSystemAdmin();
       }
     }
 
@@ -167,9 +186,18 @@ service cloud.firestore {
       allow delete: if request.auth != null && (resource.data.uploaderId == request.auth.uid || isManager());
     }
 
-    // 7. COLLECTION GROUP QUERIES
+    // 7. COLLECTION GROUP QUERIES AND SUPER ADMIN COLLECTIONS
     match /{path=**}/tournaments/{tournamentId} {
       allow read: if true;
+    }
+    
+    match /{path=**}/team/{userId} {
+      allow read: if request.auth != null && (resource.data.uid == request.auth.uid || isSystemAdmin());
+    }
+    
+    match /venue_claims/{claimId} {
+      allow read, write: if isSystemAdmin();
+      allow create: if request.auth != null;
     }
 
     // 8. CHATS & MESSAGES

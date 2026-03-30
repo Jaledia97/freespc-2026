@@ -49,6 +49,9 @@ _SpecialModel _$SpecialModelFromJson(Map<String, dynamic> json) =>
               .toList() ??
           const [],
       commentCount: (json['commentCount'] as num?)?.toInt() ?? 0,
+      authorType: json['authorType'] as String? ?? 'venue',
+      authorId: json['authorId'] as String?,
+      postedByUid: json['postedByUid'] as String?,
       latestComment: json['latestComment'] as String?,
     );
 
@@ -75,6 +78,9 @@ Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
       'reactionUserIds': instance.reactionUserIds,
       'interestedUserIds': instance.interestedUserIds,
       'commentCount': instance.commentCount,
+      'authorType': instance.authorType,
+      'authorId': instance.authorId,
+      'postedByUid': instance.postedByUid,
       'latestComment': instance.latestComment,
     };
 

@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/bingo_hall_model.dart';
 
 import '../features/home/repositories/hall_repository.dart';
-
 import '../services/location_service.dart';
+import 'session_context_controller.dart';
 
 final consumerBeaconServiceProvider =
     StateNotifierProvider<ConsumerBeaconService, BeaconScanState>((ref) {
@@ -83,6 +83,13 @@ class ConsumerBeaconService extends StateNotifier<BeaconScanState> {
 
     _scanSubscription = FlutterBluePlus.scanResults.listen((results) {
       if (state.hasTriggeredCheckIn) return; // Already checked in
+      
+      final session = ref.read(sessionContextProvider);
+      if (session.isBusiness) {
+        // Stop scanning for consumer check-ins if strictly operating in a business context
+        stopListening();
+        return;
+      }
 
       for (var result in results) {
         if (result.rssi < _rssiThreshold) continue;

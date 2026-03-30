@@ -170,11 +170,10 @@ class HallProfileScreen extends ConsumerWidget {
                         data: (user) {
                           if (user == null) return const SizedBox.shrink();
                           final isFollowing = user.following.contains(hall.id);
-                          final isHome = user.homeBaseId == hall.id;
 
                           return Row(
                             children: [
-                              // Follow / Home Button
+                              // Follow Button
                               Expanded(
                                 child: InkWell(
                                   onTap: () {
@@ -187,73 +186,39 @@ class HallProfileScreen extends ConsumerWidget {
                                           hall.name,
                                         );
                                   },
-                                  onLongPress: () {
-                                    ref
-                                        .read(hallRepositoryProvider)
-                                        .toggleHomeBase(
-                                          user.uid,
-                                          hall.id,
-                                          user.homeBaseId,
-                                        );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          isHome
-                                              ? "Home Base Removed"
-                                              : "Home Base Set!",
-                                        ),
-                                      ),
-                                    );
-                                  },
                                   borderRadius: BorderRadius.circular(30),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 12,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: isHome
-                                          ? Colors.deepPurple.withOpacity(0.1)
-                                          : (isFollowing
+                                      color: isFollowing
                                                 ? Colors.red.withOpacity(0.1)
-                                                : Colors.grey[100]),
+                                                : Colors.grey[100],
                                       borderRadius: BorderRadius.circular(30),
-                                      border: isHome
-                                          ? Border.all(
-                                              color: Colors.deepPurple
-                                                  .withOpacity(0.3),
-                                            )
-                                          : null,
                                     ),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
                                         Icon(
-                                          isHome
-                                              ? Icons.home
-                                              : (isFollowing
+                                          isFollowing
                                                     ? Icons.favorite
-                                                    : Icons.favorite_border),
-                                          color: isHome
-                                              ? Colors.deepPurple
-                                              : (isFollowing
+                                                    : Icons.favorite_border,
+                                          color: isFollowing
                                                     ? Colors.red
-                                                    : Colors.grey),
+                                                    : Colors.grey,
                                           size: 20,
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          isHome
-                                              ? "Home Hall"
-                                              : (isFollowing
+                                          isFollowing
                                                     ? "Following"
-                                                    : "Follow"),
+                                                    : "Follow",
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold,
-                                            color: isHome
-                                                ? Colors.deepPurple
-                                                : Colors.black87,
+                                            color: Colors.black87,
                                           ),
                                         ),
                                       ],

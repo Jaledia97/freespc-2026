@@ -111,13 +111,9 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                       data: (myHalls) {
                         final userLocation = userLocationAsync.valueOrNull;
 
-                        // Sort: Home Base first
+                        // Sort: Alphabetical
                         final sortedHalls = List<BingoHallModel>.from(myHalls);
-                        sortedHalls.sort((a, b) {
-                          if (a.id == user.homeBaseId) return -1;
-                          if (b.id == user.homeBaseId) return 1;
-                          return 0;
-                        });
+                        sortedHalls.sort((a, b) => a.name.compareTo(b.name));
 
                         return SliverList(
                           delegate: SliverChildBuilderDelegate((
@@ -125,7 +121,6 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                             index,
                           ) {
                             final hall = sortedHalls[index];
-                            final isHome = user.homeBaseId == hall.id;
                             final isExpanded = _expandedHallIds.contains(
                               hall.id,
                             );
@@ -173,42 +168,6 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                                                     ),
                                           ),
                                         ),
-                                        if (isHome)
-                                          Positioned(
-                                            top: 8,
-                                            right: 8,
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF673AB7),
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: const Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.home,
-                                                    color: Colors.white,
-                                                    size: 14,
-                                                  ),
-                                                  SizedBox(width: 4),
-                                                  Text(
-                                                    "Home Base",
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 10,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
                                       ],
                                     ),
 

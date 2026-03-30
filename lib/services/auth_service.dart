@@ -14,22 +14,11 @@ final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 final authStateChangesProvider = StreamProvider<User?>((ref) {
   return ref.watch(authServiceProvider).authStateChanges;
 });
-
-final roleOverrideProvider = StateProvider<String?>((ref) => null);
-
 final userProfileProvider = StreamProvider<UserModel?>((ref) {
   final user = ref.watch(authStateChangesProvider).value;
   if (user == null) return Stream.value(null);
 
-  final overrideRole = ref.watch(roleOverrideProvider);
-  return ref.watch(authServiceProvider).getUserStream(user.uid).map((userData) {
-    if (userData != null &&
-        (userData.role == 'super-admin' || userData.role == 'superadmin') &&
-        overrideRole != null) {
-      return userData.copyWith(role: overrideRole);
-    }
-    return userData;
-  });
+  return ref.watch(authServiceProvider).getUserStream(user.uid);
 });
 
 class AuthService {

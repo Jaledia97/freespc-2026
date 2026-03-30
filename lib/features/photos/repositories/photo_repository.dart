@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../services/auth_service.dart';
 import '../../../../services/notification_service.dart';
+import '../../../../services/session_context_controller.dart';
 import '../models/gallery_photo_model.dart';
 
 final photoRepositoryProvider = Provider(
@@ -13,12 +14,11 @@ final photoRepositoryProvider = Provider(
 );
 
 final unreadPendingPhotosCountProvider = StreamProvider<int>((ref) {
-  final userAsync = ref.watch(userProfileProvider);
-  final user = userAsync.value;
-  if (user == null || user.homeBaseId == null) return Stream.value(0);
+  final session = ref.watch(sessionContextProvider);
+  if (!session.isBusiness || session.activeVenueId == null) return Stream.value(0);
 
   final repo = ref.watch(photoRepositoryProvider);
-  return repo.getPendingHallPhotos(user.homeBaseId!).map((photos) {
+  return repo.getPendingHallPhotos(session.activeVenueId!).map((photos) {
     return photos.length; 
   });
 });

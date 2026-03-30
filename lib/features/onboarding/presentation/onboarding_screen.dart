@@ -160,7 +160,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           username: proposedUsername,
           birthday: _selectedBirthday!,
           photoUrl: photoUrl,
-          homeBaseId: _selectedHomeBaseId,
           following: followingArray,
         );
 

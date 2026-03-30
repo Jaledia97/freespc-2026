@@ -214,8 +214,8 @@ return $default(_that.id,_that.userId,_that.requestedVenueId,_that.evidenceUrl,_
 /// @nodoc
 @JsonSerializable()
 
-class _VenueClaimModel implements VenueClaimModel {
-  const _VenueClaimModel({required this.id, required this.userId, required this.requestedVenueId, required this.evidenceUrl, required this.status, @TimestampConverter() required this.submittedAt});
+class _VenueClaimModel extends VenueClaimModel {
+  const _VenueClaimModel({required this.id, required this.userId, required this.requestedVenueId, required this.evidenceUrl, required this.status, @TimestampConverter() required this.submittedAt}): super._();
   factory _VenueClaimModel.fromJson(Map<String, dynamic> json) => _$VenueClaimModelFromJson(json);
 
 @override final  String id;

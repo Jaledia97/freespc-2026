@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$WinPostModel {
 
- String get id; String get title; String get description; String get userId; String get userName; String? get userProfilePicture; String get hallId; String get hallName; double get winAmount; String? get imageUrl; DateTime get createdAt; List<String> get reactionUserIds; List<String> get interestedUserIds; int get commentCount; String? get latestComment;
+ String get id; String get title; String get description; String get userId; String get userName; String? get userProfilePicture; String get hallId; String get hallName; double get winAmount; String? get imageUrl; DateTime get createdAt; List<String> get reactionUserIds; List<String> get interestedUserIds; int get commentCount; String get authorType; String? get authorId; String? get postedByUid; String? get latestComment;
 /// Create a copy of WinPostModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $WinPostModelCopyWith<WinPostModel> get copyWith => _$WinPostModelCopyWithImpl<W
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WinPostModel&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userProfilePicture, userProfilePicture) || other.userProfilePicture == userProfilePicture)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.winAmount, winAmount) || other.winAmount == winAmount)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other.reactionUserIds, reactionUserIds)&&const DeepCollectionEquality().equals(other.interestedUserIds, interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WinPostModel&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userProfilePicture, userProfilePicture) || other.userProfilePicture == userProfilePicture)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.winAmount, winAmount) || other.winAmount == winAmount)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other.reactionUserIds, reactionUserIds)&&const DeepCollectionEquality().equals(other.interestedUserIds, interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.authorType, authorType) || other.authorType == authorType)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&(identical(other.postedByUid, postedByUid) || other.postedByUid == postedByUid)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,description,userId,userName,userProfilePicture,hallId,hallName,winAmount,imageUrl,createdAt,const DeepCollectionEquality().hash(reactionUserIds),const DeepCollectionEquality().hash(interestedUserIds),commentCount,latestComment);
+int get hashCode => Object.hash(runtimeType,id,title,description,userId,userName,userProfilePicture,hallId,hallName,winAmount,imageUrl,createdAt,const DeepCollectionEquality().hash(reactionUserIds),const DeepCollectionEquality().hash(interestedUserIds),commentCount,authorType,authorId,postedByUid,latestComment);
 
 @override
 String toString() {
-  return 'WinPostModel(id: $id, title: $title, description: $description, userId: $userId, userName: $userName, userProfilePicture: $userProfilePicture, hallId: $hallId, hallName: $hallName, winAmount: $winAmount, imageUrl: $imageUrl, createdAt: $createdAt, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, latestComment: $latestComment)';
+  return 'WinPostModel(id: $id, title: $title, description: $description, userId: $userId, userName: $userName, userProfilePicture: $userProfilePicture, hallId: $hallId, hallName: $hallName, winAmount: $winAmount, imageUrl: $imageUrl, createdAt: $createdAt, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, authorType: $authorType, authorId: $authorId, postedByUid: $postedByUid, latestComment: $latestComment)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $WinPostModelCopyWith<$Res>  {
   factory $WinPostModelCopyWith(WinPostModel value, $Res Function(WinPostModel) _then) = _$WinPostModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, String description, String userId, String userName, String? userProfilePicture, String hallId, String hallName, double winAmount, String? imageUrl, DateTime createdAt, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, String? latestComment
+ String id, String title, String description, String userId, String userName, String? userProfilePicture, String hallId, String hallName, double winAmount, String? imageUrl, DateTime createdAt, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, String authorType, String? authorId, String? postedByUid, String? latestComment
 });
 
 
@@ -65,7 +65,7 @@ class _$WinPostModelCopyWithImpl<$Res>
 
 /// Create a copy of WinPostModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? userId = null,Object? userName = null,Object? userProfilePicture = freezed,Object? hallId = null,Object? hallName = null,Object? winAmount = null,Object? imageUrl = freezed,Object? createdAt = null,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? latestComment = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? userId = null,Object? userName = null,Object? userProfilePicture = freezed,Object? hallId = null,Object? hallName = null,Object? winAmount = null,Object? imageUrl = freezed,Object? createdAt = null,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? authorType = null,Object? authorId = freezed,Object? postedByUid = freezed,Object? latestComment = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -81,7 +81,10 @@ as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore:
 as DateTime,reactionUserIds: null == reactionUserIds ? _self.reactionUserIds : reactionUserIds // ignore: cast_nullable_to_non_nullable
 as List<String>,interestedUserIds: null == interestedUserIds ? _self.interestedUserIds : interestedUserIds // ignore: cast_nullable_to_non_nullable
 as List<String>,commentCount: null == commentCount ? _self.commentCount : commentCount // ignore: cast_nullable_to_non_nullable
-as int,latestComment: freezed == latestComment ? _self.latestComment : latestComment // ignore: cast_nullable_to_non_nullable
+as int,authorType: null == authorType ? _self.authorType : authorType // ignore: cast_nullable_to_non_nullable
+as String,authorId: freezed == authorId ? _self.authorId : authorId // ignore: cast_nullable_to_non_nullable
+as String?,postedByUid: freezed == postedByUid ? _self.postedByUid : postedByUid // ignore: cast_nullable_to_non_nullable
+as String?,latestComment: freezed == latestComment ? _self.latestComment : latestComment // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -167,10 +170,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String userId,  String userName,  String? userProfilePicture,  String hallId,  String hallName,  double winAmount,  String? imageUrl,  DateTime createdAt,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  String? latestComment)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String userId,  String userName,  String? userProfilePicture,  String hallId,  String hallName,  double winAmount,  String? imageUrl,  DateTime createdAt,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  String authorType,  String? authorId,  String? postedByUid,  String? latestComment)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WinPostModel() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.userId,_that.userName,_that.userProfilePicture,_that.hallId,_that.hallName,_that.winAmount,_that.imageUrl,_that.createdAt,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.latestComment);case _:
+return $default(_that.id,_that.title,_that.description,_that.userId,_that.userName,_that.userProfilePicture,_that.hallId,_that.hallName,_that.winAmount,_that.imageUrl,_that.createdAt,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.authorType,_that.authorId,_that.postedByUid,_that.latestComment);case _:
   return orElse();
 
 }
@@ -188,10 +191,10 @@ return $default(_that.id,_that.title,_that.description,_that.userId,_that.userNa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String userId,  String userName,  String? userProfilePicture,  String hallId,  String hallName,  double winAmount,  String? imageUrl,  DateTime createdAt,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  String? latestComment)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String userId,  String userName,  String? userProfilePicture,  String hallId,  String hallName,  double winAmount,  String? imageUrl,  DateTime createdAt,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  String authorType,  String? authorId,  String? postedByUid,  String? latestComment)  $default,) {final _that = this;
 switch (_that) {
 case _WinPostModel():
-return $default(_that.id,_that.title,_that.description,_that.userId,_that.userName,_that.userProfilePicture,_that.hallId,_that.hallName,_that.winAmount,_that.imageUrl,_that.createdAt,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.latestComment);case _:
+return $default(_that.id,_that.title,_that.description,_that.userId,_that.userName,_that.userProfilePicture,_that.hallId,_that.hallName,_that.winAmount,_that.imageUrl,_that.createdAt,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.authorType,_that.authorId,_that.postedByUid,_that.latestComment);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +211,10 @@ return $default(_that.id,_that.title,_that.description,_that.userId,_that.userNa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String description,  String userId,  String userName,  String? userProfilePicture,  String hallId,  String hallName,  double winAmount,  String? imageUrl,  DateTime createdAt,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  String? latestComment)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String description,  String userId,  String userName,  String? userProfilePicture,  String hallId,  String hallName,  double winAmount,  String? imageUrl,  DateTime createdAt,  List<String> reactionUserIds,  List<String> interestedUserIds,  int commentCount,  String authorType,  String? authorId,  String? postedByUid,  String? latestComment)?  $default,) {final _that = this;
 switch (_that) {
 case _WinPostModel() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.userId,_that.userName,_that.userProfilePicture,_that.hallId,_that.hallName,_that.winAmount,_that.imageUrl,_that.createdAt,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.latestComment);case _:
+return $default(_that.id,_that.title,_that.description,_that.userId,_that.userName,_that.userProfilePicture,_that.hallId,_that.hallName,_that.winAmount,_that.imageUrl,_that.createdAt,_that.reactionUserIds,_that.interestedUserIds,_that.commentCount,_that.authorType,_that.authorId,_that.postedByUid,_that.latestComment);case _:
   return null;
 
 }
@@ -223,7 +226,7 @@ return $default(_that.id,_that.title,_that.description,_that.userId,_that.userNa
 @JsonSerializable()
 
 class _WinPostModel implements WinPostModel {
-  const _WinPostModel({required this.id, required this.title, this.description = '', required this.userId, required this.userName, this.userProfilePicture, required this.hallId, required this.hallName, required this.winAmount, this.imageUrl, required this.createdAt, final  List<String> reactionUserIds = const [], final  List<String> interestedUserIds = const [], this.commentCount = 0, this.latestComment}): _reactionUserIds = reactionUserIds,_interestedUserIds = interestedUserIds;
+  const _WinPostModel({required this.id, required this.title, this.description = '', required this.userId, required this.userName, this.userProfilePicture, required this.hallId, required this.hallName, required this.winAmount, this.imageUrl, required this.createdAt, final  List<String> reactionUserIds = const [], final  List<String> interestedUserIds = const [], this.commentCount = 0, this.authorType = 'user', this.authorId, this.postedByUid, this.latestComment}): _reactionUserIds = reactionUserIds,_interestedUserIds = interestedUserIds;
   factory _WinPostModel.fromJson(Map<String, dynamic> json) => _$WinPostModelFromJson(json);
 
 @override final  String id;
@@ -252,6 +255,9 @@ class _WinPostModel implements WinPostModel {
 }
 
 @override@JsonKey() final  int commentCount;
+@override@JsonKey() final  String authorType;
+@override final  String? authorId;
+@override final  String? postedByUid;
 @override final  String? latestComment;
 
 /// Create a copy of WinPostModel
@@ -267,16 +273,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WinPostModel&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userProfilePicture, userProfilePicture) || other.userProfilePicture == userProfilePicture)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.winAmount, winAmount) || other.winAmount == winAmount)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other._reactionUserIds, _reactionUserIds)&&const DeepCollectionEquality().equals(other._interestedUserIds, _interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WinPostModel&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userProfilePicture, userProfilePicture) || other.userProfilePicture == userProfilePicture)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.winAmount, winAmount) || other.winAmount == winAmount)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other._reactionUserIds, _reactionUserIds)&&const DeepCollectionEquality().equals(other._interestedUserIds, _interestedUserIds)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.authorType, authorType) || other.authorType == authorType)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&(identical(other.postedByUid, postedByUid) || other.postedByUid == postedByUid)&&(identical(other.latestComment, latestComment) || other.latestComment == latestComment));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,description,userId,userName,userProfilePicture,hallId,hallName,winAmount,imageUrl,createdAt,const DeepCollectionEquality().hash(_reactionUserIds),const DeepCollectionEquality().hash(_interestedUserIds),commentCount,latestComment);
+int get hashCode => Object.hash(runtimeType,id,title,description,userId,userName,userProfilePicture,hallId,hallName,winAmount,imageUrl,createdAt,const DeepCollectionEquality().hash(_reactionUserIds),const DeepCollectionEquality().hash(_interestedUserIds),commentCount,authorType,authorId,postedByUid,latestComment);
 
 @override
 String toString() {
-  return 'WinPostModel(id: $id, title: $title, description: $description, userId: $userId, userName: $userName, userProfilePicture: $userProfilePicture, hallId: $hallId, hallName: $hallName, winAmount: $winAmount, imageUrl: $imageUrl, createdAt: $createdAt, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, latestComment: $latestComment)';
+  return 'WinPostModel(id: $id, title: $title, description: $description, userId: $userId, userName: $userName, userProfilePicture: $userProfilePicture, hallId: $hallId, hallName: $hallName, winAmount: $winAmount, imageUrl: $imageUrl, createdAt: $createdAt, reactionUserIds: $reactionUserIds, interestedUserIds: $interestedUserIds, commentCount: $commentCount, authorType: $authorType, authorId: $authorId, postedByUid: $postedByUid, latestComment: $latestComment)';
 }
 
 
@@ -287,7 +293,7 @@ abstract mixin class _$WinPostModelCopyWith<$Res> implements $WinPostModelCopyWi
   factory _$WinPostModelCopyWith(_WinPostModel value, $Res Function(_WinPostModel) _then) = __$WinPostModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, String description, String userId, String userName, String? userProfilePicture, String hallId, String hallName, double winAmount, String? imageUrl, DateTime createdAt, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, String? latestComment
+ String id, String title, String description, String userId, String userName, String? userProfilePicture, String hallId, String hallName, double winAmount, String? imageUrl, DateTime createdAt, List<String> reactionUserIds, List<String> interestedUserIds, int commentCount, String authorType, String? authorId, String? postedByUid, String? latestComment
 });
 
 
@@ -304,7 +310,7 @@ class __$WinPostModelCopyWithImpl<$Res>
 
 /// Create a copy of WinPostModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? userId = null,Object? userName = null,Object? userProfilePicture = freezed,Object? hallId = null,Object? hallName = null,Object? winAmount = null,Object? imageUrl = freezed,Object? createdAt = null,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? latestComment = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? userId = null,Object? userName = null,Object? userProfilePicture = freezed,Object? hallId = null,Object? hallName = null,Object? winAmount = null,Object? imageUrl = freezed,Object? createdAt = null,Object? reactionUserIds = null,Object? interestedUserIds = null,Object? commentCount = null,Object? authorType = null,Object? authorId = freezed,Object? postedByUid = freezed,Object? latestComment = freezed,}) {
   return _then(_WinPostModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -320,7 +326,10 @@ as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore:
 as DateTime,reactionUserIds: null == reactionUserIds ? _self._reactionUserIds : reactionUserIds // ignore: cast_nullable_to_non_nullable
 as List<String>,interestedUserIds: null == interestedUserIds ? _self._interestedUserIds : interestedUserIds // ignore: cast_nullable_to_non_nullable
 as List<String>,commentCount: null == commentCount ? _self.commentCount : commentCount // ignore: cast_nullable_to_non_nullable
-as int,latestComment: freezed == latestComment ? _self.latestComment : latestComment // ignore: cast_nullable_to_non_nullable
+as int,authorType: null == authorType ? _self.authorType : authorType // ignore: cast_nullable_to_non_nullable
+as String,authorId: freezed == authorId ? _self.authorId : authorId // ignore: cast_nullable_to_non_nullable
+as String?,postedByUid: freezed == postedByUid ? _self.postedByUid : postedByUid // ignore: cast_nullable_to_non_nullable
+as String?,latestComment: freezed == latestComment ? _self.latestComment : latestComment // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

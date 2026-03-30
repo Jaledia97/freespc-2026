@@ -33,10 +33,9 @@ abstract class UserModel with _$UserModel {
     required DateTime birthday,
     String? phoneNumber,
     String? recoveryEmail,
-    @Default('player')
-    String role, // superadmin, admin, owner, manager, worker, player
     @Default(0) int currentPoints,
-    String? homeBaseId,
+    @Default('user')
+    String systemRole, // superadmin, admin, user
     String? qrToken,
     String? bio,
     String? photoUrl,

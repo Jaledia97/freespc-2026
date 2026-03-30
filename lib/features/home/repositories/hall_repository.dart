@@ -13,8 +13,11 @@ import 'special_projection_logic.dart'; // Isolate Logic
 import 'dart:math';
 import 'package:flutter/foundation.dart'; // For compute
 
+import '../../../services/session_context_controller.dart';
+import '../../../services/auth_service.dart';
+
 final hallRepositoryProvider = Provider(
-  (ref) => HallRepository(FirebaseFirestore.instance),
+  (ref) => HallRepository(FirebaseFirestore.instance, ref),
 );
 
 final hallsStreamProvider =
@@ -66,8 +69,9 @@ final allCustomTagsProvider = StreamProvider<Map<String, int>>((ref) {
 
 class HallRepository {
   final FirebaseFirestore _firestore;
+  final Ref _ref;
 
-  HallRepository(this._firestore);
+  HallRepository(this._firestore, this._ref);
 
   Stream<List<BingoHallModel>> getHallsByIds(List<String> ids) {
     if (ids.isEmpty) return Stream.value([]);
@@ -202,7 +206,26 @@ class HallRepository {
   }) async {
     // Generate ID if empty
     final docRef = _firestore.collection('specials').doc();
-    final newSpecial = special.copyWith(id: docRef.id);
+
+    final session = _ref.read(sessionContextProvider);
+    final user = _ref.read(userProfileProvider).value;
+
+    SpecialModel processedSpecial = special;
+    if (session.isBusiness) {
+      processedSpecial = special.copyWith(
+        authorType: 'venue',
+        authorId: session.activeVenueId,
+        postedByUid: user?.uid,
+      );
+    } else {
+      processedSpecial = special.copyWith(
+        authorType: 'user',
+        authorId: user?.uid,
+        postedByUid: user?.uid,
+      );
+    }
+
+    final newSpecial = processedSpecial.copyWith(id: docRef.id);
     await docRef.set(newSpecial.toJson());
 
     if (sendNotification) {
@@ -935,9 +958,9 @@ class HallRepository {
     }
   }
 
-  Future<UserModel?> getWorkerFromQr(String qrToken) async {
+  Future<Map<String, dynamic>?> getWorkerFromQr(String qrToken) async {
     try {
-      print('Scanning for Token: $qrToken');
+      print('Scanning for Token: \$qrToken');
       // Query the SAFE collection
       final querySnapshot = await _firestore
           .collection('public_workers')
@@ -949,20 +972,9 @@ class HallRepository {
 
       final data = querySnapshot.docs.first.data();
 
-      // Return safe partial user model
-      return UserModel(
-        uid: data['uid'],
-        email: '', // Not exposed
-        firstName: data['firstName'] ?? 'Worker',
-        lastName: '',
-        username: '',
-        birthday: DateTime.now(), // Dummy
-        role: data['role'],
-        homeBaseId: data['homeBaseId'],
-        qrToken: data['qrToken'],
-      );
+      return data;
     } catch (e) {
-      print("Error finding worker: $e");
+      print("Error finding worker: \$e");
       return null;
     }
   }

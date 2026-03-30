@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../../models/venue_claim_model.dart';
@@ -21,11 +22,17 @@ class AdminRepository {
         .orderBy('submittedAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return VenueClaimModel.fromJson(data);
-      }).toList();
+      final claims = <VenueClaimModel>[];
+      for (var doc in snapshot.docs) {
+        try {
+          final data = doc.data();
+          data['id'] = doc.id;
+          claims.add(VenueClaimModel.fromJson(data));
+        } catch (e) {
+          print('Error mapping claim ${doc.id}: $e');
+        }
+      }
+      return claims;
     });
   }
 

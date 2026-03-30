@@ -27,6 +27,9 @@ abstract class TournamentModel with _$TournamentModel {
     @Default([]) List<String> reactionUserIds,
     @Default([]) List<String> interestedUserIds,
     @Default(0) int commentCount,
+    @Default('venue') String authorType,
+    String? authorId,
+    String? postedByUid,
     DateTime? createdAt,
     String? latestComment,
   }) = _TournamentModel;

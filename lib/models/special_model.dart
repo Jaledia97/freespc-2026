@@ -30,6 +30,9 @@ abstract class SpecialModel with _$SpecialModel {
     @Default([]) List<String> reactionUserIds,
     @Default([]) List<String> interestedUserIds,
     @Default(0) int commentCount,
+    @Default('venue') String authorType,
+    String? authorId,
+    String? postedByUid,
     String? latestComment,
   }) = _SpecialModel;
 
