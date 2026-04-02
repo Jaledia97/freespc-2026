@@ -368,16 +368,21 @@ class HallProfileScreen extends ConsumerWidget {
                   );
                   return specialsAsync.when(
                     data: (specials) {
-                      if (specials.isEmpty) {
+                      final visibleSpecials = specials
+                          .where((s) => s.isTemplate || s.templateId == null)
+                          .toList()
+                          ..sort((a,b) => b.postedAt.compareTo(a.postedAt));
+
+                      if (visibleSpecials.isEmpty) {
                         return const Center(
-                          child: Text("No upcoming events scheduled."),
+                          child: Text("No post history."),
                         );
                       }
                       return ListView.builder(
                         padding: EdgeInsets.zero,
-                        itemCount: specials.length,
+                        itemCount: visibleSpecials.length,
                         itemBuilder: (context, index) =>
-                            SpecialCard(special: specials[index]),
+                            SpecialCard(special: visibleSpecials[index]),
                       );
                     },
                     loading: () =>
@@ -396,17 +401,17 @@ class HallProfileScreen extends ConsumerWidget {
                   final rafflesAsync = ref.watch(hallRafflesProvider(hall.id));
                   return rafflesAsync.when(
                     data: (raffles) {
-                      // Filter out templates
                       final visibleRaffles = raffles
-                          .where((r) => !r.isTemplate)
-                          .toList();
+                          .where((r) => r.isTemplate || r.templateId == null)
+                          .toList()
+                          ..sort((a,b) => (b.createdAt ?? b.endsAt).compareTo(a.createdAt ?? a.endsAt));
 
                       if (visibleRaffles.isEmpty) {
                         return Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text("No active raffles."),
+                              const Text("No post history."),
                               // Dev Tool: Seed Hint
                               TextButton(
                                 onPressed: () async {
@@ -468,14 +473,15 @@ class HallProfileScreen extends ConsumerWidget {
                   );
                   return tournamentsAsync.when(
                     data: (tournaments) {
-                      // Filter out templates/archived if needed
+                      // Filter out active templates / isolated posts
                       final visibleTournaments = tournaments
-                          .where((t) => !t.isTemplate)
-                          .toList();
+                          .where((t) => t.isTemplate || t.templateId == null)
+                          .toList()
+                          ..sort((a,b) => (b.createdAt ?? DateTime.now()).compareTo(a.createdAt ?? DateTime.now()));
 
                       if (visibleTournaments.isEmpty) {
                         return const Center(
-                          child: Text("No upcoming tournaments."),
+                          child: Text("No post history."),
                         );
                       }
 
