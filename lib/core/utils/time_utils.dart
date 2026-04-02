@@ -25,4 +25,23 @@ class TimeUtils {
 
     return "$datePart $timePart";
   }
+
+  static String getTimeAgo(DateTime date) {
+    final diff = DateTime.now().difference(date);
+    if (diff.inDays >= 365) {
+      final years = (diff.inDays / 365).floor();
+      return "${years}y";
+    } else if (diff.inDays >= 7) {
+      final weeks = (diff.inDays / 7).floor();
+      return "${weeks}w";
+    } else if (diff.inDays >= 1) {
+      return "${diff.inDays}d";
+    } else if (diff.inHours >= 1) {
+      return "${diff.inHours}h";
+    } else if (diff.inMinutes >= 1) {
+      return "${diff.inMinutes}m";
+    } else {
+      return "Now";
+    }
+  }
 }

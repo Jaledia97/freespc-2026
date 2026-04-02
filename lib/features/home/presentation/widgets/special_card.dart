@@ -69,11 +69,7 @@ class _SpecialCardState extends ConsumerState<SpecialCard>
               postId: widget.special.id,
               authorId: widget.special.hallId,
               targetType: 'special',
-              createdAt:
-                  (widget.special.recurrence == 'none' &&
-                      widget.special.recurrenceRule == null)
-                  ? widget.special.postedAt
-                  : null,
+              createdAt: widget.special.postedAt,
             ),
 
           // Post Content

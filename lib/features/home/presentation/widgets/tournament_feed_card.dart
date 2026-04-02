@@ -52,9 +52,7 @@ class TournamentFeedCard extends StatelessWidget {
               postId: tournament.id,
               authorId: tournament.hallId,
               targetType: 'tournament',
-              createdAt: tournament.recurrenceRule == null
-                  ? tournament.startTime
-                  : null,
+              createdAt: tournament.postedAt,
             ),
 
           // Post Content

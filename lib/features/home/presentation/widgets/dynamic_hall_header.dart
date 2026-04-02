@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/utils/time_utils.dart';
 import '../../../../models/bingo_hall_model.dart';
 import '../hall_profile_screen.dart';
 import 'post_header.dart';
@@ -42,21 +43,11 @@ class DynamicHallHeader extends ConsumerWidget {
     this.createdAt,
   });
 
-  String _timeAgo(DateTime date) {
-    final diff = DateTime.now().difference(date);
-    if (diff.inDays >= 365) return '${(diff.inDays / 365).floor()}y';
-    if (diff.inDays >= 30) return '${(diff.inDays / 30).floor()}mo';
-    if (diff.inDays > 0) return '${diff.inDays}d';
-    if (diff.inHours > 0) return '${diff.inHours}h';
-    if (diff.inMinutes > 0) return '${diff.inMinutes}m';
-    return 'Just now';
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hallAsync = ref.watch(singleHallHeaderProvider(hallId));
     final String timeAgoStr = createdAt != null
-        ? " • ${_timeAgo(createdAt!)}"
+        ? " • ${TimeUtils.getTimeAgo(createdAt!)}"
         : "";
     final String fullSubtitle = "$subtitle$timeAgoStr";
 
