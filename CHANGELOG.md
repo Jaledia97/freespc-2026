@@ -249,6 +249,17 @@ All notable changes to the FreeSPC project will be documented in this file.
 ### Fixed
 - **Build System**: Resolved import errors in `special_projection_logic.dart` and cleaned up unused imports.
 
+## [0.0.1+32] - 2026-04-02 - Feed Serialization & Timestamp Alignment
+
+### Added
+- **Global Presence Context**: Live implementation of time-scaled online statuses (Online, Away, Offline). Users dynamically decay toward "Offline" after exactly 12 hours of inactivity based on native server-tracked session pings.
+- **Historic Feed Profiling**: Profile screens for Businesses natively partition historic and upcoming timelines, elegantly surfacing base legacy templates chronologically ("Facebook-style") while suppressing excessive clone iterations.
+
+### Fixed
+- **Recurrence Caching Override**: Eliminated a structural glitch corrupting automatically generated iteration clones where `postedAt` references falsely inherited the physical creation-date of their legacy blueprint 7+ weeks prior. The system natively bypasses the `postedAt` index to calculate HypeScores reliably via the active algorithmic `startTime`.
+- **Feed Expiration Segmentation**: Natively guarded the root Pagination algorithms to purge standalone content exactly past their pre-ordained `endsAt` expiration. Chronological timeline displays now completely forbid expired 7-week anomalies from populating client feeds.
+- **Firebase Indexing Crashes**: Successfully resolved invisible `FAILED_PRECONDITION` index faults blocking memory-refreshes. Natively published compound `isTemplate` + `createdAt`/`postedAt` arrays onto Google Cloud.
+
 ## [0.0.1+31] - 2026-02-17 - CMS Improvements (Phase 44-46)
 
 ### Added
