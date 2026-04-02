@@ -69,7 +69,9 @@ class _SpecialCardState extends ConsumerState<SpecialCard>
               postId: widget.special.id,
               authorId: widget.special.hallId,
               targetType: 'special',
-              createdAt: widget.special.postedAt,
+              createdAt: (!widget.special.isTemplate && widget.special.templateId != null && widget.special.startTime != null)
+                  ? widget.special.startTime!
+                  : widget.special.postedAt,
             ),
 
           // Post Content

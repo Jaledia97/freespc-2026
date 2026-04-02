@@ -201,6 +201,13 @@ async function generateForTemplate(db, batch, templateDoc, colName) {
                 
                 clone[startPropName] = startString;
                 
+                // CRITICAL FIX: Update the posting timestamp so chronological sorting and UI timestamps are accurate!
+                if (colName === 'specials') {
+                    clone.postedAt = startString; 
+                } else if (colName === 'raffles' || colName === 'tournaments') {
+                    clone.createdAt = startString;
+                }
+                
                 if (templateEnd) {
                      const exactEndTarget = targetDate.clone().hour(endHour).minute(endMinute).second(0);
                      if (templateEnd.isBefore(templateStart)) {

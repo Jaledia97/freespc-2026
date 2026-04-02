@@ -52,7 +52,9 @@ class TournamentFeedCard extends StatelessWidget {
               postId: tournament.id,
               authorId: tournament.hallId,
               targetType: 'tournament',
-              createdAt: tournament.createdAt,
+              createdAt: (!tournament.isTemplate && tournament.templateId != null && tournament.startTime != null)
+                  ? tournament.startTime!
+                  : tournament.createdAt,
             ),
 
           // Post Content

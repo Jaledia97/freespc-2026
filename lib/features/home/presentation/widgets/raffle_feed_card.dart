@@ -50,7 +50,9 @@ class RaffleFeedCard extends StatelessWidget {
               postId: raffle.id,
               authorId: raffle.hallId,
               targetType: 'raffle',
-              createdAt: raffle.createdAt,
+              createdAt: (!raffle.isTemplate && raffle.templateId != null)
+                  ? (raffle.createdAt ?? raffle.endsAt)
+                  : raffle.createdAt,
             ),
 
           // Post Content

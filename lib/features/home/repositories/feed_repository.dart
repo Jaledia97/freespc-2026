@@ -24,7 +24,7 @@ class FeedRepository {
         final aDate = a.map(
           tournament: (t) => t.data.startTime ?? DateTime.now(),
           raffle: (r) => r.data.endsAt,
-          special: (s) => s.data.postedAt,
+          special: (s) => (!s.data.isTemplate && s.data.templateId != null && s.data.startTime != null) ? s.data.startTime! : s.data.postedAt,
           checkIn: (c) => c.data.createdAt,
           winPost: (w) => w.data.createdAt,
           textPost: (tp) => tp.data.createdAt,
@@ -32,7 +32,7 @@ class FeedRepository {
         final bDate = b.map(
           tournament: (t) => t.data.startTime ?? DateTime.now(),
           raffle: (r) => r.data.endsAt,
-          special: (s) => s.data.postedAt,
+          special: (s) => (!s.data.isTemplate && s.data.templateId != null && s.data.startTime != null) ? s.data.startTime! : s.data.postedAt,
           checkIn: (c) => c.data.createdAt,
           winPost: (w) => w.data.createdAt,
           textPost: (tp) => tp.data.createdAt,
@@ -91,7 +91,7 @@ class FeedRepository {
     final itemDate = item.map(
       tournament: (t) => t.data.startTime ?? DateTime.now(),
       raffle: (r) => r.data.endsAt,
-      special: (s) => s.data.postedAt,
+      special: (s) => (!s.data.isTemplate && s.data.templateId != null && s.data.startTime != null) ? s.data.startTime! : s.data.postedAt,
       checkIn: (c) => c.data.createdAt,
       winPost: (w) => w.data.createdAt,
       textPost: (tp) => tp.data.createdAt,
