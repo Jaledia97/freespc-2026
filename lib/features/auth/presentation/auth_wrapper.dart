@@ -73,8 +73,8 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
     return authState.when(
       data: (user) {
         if (user == null) {
-          // GUEST MODE: Allow unauthenticated users into the app instantly.
-          return const _AuthHandler(child: MainLayout());
+          // GUEST MODE redirects to explicitly force the Login screen
+          return const LoginScreen();
         }
 
         // The user is logged in. Before we even check `hasProfileAsync`,

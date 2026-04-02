@@ -30,6 +30,10 @@ _TournamentModel _$TournamentModelFromJson(Map<String, dynamic> json) =>
       archivedAt: json['archivedAt'] == null
           ? null
           : DateTime.parse(json['archivedAt'] as String),
+      isStarred: json['isStarred'] as bool? ?? false,
+      unstarredAt: json['unstarredAt'] == null
+          ? null
+          : DateTime.parse(json['unstarredAt'] as String),
       games:
           (json['games'] as List<dynamic>?)
               ?.map((e) => TournamentGame.fromJson(e as Map<String, dynamic>))
@@ -69,6 +73,8 @@ Map<String, dynamic> _$TournamentModelToJson(_TournamentModel instance) =>
       'templateId': instance.templateId,
       'isCancelled': instance.isCancelled,
       'archivedAt': instance.archivedAt?.toIso8601String(),
+      'isStarred': instance.isStarred,
+      'unstarredAt': instance.unstarredAt?.toIso8601String(),
       'games': instance.games.map((e) => e.toJson()).toList(),
       'reactionUserIds': instance.reactionUserIds,
       'interestedUserIds': instance.interestedUserIds,

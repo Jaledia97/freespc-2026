@@ -23,6 +23,8 @@ abstract class RaffleModel with _$RaffleModel {
     @Default(false) bool isCancelled,
     DateTime? archivedAt,
     RecurrenceRule? recurrenceRule, // For templates to auto-schedule
+    @Default(false) bool isStarred,
+    DateTime? unstarredAt,
     @Default([]) List<String> reactionUserIds,
     @Default([]) List<String> interestedUserIds,
     @Default(0) int commentCount,

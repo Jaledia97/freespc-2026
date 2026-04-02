@@ -420,6 +420,20 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
                   : Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (isArchived)
+                          IconButton(
+                            icon: Icon(
+                              special.isStarred ? Icons.star : Icons.star_border,
+                              color: special.isStarred ? Colors.amber : Colors.grey,
+                            ),
+                            onPressed: () async {
+                               final updated = special.copyWith(
+                                   isStarred: !special.isStarred,
+                                   unstarredAt: special.isStarred ? DateTime.now() : null,
+                               );
+                               await ref.read(hallRepositoryProvider).updateSpecial(updated);
+                            },
+                          ),
                         IconButton(
                           icon: const Icon(
                             Icons.edit,

@@ -31,7 +31,12 @@ class AuthService {
   Stream<UserModel?> getUserStream(String uid) {
     return _firestore.collection('users').doc(uid).snapshots().map((snapshot) {
       if (snapshot.exists && snapshot.data() != null) {
-        return UserModel.fromJson(snapshot.data()!);
+        try {
+          return UserModel.fromJson(snapshot.data()!);
+        } catch (e) {
+          print("CRITICAL RESILIENCE WARNING: Failed to parse UserModel for $uid. Sending to Onboarding to self-heal. Error: $e");
+          return null; // Forcing null routes the broken account directly back into Onboarding where it will be regenerated with all explicit fields upon submit
+        }
       }
       return null;
     });

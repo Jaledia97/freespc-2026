@@ -10,6 +10,7 @@ import '../../../models/tournament_model.dart';
 import '../../../models/comment_model.dart';
 import 'dart:convert';
 import 'special_projection_logic.dart'; // Isolate Logic
+import '../../core/utils/recurrence_utils.dart';
 import 'dart:math';
 import 'package:flutter/foundation.dart'; // For compute
 
@@ -113,22 +114,16 @@ class HallRepository {
         .where('isCancelled', isEqualTo: false) // EXCLUDE CANCELLED
         .limit(100) // SAFETY LIMIT
         .snapshots()
-        .asyncMap((snapshot) async {
+        .map((snapshot) {
           final specials = snapshot.docs
               .map((doc) => SpecialModel.fromJson(doc.data()))
               .toList();
 
-          // 1. Project Recurring Events (in Isolate)
-          final projectedSpecials = await compute(
-            projectSpecialsComputed,
-            specials,
-          );
-
           if (userLocation == null)
-            return projectedSpecials; // Return all if no location
+            return specials; // Return all if no location
 
           // 2. Filter by 75 mile radius
-          final nearbySpecials = projectedSpecials.where((s) {
+          final nearbySpecials = specials.where((s) {
             if (s.latitude == null || s.longitude == null)
               return true; // Keep if no coords
 
@@ -142,9 +137,9 @@ class HallRepository {
             return distanceMeters <= 120700; // 75 miles
           }).toList();
 
-          // Fallback: If nothing nearby, show everything (Demo Mode behavior)
-          if (nearbySpecials.isEmpty && projectedSpecials.isNotEmpty) {
-            return projectedSpecials;
+          // Fallback: If nothing nearby, show everything
+          if (nearbySpecials.isEmpty && specials.isNotEmpty) {
+            return specials;
           }
 
           return nearbySpecials;
@@ -156,12 +151,10 @@ class HallRepository {
         .collection('specials')
         .where('hallId', isEqualTo: hallId)
         .snapshots()
-        .asyncMap((snapshot) async {
-          final specials = snapshot.docs
+        .map((snapshot) {
+          return snapshot.docs
               .map((doc) => SpecialModel.fromJson(doc.data()))
               .toList();
-          // For CMS, we want EVERYTHING.
-          return await compute(projectSpecialsComputedAll, specials);
         });
   }
 
@@ -204,9 +197,7 @@ class HallRepository {
     SpecialModel special, {
     bool sendNotification = false,
   }) async {
-    // Generate ID if empty
     final docRef = _firestore.collection('specials').doc();
-
     final session = _ref.read(sessionContextProvider);
     final user = _ref.read(userProfileProvider).value;
 
@@ -226,10 +217,45 @@ class HallRepository {
     }
 
     final newSpecial = processedSpecial.copyWith(id: docRef.id);
-    await docRef.set(newSpecial.toJson());
+    
+    final batch = _firestore.batch();
+    batch.set(docRef, newSpecial.toJson());
+
+    // Serialize Recurrences for 14 Days
+    if (newSpecial.isTemplate && newSpecial.recurrenceRule != null && newSpecial.startTime != null && newSpecial.endTime != null) {
+      final dates = RecurrenceUtils.generateOccurrenceDates(
+        originalStart: newSpecial.startTime!,
+        originalEnd: newSpecial.endTime!,
+        rule: newSpecial.recurrenceRule!,
+        maxDaysLimit: 14,
+      );
+      
+      final duration = newSpecial.endTime!.difference(newSpecial.startTime!);
+
+      for (var date in dates) {
+        final compositeId = '${docRef.id}_${date.toUtc().toIso8601String().split('T')[0]}';
+        final cloneRef = _firestore.collection('specials').doc(compositeId);
+        
+        final clone = newSpecial.copyWith(
+          id: compositeId,
+          isTemplate: false,
+          templateId: docRef.id,
+          startTime: date,
+          endTime: date.add(duration),
+          postedAt: date,
+          reactionUserIds: [],
+          interestedUserIds: [],
+          commentCount: 0,
+          latestComment: null,
+          isStarred: false,
+        );
+        batch.set(cloneRef, clone.toJson());
+      }
+    }
+
+    await batch.commit();
 
     if (sendNotification) {
-      // Mock Cloud Function Trigger
       print("PUSH NOTIFICATION TRIGGERED for Special: ${newSpecial.title}");
     }
   }
@@ -238,19 +264,85 @@ class HallRepository {
     SpecialModel special, {
     bool sendNotification = false,
   }) async {
-    await _firestore
-        .collection('specials')
-        .doc(special.id)
-        .update(special.toJson());
+    final batch = _firestore.batch();
+    final docRef = _firestore.collection('specials').doc(special.id);
+    batch.update(docRef, special.toJson());
+
+    if (special.isTemplate && special.recurrenceRule != null && special.startTime != null && special.endTime != null) {
+      // 1. Terminate pending Future versions
+      final futureOrphans = await _firestore.collection('specials')
+          .where('templateId', isEqualTo: special.id)
+          .where('startTime', isGreaterThan: DateTime.now())
+          .get();
+          
+      for (var doc in futureOrphans.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // 2. Synthesize updated pipeline
+      final dates = RecurrenceUtils.generateOccurrenceDates(
+        originalStart: special.startTime!,
+        originalEnd: special.endTime!,
+        rule: special.recurrenceRule!,
+        maxDaysLimit: 14,
+      );
+      
+      final duration = special.endTime!.difference(special.startTime!);
+      final now = DateTime.now();
+
+      for (var date in dates) {
+        if (date.isBefore(now)) continue; 
+        
+        final compositeId = '${special.id}_${date.toUtc().toIso8601String().split('T')[0]}';
+        final cloneRef = _firestore.collection('specials').doc(compositeId);
+        
+        final clone = special.copyWith(
+          id: compositeId,
+          isTemplate: false,
+          templateId: special.id,
+          startTime: date,
+          endTime: date.add(duration),
+          postedAt: date,
+          reactionUserIds: [],
+          interestedUserIds: [],
+          commentCount: 0,
+          latestComment: null,
+          isStarred: false, 
+        );
+        batch.set(cloneRef, clone.toJson());
+      }
+    }
+
+    await batch.commit();
 
     if (sendNotification) {
-      // Mock Cloud Function Trigger
       print("PUSH NOTIFICATION TRIGGERED for Special: ${special.title}");
     }
   }
 
   Future<void> deleteSpecial(String specialId) async {
-    await _firestore.collection('specials').doc(specialId).delete();
+    final batch = _firestore.batch();
+    batch.delete(_firestore.collection('specials').doc(specialId));
+    
+    final orphans = await _firestore.collection('specials')
+        .where('templateId', isEqualTo: specialId)
+        .get();
+        
+    final now = DateTime.now();
+    for (var doc in orphans.docs) {
+       final data = doc.data();
+       final isStarred = data['isStarred'] ?? false;
+       final endTimeTimestamp = data['endTime'];
+       final endTime = endTimeTimestamp is Timestamp ? endTimeTimestamp.toDate() : null;
+       
+       if (endTime != null && endTime.isAfter(now)) {
+           batch.delete(doc.reference);
+       } else if (!isStarred) {
+           batch.delete(doc.reference);
+       }
+    }
+    
+    await batch.commit();
   }
 
   Future<void> updateHall(BingoHallModel hall) async {
@@ -1073,15 +1165,116 @@ class HallRepository {
   Future<void> addRaffle(RaffleModel raffle) async {
     final docRef = _firestore.collection('raffles').doc();
     final newRaffle = raffle.copyWith(id: docRef.id);
-    await docRef.set(newRaffle.toJson());
+    
+    final batch = _firestore.batch();
+    batch.set(docRef, newRaffle.toJson());
+
+    // Process Recurrence Windows
+    if (newRaffle.isTemplate && newRaffle.recurrenceRule != null && newRaffle.endsAt != null) {
+      // For Raffles, we only have endsAt. Assuming a 7 day rolling period natively
+      final dates = RecurrenceUtils.generateOccurrenceDates(
+        originalStart: newRaffle.endsAt.subtract(const Duration(days: 7)), // Pseudo-start
+        originalEnd: newRaffle.endsAt,
+        rule: newRaffle.recurrenceRule!,
+        maxDaysLimit: 14,
+      );
+
+      final duration = const Duration(days: 7);
+
+      for (var date in dates) {
+        final compositeId = '${docRef.id}_${date.toUtc().toIso8601String().split('T')[0]}';
+        final cloneRef = _firestore.collection('raffles').doc(compositeId);
+        
+        final clone = newRaffle.copyWith(
+          id: compositeId,
+          isTemplate: false,
+          templateId: docRef.id,
+          endsAt: date.add(duration),
+          reactionUserIds: [],
+          interestedUserIds: [],
+          commentCount: 0,
+          latestComment: null,
+          isStarred: false,
+        );
+        batch.set(cloneRef, clone.toJson());
+      }
+    }
+
+    await batch.commit();
   }
 
   Future<void> updateRaffle(RaffleModel raffle) async {
-    await _firestore.collection('raffles').doc(raffle.id).set(raffle.toJson());
+    final batch = _firestore.batch();
+    final docRef = _firestore.collection('raffles').doc(raffle.id);
+    batch.update(docRef, raffle.toJson());
+
+    if (raffle.isTemplate && raffle.recurrenceRule != null && raffle.endsAt != null) {
+      final orphans = await _firestore.collection('raffles')
+          .where('templateId', isEqualTo: raffle.id)
+          .where('endsAt', isGreaterThan: DateTime.now())
+          .get();
+          
+      for (var doc in orphans.docs) {
+        batch.delete(doc.reference);
+      }
+
+      final dates = RecurrenceUtils.generateOccurrenceDates(
+        originalStart: raffle.endsAt.subtract(const Duration(days: 7)),
+        originalEnd: raffle.endsAt,
+        rule: raffle.recurrenceRule!,
+        maxDaysLimit: 14,
+      );
+      
+      final duration = const Duration(days: 7);
+      final now = DateTime.now();
+
+      for (var date in dates) {
+        if (date.add(duration).isBefore(now)) continue; 
+        
+        final compositeId = '${raffle.id}_${date.toUtc().toIso8601String().split('T')[0]}';
+        final cloneRef = _firestore.collection('raffles').doc(compositeId);
+        
+        final clone = raffle.copyWith(
+          id: compositeId,
+          isTemplate: false,
+          templateId: raffle.id,
+          endsAt: date.add(duration),
+          reactionUserIds: [],
+          interestedUserIds: [],
+          commentCount: 0,
+          latestComment: null,
+          isStarred: false, 
+        );
+        batch.set(cloneRef, clone.toJson());
+      }
+    }
+
+    await batch.commit();
   }
 
   Future<void> deleteRaffle(String raffleId) async {
-    await _firestore.collection('raffles').doc(raffleId).delete();
+    final batch = _firestore.batch();
+    batch.delete(_firestore.collection('raffles').doc(raffleId));
+    
+    final orphans = await _firestore.collection('raffles')
+        .where('templateId', isEqualTo: raffleId)
+        .get();
+        
+    final now = DateTime.now();
+    for (var doc in orphans.docs) {
+       final data = doc.data();
+       final isStarred = data['isStarred'] ?? false;
+       final endTimeTimestamp = data['endsAt'];
+       final endTime = endTimeTimestamp is Timestamp ? endTimeTimestamp.toDate() : null;
+       
+       if (endTime != null && endTime.isAfter(now)) {
+           batch.delete(doc.reference);
+       } else if (!isStarred) {
+           batch.delete(doc.reference);
+       }
+    }
+    
+    await batch.commit();
   }
 
   Future<void> seedRaffles(String hallId) async {

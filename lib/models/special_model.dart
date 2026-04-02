@@ -27,6 +27,8 @@ abstract class SpecialModel with _$SpecialModel {
     String? templateId,
     @Default(false) bool isCancelled,
     DateTime? archivedAt,
+    @Default(false) bool isStarred,
+    DateTime? unstarredAt,
     @Default([]) List<String> reactionUserIds,
     @Default([]) List<String> interestedUserIds,
     @Default(0) int commentCount,

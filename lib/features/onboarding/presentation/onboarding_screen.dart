@@ -32,10 +32,51 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   
   // Step 6: Home Base
   String? _selectedHomeBaseId;
+  String _hallSearchQuery = "";
 
   bool _isContributing = false;
   int _currentStep = 0;
   final int _totalSteps = 6;
+  
+  // Real-time Username Checker
+  bool _isCheckingUsername = false;
+  bool? _isUsernameAvailable;
+  
+  void _checkUsernameAvailability(String val) async {
+    final proposed = val.trim();
+    if (proposed.isEmpty) {
+      setState(() { _isUsernameAvailable = null; });
+      return;
+    }
+    setState(() => _isCheckingUsername = true);
+    try {
+      final user = ref.read(authStateChangesProvider).value;
+      final proposedSearchName = proposed.toLowerCase();
+      final usernameCheck = await FirebaseFirestore.instance
+          .collection('public_profiles')
+          .where('searchName', isEqualTo: proposedSearchName)
+          .get();
+
+      bool isTaken = false;
+      for (var doc in usernameCheck.docs) {
+        if (user != null && doc.id != user.uid) {
+          isTaken = true;
+          break;
+        } else if (user == null) {
+          isTaken = true;
+          break;
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _isUsernameAvailable = !isTaken;
+          _isCheckingUsername = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isCheckingUsername = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -124,21 +165,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     try {
       final user = ref.read(authStateChangesProvider).value;
       if (user != null) {
-        // Uniqueness Check
-        final usernameCheck = await FirebaseFirestore.instance
-            .collection('public_profiles')
-            .where('searchName', isEqualTo: proposedSearchName)
-            .get();
-
-        bool isTaken = false;
-        for (var doc in usernameCheck.docs) {
-          if (doc.id != user.uid) {
-            isTaken = true;
-            break;
-          }
+        // Uniqueness Check (redundant but safe)
+        if (_isUsernameAvailable == false) {
+           throw Exception("This username is already taken. Please choose another.");
         }
-
-        if (isTaken) throw Exception("This username is already taken. Please choose another.");
 
         // Avatar Upload
         String? photoUrl;
@@ -229,7 +259,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   child: Row(
                     children: [
                       if (_currentStep > 0)
-                        IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: _prevPage),
+                        IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: _prevPage)
+                      else
+                        IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () {
+                           ref.read(authServiceProvider).signOut();
+                        }),
                       const Spacer(),
                       Text("Step ${_currentStep + 1} of $_totalSteps", style: const TextStyle(color: Colors.white70)),
                       const SizedBox(width: 8),
@@ -271,14 +305,36 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       // Step 2: Handle
                       _buildStep(
                         title: "Pick your Handle",
-                        subtitle: "This is how your friends will find you on the leaderboards.",
-                        content: _buildTextField(
-                          _usernameController, "Username / Handle", icon: Icons.alternate_email,
-                          textCapitalization: TextCapitalization.none, maxLength: 20,
+                        subtitle: "This is how your friends will find you on the leaderboards. (Case Sensitive)",
+                        content: Column(
+                          children: [
+                            TextField(
+                              controller: _usernameController,
+                              textCapitalization: TextCapitalization.none,
+                              maxLength: 20,
+                              onChanged: _checkUsernameAvailability,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                labelText: "Username / Handle",
+                                labelStyle: const TextStyle(color: Colors.white70),
+                                prefixIcon: const Icon(Icons.alternate_email, color: Colors.white70),
+                                suffixIcon: _isCheckingUsername 
+                                  ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)))
+                                  : (_isUsernameAvailable == null ? null : (_isUsernameAvailable! ? const Icon(Icons.check_circle, color: Colors.green) : const Icon(Icons.cancel, color: Colors.red))),
+                                enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+                                focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.amber)),
+                              ),
+                            ),
+                            if (_isUsernameAvailable == false)
+                              const Align(
+                                alignment: Alignment.centerLeft, 
+                                child: Text("Username taken", style: TextStyle(color: Colors.red, fontSize: 12))
+                              ),
+                          ],
                         ),
                         onNext: () {
-                          if (_usernameController.text.isNotEmpty) _nextPage();
-                          else ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter a username")));
+                          if (_usernameController.text.isNotEmpty && _isUsernameAvailable != false) _nextPage();
+                          else ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter a valid, available username")));
                         },
                       ),
 
@@ -373,13 +429,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         onNext: _submit,
                         isFinal: true,
                         isLoading: _isContributing,
-                        bottomWidget: TextButton(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClaimVenueScreen())),
-                          child: const Text("Run a hall or venue? Tap here to claim your business.",
-                            style: TextStyle(color: Colors.amber, decoration: TextDecoration.underline),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
                       ),
                     ],
                   ),
@@ -393,32 +442,53 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildHallSelector() {
-    return FutureBuilder<QuerySnapshot>(
-      future: FirebaseFirestore.instance.collection('bingo_halls').limit(5).get(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-        var halls = snapshot.data!.docs;
-        if (halls.isEmpty) return const Text("No nearby venues found.", style: TextStyle(color: Colors.white54));
+    return Column(
+      children: [
+        TextField(
+          onChanged: (val) => setState(() => _hallSearchQuery = val.toLowerCase()),
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            labelText: "Search for a hall",
+            labelStyle: TextStyle(color: Colors.white70),
+            prefixIcon: Icon(Icons.search, color: Colors.white70),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.amber)),
+          ),
+        ),
+        const SizedBox(height: 16),
+        FutureBuilder<QuerySnapshot>(
+          future: FirebaseFirestore.instance.collection('bingo_halls').get(), // Note: A real implementation might paginate or rely on server-side search. For basic onboarding, client-side filtering of active halls is sufficient if the list is small.
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+            var halls = snapshot.data!.docs.where((doc) {
+               final data = doc.data() as Map<String, dynamic>;
+               final name = (data['name'] ?? '').toString().toLowerCase();
+               return name.contains(_hallSearchQuery);
+            }).take(5).toList();
+            
+            if (halls.isEmpty) return const Text("No nearby venues found.", style: TextStyle(color: Colors.white54));
 
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: halls.length,
-          itemBuilder: (context, index) {
-            final doc = halls[index];
-            final data = doc.data() as Map<String, dynamic>;
-            final isSelected = _selectedHomeBaseId == doc.id;
-            return ListTile(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              tileColor: isSelected ? Colors.amber.withOpacity(0.2) : Colors.transparent,
-              title: Text(data['name'] ?? 'Unknown', style: TextStyle(color: isSelected ? Colors.amber : Colors.white)),
-              subtitle: Text(data['city'] ?? '', style: const TextStyle(color: Colors.white54)),
-              trailing: isSelected ? const Icon(Icons.check_circle, color: Colors.amber) : null,
-              onTap: () => setState(() => _selectedHomeBaseId = doc.id),
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: halls.length,
+              itemBuilder: (context, index) {
+                final doc = halls[index];
+                final data = doc.data() as Map<String, dynamic>;
+                final isSelected = _selectedHomeBaseId == doc.id;
+                return ListTile(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  tileColor: isSelected ? Colors.amber.withOpacity(0.2) : Colors.transparent,
+                  title: Text(data['name'] ?? 'Unknown', style: TextStyle(color: isSelected ? Colors.amber : Colors.white)),
+                  subtitle: Text(data['city'] ?? '', style: const TextStyle(color: Colors.white54)),
+                  trailing: isSelected ? const Icon(Icons.check_circle, color: Colors.amber) : null,
+                  onTap: () => setState(() => _selectedHomeBaseId = doc.id),
+                );
+              },
             );
           },
-        );
-      },
+        ),
+      ],
     );
   }
 

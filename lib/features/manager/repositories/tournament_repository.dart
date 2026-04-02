@@ -5,6 +5,7 @@ import '../../../models/tournament_model.dart';
 
 import '../../../services/auth_service.dart';
 import '../../../services/session_context_controller.dart';
+import '../../../core/utils/recurrence_utils.dart';
 
 final tournamentRepositoryProvider = Provider(
   (ref) => TournamentRepository(FirebaseFirestore.instance, ref),
@@ -28,9 +29,8 @@ class TournamentRepository {
   // Stream All Tournaments (Active, Expired, Templates)
   Stream<List<TournamentModel>> streamTournaments(String hallId) {
     return _firestore
-        .collection('bingo_halls')
-        .doc(hallId)
         .collection('tournaments')
+        .where('hallId', isEqualTo: hallId)
         .snapshots()
         .map((snapshot) {
           return snapshot.docs
@@ -41,68 +41,122 @@ class TournamentRepository {
 
   // Save (Create/Update)
   Future<void> saveTournament(String hallId, TournamentModel tournament) async {
-    final collection = _firestore
-        .collection('bingo_halls')
-        .doc(hallId)
-        .collection('tournaments');
+    final collection = _firestore.collection('tournaments');
 
     final session = _ref.read(sessionContextProvider);
     final user = _ref.read(userProfileProvider).value;
 
-    TournamentModel processedTournament = tournament;
+    TournamentModel processedTournament = tournament.copyWith(hallId: hallId);
     if (session.isBusiness) {
-      processedTournament = tournament.copyWith(
+      processedTournament = processedTournament.copyWith(
         authorType: 'venue',
         authorId: session.activeVenueId,
         postedByUid: user?.uid,
       );
     } else {
-      processedTournament = tournament.copyWith(
+      processedTournament = processedTournament.copyWith(
         authorType: 'user',
         authorId: user?.uid,
         postedByUid: user?.uid,
       );
     }
 
-    var data = Map<String, dynamic>.from(processedTournament.toJson());
+    final isNew = processedTournament.id.isEmpty;
+    final docRef = isNew ? collection.doc() : collection.doc(processedTournament.id);
+    final finalTournament = processedTournament.copyWith(id: docRef.id);
 
-    // Manual Fix 1: RecurrenceRule
-    if (tournament.recurrenceRule != null) {
-      data['recurrenceRule'] = tournament.recurrenceRule!.toJson();
+    var data = Map<String, dynamic>.from(finalTournament.toJson());
+    if (finalTournament.recurrenceRule != null) {
+      data['recurrenceRule'] = finalTournament.recurrenceRule!.toJson();
+    }
+    if (finalTournament.games.isNotEmpty) {
+      data['games'] = finalTournament.games.map((g) => g.toJson()).toList();
     }
 
-    // Manual Fix 2: Games List
-    if (tournament.games.isNotEmpty) {
-      data['games'] = tournament.games.map((g) => g.toJson()).toList();
-    }
-
-    if (processedTournament.id.isEmpty) {
-      final docRef = collection.doc();
-      final finalTournament = processedTournament.copyWith(id: docRef.id);
-
-      // Re-apply fixes
-      var newData = Map<String, dynamic>.from(finalTournament.toJson());
-      if (finalTournament.recurrenceRule != null) {
-        newData['recurrenceRule'] = finalTournament.recurrenceRule!.toJson();
-      }
-      if (finalTournament.games.isNotEmpty) {
-        newData['games'] = finalTournament.games.map((g) => g.toJson()).toList();
-      }
-
-      await docRef.set(newData);
+    final batch = _firestore.batch();
+    if (isNew) {
+      batch.set(docRef, data);
     } else {
-      await collection.doc(processedTournament.id).set(data, SetOptions(merge: true));
+      batch.set(docRef, data, SetOptions(merge: true));
     }
+
+    // Process Recurrence Windows
+    if (finalTournament.isTemplate && finalTournament.recurrenceRule != null && finalTournament.startTime != null && finalTournament.endTime != null) {
+      if (!isNew) {
+        final orphans = await _firestore.collection('tournaments')
+          .where('templateId', isEqualTo: finalTournament.id)
+          .where('startTime', isGreaterThan: DateTime.now())
+          .get();
+        for (var doc in orphans.docs) {
+          batch.delete(doc.reference);
+        }
+      }
+
+      final dates = RecurrenceUtils.generateOccurrenceDates(
+        originalStart: finalTournament.startTime!,
+        originalEnd: finalTournament.endTime!,
+        rule: finalTournament.recurrenceRule!,
+        maxDaysLimit: 14,
+      );
+      
+      final duration = finalTournament.endTime!.difference(finalTournament.startTime!);
+      final now = DateTime.now();
+
+      for (var date in dates) {
+        if (!isNew && date.isBefore(now)) continue; 
+        
+        final compositeId = '${finalTournament.id}_${date.toUtc().toIso8601String().split('T')[0]}';
+        final cloneRef = _firestore.collection('tournaments').doc(compositeId);
+        
+        final clone = finalTournament.copyWith(
+          id: compositeId,
+          isTemplate: false,
+          templateId: finalTournament.id,
+          startTime: date,
+          endTime: date.add(duration),
+          createdAt: date,
+          reactionUserIds: [],
+          interestedUserIds: [],
+          commentCount: 0,
+          latestComment: null,
+          isStarred: false, 
+        );
+        
+        var cloneData = Map<String, dynamic>.from(clone.toJson());
+        if (clone.recurrenceRule != null) cloneData['recurrenceRule'] = clone.recurrenceRule!.toJson();
+        if (clone.games.isNotEmpty) cloneData['games'] = clone.games.map((g) => g.toJson()).toList();
+
+        batch.set(cloneRef, cloneData);
+      }
+    }
+
+    await batch.commit();
   }
 
   // Delete
   Future<void> deleteTournament(String hallId, String tournamentId) async {
-    await _firestore
-        .collection('bingo_halls')
-        .doc(hallId)
-        .collection('tournaments')
-        .doc(tournamentId)
-        .delete();
+    final batch = _firestore.batch();
+    batch.delete(_firestore.collection('tournaments').doc(tournamentId));
+
+    final orphans = await _firestore.collection('tournaments')
+        .where('templateId', isEqualTo: tournamentId)
+        .get();
+        
+    final now = DateTime.now();
+    for (var doc in orphans.docs) {
+       final data = doc.data();
+       final isStarred = data['isStarred'] ?? false;
+       final endTimeTimestamp = data['endTime'];
+       final endTime = endTimeTimestamp is Timestamp ? endTimeTimestamp.toDate() : null;
+       
+       if (endTime != null && endTime.isAfter(now)) {
+           batch.delete(doc.reference);
+       } else if (!isStarred) {
+           batch.delete(doc.reference);
+       }
+    }
+    
+    await batch.commit();
   }
 
   // Get Currently Active Tournament (for Scanner)

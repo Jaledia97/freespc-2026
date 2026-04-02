@@ -38,6 +38,10 @@ _SpecialModel _$SpecialModelFromJson(Map<String, dynamic> json) =>
       archivedAt: json['archivedAt'] == null
           ? null
           : DateTime.parse(json['archivedAt'] as String),
+      isStarred: json['isStarred'] as bool? ?? false,
+      unstarredAt: json['unstarredAt'] == null
+          ? null
+          : DateTime.parse(json['unstarredAt'] as String),
       reactionUserIds:
           (json['reactionUserIds'] as List<dynamic>?)
               ?.map((e) => e as String)
@@ -75,6 +79,8 @@ Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
       'templateId': instance.templateId,
       'isCancelled': instance.isCancelled,
       'archivedAt': instance.archivedAt?.toIso8601String(),
+      'isStarred': instance.isStarred,
+      'unstarredAt': instance.unstarredAt?.toIso8601String(),
       'reactionUserIds': instance.reactionUserIds,
       'interestedUserIds': instance.interestedUserIds,
       'commentCount': instance.commentCount,

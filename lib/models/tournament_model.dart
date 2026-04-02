@@ -23,6 +23,8 @@ abstract class TournamentModel with _$TournamentModel {
     String? templateId,
     @Default(false) bool isCancelled,
     DateTime? archivedAt,
+    @Default(false) bool isStarred,
+    DateTime? unstarredAt,
     @Default([]) List<TournamentGame> games,
     @Default([]) List<String> reactionUserIds,
     @Default([]) List<String> interestedUserIds,

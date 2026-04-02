@@ -15,6 +15,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +88,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       "Password",
                       Icons.lock,
                       isPassword: true,
+                      obscureText: _obscurePassword,
+                      onToggleVisibility: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
@@ -93,6 +101,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       "Confirm Password",
                       Icons.lock,
                       isPassword: true,
+                      obscureText: _obscureConfirmPassword,
+                      onToggleVisibility: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
                     ),
 
                     const SizedBox(height: 32),
@@ -199,9 +213,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                     Text(
                       isCodeSent ? "Enter SMS Code" : "Enter Phone Number",
                       style: const TextStyle(
@@ -320,6 +335,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                   ],
                 ),
+               ),
               ),
             ),
           );
@@ -333,15 +349,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     String hint,
     IconData icon, {
     bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? onToggleVisibility,
   }) {
     return TextField(
       controller: controller,
-      obscureText: isPassword,
+      obscureText: obscureText,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: hint,
         labelStyle: const TextStyle(color: Colors.white70),
         prefixIcon: Icon(icon, color: Colors.white70),
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  obscureText ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.white70,
+                ),
+                onPressed: onToggleVisibility,
+              )
+            : null,
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.white24),
         ),
@@ -372,10 +399,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       // Auth wrapper handles navigation
       if (mounted) Navigator.pop(context); // Go back to wrapper
     } catch (e) {
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted) {
+        String msg = e.toString();
+        // Friendly mapping for common Firebase errors:
+        if (msg.contains("operation-not-allowed")) {
+          msg = "Email Registration is disabled. Please tell the admin to enable Email/Password Sign-In Provider in the Firebase Console.";
+        } else if (msg.contains("email-already-in-use")) {
+          msg = "An account already exists with this email.";
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

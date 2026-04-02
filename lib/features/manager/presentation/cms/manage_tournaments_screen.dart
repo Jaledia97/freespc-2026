@@ -279,6 +279,20 @@ class _ManageTournamentsScreenState
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (isArchived)
+                    IconButton(
+                      icon: Icon(
+                        tournament.isStarred ? Icons.star : Icons.star_border,
+                        color: tournament.isStarred ? Colors.amber : Colors.grey,
+                      ),
+                      onPressed: () async {
+                        final updated = tournament.copyWith(
+                          isStarred: !tournament.isStarred,
+                          unstarredAt: tournament.isStarred ? DateTime.now() : null,
+                        );
+                        await ref.read(tournamentRepositoryProvider).saveTournament(hallId, updated);
+                      },
+                    ),
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.blueAccent),
                     onPressed: () {

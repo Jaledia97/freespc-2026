@@ -315,6 +315,21 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
                   ),
               ],
             ),
+            trailing: isPast
+                ? IconButton(
+                    icon: Icon(
+                      raffle.isStarred ? Icons.star : Icons.star_border,
+                      color: raffle.isStarred ? Colors.amber : Colors.grey,
+                    ),
+                    onPressed: () async {
+                      final updated = raffle.copyWith(
+                        isStarred: !raffle.isStarred,
+                        unstarredAt: raffle.isStarred ? DateTime.now() : null,
+                      );
+                      await ref.read(hallRepositoryProvider).updateRaffle(updated);
+                    },
+                  )
+                : null,
             onTap: () {
               if (isTemplateTab) {
                 // Instantiation flow

@@ -4,6 +4,7 @@ import '../../../services/auth_service.dart';
 import '../../../core/widgets/glass_container.dart';
 import 'register_screen.dart';
 import 'auth_wrapper.dart';
+import '../../main_layout.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -173,6 +174,26 @@ class LoginScreen extends ConsumerWidget {
                               fontSize: 16,
                               decoration: TextDecoration.underline,
                               decorationColor: Colors.white54,
+                            ),
+                          ),
+                        ),
+                        
+                        // Guest Mode Button
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MainLayout(),
+                              ),
+                              (route) => false,
+                            );
+                          },
+                          child: const Text(
+                            "Continue as Guest",
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 14,
                             ),
                           ),
                         ),

@@ -16,6 +16,7 @@ import '../../home/presentation/upcoming_games_screen.dart'; // Import UpcomingG
 import '../../friends/presentation/friends_screen.dart'; // Import FriendsScreen
 import '../../messaging/presentation/messaging_hub_screen.dart';
 import '../../auth/presentation/login_screen.dart';
+import '../../auth/presentation/auth_wrapper.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -153,7 +154,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             style: TextStyle(color: Colors.redAccent),
                           ),
                           onTap: () {
-                            Navigator.pop(context); // Close sheet
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (_) => const AuthWrapper()),
+                              (route) => false,
+                            );
                             ref.read(authServiceProvider).signOut();
                           },
                         ),

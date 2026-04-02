@@ -24,6 +24,10 @@ _RaffleModel _$RaffleModelFromJson(Map<String, dynamic> json) => _RaffleModel(
   recurrenceRule: json['recurrenceRule'] == null
       ? null
       : RecurrenceRule.fromJson(json['recurrenceRule'] as Map<String, dynamic>),
+  isStarred: json['isStarred'] as bool? ?? false,
+  unstarredAt: json['unstarredAt'] == null
+      ? null
+      : DateTime.parse(json['unstarredAt'] as String),
   reactionUserIds:
       (json['reactionUserIds'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -56,6 +60,8 @@ Map<String, dynamic> _$RaffleModelToJson(_RaffleModel instance) =>
       'isCancelled': instance.isCancelled,
       'archivedAt': instance.archivedAt?.toIso8601String(),
       'recurrenceRule': instance.recurrenceRule?.toJson(),
+      'isStarred': instance.isStarred,
+      'unstarredAt': instance.unstarredAt?.toIso8601String(),
       'reactionUserIds': instance.reactionUserIds,
       'interestedUserIds': instance.interestedUserIds,
       'commentCount': instance.commentCount,
