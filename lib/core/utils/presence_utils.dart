@@ -14,16 +14,14 @@ class PresenceUtils {
     
     final diff = DateTime.now().difference(lastSeen);
     
+    if (overrideStatus == 'Away') {
+      return 'Away';
+    }
+
     if (overrideStatus == 'Online') {
       if (diff.inMinutes <= 15) {
         return 'Online';
-      } else if (diff.inHours <= 12) {
-        return 'Away';
-      } else {
-        return 'Offline';
-      }
-    } else if (overrideStatus == 'Away') {
-      if (diff.inHours <= 12) {
+      } else if (diff.inMinutes <= 60) {
         return 'Away';
       } else {
         return 'Offline';
