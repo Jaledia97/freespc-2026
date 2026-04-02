@@ -365,21 +365,36 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                             fontSize: 16,
                           ),
                         ),
-                        subtitle: friend.currentCheckInHallId != null
-                            ? const Text(
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (friend.currentCheckInHallId != null)
+                              const Text(
                                 "📍 At a Bingo Hall",
                                 style: TextStyle(
                                   color: Colors.blueAccent,
                                   fontSize: 13,
                                 ),
                               )
-                            : Text(
+                            else
+                              Text(
                                 "${friend.firstName} ${friend.lastName}",
                                 style: const TextStyle(
                                   color: Colors.white54,
                                   fontSize: 13,
                                 ),
                               ),
+                            const SizedBox(height: 2),
+                            Text(
+                              PresenceUtils.getLastSeenText(friend.lastSeen),
+                              style: const TextStyle(
+                                color: Colors.white38,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

@@ -43,4 +43,21 @@ class PresenceUtils {
         return Colors.grey;
     }
   }
+  /// Computes a relative 'Last Seen' string bounded by a 30-day cutoff
+  static String getLastSeenText(DateTime? lastSeen) {
+    if (lastSeen == null) return "Offline";
+    
+    final diff = DateTime.now().difference(lastSeen);
+    if (diff.inDays > 30) {
+      return "Offline";
+    } else if (diff.inDays >= 1) {
+      return "Last seen: ${diff.inDays} day${diff.inDays == 1 ? '' : 's'} ago";
+    } else if (diff.inHours >= 1) {
+      return "Last seen: ${diff.inHours} hr${diff.inHours == 1 ? '' : 's'} ago";
+    } else if (diff.inMinutes >= 1) {
+      return "Last seen: ${diff.inMinutes} min${diff.inMinutes == 1 ? '' : 's'} ago";
+    } else {
+      return "Last seen: Just now";
+    }
+  }
 }
