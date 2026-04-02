@@ -1,10 +1,9 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/utils/timestamp_converter.dart';
 
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
-
-import '../core/utils/timestamp_converter.dart';
 
 @freezed
 abstract class UserModel with _$UserModel {
