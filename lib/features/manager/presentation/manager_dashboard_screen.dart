@@ -69,7 +69,7 @@ class _ManagerDashboardScreenState
   void _handleBack() async {
     final shouldExit = await _showExitConfirmation();
     if (shouldExit && mounted) {
-      Navigator.pop(context);
+      ref.read(sessionContextProvider.notifier).switchToPersonal();
     }
   }
 
