@@ -9,8 +9,7 @@ import '../../../models/raffle_model.dart';
 import '../../../models/tournament_model.dart';
 import '../../../models/comment_model.dart';
 import 'dart:convert';
-import 'special_projection_logic.dart'; // Isolate Logic
-import '../../core/utils/recurrence_utils.dart';
+import '../../../core/utils/recurrence_utils.dart';
 import 'dart:math';
 import 'package:flutter/foundation.dart'; // For compute
 
@@ -1456,8 +1455,7 @@ class HallRepository {
         .map((d) => SpecialModel.fromJson(d.data() as Map<String, dynamic>))
         .toList();
 
-    // Project recurring events locally
-    specials = await compute(projectSpecialsComputed, specials);
+    // physical events arrive fully synthesized
 
     if (userLoc != null) {
       specials = specials.where((s) {
