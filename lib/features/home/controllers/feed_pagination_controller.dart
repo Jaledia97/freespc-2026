@@ -209,6 +209,25 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
 
         if (blockedIds.contains(authorId)) return false;
         if (hiddenIds.contains(docId)) return false;
+
+        // EXPIRATION CLAMP: Natively block any chronological event that has physically concluded
+        final now = DateTime.now();
+        final bool isExpired = item.map(
+          tournament: (t) => t.data.endTime != null && t.data.endTime!.isBefore(now),
+          raffle: (r) => r.data.endsAt.isBefore(now),
+          special: (s) {
+            // For instances with an exact endTime
+            if (s.data.endTime != null) return s.data.endTime!.isBefore(now);
+            // Standalone Specials without endTime expire physically after 7 days
+            return s.data.postedAt.isBefore(now.subtract(const Duration(days: 7)));
+          },
+          checkIn: (c) => c.data.createdAt.isBefore(now.subtract(const Duration(hours: 24))),
+          winPost: (w) => false, // Evergreen
+          textPost: (tp) => false, // Evergreen
+        );
+
+        if (isExpired) return false;
+
         return true;
       }).toList();
 

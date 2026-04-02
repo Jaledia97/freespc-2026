@@ -1479,6 +1479,7 @@ class HallRepository {
   }) async {
     Query query = _firestore
         .collection('raffles')
+        .where('isTemplate', isEqualTo: false)
         .where('isActive', isEqualTo: true)
         .orderBy('createdAt', descending: true)
         .limit(limit);
@@ -1502,6 +1503,7 @@ class HallRepository {
   }) async {
     Query query = _firestore
         .collection('tournaments')
+        .where('isTemplate', isEqualTo: false)
         .where('status', isEqualTo: 'published')
         .orderBy('createdAt', descending: true)
         .limit(limit);

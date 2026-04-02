@@ -28,6 +28,19 @@ class TimeUtils {
 
   static String getTimeAgo(DateTime date) {
     final diff = DateTime.now().difference(date);
+    
+    // Future Dates (Generated Iterations)
+    if (diff.inSeconds < 0) {
+      if (diff.inDays.abs() >= 1) {
+        return "in ${diff.inDays.abs()}d";
+      } else if (diff.inHours.abs() >= 1) {
+        return "in ${diff.inHours.abs()}h";
+      } else if (diff.inMinutes.abs() >= 1) {
+        return "in ${diff.inMinutes.abs()}m";
+      } else {
+        return "Upcoming";
+      }
+    }
     if (diff.inDays >= 365) {
       final years = (diff.inDays / 365).floor();
       return "${years}y";
