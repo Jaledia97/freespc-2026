@@ -14,6 +14,7 @@ import '../../messaging/repositories/messaging_repository.dart';
 import '../../messaging/presentation/chat_screen.dart';
 import '../../profile/presentation/public_profile_screen.dart';
 import '../../../core/widgets/notification_badge.dart';
+import '../../../core/utils/presence_utils.dart';
 
 // Provides a list of PublicProfiles for the user's accepted friends
 final friendsProfilesProvider = StreamProvider<List<PublicProfile>>((ref) {
@@ -43,14 +44,16 @@ final friendsProfilesProvider = StreamProvider<List<PublicProfile>>((ref) {
 
         // Sort logic
         profiles.sort((a, b) {
-          // 1. Online Status (Online > Away > Offline)
           int weight(String status) {
             if (status == 'Online') return 3;
             if (status == 'Away') return 2;
             return 1; // Offline
           }
 
-          int cmp = weight(b.onlineStatus).compareTo(weight(a.onlineStatus));
+          final aDerived = PresenceUtils.getDerivedStatus(a.onlineStatus, a.lastSeen);
+          final bDerived = PresenceUtils.getDerivedStatus(b.onlineStatus, b.lastSeen);
+
+          int cmp = weight(bDerived).compareTo(weight(aDerived));
           if (cmp != 0) return cmp;
 
           // 2. Proximity (If they have a check-in, we sort them higher)
@@ -317,11 +320,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                   return SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final friend = filteredFriends[index];
-                      Color statusColor = Colors.grey;
-                      if (friend.onlineStatus == 'Online')
-                        statusColor = Colors.greenAccent;
-                      if (friend.onlineStatus == 'Away')
-                        statusColor = Colors.amber;
+                      final derivedStatus = PresenceUtils.getDerivedStatus(friend.onlineStatus, friend.lastSeen);
+                      Color statusColor = PresenceUtils.getStatusColor(derivedStatus);
 
                       return ListTile(
                         contentPadding: const EdgeInsets.symmetric(

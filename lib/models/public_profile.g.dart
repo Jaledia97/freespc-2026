@@ -23,6 +23,7 @@ _PublicProfile _$PublicProfileFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as String)
               .toList() ??
           const [],
+      lastSeen: const NullableTimestampConverter().fromJson(json['lastSeen']),
     );
 
 Map<String, dynamic> _$PublicProfileToJson(_PublicProfile instance) =>
@@ -38,4 +39,5 @@ Map<String, dynamic> _$PublicProfileToJson(_PublicProfile instance) =>
       'onlineStatus': instance.onlineStatus,
       'currentCheckInHallId': instance.currentCheckInHallId,
       'squadIds': instance.squadIds,
+      'lastSeen': const NullableTimestampConverter().toJson(instance.lastSeen),
     };

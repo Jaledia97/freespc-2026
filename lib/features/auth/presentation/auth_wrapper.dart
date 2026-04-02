@@ -115,10 +115,15 @@ class _AuthHandler extends ConsumerStatefulWidget {
   ConsumerState<_AuthHandler> createState() => _AuthHandlerState();
 }
 
-class _AuthHandlerState extends ConsumerState<_AuthHandler> {
+class _AuthHandlerState extends ConsumerState<_AuthHandler> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    
+    // Immediately report presence on mount
+    _reportPresence();
+    
     // Check for pending invites after frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkPendingInvites();
@@ -129,6 +134,34 @@ class _AuthHandlerState extends ConsumerState<_AuthHandler> {
         ref.read(authServiceProvider).updateFcmToken(user.uid);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _reportPresence();
+    }
+  }
+
+  void _reportPresence() {
+    final user = ref.read(authStateChangesProvider).value;
+    if (user != null) {
+      final ts = FieldValue.serverTimestamp();
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .set({'lastSeen': ts}, SetOptions(merge: true));
+      FirebaseFirestore.instance
+          .collection('public_profiles')
+          .doc(user.uid)
+          .set({'lastSeen': ts}, SetOptions(merge: true));
+    }
   }
 
   // Also listen for deep link updates

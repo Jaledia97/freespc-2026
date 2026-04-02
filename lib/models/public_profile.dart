@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../core/utils/timestamp_converter.dart';
 
 part 'public_profile.freezed.dart';
 part 'public_profile.g.dart';
@@ -19,6 +20,7 @@ abstract class PublicProfile with _$PublicProfile {
     @Default('Online') String onlineStatus,
     String? currentCheckInHallId,
     @Default([]) List<String> squadIds,
+    @NullableTimestampConverter() DateTime? lastSeen,
   }) = _PublicProfile;
 
   factory PublicProfile.fromJson(Map<String, Object?> json) =>

@@ -11,6 +11,7 @@ import '../../notifications/presentation/notifications_screen.dart';
 import '../../../../main.dart'; // For flutterLocalNotificationsPlugin
 import 'package:intl/intl.dart';
 import '../../settings/data/display_settings_repository.dart';
+import '../../../core/utils/presence_utils.dart';
 
 final userChatsProvider = StreamProvider((ref) {
   final user = ref.watch(userProfileProvider).value;
@@ -97,10 +98,8 @@ class _MessagesTab extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final friend = friends[index];
                   // Check online status
-                  Color statusColor = Colors.grey;
-                  if (friend.onlineStatus == 'Online')
-                    statusColor = Colors.green;
-                  if (friend.onlineStatus == 'Away') statusColor = Colors.amber;
+                  final derivedStatus = PresenceUtils.getDerivedStatus(friend.onlineStatus, friend.lastSeen);
+                  Color statusColor = PresenceUtils.getStatusColor(derivedStatus);
 
                   return GestureDetector(
                     onTap: () async {

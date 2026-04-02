@@ -4,23 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
-class NullableTimestampConverter implements JsonConverter<DateTime?, dynamic> {
-  const NullableTimestampConverter();
-
-  @override
-  DateTime? fromJson(dynamic json) {
-    if (json == null) return null;
-    if (json is Timestamp) return json.toDate();
-    if (json is String) return DateTime.tryParse(json);
-    return null;
-  }
-
-  @override
-  dynamic toJson(DateTime? date) {
-    if (date == null) return null;
-    return date.toIso8601String();
-  }
-}
+import '../core/utils/timestamp_converter.dart';
 
 @freezed
 abstract class UserModel with _$UserModel {
@@ -56,6 +40,7 @@ abstract class UserModel with _$UserModel {
     @Default([]) List<String> fcmTokens, // Device tokens for push notifications
     @Default([]) List<String> squadIds,
     String? pendingVenueClaimId, // Added for B2B Verification Funnel Tracking
+    @NullableTimestampConverter() DateTime? lastSeen,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, Object?> json) =>
