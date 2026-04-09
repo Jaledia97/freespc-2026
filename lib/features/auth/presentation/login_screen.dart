@@ -6,11 +6,18 @@ import 'register_screen.dart';
 import 'auth_wrapper.dart';
 import '../../main_layout.dart';
 
-class LoginScreen extends ConsumerWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -95,7 +102,10 @@ class LoginScreen extends ConsumerWidget {
                         const SizedBox(height: 32),
 
                         // Social Login Row
-                        Row(
+                        // Social Login Row
+                        _isLoading 
+                          ? const Center(child: CircularProgressIndicator(color: Colors.amber))
+                          : Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             // Apple
@@ -103,15 +113,22 @@ class LoginScreen extends ConsumerWidget {
                               imageUrl:
                                   "https://upload.wikimedia.org/wikipedia/commons/3/31/Apple_logo_white.svg",
                               onTap: () async {
-                                final cred = await ref
-                                    .read(authServiceProvider)
-                                    .signInWithApple();
-                                if (cred != null && context.mounted) {
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => const AuthWrapper()),
-                                    (route) => false,
-                                  );
+                                setState(() => _isLoading = true);
+                                try {
+                                  final cred = await ref
+                                      .read(authServiceProvider)
+                                      .signInWithApple();
+                                  if (cred != null && context.mounted) {
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const AuthWrapper()),
+                                      (route) => false,
+                                    );
+                                  } else {
+                                    if (mounted) setState(() => _isLoading = false);
+                                  }
+                                } catch (e) {
+                                  if (mounted) setState(() => _isLoading = false);
                                 }
                               },
                               isDark: true,
@@ -122,15 +139,22 @@ class LoginScreen extends ConsumerWidget {
                               imageUrl:
                                   "https://cdn-icons-png.flaticon.com/512/300/300221.png",
                               onTap: () async {
-                                final cred = await ref
-                                    .read(authServiceProvider)
-                                    .signInWithGoogle();
-                                if (cred != null && context.mounted) {
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => const AuthWrapper()),
-                                    (route) => false,
-                                  );
+                                setState(() => _isLoading = true);
+                                try {
+                                  final cred = await ref
+                                      .read(authServiceProvider)
+                                      .signInWithGoogle();
+                                  if (cred != null && context.mounted) {
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const AuthWrapper()),
+                                      (route) => false,
+                                    );
+                                  } else {
+                                    if (mounted) setState(() => _isLoading = false);
+                                  }
+                                } catch (e) {
+                                  if (mounted) setState(() => _isLoading = false);
                                 }
                               },
                             ),
@@ -140,15 +164,22 @@ class LoginScreen extends ConsumerWidget {
                               imageUrl:
                                   "https://cdn-icons-png.flaticon.com/512/5968/5968764.png",
                               onTap: () async {
-                                final cred = await ref
-                                    .read(authServiceProvider)
-                                    .signInWithFacebook();
-                                if (cred != null && context.mounted) {
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => const AuthWrapper()),
-                                    (route) => false,
-                                  );
+                                setState(() => _isLoading = true);
+                                try {
+                                  final cred = await ref
+                                      .read(authServiceProvider)
+                                      .signInWithFacebook();
+                                  if (cred != null && context.mounted) {
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const AuthWrapper()),
+                                      (route) => false,
+                                    );
+                                  } else {
+                                    if (mounted) setState(() => _isLoading = false);
+                                  }
+                                } catch (e) {
+                                  if (mounted) setState(() => _isLoading = false);
                                 }
                               },
                             ),

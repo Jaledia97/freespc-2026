@@ -97,7 +97,21 @@ class FeedRepository {
       textPost: (tp) => tp.data.createdAt,
     );
     final hoursOld = DateTime.now().difference(itemDate).inHours;
-    baseScore -= (hoursOld * 0.1);
+
+    if (hoursOld < 0) {
+      // Event is in the future.
+      final int hoursUntil = -hoursOld;
+      // We want events happening SOON to be prioritized over events happening LATER.
+      // Give a maximum urgency boost of 50 for things happening immediately.
+      // Degrade this boost by 0.1 per hour (0 boost at 500 hours / ~21 days away).
+      double urgencyBoost = 50.0 - (hoursUntil * 0.1);
+      if (urgencyBoost < 0) urgencyBoost = 0; // Floor at 0
+      
+      baseScore += urgencyBoost;
+    } else {
+      // Event is in the past. Standard decay.
+      baseScore -= (hoursOld * 0.1);
+    }
 
     return baseScore;
   }

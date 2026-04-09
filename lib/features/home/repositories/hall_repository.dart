@@ -241,7 +241,7 @@ class HallRepository {
           templateId: docRef.id,
           startTime: date,
           endTime: date.add(duration),
-          postedAt: date,
+          postedAt: newSpecial.postedAt,
           reactionUserIds: [],
           interestedUserIds: [],
           commentCount: 0,

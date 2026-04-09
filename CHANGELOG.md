@@ -2,6 +2,18 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+73] - 2026-04-09 - Onboarding UI Polish & Feed Restabilization
+
+### Added
+- **Unified Permissions Sequencing**: Removed disjointed manual toggle buttons from the Step 5 Onboarding screen. Permissions (Location, Bluetooth, Contacts, Notifications) are cleanly sequenced natively through a declarative `dense` layout, sequentially piping OS-level modals over a single tap to preserve phone real-estate.
+- **Onboarding Padding Compression**: Rewrote the global Onboarding `_buildStep` scaling architectures, aggressively purging dead white space (24px to 12px margins, 48px to 32px gaps) to dramatically hoist action buttons above the physical bottom screen-fold unconditionally.
+
+### Changed
+- **Multi-Venue Generalization**: Swept the Onboarding payloads strictly clearing legacy `bingo` references (like `hall` and `jackpot`) in favor of generalized community terms like `venues` and `massive events and prizes` across Steps 2, 5, and 6.
+
+### Fixed
+- **Algorithmic Feed Starvation**: Resolved a massive critical sequence failure where recurrent CMS Templates natively serialized `postedAt` metrics up to 14-days outwards. This mathematically forced the global Feed's descending `limit(20)` query block to pull days $+14$ to $+4$, physically cutting off today's events from the feed algorithm before they could even hit the client. Overrode the recurrence engines internally in `hall_repository.dart` natively clamping clones backwards securely to today's `publishedAt` time.
+
 ## [0.0.1+72] - 2026-03-30 - Multi-Entity RBAC & B2B Switcher Architecture
 
 ### Added

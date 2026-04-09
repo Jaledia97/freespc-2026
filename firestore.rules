@@ -63,6 +63,9 @@ service cloud.firestore {
       allow update: if isOwner(userId) 
                     && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['systemRole', 'role', 'currentPoints', 'qrToken']));
                     
+      // Delete: Allow users to delete their own account
+      allow delete: if isOwner(userId);
+                    
       // Subcollections
       match /memberships/{hallId} {
         allow read: if isOwner(userId);

@@ -355,6 +355,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return TextField(
       controller: controller,
       obscureText: obscureText,
+      onTap: () {
+        if (controller.selection.baseOffset != controller.selection.extentOffset) {
+          controller.selection = TextSelection.collapsed(offset: controller.selection.extentOffset);
+        }
+      },
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: hint,
