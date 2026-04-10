@@ -36,9 +36,10 @@ Future<void> _showLocalNotification(RemoteMessage message) async {
 
   final data = message.data;
   print("Data Payload: $data");
+  
+  final type = data['type'] as String?;
 
-  final type = data['type'] ?? 'system';
-  if (type != 'new_message' && type != 'new_comment' && type != 'new_reaction') {
+  if (type != 'new_message' && type != 'new_comment' && type != 'new_reaction' && type != 'friend_request' && type != 'friend_request_accepted') {
     print("Unhandled data message type: $type. Returning.");
     return;
   }
@@ -59,6 +60,9 @@ Future<void> _showLocalNotification(RemoteMessage message) async {
   } else if (type == 'new_reaction') {
     threadId = data['commentId'] ?? data['docId'] ?? 'reactions';
     summarySuffix = 'new reactions';
+  } else if (type == 'friend_request' || type == 'friend_request_accepted') {
+    threadId = 'social_requests';
+    summarySuffix = 'new requests';
   }
 
   print("Loading SharedPreferences...");

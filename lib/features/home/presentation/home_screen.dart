@@ -466,6 +466,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .take(5)
         .toList();
 
+    final hasHalls = hallsAsync.valueOrNull?.isNotEmpty ?? false;
+    final hasUsers = usersAsync.valueOrNull?.isNotEmpty ?? false;
+    final hasPosts = matchingPosts.isNotEmpty;
+    final isLoaded = !hallsAsync.isLoading && !usersAsync.isLoading;
+
+    if (isLoaded && !hasHalls && !hasUsers && !hasPosts) {
+      return const SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.all(48.0),
+          child: Center(
+            child: Text(
+              "No results found.",
+              style: TextStyle(color: Colors.white54, fontSize: 16),
+            ),
+          ),
+        ),
+      );
+    }
+
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -593,7 +612,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 : null,
                           ),
                           title: Text(
-                            "${u.firstName} ${u.lastName}",
+                            u.realNameVisibility == 'Everyone' 
+                                ? "${u.firstName} ${u.lastName}" 
+                                : "@${u.username}",
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,

@@ -149,9 +149,14 @@ class _AuthHandlerState extends ConsumerState<_AuthHandler> with WidgetsBindingO
     }
   }
 
-  void _reportPresence() {
+  Future<void> _reportPresence() async {
     final user = ref.read(authStateChangesProvider).value;
     if (user != null) {
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (userDoc.exists && userDoc.data()?['onlineStatus'] == 'offline') {
+        return; // Suppress heartbeat ping for Ghost Mode
+      }
+      
       final ts = FieldValue.serverTimestamp();
       FirebaseFirestore.instance
           .collection('users')

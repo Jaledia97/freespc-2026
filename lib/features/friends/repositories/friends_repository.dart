@@ -162,6 +162,38 @@ class FriendsRepository {
       {'status': 'accepted'},
     );
 
+    // Create the notification
+    String senderUsername = 'Someone';
+    try {
+      final senderProfile = await _firestore
+          .collection('public_profiles')
+          .doc(currentUserId)
+          .get();
+      if (senderProfile.exists && senderProfile.data()?['username'] != null) {
+        senderUsername = senderProfile.data()!['username'];
+      }
+    } catch (_) {}
+
+    final notifId = 'friend_accept_$currentUserId';
+    final notif = NotificationModel(
+      id: notifId,
+      userId: targetUserId,
+      title: 'Friend Request Accepted',
+      body: '@$senderUsername accepted your friend request!',
+      type: 'friend_request_accepted',
+      createdAt: DateTime.now(),
+      metadata: {'senderId': currentUserId},
+    );
+
+    batch.set(
+      _firestore
+          .collection('users')
+          .doc(targetUserId)
+          .collection('notifications')
+          .doc(notifId),
+      notif.toJson(),
+    );
+
     await batch.commit();
   }
 

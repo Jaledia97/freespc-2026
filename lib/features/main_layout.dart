@@ -12,7 +12,7 @@ import 'manager/presentation/venue_ledger_screen.dart';
 import 'manager/presentation/venue_activity_screen.dart';
 import 'manager/presentation/cms/manage_personnel_screen.dart';
 
-final bottomNavIndexProvider = StateProvider<int>((ref) => 0);
+final bottomNavIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
 
 class MainLayout extends ConsumerWidget {
   const MainLayout({super.key});

@@ -2,6 +2,22 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+74] - 2026-04-10 - Privacy Constraints, Admin Caching, & Business Registration
+
+### Added
+- **Unlisted Venue Builder**: Scrapped the legacy unstructured alert box previously backing "Can't find your hall", replacing it natively with `CreateVenueScreen`, an interactive onboarding funnel sequentially retrieving vital architecture (Domain, Email, City, Address) natively for seamless Superadmin verifications.
+- **Spoof Session Caching**: Built out a local `SharedPreferences` memory index directly natively into `SpoofWorkspaceScreen`. Up to 10 persistent Workspace spoof targets are organically cataloged underneath the Admin search bar for accelerated platform maneuvers.
+- **Map View UI Clarification**: Scrubbed the ambiguous fallback `+` floating action within the Native `my_halls_screen.dart` AppBar, mapping it rigidly over to an expanded `FilledButton.icon` explicitly labeling "Map View".
+
+### Changed
+- **Privacy Search Constraints**: Recalculated the core Global User Search algorithms explicitly blocking `"{FirstName} {LastName}"` payloads if `realNameVisibility` falls short of `Everyone`. Silently downgrades visibility natively to `"@{Username}"` suppressing rogue exposure.
+- **Ghost Presences**: Smashed the `_reportPresence` loop globally appending `Last Seen` logic against all `AuthWrapper` initializations. Restructured mathematically to conditionally intercept `offline` UserModel declarations bypassing timestamp logging indefinitely preventing offline bleeding. 
+- **Verbiage Generalization**: Expanded the remaining Onboarding sequences, rewriting restrictive bingo-centric phrasing to generalize community platforms, events, and venues universally.
+
+### Fixed
+- **Permission Pipeline Rejection**: Traced a catastrophic Permission Denied crash inside `ClaimVenueScreen.dart` resolving out to an unmapped Firebase endpoint array. Successfully mapped the write permissions natively onto the verified `venue_claims` platform where Superadmin listens flawlessly.
+- **Compilation Payload Trace**: Resolved a broken Native VM restart pipeline crashing due to undefined `type` parameters failing FCM extraction inside `lib/main.dart`'s notification handler natively.
+
 ## [0.0.1+73] - 2026-04-09 - Onboarding UI Polish & Feed Restabilization
 
 ### Added

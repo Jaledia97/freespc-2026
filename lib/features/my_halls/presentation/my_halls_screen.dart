@@ -67,11 +67,20 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
       appBar: AppBar(
         title: const Text('My Subscribed Halls'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const HallSearchScreen()),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: FilledButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const HallSearchScreen()),
+              ),
+              icon: const Icon(Icons.map, size: 18),
+              label: const Text('Map View', style: TextStyle(fontWeight: FontWeight.bold)),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.white12,
+                foregroundColor: Colors.white,
+                elevation: 0,
+              ),
             ),
           ),
         ],

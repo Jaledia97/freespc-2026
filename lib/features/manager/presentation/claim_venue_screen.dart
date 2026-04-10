@@ -5,6 +5,7 @@ import '../../../models/user_model.dart';
 import '../../../services/auth_service.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/utils/role_utils.dart';
+import 'create_venue_screen.dart';
 // import 'package:image_picker/image_picker.dart'; // Add if full manual upload is configured
 
 class ClaimVenueScreen extends ConsumerStatefulWidget {
@@ -66,11 +67,11 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
         'pendingVenueClaimId': _selectedVenueId ?? 'NEW_VENUE',
       });
 
-      // Submit Document to Venue Verifications Pool
-      await FirebaseFirestore.instance.collection('venue_verifications').add({
-        'uid': user.uid,
+      // Submit Document to Venue Claims Pool
+      await FirebaseFirestore.instance.collection('venue_claims').add({
+        'userId': user.uid,
         'emailProvided': _emailController.text.trim(),
-        'venueId': _selectedVenueId ?? 'NEW_VENUE',
+        'requestedVenueId': _selectedVenueId ?? 'NEW_VENUE',
         'venueName': _selectedVenueName ?? 'Unknown / New',
         'status': 'pending',
         'submittedAt': FieldValue.serverTimestamp(),
@@ -106,15 +107,17 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
         elevation: 0,
         title: const Text("Hall Portal"),
       ),
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        onPageChanged: (idx) => setState(() => _currentPhase = idx),
-        children: [
-          _buildPhase1Search(),
-          _buildPhase2Verification(user),
-          _buildPhase3Success(),
-        ],
+      body: SafeArea(
+        child: PageView(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          onPageChanged: (idx) => setState(() => _currentPhase = idx),
+          children: [
+            _buildPhase1Search(),
+            _buildPhase2Verification(user),
+            _buildPhase3Success(),
+          ],
+        ),
       ),
     );
   }
@@ -157,16 +160,19 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
           Center(
             child: TextButton.icon(
               onPressed: () {
-                _selectedVenueId = 'NEW_VENUE';
-                _selectedVenueName = _searchController.text.isNotEmpty 
-                    ? _searchController.text 
-                    : 'New Unlisted Venue';
-                _nextPhase();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CreateVenueScreen()),
+                );
               },
               icon: const Icon(Icons.add_business, color: Colors.amber),
-              label: const Text(
-                "Can't find your hall? Create it now.",
-                style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
+              label: const Flexible(
+                child: Text(
+                  "Can't find your hall? Create it now.",
+                  style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.visible,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),
@@ -272,9 +278,11 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
                   children: [
                     Icon(Icons.mark_email_read, color: Colors.amber),
                     SizedBox(width: 8),
-                    Text(
-                      "Fast Path: Domain Email",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                    Expanded(
+                      child: Text(
+                        "Fast Path: Domain Email",
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
                     ),
                   ],
                 ),
@@ -312,9 +320,11 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
                   children: [
                     Icon(Icons.upload_file, color: Colors.blueAccent),
                     SizedBox(width: 8),
-                    Text(
-                      "Upload Documents",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                    Expanded(
+                      child: Text(
+                        "Upload Documents",
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
                     ),
                   ],
                 ),
