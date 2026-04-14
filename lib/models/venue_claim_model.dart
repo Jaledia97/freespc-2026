@@ -12,9 +12,17 @@ abstract class VenueClaimModel with _$VenueClaimModel {
     required String id,
     required String userId,
     required String requestedVenueId,
-    required String evidenceUrl,
+    String? evidenceUrl,
     required String status, // 'pending', 'approved', 'rejected'
     @TimestampConverter() required DateTime submittedAt,
+    String? venueName,
+    String? venueAddress,
+    String? venueCity,
+    String? venueState,
+    String? venueWebsite,
+    String? emailProvided,
+    String? venueType,
+    String? logoUrl,
   }) = _VenueClaimModel;
 
   factory VenueClaimModel.fromJson(Map<String, dynamic> json) => _$VenueClaimModelFromJson(json);

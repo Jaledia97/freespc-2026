@@ -180,18 +180,12 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
   }
 
   Widget _buildNameSearch() {
-    // Note: Firestore string ranges are case sensitive.
-    // If name is saved exactly case sensitive, this will match prefix.
-    String startAt = _searchQuery;
-    String endAt = '$_searchQuery\\uf8ff';
+    final queryLower = _searchQuery.toLowerCase();
 
     return StreamBuilder<QuerySnapshot>(
+      // Listen to all halls natively for Superadmins to allow full case-insensitive filtering
       stream: FirebaseFirestore.instance
           .collection('bingo_halls')
-          .orderBy('name')
-          .startAt([startAt])
-          .endAt([endAt])
-          .limit(20)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -202,7 +196,7 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(
-            child: Text("No Halls match this name.", style: TextStyle(color: Colors.white54)),
+            child: Text("No Halls registered.", style: TextStyle(color: Colors.white54)),
           );
         }
 
@@ -210,7 +204,19 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
           final data = doc.data() as Map<String, dynamic>;
           data['id'] = doc.id;
           return BingoHallModel.fromJson(data);
+        }).where((hall) {
+          return hall.name.toLowerCase().contains(queryLower) || 
+                 hall.id.toLowerCase().contains(queryLower);
         }).toList();
+
+        // Sort alphabetically to maintain order
+        halls.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+        if (halls.isEmpty) {
+            return const Center(
+              child: Text("No Workplaces match this query.", style: TextStyle(color: Colors.white54)),
+            );
+        }
 
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

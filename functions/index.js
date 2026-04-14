@@ -318,8 +318,9 @@ exports.onApproveClaim = onCall(async (request) => {
     const db = admin.firestore();
     const callerDoc = await db.collection("users").doc(callerId).get();
     
-    if (!callerDoc.exists || callerDoc.data().systemRole !== "superadmin") {
-        throw new HttpsError('permission-denied', 'Only Superadmins can approve B2B claims.');
+    const callerRole = callerDoc.exists ? callerDoc.data().systemRole : null;
+    if (callerRole !== "superadmin" && callerRole !== "admin") {
+        throw new HttpsError('permission-denied', 'Only Admins and Superadmins can approve B2B claims.');
     }
 
     const { claimId } = request.data;
@@ -368,13 +369,32 @@ exports.onApproveClaim = onCall(async (request) => {
         venueName: venueName,
         assignedRole: "owner",
         addedAt: admin.firestore.FieldValue.serverTimestamp(),
-        addedByUid: callerId
-    });
+        addedByUid: callerId,
+        claimStatus: "approved"
+    }, { merge: true });
     
+    // Trigger Global Public Discovery for the Sandbox natively!
+    const hallRef = db.collection("bingo_halls").doc(venueId);
+    batch.update(hallRef, { isActive: true });
+
     // Clear legacy pending claim from root user document
     const userRef = db.collection("users").doc(targetUserId);
     batch.update(userRef, {
         pendingVenueClaimId: admin.firestore.FieldValue.delete()
+    });
+    
+    // Formally Dispatch the Application Verified Notification tracking seamlessly out to the User Node Architecture!
+    const notificationId = db.collection("users").doc(targetUserId).collection("notifications").doc().id;
+    const notificationRef = db.collection("users").doc(targetUserId).collection("notifications").doc(notificationId);
+    batch.set(notificationRef, {
+        id: notificationId,
+        userId: targetUserId,
+        title: "Registration Approved! ✅",
+        body: `Congratulations, your business verification for ${venueName} passed successfully! Switch to this Workspace safely to construct your architecture.`,
+        type: "system",
+        hallId: venueId,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        isRead: false
     });
     
     await batch.commit();
@@ -391,13 +411,17 @@ exports.onRejectClaim = onCall(async (request) => {
     const db = admin.firestore();
     const callerDoc = await db.collection("users").doc(callerId).get();
     
-    if (!callerDoc.exists || callerDoc.data().systemRole !== "superadmin") {
-        throw new HttpsError('permission-denied', 'Only Superadmins can reject B2B claims.');
+    const callerRole = callerDoc.exists ? callerDoc.data().systemRole : null;
+    if (callerRole !== "superadmin" && callerRole !== "admin") {
+        throw new HttpsError('permission-denied', 'Only Admins and Superadmins can reject B2B claims.');
     }
 
-    const { claimId } = request.data;
+    const { claimId, rejectReason } = request.data;
     if (!claimId) {
          throw new HttpsError('invalid-argument', 'The "claimId" parameter is required.');
+    }
+    if (!rejectReason) {
+         throw new HttpsError('invalid-argument', 'A structural "rejectReason" strings block is inherently necessary for processing Appeals.');
     }
 
     // 2. Execute Reject
@@ -406,15 +430,37 @@ exports.onRejectClaim = onCall(async (request) => {
     const claimDoc = await claimRef.get();
     if (claimDoc.exists) {
         const targetUserId = claimDoc.data().userId;
+        const venueId = claimDoc.data().requestedVenueId;
         const userRef = db.collection("users").doc(targetUserId);
         
         const batch = db.batch();
-        batch.update(claimRef, { status: 'rejected' });
-        batch.update(userRef, { pendingVenueClaimId: admin.firestore.FieldValue.delete() });
+        batch.update(claimRef, { status: 'rejected', rejectReason: rejectReason });
+        // Legacy routing bypass: User may still require the ID to pull Appeals natively
+        // batch.update(userRef, { pendingVenueClaimId: admin.firestore.FieldValue.delete() });
+        
+        // Trap the Sandbox Sandbox Document into Denied State visually
+        if (venueId && venueId !== 'NEW_VENUE') {
+            const teamRef = db.collection("venues").doc(venueId).collection("team").doc(targetUserId);
+            batch.set(teamRef, { claimStatus: 'rejected', rejectReason: rejectReason }, { merge: true });
+        }
+        
+        // Push Alert notifying User to Appeal
+        const notificationId = db.collection("users").doc(targetUserId).collection("notifications").doc().id;
+        const notificationRef = db.collection("users").doc(targetUserId).collection("notifications").doc(notificationId);
+        batch.set(notificationRef, {
+            id: notificationId,
+            userId: targetUserId,
+            title: "Verification Denied ⚠️",
+            body: `Your business verification for ${claimDoc.data().venueName} triggered a denial. Reason: ${rejectReason}. Tap here to adjust your configuration and Appeal!`,
+            type: "system",
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            isRead: false
+        });
+
         await batch.commit();
     }
     
-    return { success: true, message: `Claim ${claimId} securely rejected.` };
+    return { success: true, message: `Claim ${claimId} securely rejected resolving mechanical blocks.` };
 });
 
 // --- STAFF LIFECYCLE MANAGEMENT ---

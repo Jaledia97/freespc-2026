@@ -41,9 +41,9 @@ class AdminRepository {
     await callable.call({'claimId': claimId});
   }
 
-  Future<void> rejectClaim(String claimId) async {
+  Future<void> rejectClaim(String claimId, String rejectReason) async {
     final callable = _functions.httpsCallable('onRejectClaim');
-    await callable.call({'claimId': claimId});
+    await callable.call({'claimId': claimId, 'rejectReason': rejectReason});
   }
 
   // Helper just to display hall details on the claim card

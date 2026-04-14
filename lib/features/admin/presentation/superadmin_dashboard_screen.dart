@@ -4,6 +4,7 @@ import '../../../core/widgets/glass_container.dart';
 import '../../../models/venue_claim_model.dart';
 import '../repositories/admin_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../home/presentation/hall_profile_screen.dart';
 
 class SuperadminDashboardScreen extends ConsumerWidget {
   const SuperadminDashboardScreen({super.key});
@@ -58,13 +59,63 @@ class _VenueClaimCardState extends ConsumerState<_VenueClaimCard> {
   bool _isProcessing = false;
 
   void _handleAction(bool approve) async {
+    if (!approve) {
+      String rejectReason = "";
+      bool? confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          title: const Text("Deny Verification?", style: TextStyle(color: Colors.redAccent)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text("A reason is strictly required so the applicant can appeal their Sandbox effectively.", style: TextStyle(color: Colors.white70)),
+              const SizedBox(height: 16),
+              TextField(
+                onChanged: (val) => rejectReason = val,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: "Enter Denial Reason...",
+                  hintStyle: TextStyle(color: Colors.white38),
+                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white12)),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () {
+                 if (rejectReason.trim().isEmpty) return; // Disallow empty Rejections structurally
+                 Navigator.pop(ctx, true);
+              },
+              child: const Text("SUBMIT DENIAL", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        )
+      );
+
+      if (confirm != true || rejectReason.trim().isEmpty) return;
+      
+      setState(() => _isProcessing = true);
+      try {
+        await ref.read(adminRepositoryProvider).rejectClaim(widget.claim.id, rejectReason.trim());
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Claim Rejected with Reason"), backgroundColor: Colors.red));
+        }
+      } catch(e) {
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
+      } finally {
+          if (mounted) setState(() => _isProcessing = false);
+      }
+      return; // Exit here natively to prevent running Approval logic
+    }
+
     setState(() => _isProcessing = true);
     try {
-      if (approve) {
-        await ref.read(adminRepositoryProvider).approveClaim(widget.claim.id);
-      } else {
-        await ref.read(adminRepositoryProvider).rejectClaim(widget.claim.id);
-      }
+      await ref.read(adminRepositoryProvider).approveClaim(widget.claim.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -102,7 +153,7 @@ class _VenueClaimCardState extends ConsumerState<_VenueClaimCard> {
                 ),
               ),
               CachedNetworkImage(
-                imageUrl: widget.claim.evidenceUrl,
+                imageUrl: widget.claim.evidenceUrl ?? widget.claim.logoUrl ?? 'https://via.placeholder.com/150',
                 fit: BoxFit.contain,
                 placeholder: (context, url) => const Padding(
                   padding: EdgeInsets.all(48.0),
@@ -168,6 +219,30 @@ class _VenueClaimCardState extends ConsumerState<_VenueClaimCard> {
                     label: const Text("Evidence", style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
+                const SizedBox(width: 8),
+                if (widget.claim.requestedVenueId != 'NEW_VENUE')
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.amber.withOpacity(0.5)),
+                        foregroundColor: Colors.amber,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () async {
+                        setState(() => _isProcessing = true);
+                        final hallData = await ref.read(adminRepositoryProvider).getHallDetails(widget.claim.requestedVenueId);
+                        if (mounted) setState(() => _isProcessing = false);
+
+                        if (hallData != null && mounted) {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => HallProfileScreen(hall: hallData)));
+                        } else if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Sandbox mapping failed. Missing JSON bindings."), backgroundColor: Colors.red));
+                        }
+                      },
+                      icon: const Icon(Icons.storefront, size: 16),
+                      label: const Text("Preview", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    ),
+                  ),
                 const SizedBox(width: 12),
                 if (_isProcessing)
                   const Padding(

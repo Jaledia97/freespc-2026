@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../models/user_model.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/storage_service.dart';
+import '../../../services/notification_service.dart';
 import '../../../core/widgets/glass_container.dart';
+import 'dart:io';
 
 class CreateVenueScreen extends ConsumerStatefulWidget {
   const CreateVenueScreen({super.key});
@@ -22,7 +25,26 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _websiteController = TextEditingController();
 
+  String _venueType = 'Bingo Hall';
+  final List<String> _venueTypes = [
+    'Bingo Hall',
+    'Bar / Club',
+    'Restaurant',
+    'Event Center',
+    'Charity Organization',
+    'Other'
+  ];
+
+  File? _logoImage;
   bool _isSubmitting = false;
+
+  Future<void> _pickLogo() async {
+    final storage = ref.read(storageServiceProvider);
+    final file = await storage.pickImage();
+    if (file != null) {
+      setState(() => _logoImage = File(file.path));
+    }
+  }
 
   @override
   void dispose() {
@@ -40,24 +62,73 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      // Elevate User Role to Pending
+      // Generate Sandbox UUID smoothly
+      final newVenueRef = FirebaseFirestore.instance.collection('bingo_halls').doc();
+      final newVenueId = newVenueRef.id;
+
+      // Elevate Legacy User Role
       await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-        'pendingVenueClaimId': 'NEW_VENUE',
+        'pendingVenueClaimId': newVenueId,
       });
 
-      // Submit to venue_claims natively with the full onboarding payload
+      // Upload Logo if provided natively
+      String? logoUrl;
+      if (_logoImage != null) {
+         logoUrl = await ref.read(storageServiceProvider).uploadVenueClaimImage(_logoImage!, user.uid);
+      }
+
+      // 1. Provision Sandbox Venue (Invisible to Public)
+      await newVenueRef.set({
+        'id': newVenueId,
+        'name': _nameController.text.trim(),
+        'address': _addressController.text.trim(),
+        'location': const GeoPoint(0, 0), // Mock GPS
+        'geohash': '',
+        'operatingHours': {},
+        'createdAt': FieldValue.serverTimestamp(),
+        'isActive': false, // Crucial Sandbox isolation
+        'beaconUuid': 'PENDING_CONFIG',
+        'logoUrl': logoUrl,
+      });
+
+      // 2. Map Sandbox Team Credentials (Unlocks CMS natively)
+      await FirebaseFirestore.instance.collection('venues').doc(newVenueId).collection('team').doc(user.uid).set({
+        'uid': user.uid,
+        'firstName': user.firstName ?? '',
+        'lastName': user.lastName ?? '',
+        'username': user.username,
+        'photoUrl': user.photoUrl,
+        'venueId': newVenueId,
+        'venueName': _nameController.text.trim(),
+        'assignedRole': 'owner',
+        'addedAt': FieldValue.serverTimestamp(),
+        'addedByUid': user.uid,
+        'claimStatus': 'pending', 
+      });
+
+      // 3. Submit Official Queue Record targeting the Sandbox Model
       await FirebaseFirestore.instance.collection('venue_claims').add({
         'userId': user.uid,
         'emailProvided': _emailController.text.trim(),
-        'requestedVenueId': 'NEW_VENUE',
+        'requestedVenueId': newVenueId,
         'venueName': _nameController.text.trim(),
         'venueAddress': _addressController.text.trim(),
         'venueCity': _cityController.text.trim(),
         'venueState': _stateController.text.trim(),
         'venueWebsite': _websiteController.text.trim(),
+        'venueType': _venueType,
+        'logoUrl': logoUrl,
         'status': 'pending',
         'submittedAt': FieldValue.serverTimestamp(),
       });
+
+      // Dispatch 'Application Received' Alert locally!
+      await ref.read(notificationServiceProvider).sendNotification(
+        userId: user.uid,
+        title: 'Sandbox Provisioned 🚀',
+        body: 'Your business Sandbox for ${_nameController.text.trim()} is built! Tap Workspaces to edit safely inside while we review your claim.',
+        type: 'system',
+      );
 
       if (mounted) {
         showDialog(
@@ -65,9 +136,9 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
           barrierDismissible: false,
           builder: (_) => AlertDialog(
             backgroundColor: const Color(0xFF1E1E1E),
-            title: const Text("Application Submitted 🚀", style: TextStyle(color: Colors.white)),
+            title: const Text("Sandbox Access Granted 🛠️", style: TextStyle(color: Colors.white)),
             content: const Text(
-              "Your business onboarding logic has been deployed. Our Superadmins will manually review and create your Venue mapping shortly. You will be elevated to an Owner automatically once approved.",
+              "Your business Sandbox has been magically provisioned! It will remain completely invisible to the public until our Superadmins approve your claim, but you can build out your CMS starting Right Now from your Settings page!",
               style: TextStyle(color: Colors.white70),
             ),
             actions: [
@@ -134,6 +205,52 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
+                      // Upload Logo
+                      GestureDetector(
+                        onTap: _pickLogo,
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: Colors.white12,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white24),
+                            image: _logoImage != null
+                                ? DecorationImage(image: FileImage(_logoImage!), fit: BoxFit.cover)
+                                : null,
+                          ),
+                          child: _logoImage == null
+                              ? const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.add_a_photo, color: Colors.amber, size: 30),
+                                    SizedBox(height: 8),
+                                    Text("Logo", style: TextStyle(color: Colors.white54, fontSize: 12)),
+                                  ],
+                                )
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Business Type Dropdown
+                      DropdownButtonFormField<String>(
+                        value: _venueType,
+                        dropdownColor: Colors.grey[900],
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: "Business Type",
+                          labelStyle: TextStyle(color: Colors.white54),
+                          enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+                          focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.amber)),
+                        ),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _venueType = val);
+                        },
+                        items: _venueTypes.map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
+                      ),
+                      const SizedBox(height: 16),
+
                       // Venue Name
                       TextFormField(
                         controller: _nameController,

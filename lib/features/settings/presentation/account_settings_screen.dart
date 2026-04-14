@@ -7,6 +7,9 @@ import '../../../models/venue_team_member_model.dart';
 import '../../../services/session_context_controller.dart';
 import '../../admin/presentation/superadmin_dashboard_screen.dart';
 import '../../admin/presentation/spoof_workspace_screen.dart';
+import '../../../services/session_context_controller.dart';
+import '../../admin/repositories/admin_repository.dart';
+import '../../../core/widgets/notification_badge.dart';
 
 class AccountSettingsScreen extends ConsumerWidget {
   const AccountSettingsScreen({super.key});
@@ -57,10 +60,28 @@ class AccountSettingsScreen extends ConsumerWidget {
                       style: TextStyle(color: Colors.white38, fontSize: 12),
                     ),
                     leading: const Icon(Icons.admin_panel_settings, color: Colors.purpleAccent),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.white54,
-                      size: 16,
+                    trailing: Consumer(
+                      builder: (context, ref, child) {
+                        final pendingAsync = ref.watch(pendingClaimsProvider);
+                        final count = pendingAsync.value?.length ?? 0;
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (count > 0)
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                                child: Text('$count', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                              ),
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.arrow_forward_ios,
+                              color: Colors.white54,
+                              size: 16,
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     onTap: () {
                       Navigator.push(
@@ -98,27 +119,74 @@ class AccountSettingsScreen extends ConsumerWidget {
                     }
                     return Column(
                       children: snapshot.data!.docs.map((doc) {
-                        final teamData = VenueTeamMemberModel.fromJson(doc.data() as Map<String, dynamic>);
-                        return ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.work, color: Colors.amber),
-                          title: Text(teamData.venueName, style: const TextStyle(color: Colors.white)),
-                          subtitle: Text(teamData.assignedRole.toUpperCase(), style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
-                          onTap: () {
-                            ref.read(sessionContextProvider.notifier).switchToBusiness(
-                              teamData.venueId,
-                              teamData.venueName,
-                              teamData.assignedRole,
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Switched context to ${teamData.venueName}")));
-                            Navigator.of(context).popUntil((route) => route.isFirst);
-                          },
-                        );
+                        try {
+                          final teamData = VenueTeamMemberModel.fromJson(doc.data() as Map<String, dynamic>);
+                          
+                          Widget title = Text(teamData.venueName, style: const TextStyle(color: Colors.white));
+                          Widget subtitle = Text(teamData.assignedRole.toUpperCase(), style: const TextStyle(color: Colors.white54, fontSize: 12));
+                          
+                          if (teamData.claimStatus == 'pending') {
+                             title = Row(children: [Text(teamData.venueName, style: const TextStyle(color: Colors.white)), const SizedBox(width:8), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: Colors.amber.withOpacity(0.2), borderRadius: BorderRadius.circular(4)), child: const Text('PENDING', style: TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold)))]);
+                             subtitle = const Text("Sandbox provisioning active. Awaiting review.", style: TextStyle(color: Colors.amber, fontSize: 12));
+                          } else if (teamData.claimStatus == 'rejected') {
+                             title = Row(children: [Text(teamData.venueName, style: const TextStyle(color: Colors.white)), const SizedBox(width:8), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: Colors.red.withOpacity(0.2), borderRadius: BorderRadius.circular(4)), child: const Text('DENIED', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)))]);
+                             subtitle = const Text("Tap to view Superadmin feedback & Appeal", style: TextStyle(color: Colors.redAccent, fontSize: 12));
+                          }
+
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(Icons.work, color: teamData.claimStatus == 'rejected' ? Colors.red : (teamData.claimStatus == 'pending' ? Colors.amber : Colors.blueAccent)),
+                            title: title,
+                            subtitle: subtitle,
+                            trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+                            onTap: () {
+                               if (teamData.claimStatus == 'rejected') {
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      backgroundColor: const Color(0xFF1E1E1E),
+                                      title: const Text("Verification Denied", style: TextStyle(color: Colors.redAccent)),
+                                      content: Text("Superadmin Feedback:\n${teamData.rejectReason ?? 'No reason provided'}\n\nPlease adjust your configuration inside the Sandbox and confirm here to resubmit your limits automatically.", style: const TextStyle(color: Colors.white70)),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(context), child: const Text("Dismiss", style: TextStyle(color: Colors.white54))),
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
+                                          onPressed: () async {
+                                             Navigator.pop(context); // Close Alert
+                                             final claimsQuery = await FirebaseFirestore.instance.collection('venue_claims').where('requestedVenueId', isEqualTo: teamData.venueId).limit(1).get();
+                                             if (claimsQuery.docs.isNotEmpty) {
+                                                 final claimId = claimsQuery.docs.first.id;
+                                                 await FirebaseFirestore.instance.collection('venue_claims').doc(claimId).update({'status': 'pending'});
+                                                 await FirebaseFirestore.instance.collection('venues').doc(teamData.venueId).collection('team').doc(user.uid).update({'claimStatus': 'pending'});
+                                                 if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Appeal Submitted!")));
+                                             }
+                                          },
+                                          child: const Text("SUBMIT APPEAL")
+                                        )
+                                      ]
+                                    )
+                                  );
+                               } else {
+                                 ref.read(sessionContextProvider.notifier).switchToBusiness(
+                                   teamData.venueId,
+                                   teamData.venueName,
+                                   teamData.assignedRole,
+                                 );
+                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Switched context to ${teamData.venueName}")));
+                                 Navigator.of(context).popUntil((route) => route.isFirst);
+                               }
+                            },
+                          );
+                        } catch (e) {
+                          print("Account Settings Team Model Crash: $e");
+                          return const SizedBox.shrink();
+                        }
                       }).toList(),
                     );
                   },
                 ),
+
+                
                 const SizedBox(height: 12),
                 ListTile(
                   contentPadding: EdgeInsets.zero,

@@ -11,6 +11,8 @@ import 'cms/manage_personnel_screen.dart'; // New Import
 import 'cms/manage_store_screen.dart'; // New Import
 import '../../profile/presentation/hall_selection_screen.dart';
 import '../../../../core/widgets/notification_badge.dart'; // Import NotificationBadge
+import 'business_setup_tutorial_screen.dart'; // New Import
+import 'package:shared_preferences/shared_preferences.dart'; // New Import
 // import 'raffle_tool/raffle_tool_screen.dart'; // No longer direct link
 import '../../../../services/auth_service.dart';
 import '../../home/repositories/hall_repository.dart';
@@ -29,6 +31,30 @@ class ManagerDashboardScreen extends ConsumerStatefulWidget {
 
 class _ManagerDashboardScreenState
     extends ConsumerState<ManagerDashboardScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkTutorial();
+    });
+  }
+
+  Future<void> _checkTutorial() async {
+    final session = ref.read(sessionContextProvider);
+    final homeHallId = session.activeVenueId;
+    final currentUser = ref.read(userProfileProvider).value;
+    if (homeHallId != null && currentUser != null && RoleUtils.isOwner(currentUser, session)) {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'has_seen_tutorial_$homeHallId';
+      if (!(prefs.getBool(key) ?? false)) {
+        await prefs.setBool(key, true);
+        if (mounted) {
+           Navigator.push(context, MaterialPageRoute(builder: (_) => const BusinessSetupTutorialScreen()));
+        }
+      }
+    }
+  }
   Future<bool> _showExitConfirmation() async {
     return await showDialog<bool>(
           context: context,

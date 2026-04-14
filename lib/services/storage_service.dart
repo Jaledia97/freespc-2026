@@ -93,4 +93,23 @@ class StorageService {
       rethrow;
     }
   }
+
+  Future<String> uploadVenueClaimImage(File file, String userId) async {
+    try {
+      final ref = _storage.ref().child(
+        'claims/$userId/logo_v${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
+      print('Starting claim logo upload to: ${ref.fullPath}');
+
+      final snapshot = await ref.putFile(file);
+      if (snapshot.state == TaskState.success) {
+        return await ref.getDownloadURL();
+      } else {
+        throw Exception('Claim logo upload failed: ${snapshot.state}');
+      }
+    } catch (e) {
+      print('Error uploading claim logo: $e');
+      rethrow;
+    }
+  }
 }

@@ -33,6 +33,8 @@ abstract class VenueTeamMemberModel with _$VenueTeamMemberModel {
     required String assignedRole, // 'owner', 'manager', 'worker'
     @_TimestampConverter() required DateTime addedAt,
     required String addedByUid,
+    String? claimStatus, // 'pending', 'approved', 'rejected'
+    String? rejectReason,
   }) = _VenueTeamMemberModel;
 
   factory VenueTeamMemberModel.fromJson(Map<String, Object?> json) => _$VenueTeamMemberModelFromJson(json);

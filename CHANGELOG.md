@@ -2,6 +2,20 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+75] - 2026-04-14 - Business Registration & Workspace Visibility
+
+### Added
+- **Sandbox Provisioning**: Refactored `CreateVenueScreen` to instantly generate an invisible "Sandbox" venue (`isActive: false`) when a new business signs up, immediately granting them "Pending" access mapped to their workspaces.
+- **Appeals & Rejection Pipeline**: Designed the `AccountSettingsScreen` to explicitly reflect `PENDING` or `DENIED` states. Denied applications feature a modal with Superadmin feedback and native "Submit Appeal" triggers.
+- **Superadmin CMS Hub**: Upgraded the `SuperadminDashboardScreen` to display pending claims seamlessly, added a button to natively preview Sandbox configurations, and enforced a mandatory "Denial Reason" text field upon rejection.
+- **Secure Cloud Functions**: Implemented `onApproveClaim` and `onRejectClaim` on the backend to securely manage role elevation to "owner" natively upon approval, alongside dynamic dispatching of push notifications.
+
+### Changed
+- **Unified Approvals**: Modified the backend Cloud Functions to properly authorize standard `admin` users alongside `superadmin` users when reviewing claims.
+
+### Fixed
+- **Missing Workspace Visibility**: Resolved a silent `collectionGroup` index bug crashing the "Your Workspaces" feed. Added a single-field override targeting the `team` subcollection's `uid` natively inside `firestore.indexes.json` so newly approved venues instantly populate the applicant's UI without issues.
+
 ## [0.0.1+74] - 2026-04-10 - Privacy Constraints, Admin Caching, & Business Registration
 
 ### Added

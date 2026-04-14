@@ -16,7 +16,8 @@ T _$identity<T>(T value) => value;
 mixin _$VenueTeamMemberModel {
 
  String get uid; String get firstName; String get lastName; String get username; String? get photoUrl; String get venueId; String get venueName; String get assignedRole;// 'owner', 'manager', 'worker'
-@_TimestampConverter() DateTime get addedAt; String get addedByUid;
+@_TimestampConverter() DateTime get addedAt; String get addedByUid; String? get claimStatus;// 'pending', 'approved', 'rejected'
+ String? get rejectReason;
 /// Create a copy of VenueTeamMemberModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +30,16 @@ $VenueTeamMemberModelCopyWith<VenueTeamMemberModel> get copyWith => _$VenueTeamM
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VenueTeamMemberModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.venueId, venueId) || other.venueId == venueId)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.assignedRole, assignedRole) || other.assignedRole == assignedRole)&&(identical(other.addedAt, addedAt) || other.addedAt == addedAt)&&(identical(other.addedByUid, addedByUid) || other.addedByUid == addedByUid));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VenueTeamMemberModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.venueId, venueId) || other.venueId == venueId)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.assignedRole, assignedRole) || other.assignedRole == assignedRole)&&(identical(other.addedAt, addedAt) || other.addedAt == addedAt)&&(identical(other.addedByUid, addedByUid) || other.addedByUid == addedByUid)&&(identical(other.claimStatus, claimStatus) || other.claimStatus == claimStatus)&&(identical(other.rejectReason, rejectReason) || other.rejectReason == rejectReason));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uid,firstName,lastName,username,photoUrl,venueId,venueName,assignedRole,addedAt,addedByUid);
+int get hashCode => Object.hash(runtimeType,uid,firstName,lastName,username,photoUrl,venueId,venueName,assignedRole,addedAt,addedByUid,claimStatus,rejectReason);
 
 @override
 String toString() {
-  return 'VenueTeamMemberModel(uid: $uid, firstName: $firstName, lastName: $lastName, username: $username, photoUrl: $photoUrl, venueId: $venueId, venueName: $venueName, assignedRole: $assignedRole, addedAt: $addedAt, addedByUid: $addedByUid)';
+  return 'VenueTeamMemberModel(uid: $uid, firstName: $firstName, lastName: $lastName, username: $username, photoUrl: $photoUrl, venueId: $venueId, venueName: $venueName, assignedRole: $assignedRole, addedAt: $addedAt, addedByUid: $addedByUid, claimStatus: $claimStatus, rejectReason: $rejectReason)';
 }
 
 
@@ -49,7 +50,7 @@ abstract mixin class $VenueTeamMemberModelCopyWith<$Res>  {
   factory $VenueTeamMemberModelCopyWith(VenueTeamMemberModel value, $Res Function(VenueTeamMemberModel) _then) = _$VenueTeamMemberModelCopyWithImpl;
 @useResult
 $Res call({
- String uid, String firstName, String lastName, String username, String? photoUrl, String venueId, String venueName, String assignedRole,@_TimestampConverter() DateTime addedAt, String addedByUid
+ String uid, String firstName, String lastName, String username, String? photoUrl, String venueId, String venueName, String assignedRole,@_TimestampConverter() DateTime addedAt, String addedByUid, String? claimStatus, String? rejectReason
 });
 
 
@@ -66,7 +67,7 @@ class _$VenueTeamMemberModelCopyWithImpl<$Res>
 
 /// Create a copy of VenueTeamMemberModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? firstName = null,Object? lastName = null,Object? username = null,Object? photoUrl = freezed,Object? venueId = null,Object? venueName = null,Object? assignedRole = null,Object? addedAt = null,Object? addedByUid = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? firstName = null,Object? lastName = null,Object? username = null,Object? photoUrl = freezed,Object? venueId = null,Object? venueName = null,Object? assignedRole = null,Object? addedAt = null,Object? addedByUid = null,Object? claimStatus = freezed,Object? rejectReason = freezed,}) {
   return _then(_self.copyWith(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
@@ -78,7 +79,9 @@ as String,venueName: null == venueName ? _self.venueName : venueName // ignore: 
 as String,assignedRole: null == assignedRole ? _self.assignedRole : assignedRole // ignore: cast_nullable_to_non_nullable
 as String,addedAt: null == addedAt ? _self.addedAt : addedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,addedByUid: null == addedByUid ? _self.addedByUid : addedByUid // ignore: cast_nullable_to_non_nullable
-as String,
+as String,claimStatus: freezed == claimStatus ? _self.claimStatus : claimStatus // ignore: cast_nullable_to_non_nullable
+as String?,rejectReason: freezed == rejectReason ? _self.rejectReason : rejectReason // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -163,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  String firstName,  String lastName,  String username,  String? photoUrl,  String venueId,  String venueName,  String assignedRole, @_TimestampConverter()  DateTime addedAt,  String addedByUid)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  String firstName,  String lastName,  String username,  String? photoUrl,  String venueId,  String venueName,  String assignedRole, @_TimestampConverter()  DateTime addedAt,  String addedByUid,  String? claimStatus,  String? rejectReason)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _VenueTeamMemberModel() when $default != null:
-return $default(_that.uid,_that.firstName,_that.lastName,_that.username,_that.photoUrl,_that.venueId,_that.venueName,_that.assignedRole,_that.addedAt,_that.addedByUid);case _:
+return $default(_that.uid,_that.firstName,_that.lastName,_that.username,_that.photoUrl,_that.venueId,_that.venueName,_that.assignedRole,_that.addedAt,_that.addedByUid,_that.claimStatus,_that.rejectReason);case _:
   return orElse();
 
 }
@@ -184,10 +187,10 @@ return $default(_that.uid,_that.firstName,_that.lastName,_that.username,_that.ph
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  String firstName,  String lastName,  String username,  String? photoUrl,  String venueId,  String venueName,  String assignedRole, @_TimestampConverter()  DateTime addedAt,  String addedByUid)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  String firstName,  String lastName,  String username,  String? photoUrl,  String venueId,  String venueName,  String assignedRole, @_TimestampConverter()  DateTime addedAt,  String addedByUid,  String? claimStatus,  String? rejectReason)  $default,) {final _that = this;
 switch (_that) {
 case _VenueTeamMemberModel():
-return $default(_that.uid,_that.firstName,_that.lastName,_that.username,_that.photoUrl,_that.venueId,_that.venueName,_that.assignedRole,_that.addedAt,_that.addedByUid);case _:
+return $default(_that.uid,_that.firstName,_that.lastName,_that.username,_that.photoUrl,_that.venueId,_that.venueName,_that.assignedRole,_that.addedAt,_that.addedByUid,_that.claimStatus,_that.rejectReason);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +207,10 @@ return $default(_that.uid,_that.firstName,_that.lastName,_that.username,_that.ph
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  String firstName,  String lastName,  String username,  String? photoUrl,  String venueId,  String venueName,  String assignedRole, @_TimestampConverter()  DateTime addedAt,  String addedByUid)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  String firstName,  String lastName,  String username,  String? photoUrl,  String venueId,  String venueName,  String assignedRole, @_TimestampConverter()  DateTime addedAt,  String addedByUid,  String? claimStatus,  String? rejectReason)?  $default,) {final _that = this;
 switch (_that) {
 case _VenueTeamMemberModel() when $default != null:
-return $default(_that.uid,_that.firstName,_that.lastName,_that.username,_that.photoUrl,_that.venueId,_that.venueName,_that.assignedRole,_that.addedAt,_that.addedByUid);case _:
+return $default(_that.uid,_that.firstName,_that.lastName,_that.username,_that.photoUrl,_that.venueId,_that.venueName,_that.assignedRole,_that.addedAt,_that.addedByUid,_that.claimStatus,_that.rejectReason);case _:
   return null;
 
 }
@@ -219,7 +222,7 @@ return $default(_that.uid,_that.firstName,_that.lastName,_that.username,_that.ph
 @JsonSerializable()
 
 class _VenueTeamMemberModel implements VenueTeamMemberModel {
-  const _VenueTeamMemberModel({required this.uid, required this.firstName, required this.lastName, required this.username, this.photoUrl, required this.venueId, required this.venueName, required this.assignedRole, @_TimestampConverter() required this.addedAt, required this.addedByUid});
+  const _VenueTeamMemberModel({required this.uid, required this.firstName, required this.lastName, required this.username, this.photoUrl, required this.venueId, required this.venueName, required this.assignedRole, @_TimestampConverter() required this.addedAt, required this.addedByUid, this.claimStatus, this.rejectReason});
   factory _VenueTeamMemberModel.fromJson(Map<String, dynamic> json) => _$VenueTeamMemberModelFromJson(json);
 
 @override final  String uid;
@@ -233,6 +236,9 @@ class _VenueTeamMemberModel implements VenueTeamMemberModel {
 // 'owner', 'manager', 'worker'
 @override@_TimestampConverter() final  DateTime addedAt;
 @override final  String addedByUid;
+@override final  String? claimStatus;
+// 'pending', 'approved', 'rejected'
+@override final  String? rejectReason;
 
 /// Create a copy of VenueTeamMemberModel
 /// with the given fields replaced by the non-null parameter values.
@@ -247,16 +253,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VenueTeamMemberModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.venueId, venueId) || other.venueId == venueId)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.assignedRole, assignedRole) || other.assignedRole == assignedRole)&&(identical(other.addedAt, addedAt) || other.addedAt == addedAt)&&(identical(other.addedByUid, addedByUid) || other.addedByUid == addedByUid));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VenueTeamMemberModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.username, username) || other.username == username)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.venueId, venueId) || other.venueId == venueId)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.assignedRole, assignedRole) || other.assignedRole == assignedRole)&&(identical(other.addedAt, addedAt) || other.addedAt == addedAt)&&(identical(other.addedByUid, addedByUid) || other.addedByUid == addedByUid)&&(identical(other.claimStatus, claimStatus) || other.claimStatus == claimStatus)&&(identical(other.rejectReason, rejectReason) || other.rejectReason == rejectReason));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uid,firstName,lastName,username,photoUrl,venueId,venueName,assignedRole,addedAt,addedByUid);
+int get hashCode => Object.hash(runtimeType,uid,firstName,lastName,username,photoUrl,venueId,venueName,assignedRole,addedAt,addedByUid,claimStatus,rejectReason);
 
 @override
 String toString() {
-  return 'VenueTeamMemberModel(uid: $uid, firstName: $firstName, lastName: $lastName, username: $username, photoUrl: $photoUrl, venueId: $venueId, venueName: $venueName, assignedRole: $assignedRole, addedAt: $addedAt, addedByUid: $addedByUid)';
+  return 'VenueTeamMemberModel(uid: $uid, firstName: $firstName, lastName: $lastName, username: $username, photoUrl: $photoUrl, venueId: $venueId, venueName: $venueName, assignedRole: $assignedRole, addedAt: $addedAt, addedByUid: $addedByUid, claimStatus: $claimStatus, rejectReason: $rejectReason)';
 }
 
 
@@ -267,7 +273,7 @@ abstract mixin class _$VenueTeamMemberModelCopyWith<$Res> implements $VenueTeamM
   factory _$VenueTeamMemberModelCopyWith(_VenueTeamMemberModel value, $Res Function(_VenueTeamMemberModel) _then) = __$VenueTeamMemberModelCopyWithImpl;
 @override @useResult
 $Res call({
- String uid, String firstName, String lastName, String username, String? photoUrl, String venueId, String venueName, String assignedRole,@_TimestampConverter() DateTime addedAt, String addedByUid
+ String uid, String firstName, String lastName, String username, String? photoUrl, String venueId, String venueName, String assignedRole,@_TimestampConverter() DateTime addedAt, String addedByUid, String? claimStatus, String? rejectReason
 });
 
 
@@ -284,7 +290,7 @@ class __$VenueTeamMemberModelCopyWithImpl<$Res>
 
 /// Create a copy of VenueTeamMemberModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? firstName = null,Object? lastName = null,Object? username = null,Object? photoUrl = freezed,Object? venueId = null,Object? venueName = null,Object? assignedRole = null,Object? addedAt = null,Object? addedByUid = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? firstName = null,Object? lastName = null,Object? username = null,Object? photoUrl = freezed,Object? venueId = null,Object? venueName = null,Object? assignedRole = null,Object? addedAt = null,Object? addedByUid = null,Object? claimStatus = freezed,Object? rejectReason = freezed,}) {
   return _then(_VenueTeamMemberModel(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
@@ -296,7 +302,9 @@ as String,venueName: null == venueName ? _self.venueName : venueName // ignore: 
 as String,assignedRole: null == assignedRole ? _self.assignedRole : assignedRole // ignore: cast_nullable_to_non_nullable
 as String,addedAt: null == addedAt ? _self.addedAt : addedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,addedByUid: null == addedByUid ? _self.addedByUid : addedByUid // ignore: cast_nullable_to_non_nullable
-as String,
+as String,claimStatus: freezed == claimStatus ? _self.claimStatus : claimStatus // ignore: cast_nullable_to_non_nullable
+as String?,rejectReason: freezed == rejectReason ? _self.rejectReason : rejectReason // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

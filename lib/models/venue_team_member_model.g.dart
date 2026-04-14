@@ -19,6 +19,8 @@ _VenueTeamMemberModel _$VenueTeamMemberModelFromJson(
   assignedRole: json['assignedRole'] as String,
   addedAt: const _TimestampConverter().fromJson(json['addedAt']),
   addedByUid: json['addedByUid'] as String,
+  claimStatus: json['claimStatus'] as String?,
+  rejectReason: json['rejectReason'] as String?,
 );
 
 Map<String, dynamic> _$VenueTeamMemberModelToJson(
@@ -34,4 +36,6 @@ Map<String, dynamic> _$VenueTeamMemberModelToJson(
   'assignedRole': instance.assignedRole,
   'addedAt': const _TimestampConverter().toJson(instance.addedAt),
   'addedByUid': instance.addedByUid,
+  'claimStatus': instance.claimStatus,
+  'rejectReason': instance.rejectReason,
 };
