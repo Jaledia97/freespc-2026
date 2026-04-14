@@ -421,7 +421,7 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Text(
-            "${_currentHalls.length} Halls Nearby",
+            "${_currentHalls.length} Places Nearby",
             style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -434,7 +434,7 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
           child: _currentHalls.isEmpty
               ? const Center(
                   child: Text(
-                    "No halls in this area",
+                    "No places in this area",
                     style: TextStyle(color: Colors.white54),
                   ),
                 )

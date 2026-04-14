@@ -50,6 +50,21 @@ class ManagePersonnelScreen extends ConsumerWidget {
         title: const Text("Personnel Management"),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          if (RoleUtils.canManagePersonnel(currentUser, session, hallId))
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) =>
+                      InviteStaffSheet(hallId: hallId, hallName: hall.name),
+                );
+              },
+            ),
+        ],
       ),
       floatingActionButton: RoleUtils.canManagePersonnel(currentUser, session, hallId)
           ? FloatingActionButton.extended(

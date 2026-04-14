@@ -65,7 +65,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Subscribed Halls'),
+        title: const Text('My Places'),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -105,7 +105,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                   child: Padding(
                     padding: EdgeInsets.all(32.0),
                     child: Center(
-                      child: Text("You aren't following any halls yet."),
+                      child: Text("You aren't following any places yet."),
                     ),
                   ),
                 )
@@ -282,7 +282,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(16, 8, 16, 16),
                   child: Text(
-                    "Nearest Halls to You",
+                    "Nearest Places to You",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -294,7 +294,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                     return const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.all(16),
-                        child: Text("No other halls found nearby."),
+                        child: Text("No other places found nearby."),
                       ),
                     );
                   }
@@ -463,7 +463,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                 error: (e, _) => SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Text("Could not load nearby halls: $e"),
+                    child: Text("Could not load nearby places: $e"),
                   ),
                 ),
               ),

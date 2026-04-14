@@ -9,9 +9,11 @@ All notable changes to the FreeSPC project will be documented in this file.
 - **Appeals & Rejection Pipeline**: Designed the `AccountSettingsScreen` to explicitly reflect `PENDING` or `DENIED` states. Denied applications feature a modal with Superadmin feedback and native "Submit Appeal" triggers.
 - **Superadmin CMS Hub**: Upgraded the `SuperadminDashboardScreen` to display pending claims seamlessly, added a button to natively preview Sandbox configurations, and enforced a mandatory "Denial Reason" text field upon rejection.
 - **Secure Cloud Functions**: Implemented `onApproveClaim` and `onRejectClaim` on the backend to securely manage role elevation to "owner" natively upon approval, alongside dynamic dispatching of push notifications.
+- **Personnel Invitation**: Added a convenient '+' action icon directly onto the `ManagePersonnelScreen` AppBar, making it immediately accessible for Owners and Superadmins to invite and assign staff members to their venues.
 
 ### Changed
 - **Unified Approvals**: Modified the backend Cloud Functions to properly authorize standard `admin` users alongside `superadmin` users when reviewing claims.
+- **Venue Terminology Overhaul**: Completely replaced legacy "Halls" nomenclature with "Places" across the UI, particularly inside the `MyHallsScreen` ("My Places") and the Map View (`HallSearchScreen`) interfaces, successfully generalizing the platform's aesthetics.
 
 ### Fixed
 - **Missing Workspace Visibility**: Resolved a silent `collectionGroup` index bug crashing the "Your Workspaces" feed. Added a single-field override targeting the `team` subcollection's `uid` natively inside `firestore.indexes.json` so newly approved venues instantly populate the applicant's UI without issues.
