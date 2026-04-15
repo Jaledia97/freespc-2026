@@ -31,6 +31,14 @@ service cloud.firestore {
       return request.auth != null && systemRole == 'superadmin';
     }
 
+    // Check if the user is a local venue administrator (owner or manager)
+    function isLocalVenueManager(venueId) {
+      return request.auth != null && 
+             venueId != null && 
+             exists(/databases/$(database)/documents/venues/$(venueId)/team/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/venues/$(venueId)/team/$(request.auth.uid)).data.assignedRole in ['owner', 'manager'];
+    }
+
     // Allow authenticated users to interact seamlessly with public feed posts
     function isInteractionUpdate() {
       let affected = request.resource.data.diff(resource.data).affectedKeys();
@@ -106,38 +114,44 @@ service cloud.firestore {
     }
 
     // 3. BINGO HALLS COLLECTION
-    // Policy: Public Read, Manager Write.
+    // Policy: Public Read, Manager Write, Local Operator Write.
     match /bingo_halls/{hallId} {
       allow read: if true;
-      allow write: if isManager();
+      allow write: if isManager() || isLocalVenueManager(hallId);
       
       // Tournaments Subcollection
       match /tournaments/{tournamentId} {
         allow read: if true;
-        allow write: if isManager();
+        allow write: if isManager() || isLocalVenueManager(hallId);
       }
 
       // Store Items Subcollection
       match /store_items/{itemId} {
         allow read: if true;
-        allow write: if isSystemAdmin();
+        allow write: if isSystemAdmin() || isLocalVenueManager(hallId);
+      }
+
+      // Asset Library Subcollection
+      match /assets/{assetId} {
+        allow read: if true;
+        allow write: if isManager() || isLocalVenueManager(hallId);
       }
       
       // Team Members Subcollection (Multi-Entity Switcher RBAC)
       match /team/{userId} {
         allow read: if true;
-        allow write: if isSystemAdmin();
+        allow write: if isSystemAdmin() || isLocalVenueManager(hallId);
       }
     }
     
     // 3.5. VENUES (Alias for BINGO HALLS in new RBAC)
     match /venues/{venueId} {
       allow read: if true;
-      allow write: if isSystemAdmin();
+      allow write: if isSystemAdmin() || isLocalVenueManager(venueId);
       
       match /team/{userId} {
         allow read: if true;
-        allow write: if isSystemAdmin();
+        allow write: if isSystemAdmin() || isLocalVenueManager(venueId);
       }
     }
 
@@ -157,21 +171,38 @@ service cloud.firestore {
     }
 
     // 5. RAFFLES & SPECIALS (And Root Tournaments)
-    // Policy: Public Read, Manager Write, Auth User Interaction
+    // Policy: Public Read, Manager/LocalAdmin Write, Auth User Interaction
     match /tournaments/{tournamentId} {
       allow read: if true;
-      allow update: if request.auth != null && isInteractionUpdate();
-      allow write: if isManager();
+      allow create: if isManager() || isLocalVenueManager(request.resource.data.hallId);
+      allow update: if (request.auth != null && isInteractionUpdate()) || isManager() || isLocalVenueManager(resource.data.hallId);
+      allow delete: if isManager() || isLocalVenueManager(resource.data.hallId);
     }
     match /raffles/{raffleId} {
       allow read: if true;
-      allow update: if request.auth != null && isInteractionUpdate();
-      allow write: if isManager();
+      allow create: if isManager() || isLocalVenueManager(request.resource.data.hallId);
+      allow update: if (request.auth != null && isInteractionUpdate()) || isManager() || isLocalVenueManager(resource.data.hallId);
+      allow delete: if isManager() || isLocalVenueManager(resource.data.hallId);
     }
     match /specials/{specialId} {
       allow read: if true;
-      allow update: if request.auth != null && isInteractionUpdate();
-      allow write: if isManager();
+      allow create: if isManager() || isLocalVenueManager(request.resource.data.hallId);
+      allow update: if (request.auth != null && isInteractionUpdate()) || isManager() || isLocalVenueManager(resource.data.hallId);
+      allow delete: if isManager() || isLocalVenueManager(resource.data.hallId);
+    }
+
+    // 5.5 BAR MODULES
+    match /trivia/{triviaId} {
+      allow read: if true;
+      allow create: if isManager() || isLocalVenueManager(request.resource.data.venueId);
+      allow update: if isManager() || isLocalVenueManager(resource.data.venueId);
+      allow delete: if isManager() || isLocalVenueManager(resource.data.venueId);
+    }
+    match /bar_games/{gameId} {
+      allow read: if true;
+      allow create: if isManager() || isLocalVenueManager(request.resource.data.venueId);
+      allow update: if isManager() || isLocalVenueManager(resource.data.venueId);
+      allow delete: if isManager() || isLocalVenueManager(resource.data.venueId);
     }
 
     // 6. GALLERY PHOTOS

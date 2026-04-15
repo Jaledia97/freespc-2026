@@ -125,6 +125,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
       checkIn: (_) => 'check_ins',
       winPost: (_) => 'win_posts',
       textPost: (_) => 'text_posts',
+      trivia: (_) => 'trivia',
     );
 
     final String docId = widget.feedItem.map(
@@ -134,6 +135,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
       checkIn: (c) => c.data.id,
       winPost: (w) => w.data.id,
       textPost: (t) => t.data.id,
+      trivia: (tr) => tr.data.id,
     );
 
     try {
@@ -207,6 +209,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
       checkIn: (_) => 'check_ins',
       winPost: (_) => 'win_posts',
       textPost: (_) => 'text_posts',
+      trivia: (_) => 'trivia',
     );
 
     final String docId = widget.feedItem.map(
@@ -216,6 +219,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
       checkIn: (c) => c.data.id,
       winPost: (w) => w.data.id,
       textPost: (t) => t.data.id,
+      trivia: (tr) => tr.data.id,
     );
 
     showModalBottomSheet(
@@ -239,6 +243,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
       checkIn: (c) => "Live Check-in",
       winPost: (w) => "Huge win at ${w.data.hallId}",
       textPost: (t) => t.data.title,
+      trivia: (tr) => tr.data.title,
     );
     final String docId = widget.feedItem.map(
       tournament: (t) => t.data.id,
@@ -247,6 +252,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
       checkIn: (c) => c.data.id,
       winPost: (w) => w.data.id,
       textPost: (t) => t.data.id,
+      trivia: (tr) => tr.data.id,
     );
     final String collectionName = widget.feedItem.map(
       tournament: (_) => 'tournaments',
@@ -255,6 +261,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
       checkIn: (_) => 'check_ins',
       winPost: (_) => 'win_posts',
       textPost: (_) => 'text_posts',
+      trivia: (_) => 'trivia',
     );
     
     final String deepLink = "freespc://feed?type=$collectionName&id=$docId";
@@ -279,6 +286,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
       checkIn: (c) => c.data.reactionUserIds,
       winPost: (w) => w.data.reactionUserIds,
       textPost: (t) => t.data.reactionUserIds,
+      trivia: (tr) => [],
     );
 
     final currentUser = ref.watch(authStateChangesProvider).value;
@@ -297,6 +305,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
       checkIn: (c) => c.data.commentCount,
       winPost: (w) => w.data.commentCount,
       textPost: (t) => t.data.commentCount,
+      trivia: (tr) => 0,
     );
 
     final String? latestComment = widget.feedItem.map(
@@ -306,6 +315,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
       checkIn: (c) => c.data.latestComment,
       winPost: (w) => w.data.latestComment,
       textPost: (t) => t.data.latestComment,
+      trivia: (tr) => null,
     );
 
     return Padding(
@@ -367,6 +377,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
                     checkIn: (c) => c.data.interestedUserIds,
                     winPost: (w) => w.data.interestedUserIds,
                     textPost: (t) => t.data.interestedUserIds,
+                    trivia: (tr) => [],
                   );
 
                   final dbIsRsvpd =

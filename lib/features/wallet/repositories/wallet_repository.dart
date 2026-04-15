@@ -4,6 +4,7 @@ import '../../../models/transaction_model.dart';
 import '../../../models/hall_membership_model.dart';
 import '../../../models/raffle_ticket_model.dart';
 import '../../../models/tournament_participation_model.dart';
+import '../../../models/drink_ticket_model.dart';
 
 final walletRepositoryProvider = Provider(
   (ref) => WalletRepository(FirebaseFirestore.instance),
@@ -33,6 +34,12 @@ final myTransactionsStreamProvider =
       return ref.watch(walletRepositoryProvider).getTransactions(userId);
     });
 
+// New Stream for Drink Tickets
+final myDrinkTicketsStreamProvider =
+    StreamProvider.family<List<DrinkTicketModel>, ({String userId, String hallId})>((ref, args) {
+      return ref.watch(walletRepositoryProvider).getDrinkTickets(args.userId, args.hallId);
+    });
+
 class WalletRepository {
   final FirebaseFirestore _firestore;
 
@@ -49,6 +56,22 @@ class WalletRepository {
         .map((snapshot) {
           return snapshot.docs
               .map((doc) => HallMembershipModel.fromJson(doc.data()))
+              .toList();
+        });
+  }
+
+  Stream<List<DrinkTicketModel>> getDrinkTickets(String userId, String hallId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('drink_tickets')
+        .where('hallId', isEqualTo: hallId)
+        .where('isValid', isEqualTo: true)
+        .orderBy('issuedAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => DrinkTicketModel.fromJson(doc.data()))
               .toList();
         });
   }

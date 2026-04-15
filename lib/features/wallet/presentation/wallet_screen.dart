@@ -8,10 +8,14 @@ import '../../../services/auth_service.dart';
 import '../../wallet/repositories/wallet_repository.dart';
 import '../../../models/hall_membership_model.dart';
 import '../../../models/tournament_participation_model.dart';
+import '../../../models/drink_ticket_model.dart';
+import '../../../models/special_model.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../home/repositories/hall_repository.dart';
 import '../../messaging/presentation/messaging_hub_screen.dart';
 import '../../../core/widgets/notification_badge.dart';
+
+final focusedMembershipProvider = StateProvider.autoDispose<HallMembershipModel?>((ref) => null);
 
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
@@ -65,71 +69,8 @@ class WalletScreen extends ConsumerWidget {
 
                 const SizedBox(height: 32),
 
-                // 2. My Raffles
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "My Raffles",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const MyRafflesScreen(),
-                          ),
-                        ),
-                        child: const Text(
-                          "See All",
-                          style: TextStyle(color: Colors.amber),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 140, // Height for Ticket Stub
-                  child: _RafflesList(userId: userId),
-                ),
-
-                const SizedBox(height: 32),
-
-                // 3. My Tournaments
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: const Text(
-                    "Active Tournaments",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _TournamentsList(userId: userId),
-
-                // 4. Transaction History (Grouped)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: const Text(
-                    "History",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TransactionHistoryList(userId: userId),
+                // 2. Dynamic Venue Content
+                _DynamicVenueContent(userId: userId),
               ],
             ),
           );
@@ -158,6 +99,11 @@ class _HallCardsParams extends ConsumerWidget {
             .toList();
 
         if (memberships.isEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (ref.read(focusedMembershipProvider) != null) {
+              ref.read(focusedMembershipProvider.notifier).state = null;
+            }
+          });
           return Center(
             child: SizedBox(
               width: MediaQuery.of(context).size.width * 0.85,
@@ -178,7 +124,7 @@ class _HallCardsParams extends ConsumerWidget {
                       style: TextStyle(color: Colors.white70),
                     ),
                     Text(
-                      "Join a Hall to earn points!",
+                      "Join a Place to earn points!",
                       style: TextStyle(color: Colors.white38, fontSize: 12),
                     ),
                   ],
@@ -188,9 +134,20 @@ class _HallCardsParams extends ConsumerWidget {
           );
         }
 
+        // Initialize focused membership if null
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final current = ref.read(focusedMembershipProvider);
+          if (current == null || !memberships.any((m) => m.hallId == current.hallId)) {
+            ref.read(focusedMembershipProvider.notifier).state = memberships[0];
+          }
+        });
+
         return PageView.builder(
           controller: PageController(viewportFraction: 0.9),
           itemCount: memberships.length,
+          onPageChanged: (index) {
+            ref.read(focusedMembershipProvider.notifier).state = memberships[index];
+          },
           itemBuilder: (context, index) {
             return HallMembershipCard(membership: memberships[index]);
           },
@@ -348,6 +305,171 @@ class HallMembershipCard extends ConsumerWidget {
   }
 }
 
+// --- Dynamic Venue Content ---
+class _DynamicVenueContent extends ConsumerWidget {
+  final String userId;
+  const _DynamicVenueContent({required this.userId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final focusedMembership = ref.watch(focusedMembershipProvider);
+    
+    if (focusedMembership == null) {
+      return const SizedBox();
+    }
+
+    final hallAsync = ref.watch(hallStreamProvider(focusedMembership.hallId));
+
+    return hallAsync.when(
+      data: (hall) {
+        final venueType = hall?.venueType ?? 'bingo';
+
+        if (venueType == 'bingo') {
+          return _buildBingoLayout(context, userId);
+        } else {
+          return _buildBarLayout(context, userId, focusedMembership.hallId);
+        }
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text("Error: $e")),
+    );
+  }
+
+  Widget _buildBingoLayout(BuildContext context, String userId) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // My Raffles
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "My Raffles",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MyRafflesScreen(),
+                  ),
+                ),
+                child: const Text(
+                  "See All",
+                  style: TextStyle(color: Colors.amber),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 140,
+          child: _RafflesList(userId: userId),
+        ),
+
+        const SizedBox(height: 32),
+
+        // My Tournaments
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: const Text(
+            "Active Tournaments",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _TournamentsList(userId: userId),
+
+        const SizedBox(height: 32),
+
+        // Transaction History
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: const Text(
+            "History",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        TransactionHistoryList(userId: userId),
+      ],
+    );
+  }
+
+  Widget _buildBarLayout(BuildContext context, String userId, String hallId) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // My Drink Tickets (NEW)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: const Text(
+            "My Drink Tickets",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 150,
+          child: _MyDrinkTicketsList(userId: userId, hallId: hallId),
+        ),
+
+        const SizedBox(height: 32),
+
+        // Active Specials (NEW)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: const Text(
+            "Flash Specials",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.amber, 
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _ActiveSpecialsList(hallId: hallId),
+
+        const SizedBox(height: 32),
+
+        // Localized History
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: const Text(
+            "Place History",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        TransactionHistoryList(userId: userId, hallId: hallId),
+      ],
+    );
+  }
+}
+
 // --- My Raffles Scroller ---
 class _RafflesList extends ConsumerWidget {
   final String userId;
@@ -495,6 +617,133 @@ class TournamentItem extends ConsumerWidget {
         title: Text("Loading...", style: TextStyle(color: Colors.white38)),
       ),
       error: (_, __) => const SizedBox(),
+    );
+  }
+}
+
+// --- Bar Wallet Modules ---
+class _MyDrinkTicketsList extends ConsumerWidget {
+  final String userId;
+  final String hallId;
+  const _MyDrinkTicketsList({required this.userId, required this.hallId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ticketsAsync = ref.watch(myDrinkTicketsStreamProvider((userId: userId, hallId: hallId)));
+
+    return ticketsAsync.when(
+      data: (tickets) {
+        if (tickets.isEmpty) {
+          return const Center(
+            child: Text(
+              "No drink tickets available.",
+              style: TextStyle(color: Colors.white38),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: tickets.length,
+          itemBuilder: (context, index) {
+            final ticket = tickets[index];
+            return Container(
+              width: 160,
+              margin: const EdgeInsets.only(right: 12),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.blueAccent.withOpacity(0.4)),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  const Icon(Icons.local_bar, color: Colors.blueAccent, size: 32),
+                  Text(
+                    ticket.title,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    ticket.description,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, s) => const SizedBox(),
+    );
+  }
+}
+
+class _ActiveSpecialsList extends ConsumerWidget {
+  final String hallId;
+  const _ActiveSpecialsList({required this.hallId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final specialsAsync = ref.watch(hallSpecialsProvider(hallId));
+
+    return specialsAsync.when(
+      data: (specials) {
+        if (specials.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              "No active specials right now.",
+              style: TextStyle(color: Colors.white38),
+            ),
+          );
+        }
+
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: specials.length,
+          separatorBuilder: (c, i) => const Divider(color: Colors.white10),
+          itemBuilder: (context, index) {
+            final special = specials[index];
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              tileColor: const Color(0xFF1E1E1E),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              leading: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.flash_on, color: Colors.amber),
+              ),
+              title: Text(
+                special.title,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                special.description,
+                style: const TextStyle(color: Colors.white70),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: const Icon(Icons.chevron_right, color: Colors.white24),
+            );
+          },
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, s) => const SizedBox(),
     );
   }
 }

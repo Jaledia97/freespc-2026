@@ -6,7 +6,8 @@ import 'package:freespc/models/transaction_model.dart';
 
 class TransactionHistoryList extends ConsumerWidget {
   final String userId;
-  const TransactionHistoryList({super.key, required this.userId});
+  final String? hallId;
+  const TransactionHistoryList({super.key, required this.userId, this.hallId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -15,7 +16,11 @@ class TransactionHistoryList extends ConsumerWidget {
 
     return txAsync.when(
       data: (transactions) {
-        if (transactions.isEmpty) {
+        final filteredTx = hallId != null 
+            ? transactions.where((t) => t.hallId == hallId).toList() 
+            : transactions;
+
+        if (filteredTx.isEmpty) {
           return const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Text(
@@ -29,7 +34,7 @@ class TransactionHistoryList extends ConsumerWidget {
         // Logic: Transactions on the same day at the same hall are grouped.
         final groupedVisits = <String, List<TransactionModel>>{};
 
-        for (var tx in transactions) {
+        for (var tx in filteredTx) {
           final dateKey = DateFormat('yyyy-MM-dd').format(tx.timestamp);
           final key =
               "$dateKey|${tx.hallName}"; // Format: 2026-02-18|Mary Esther Bingo

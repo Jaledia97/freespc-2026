@@ -18,11 +18,13 @@ class FeedPaginationState {
   final DateTime? lastSpecialDate;
   final DateTime? lastRaffleDate;
   final DateTime? lastTournamentDate;
+  final DateTime? lastTriviaDate;
 
   // Stream depletion flags
   final bool hasMoreSpecials;
   final bool hasMoreRaffles;
   final bool hasMoreTournaments;
+  final bool hasMoreTrivia;
 
   FeedPaginationState({
     required this.items,
@@ -31,9 +33,11 @@ class FeedPaginationState {
     this.lastSpecialDate,
     this.lastRaffleDate,
     this.lastTournamentDate,
+    this.lastTriviaDate,
     this.hasMoreSpecials = true,
     this.hasMoreRaffles = true,
     this.hasMoreTournaments = true,
+    this.hasMoreTrivia = true,
   });
 
   FeedPaginationState copyWith({
@@ -43,9 +47,11 @@ class FeedPaginationState {
     DateTime? lastSpecialDate,
     DateTime? lastRaffleDate,
     DateTime? lastTournamentDate,
+    DateTime? lastTriviaDate,
     bool? hasMoreSpecials,
     bool? hasMoreRaffles,
     bool? hasMoreTournaments,
+    bool? hasMoreTrivia,
   }) {
     return FeedPaginationState(
       items: items ?? this.items,
@@ -54,9 +60,11 @@ class FeedPaginationState {
       lastSpecialDate: lastSpecialDate ?? this.lastSpecialDate,
       lastRaffleDate: lastRaffleDate ?? this.lastRaffleDate,
       lastTournamentDate: lastTournamentDate ?? this.lastTournamentDate,
+      lastTriviaDate: lastTriviaDate ?? this.lastTriviaDate,
       hasMoreSpecials: hasMoreSpecials ?? this.hasMoreSpecials,
       hasMoreRaffles: hasMoreRaffles ?? this.hasMoreRaffles,
       hasMoreTournaments: hasMoreTournaments ?? this.hasMoreTournaments,
+      hasMoreTrivia: hasMoreTrivia ?? this.hasMoreTrivia,
     );
   }
 }
@@ -160,9 +168,31 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
         );
       }
 
+      Future<void> fetchTrivia() async {
+        if (!state.hasMoreTrivia) return;
+        final trivia = await hallRepo.fetchTriviaPage(
+          startAfterTimestamp: state.lastTriviaDate,
+          limit: _limit,
+          userLoc: userLoc,
+        );
+
+        final feedItems = trivia.map((t) => FeedItem.trivia(t)).toList();
+        final bool exhausted = trivia.length < _limit;
+        final DateTime? newCursor = trivia.isNotEmpty
+            ? trivia.last.createdAt
+            : state.lastTriviaDate;
+
+        state = state.copyWith(
+          lastTriviaDate: newCursor,
+          hasMoreTrivia: !exhausted,
+          items: [...state.items, ...feedItems],
+        );
+      }
+
       futures.add(fetchSpecials());
       futures.add(fetchRaffles());
       futures.add(fetchTourneys());
+      futures.add(fetchTrivia());
 
       // Await all distinct collection pulls
       await Future.wait(futures);
@@ -196,6 +226,7 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
           checkIn: (c) => c.data.userId,
           winPost: (w) => w.data.userId,
           textPost: (tp) => tp.data.userId,
+          trivia: (tr) => tr.data.venueId,
         );
 
         final String docId = item.map(
@@ -205,6 +236,7 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
           checkIn: (c) => c.data.id,
           winPost: (w) => w.data.id,
           textPost: (tp) => tp.data.id,
+          trivia: (tr) => tr.data.id,
         );
 
         if (blockedIds.contains(authorId)) return false;
@@ -224,6 +256,7 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
           checkIn: (c) => c.data.createdAt.isBefore(now.subtract(const Duration(hours: 24))),
           winPost: (w) => false, // Evergreen
           textPost: (tp) => false, // Evergreen
+          trivia: (tr) => tr.data.date.isBefore(now.subtract(const Duration(hours: 24))),
         );
 
         if (isExpired) return false;
@@ -283,6 +316,7 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
         checkIn: (c) => c.data.id,
         winPost: (w) => w.data.id,
         textPost: (tp) => tp.data.id,
+        trivia: (tr) => tr.data.id,
       );
       return docId != postId;
     }).toList();
@@ -334,6 +368,7 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
         checkIn: (c) => c.data.userId,
         winPost: (w) => w.data.userId,
         textPost: (tp) => tp.data.userId,
+        trivia: (tr) => tr.data.venueId,
       );
       return aId != authorId;
     }).toList();
@@ -394,6 +429,7 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
         checkIn: (c) => c.data.id,
         winPost: (w) => w.data.id,
         textPost: (tp) => tp.data.id,
+        trivia: (tr) => tr.data.id,
       );
 
       if (docId == postId) {
@@ -418,6 +454,7 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
           checkIn: (c) => c,
           winPost: (w) => w,
           textPost: (tp) => tp,
+          trivia: (tr) => tr,
         );
       }
       return item;

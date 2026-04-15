@@ -7,6 +7,12 @@ import '../../../services/storage_service.dart';
 import '../../../services/notification_service.dart';
 import '../../../core/widgets/glass_container.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 
 class CreateVenueScreen extends ConsumerStatefulWidget {
   const CreateVenueScreen({super.key});
@@ -46,6 +52,65 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
     }
   }
 
+  Future<List<Map<String, dynamic>>> _getSuggestions(String query) async {
+    if (query.isEmpty) return [];
+    final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
+    if (apiKey == null) return [];
+
+    final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&key=$apiKey&components=country:us');
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == 'OK') {
+          final predictions = data['predictions'] as List;
+          return predictions.map((p) => {
+            'description': p['description'],
+            'place_id': p['place_id']
+          }).toList();
+        }
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  Future<void> _onSuggestionSelected(Map<String, dynamic> suggestion) async {
+    _addressController.text = suggestion['description'];
+
+    final placeId = suggestion['place_id'];
+    final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
+    if (apiKey == null || placeId == null) return;
+
+    final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$apiKey&fields=address_components');
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == 'OK') {
+          final components = data['result']['address_components'] as List;
+          String city = '';
+          String state = '';
+
+          for (var c in components) {
+            final types = c['types'] as List;
+            if (types.contains('locality')) {
+              city = c['long_name'];
+            } else if (types.contains('administrative_area_level_1')) {
+              state = c['short_name'];
+            }
+          }
+
+          if (city.isNotEmpty) setState(() => _cityController.text = city);
+          if (state.isNotEmpty) setState(() => _stateController.text = state);
+        }
+      }
+    } catch (_) {}
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -77,18 +142,39 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
          logoUrl = await ref.read(storageServiceProvider).uploadVenueClaimImage(_logoImage!, user.uid);
       }
 
+      // Geocode the submitted location!
+      double lat = 0.0;
+      double lng = 0.0;
+      try {
+        final queryStr = "${_addressController.text.trim()}, ${_cityController.text.trim()}, ${_stateController.text.trim()}";
+        List<Location> locations = await locationFromAddress(queryStr);
+        if (locations.isNotEmpty) {
+          lat = locations.first.latitude;
+          lng = locations.first.longitude;
+        }
+      } catch (e) {
+        print("Sandbox Geocoding Error: $e");
+      }
+      
+      final geoPoint = GeoFirePoint(GeoPoint(lat, lng));
+
       // 1. Provision Sandbox Venue (Invisible to Public)
       await newVenueRef.set({
         'id': newVenueId,
         'name': _nameController.text.trim(),
-        'address': _addressController.text.trim(),
-        'location': const GeoPoint(0, 0), // Mock GPS
-        'geohash': '',
+        'street': _addressController.text.trim(),
+        'city': _cityController.text.trim(),
+        'state': _stateController.text.trim(),
+        'latitude': lat,
+        'longitude': lng,
+        'geo': geoPoint.data,
+        'geoHash': geoPoint.geohash,
         'operatingHours': {},
         'createdAt': FieldValue.serverTimestamp(),
         'isActive': false, // Crucial Sandbox isolation
         'beaconUuid': 'PENDING_CONFIG',
         'logoUrl': logoUrl,
+        'venueType': _venueType.toLowerCase(),
       });
 
       // 2. Map Sandbox Team Credentials (Unlocks CMS natively)
@@ -136,9 +222,9 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
           barrierDismissible: false,
           builder: (_) => AlertDialog(
             backgroundColor: const Color(0xFF1E1E1E),
-            title: const Text("Sandbox Access Granted 🛠️", style: TextStyle(color: Colors.white)),
+            title: const Text("Profile Set Up! 🎉", style: TextStyle(color: Colors.white)),
             content: const Text(
-              "Your business Sandbox has been magically provisioned! It will remain completely invisible to the public until our Superadmins approve your claim, but you can build out your CMS starting Right Now from your Settings page!",
+              "Your venue profile has been set up successfully and is currently under review by our team! It will remain hidden from the public until approved, but you can head over to your Settings page right now to start customizing your page, adding staff, and getting everything ready for launch!",
               style: TextStyle(color: Colors.white70),
             ),
             actions: [
@@ -265,17 +351,41 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
                       ),
                       const SizedBox(height: 16),
                       
-                      // Street Address
-                      TextFormField(
+                      // Street Address (Predictive Autocomplete)
+                      TypeAheadField<Map<String, dynamic>>(
                         controller: _addressController,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: const InputDecoration(
-                          labelText: "Street Address",
-                          labelStyle: TextStyle(color: Colors.white54),
-                          enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
-                          focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.amber)),
+                        builder: (context, controller, focusNode) {
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                              labelText: "Street Address",
+                              labelStyle: TextStyle(color: Colors.white54),
+                              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+                              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.amber)),
+                              hintText: "Start typing...",
+                              hintStyle: TextStyle(color: Colors.white38),
+                            ),
+                            validator: (v) => v!.isEmpty ? "Required" : null,
+                          );
+                        },
+                        suggestionsCallback: _getSuggestions,
+                        itemBuilder: (context, suggestion) {
+                          return ListTile(
+                            tileColor: const Color(0xFF252525),
+                            leading: const Icon(Icons.location_on, color: Colors.amber),
+                            title: Text(
+                              suggestion['description'],
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          );
+                        },
+                        onSelected: _onSuggestionSelected,
+                        emptyBuilder: (context) => const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Text("No locations found", style: TextStyle(color: Colors.white54)),
                         ),
-                        validator: (v) => v!.isEmpty ? "Required" : null,
                       ),
                       const SizedBox(height: 16),
 

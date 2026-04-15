@@ -366,6 +366,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               s.data.interestedUserIds.contains(
                                 currentUser.uid,
                               )),
+                      trivia: (tr) => _selectedFilter == 'Specials',
                       checkIn: (c) => false,
                       winPost: (w) => false,
                       textPost: (tp) => false,
@@ -417,6 +418,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           fullWidth: true,
                           isFeatured: false,
                         ),
+                        trivia: (tr) => SpecialCard(
+                          special: SpecialModel(
+                            id: tr.data.id,
+                            hallId: tr.data.venueId,
+                            hallName: "",
+                            title: tr.data.title,
+                            description: "Category: ${tr.data.category}\nPrize: ${tr.data.prizeString}",
+                            imageUrl: tr.data.imageUrl ?? "",
+                            postedAt: tr.data.createdAt ?? DateTime.now(),
+                            startTime: tr.data.date,
+                            tags: ['Trivia'],
+                          ),
+                          fullWidth: true,
+                          isFeatured: false,
+                        ),
                         checkIn: (c) => const SizedBox.shrink(),
                         winPost: (w) => const SizedBox.shrink(),
                         textPost: (tp) => const SizedBox.shrink(),
@@ -456,6 +472,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             special: (s) =>
                 s.data.title.toLowerCase().contains(_searchQuery) ||
                 s.data.description.toLowerCase().contains(_searchQuery),
+            trivia: (tr) =>
+                tr.data.title.toLowerCase().contains(_searchQuery) ||
+                tr.data.category.toLowerCase().contains(_searchQuery),
             checkIn: (c) => false,
             winPost: (w) => false,
             textPost: (tp) =>
@@ -583,6 +602,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       subtitle: Text(
                         s.data.hallName,
                         style: const TextStyle(color: Colors.white54),
+                      ),
+                    ),
+                    trivia: (tr) => ListTile(
+                      leading: const Icon(
+                        Icons.question_answer,
+                        color: Colors.purpleAccent,
+                      ),
+                      title: Text(
+                        tr.data.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        "Trivia Night",
+                        style: TextStyle(color: Colors.white54),
                       ),
                     ),
                     checkIn: (c) => const SizedBox.shrink(),

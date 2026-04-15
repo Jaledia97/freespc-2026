@@ -139,6 +139,27 @@ class AccountSettingsScreen extends ConsumerWidget {
                             title: title,
                             subtitle: subtitle,
                             trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+                            onLongPress: () async {
+                              final res = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  backgroundColor: const Color(0xFF2C2C2C),
+                                  title: const Text("Remove Workspace", style: TextStyle(color: Colors.redAccent)),
+                                  content: const Text("Remove this orphaned workspace completely off your profile?", style: TextStyle(color: Colors.white70)),
+                                  actions: [
+                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      child: const Text("Remove"),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (res == true) {
+                                 await FirebaseFirestore.instance.doc(doc.reference.path).delete();
+                              }
+                            },
                             onTap: () {
                                if (teamData.claimStatus == 'rejected') {
                                   showDialog(

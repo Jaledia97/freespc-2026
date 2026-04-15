@@ -2,6 +2,15 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+76] - 2026-04-15 - Contextual Bar Management & Trivia Night Pipeline
+
+### Added
+- **Contextual Management CMS**: Restructured the Administrator interface using dynamic sub-string type parsing natively to intelligently hide legacy Bingo-specific features (Tournaments, Store) completely out of view for Bar venues, actively shifting operational focus exclusively onto compatible features like Flash Specials and Raffles.
+- **Global Photo Approvals**: Unified the automated bot-flagging pipeline and explicitly preserved the `Photo Approvals` array for all management tiers globally, regardless of whether they manage a Bar or Bingo Hall natively.
+- **Trivia Event Hosting Interface**: Successfully integrated full Database CRUD via `ManageTriviaScreen`, wrapping an interactive touchable Native Image Picker bounding to Firebase Storage, allowing Operators to build robust Trivia Night instances with prizes and branding.
+- **Algorithmic UI Routing**: Hand-patched the native Dart FeedPagination engine and `HomeScreen` S-Tier Timeline logic. Natively constructed strict feed intersection rules effectively absorbing structural `TriviaModel` entities entirely, publishing Bar Trivia actively onto user feeds seamlessly disguised precisely as `SpecialCard` interactions.
+- **Bar Games Scaffolding**: Built production structures for generalized ongoing Bar Games integration routing to `ManageBarGamesScreen`.
+
 ## [0.0.1+75] - 2026-04-14 - Business Registration & Workspace Visibility
 
 ### Added

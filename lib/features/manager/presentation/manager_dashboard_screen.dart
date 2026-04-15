@@ -9,6 +9,8 @@ import 'cms/loyalty_settings_screen.dart'; // New Import
 import 'cms/bluetooth_settings_screen.dart'; // New Import
 import 'cms/manage_personnel_screen.dart'; // New Import
 import 'cms/manage_store_screen.dart'; // New Import
+import 'cms/manage_trivia_screen.dart';
+import 'cms/manage_bar_games_screen.dart';
 import '../../profile/presentation/hall_selection_screen.dart';
 import '../../../../core/widgets/notification_badge.dart'; // Import NotificationBadge
 import 'business_setup_tutorial_screen.dart'; // New Import
@@ -55,49 +57,7 @@ class _ManagerDashboardScreenState
       }
     }
   }
-  Future<bool> _showExitConfirmation() async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            backgroundColor: const Color(0xFF222222),
-            title: const Text(
-              "Exit Manager Mode?",
-              style: TextStyle(color: Colors.white),
-            ),
-            content: const Text(
-              "You will need to scan your ID or enter your PIN to access this dashboard again.",
-              style: TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text(
-                  "CANCEL",
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text(
-                  "EXIT",
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ) ??
-        false;
-  }
 
-  void _handleBack() async {
-    final shouldExit = await _showExitConfirmation();
-    if (shouldExit && mounted) {
-      ref.read(sessionContextProvider.notifier).switchToPersonal();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,16 +73,10 @@ class _ManagerDashboardScreenState
         : const AsyncValue.data(null);
     final hall = hallAsync.value;
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        _handleBack();
-      },
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: const Color(0xFF141414), // Darker than standard
         appBar: AppBar(
-          leading: BackButton(onPressed: _handleBack, color: Colors.white),
+          leading: const BackButton(color: Colors.white),
           title: const Text('Hall Manager'),
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -147,64 +101,32 @@ class _ManagerDashboardScreenState
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: user != null && RoleUtils.isPendingOwner(user)
-                ? Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E1E1E),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.amber.withOpacity(0.5)),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.lock_clock, size: 64, color: Colors.amber),
-                          const SizedBox(height: 24),
-                          const Text(
-                            "Verification Pending",
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            "Hang tight! We are verifying your manager access credentials${user.pendingVenueClaimId != null ? ' for the venue you claimed' : ''}. Our team will review your submitted documents shortly.",
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                              height: 1.5,
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.amber,
-                                foregroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              onPressed: _handleBack,
-                              child: const Text(
-                                "Return to Home",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : Column(
+            child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Sandbox Status Banner
+                      if (user != null && RoleUtils.isPendingOwner(user))
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.amber.withOpacity(0.5)),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.lock_clock, color: Colors.amber, size: 24),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  "Sandbox Verification Pending. Your venue is invisible to the public until approved.",
+                                  style: TextStyle(color: Colors.amber, fontSize: 13, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                 // Welcome / Status
                 _buildStatusHeader(hall, homeHallId),
                 const SizedBox(height: 24),
@@ -322,9 +244,10 @@ class _ManagerDashboardScreenState
                           ),
                         ),
 
-                      // TOURNAMENTS (Manager+)
+                      // TOURNAMENTS (Manager+, Bingo Only)
                       if (homeHallId != null &&
-                          RoleUtils.canManageGames(user, session, homeHallId))
+                          RoleUtils.canManageGames(user, session, homeHallId) &&
+                          (hall?.venueType ?? 'bingo').toLowerCase().contains('bingo'))
                         _buildModuleCard(
                           context,
                           title: "Tournaments",
@@ -360,9 +283,10 @@ class _ManagerDashboardScreenState
                           ),
                         ),
 
-                      // STORE (Manager+)
+                      // STORE (Manager+, Bingo Only)
                       if (homeHallId != null &&
-                          RoleUtils.canManageGames(user, session, homeHallId))
+                          RoleUtils.canManageGames(user, session, homeHallId) &&
+                          (hall?.venueType ?? 'bingo').toLowerCase().contains('bingo'))
                         _buildModuleCard(
                           context,
                           title: "Manage Store",
@@ -378,11 +302,12 @@ class _ManagerDashboardScreenState
                           ),
                         ),
 
-                      // LOYALTY SETTINGS (Owner Only)
+                      // LOYALTY SETTINGS (Owner Only, Bingo Only)
                       if (homeHallId != null &&
                           (RoleUtils.isOwner(user, session) ||
                               RoleUtils.isSuperAdmin(user)) &&
-                          hall != null)
+                          hall != null &&
+                          (hall.venueType ?? 'bingo').toLowerCase().contains('bingo'))
                         _buildModuleCard(
                           context,
                           title: "Loyalty Settings",
@@ -398,6 +323,42 @@ class _ManagerDashboardScreenState
                               ),
                             ),
                           ),
+                        ),
+
+                      // TRIVIA NIGHT (Manager+, Bar Only)
+                      if (homeHallId != null &&
+                          RoleUtils.canManageGames(user, session, homeHallId) &&
+                          (hall?.venueType ?? 'bingo').toLowerCase().contains('bar'))
+                        _buildModuleCard(
+                          context,
+                          title: "Trivia Night",
+                          icon: Icons.mic_external_on,
+                          color: Colors.greenAccent,
+                          desc: "Host & Manage Trivia",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => ManageTriviaScreen(hallId: homeHallId)),
+                            );
+                          },
+                        ),
+
+                      // BAR GAMES (Manager+, Bar Only)
+                      if (homeHallId != null &&
+                          RoleUtils.canManageGames(user, session, homeHallId) &&
+                          (hall?.venueType ?? 'bingo').toLowerCase().contains('bar'))
+                        _buildModuleCard(
+                          context,
+                          title: "Bar Games",
+                          icon: Icons.sports_kabaddi,
+                          color: Colors.redAccent,
+                          desc: "Darts, Billiards, etc.",
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => ManageBarGamesScreen(hallId: homeHallId)),
+                            );
+                          },
                         ),
 
                       // BLUETOOTH SETTINGS (Owner/SuperAdmin)
@@ -441,13 +402,70 @@ class _ManagerDashboardScreenState
                             ),
                           ),
                         ),
+
+                      // DANGER ZONE: DELETE VENUE (Owner Only)
+                      if (homeHallId != null && RoleUtils.isOwner(user, session))
+                        _buildModuleCard(
+                          context,
+                          title: "Delete Venue",
+                          icon: Icons.delete_forever,
+                          color: Colors.redAccent,
+                          desc: "Permanently close this venue",
+                          onTap: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                backgroundColor: const Color(0xFF2C2C2C),
+                                title: const Text(
+                                  "Terminate Venue?",
+                                  style: TextStyle(color: Colors.redAccent),
+                                ),
+                                content: const Text(
+                                  "Are you absolutely sure you want to permanently delete this venue? This action cannot be undone and will drop you out of the manager CMS.",
+                                  style: TextStyle(color: Colors.white70),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: const Text("CANCEL"),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.redAccent,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: const Text("PERMANENTLY DELETE"),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true) {
+                              try {
+                                await ref.read(hallRepositoryProvider).deleteHall(homeHallId);
+                                if (context.mounted) {
+                                  Navigator.of(context).popUntil((route) => route.isFirst);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("Venue Deleted Successfully.")),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Deletion Error: $e")),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                        ),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-        ),
       ),
     );
   }

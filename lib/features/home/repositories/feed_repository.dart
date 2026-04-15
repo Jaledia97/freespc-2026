@@ -28,6 +28,7 @@ class FeedRepository {
           checkIn: (c) => c.data.createdAt,
           winPost: (w) => w.data.createdAt,
           textPost: (tp) => tp.data.createdAt,
+          trivia: (tr) => tr.data.createdAt ?? tr.data.date,
         );
         final bDate = b.map(
           tournament: (t) => t.data.startTime ?? DateTime.now(),
@@ -36,6 +37,7 @@ class FeedRepository {
           checkIn: (c) => c.data.createdAt,
           winPost: (w) => w.data.createdAt,
           textPost: (tp) => tp.data.createdAt,
+          trivia: (tr) => tr.data.createdAt ?? tr.data.date,
         );
         return bDate.compareTo(aDate); // Fallback to recency
       }
@@ -59,6 +61,7 @@ class FeedRepository {
       checkIn: (c) => c.data.reactionUserIds,
       winPost: (w) => w.data.reactionUserIds,
       textPost: (tp) => tp.data.reactionUserIds,
+      trivia: (tr) => [],
     );
 
     // Weight 1: Social Intersection. Massive boost if squad members interacted.
@@ -95,6 +98,7 @@ class FeedRepository {
       checkIn: (c) => c.data.createdAt,
       winPost: (w) => w.data.createdAt,
       textPost: (tp) => tp.data.createdAt,
+      trivia: (tr) => tr.data.createdAt ?? tr.data.date,
     );
     final hoursOld = DateTime.now().difference(itemDate).inHours;
 

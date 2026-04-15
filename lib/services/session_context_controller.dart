@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/venue_team_member_model.dart';
 import 'auth_service.dart';
+import '../features/main_layout.dart';
 
 class SessionState {
   final String activeContext; // 'personal' or 'business'
@@ -55,6 +56,7 @@ class SessionContextController extends StateNotifier<SessionState> {
   void switchToPersonal() {
     _roleSubscription?.cancel();
     state = const SessionState(activeContext: 'personal');
+    ref.read(bottomNavIndexProvider.notifier).state = 0;
   }
 
   void switchToBusiness(String venueId, String venueName, String role, {bool isSuperAdmin = false}) {
@@ -65,6 +67,13 @@ class SessionContextController extends StateNotifier<SessionState> {
       activeVenueName: venueName,
       activeRole: role,
     );
+
+    // Mathematically default to the Manager Dashboard (Index 2)
+    if (role == 'owner' || role == 'manager' || isSuperAdmin) {
+      ref.read(bottomNavIndexProvider.notifier).state = 2;
+    } else {
+      ref.read(bottomNavIndexProvider.notifier).state = 0; // Worker default
+    }
 
     if (!isSuperAdmin) {
       _listenToLiveRole(venueId);

@@ -8,6 +8,8 @@ import '../../../models/special_model.dart';
 import '../../../models/raffle_model.dart';
 import '../../../models/tournament_model.dart';
 import '../../../models/comment_model.dart';
+import '../../../models/trivia_model.dart';
+import '../../../models/bar_game_model.dart';
 import 'dart:convert';
 import '../../../core/utils/recurrence_utils.dart';
 import 'dart:math';
@@ -44,6 +46,20 @@ final hallRafflesProvider = StreamProvider.family<List<RaffleModel>, String>((
   hallId,
 ) {
   return ref.read(hallRepositoryProvider).getRaffles(hallId);
+});
+
+final hallTriviaProvider = StreamProvider.family<List<TriviaModel>, String>((
+  ref,
+  hallId,
+) {
+  return ref.read(hallRepositoryProvider).getTriviaForVenue(hallId);
+});
+
+final hallBarGamesProvider = StreamProvider.family<List<BarGameModel>, String>((
+  ref,
+  hallId,
+) {
+  return ref.read(hallRepositoryProvider).getBarGamesForVenue(hallId);
 });
 
 final specialsFeedProvider = StreamProvider<List<SpecialModel>>((ref) {
@@ -97,7 +113,12 @@ class HallRepository {
     return _firestore.collection('bingo_halls').doc(id).snapshots().map((doc) {
       if (!doc.exists || doc.data() == null) return null;
       try {
-        return BingoHallModel.fromJson(doc.data()!);
+        final data = doc.data()!;
+        // Gracefully handle legacy or corrupted sandbox venues without strict geo fields
+        if (data['latitude'] == null) data['latitude'] = 0.0;
+        if (data['longitude'] == null) data['longitude'] = 0.0;
+        
+        return BingoHallModel.fromJson(data);
       } catch (e) {
         print("Error parsing hall $id: $e");
         return null;
@@ -145,10 +166,66 @@ class HallRepository {
         });
   }
 
+  // --- Trivia Methods ---
+  Stream<List<TriviaModel>> getTriviaForVenue(String venueId) {
+    return _firestore
+        .collection('trivia')
+        .where('venueId', isEqualTo: venueId)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => TriviaModel.fromJson(doc.data()))
+              .toList();
+        });
+  }
+
+  Future<void> addTrivia(TriviaModel trivia) async {
+    final data = trivia.toJson();
+    await _firestore.collection('trivia').doc(trivia.id).set(data);
+  }
+
+  Future<void> updateTrivia(TriviaModel trivia) async {
+    final data = trivia.toJson();
+    await _firestore.collection('trivia').doc(trivia.id).update(data);
+  }
+
+  Future<void> deleteTrivia(String id) async {
+    await _firestore.collection('trivia').doc(id).delete();
+  }
+
+  // --- Bar Games Methods ---
+  Stream<List<BarGameModel>> getBarGamesForVenue(String venueId) {
+    return _firestore
+        .collection('bar_games')
+        .where('venueId', isEqualTo: venueId)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => BarGameModel.fromJson(doc.data()))
+              .toList();
+        });
+  }
+
+  Future<void> addBarGame(BarGameModel game) async {
+    final data = game.toJson();
+    await _firestore.collection('bar_games').doc(game.id).set(data);
+  }
+
+  Future<void> updateBarGame(BarGameModel game) async {
+    final data = game.toJson();
+    await _firestore.collection('bar_games').doc(game.id).update(data);
+  }
+
+  Future<void> deleteBarGame(String id) async {
+    await _firestore.collection('bar_games').doc(id).delete();
+  }
+
   Stream<List<SpecialModel>> getSpecialsForHall(String hallId) {
     return _firestore
         .collection('specials')
         .where('hallId', isEqualTo: hallId)
+        .where('isTemplate', isEqualTo: false)
+        .where('isCancelled', isEqualTo: false)
         .snapshots()
         .map((snapshot) {
           return snapshot.docs
@@ -362,6 +439,29 @@ class HallRepository {
         .set(data, SetOptions(merge: true));
   }
 
+  Future<void> deleteHall(String hallId) async {
+    // 1. Wipe orphan team associations structurally from all subcollections matching the venue
+    final teamSnaps = await _firestore.collectionGroup('team').where('venueId', isEqualTo: hallId).get();
+    final batch = _firestore.batch();
+    for (var doc in teamSnaps.docs) {
+      batch.delete(doc.reference);
+    }
+    
+    // 2. Wipe the claim tracking 
+    final claims = await _firestore.collection('venue_claims').where('requestedVenueId', isEqualTo: hallId).get();
+    for (var claim in claims.docs) {
+      batch.delete(claim.reference);
+    }
+    await batch.commit();
+
+    // 3. Execute Hard Delete to wipe Sandbox completely
+    await _firestore.collection('bingo_halls').doc(hallId).delete();
+    await _firestore.collection('venues').doc(hallId).delete();
+    
+    // 4. Automatically evict user from active business routing back to Personal
+    _ref.read(sessionContextProvider.notifier).switchToPersonal();
+  }
+
   // --- Admin/Seed Tools ---
   Future<void> seedSpecials() async {
     final collection = _firestore.collection('specials');
@@ -514,11 +614,14 @@ class HallRepository {
   }) async {
     try {
       // 1. Get User Location (Use cached if provided, otherwise fetch fresh)
-      final Position position =
-          location ??
-          await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.medium,
-          );
+      Position? position = location ?? await Geolocator.getLastKnownPosition();
+
+      if (position == null) {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 5),
+        );
+      }
 
       // 2. Fetch Halls (Limit to 50 for sanity)
       // Note: Geo-querying Firestore is complex without dedicated libs (GeoFlutterFire).
@@ -1470,6 +1573,29 @@ class HallRepository {
       }).toList();
     }
     return specials;
+  }
+
+  Future<List<TriviaModel>> fetchTriviaPage({
+    DateTime? startAfterTimestamp,
+    int limit = 20,
+    Position? userLoc,
+  }) async {
+    Query query = _firestore
+        .collection('trivia')
+        .where('isActive', isEqualTo: true)
+        .orderBy('createdAt', descending: true)
+        .limit(limit);
+
+    if (startAfterTimestamp != null) {
+      query = query.startAfter([Timestamp.fromDate(startAfterTimestamp)]);
+    }
+
+    final snap = await query.get();
+    var triviaList = snap.docs
+        .map((d) => TriviaModel.fromJson(d.data() as Map<String, dynamic>))
+        .toList();
+
+    return triviaList;
   }
 
   Future<List<RaffleModel>> fetchRafflesPage({

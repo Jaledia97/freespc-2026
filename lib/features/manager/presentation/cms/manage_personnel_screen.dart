@@ -18,9 +18,14 @@ class ManagePersonnelScreen extends ConsumerWidget {
     final session = ref.watch(sessionContextProvider);
 
     if (!session.isBusiness || session.activeVenueId == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF121212),
-        body: Center(
+      return Scaffold(
+        backgroundColor: const Color(0xFF121212),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: const BackButton(color: Colors.white),
+        ),
+        body: const Center(
           child: Text(
             "Access Denied: No Active Venue Session",
             style: TextStyle(color: Colors.white),
@@ -35,9 +40,14 @@ class ManagePersonnelScreen extends ConsumerWidget {
     final hallAsync = ref.watch(hallStreamProvider(hallId));
 
     if (currentUserAsync.value == null || hallAsync.value == null) {
-        return const Scaffold(
-          backgroundColor: Color(0xFF141414),
-          body: Center(child: CircularProgressIndicator()),
+        return Scaffold(
+          backgroundColor: const Color(0xFF141414),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: const BackButton(color: Colors.white),
+          ),
+          body: const Center(child: CircularProgressIndicator()),
         );
     }
 
@@ -47,6 +57,7 @@ class ManagePersonnelScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
+        leading: const BackButton(color: Colors.white),
         title: const Text("Personnel Management"),
         backgroundColor: Colors.transparent,
         elevation: 0,

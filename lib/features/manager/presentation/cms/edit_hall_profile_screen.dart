@@ -347,7 +347,8 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
           _streetCtrl.text.trim() != (_currentHall!.street ?? '') ||
           _cityCtrl.text.trim() != (_currentHall!.city ?? '') ||
           _zipCtrl.text.trim() != (_currentHall!.zipCode ?? '') ||
-          _unitCtrl.text.trim() != (_currentHall!.unitNumber ?? '');
+          _unitCtrl.text.trim() != (_currentHall!.unitNumber ?? '') ||
+          _currentHall!.latitude == 0.0;
 
       if (addressChanged) {
         // Attempt Geocoding

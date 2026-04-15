@@ -38,7 +38,7 @@ class MainLayout extends ConsumerWidget {
             ProfileScreen(),
           ];
 
-    return Scaffold(
+    final scaffold = Scaffold(
       extendBody: true,
       body: screens[currentIndex],
       floatingActionButton: isBusiness 
@@ -93,6 +93,52 @@ class MainLayout extends ConsumerWidget {
           ],
         ),
       ),
+    );
+
+    return PopScope(
+      canPop: isBusiness ? false : (currentIndex == 0),
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
+        if (isBusiness) {
+          if (currentIndex != 2) {
+            // Manager Dashboard is the home of business mode (index 2)
+            ref.read(bottomNavIndexProvider.notifier).state = 2;
+          } else {
+            // They are on the Manager Dashboard, prompt to exit
+            final shouldExit = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                backgroundColor: const Color(0xFF222222),
+                title: const Text("Exit Manager Mode?", style: TextStyle(color: Colors.white)),
+                content: const Text(
+                  "You will need to scan your ID or enter your PIN to access this dashboard again.",
+                  style: TextStyle(color: Colors.white70),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text("CANCEL", style: TextStyle(color: Colors.grey)),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text("EXIT", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            );
+            if (shouldExit == true && context.mounted) {
+              ref.read(sessionContextProvider.notifier).switchToPersonal();
+            }
+          }
+        } else {
+          // Personal Mode
+          if (currentIndex != 0) {
+            ref.read(bottomNavIndexProvider.notifier).state = 0;
+          }
+        }
+      },
+      child: scaffold,
     );
   }
 }

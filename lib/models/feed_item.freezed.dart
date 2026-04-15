@@ -55,7 +55,7 @@ extension FeedItemPatterns on FeedItem {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _FeedItemTournament value)?  tournament,TResult Function( _FeedItemRaffle value)?  raffle,TResult Function( _FeedItemSpecial value)?  special,TResult Function( _FeedItemCheckIn value)?  checkIn,TResult Function( _FeedItemWinPost value)?  winPost,TResult Function( _FeedItemTextPost value)?  textPost,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _FeedItemTournament value)?  tournament,TResult Function( _FeedItemRaffle value)?  raffle,TResult Function( _FeedItemSpecial value)?  special,TResult Function( _FeedItemCheckIn value)?  checkIn,TResult Function( _FeedItemWinPost value)?  winPost,TResult Function( _FeedItemTextPost value)?  textPost,TResult Function( _FeedItemTrivia value)?  trivia,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _FeedItemTournament() when tournament != null:
@@ -64,7 +64,8 @@ return raffle(_that);case _FeedItemSpecial() when special != null:
 return special(_that);case _FeedItemCheckIn() when checkIn != null:
 return checkIn(_that);case _FeedItemWinPost() when winPost != null:
 return winPost(_that);case _FeedItemTextPost() when textPost != null:
-return textPost(_that);case _:
+return textPost(_that);case _FeedItemTrivia() when trivia != null:
+return trivia(_that);case _:
   return orElse();
 
 }
@@ -82,7 +83,7 @@ return textPost(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _FeedItemTournament value)  tournament,required TResult Function( _FeedItemRaffle value)  raffle,required TResult Function( _FeedItemSpecial value)  special,required TResult Function( _FeedItemCheckIn value)  checkIn,required TResult Function( _FeedItemWinPost value)  winPost,required TResult Function( _FeedItemTextPost value)  textPost,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _FeedItemTournament value)  tournament,required TResult Function( _FeedItemRaffle value)  raffle,required TResult Function( _FeedItemSpecial value)  special,required TResult Function( _FeedItemCheckIn value)  checkIn,required TResult Function( _FeedItemWinPost value)  winPost,required TResult Function( _FeedItemTextPost value)  textPost,required TResult Function( _FeedItemTrivia value)  trivia,}){
 final _that = this;
 switch (_that) {
 case _FeedItemTournament():
@@ -91,7 +92,8 @@ return raffle(_that);case _FeedItemSpecial():
 return special(_that);case _FeedItemCheckIn():
 return checkIn(_that);case _FeedItemWinPost():
 return winPost(_that);case _FeedItemTextPost():
-return textPost(_that);}
+return textPost(_that);case _FeedItemTrivia():
+return trivia(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -105,7 +107,7 @@ return textPost(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _FeedItemTournament value)?  tournament,TResult? Function( _FeedItemRaffle value)?  raffle,TResult? Function( _FeedItemSpecial value)?  special,TResult? Function( _FeedItemCheckIn value)?  checkIn,TResult? Function( _FeedItemWinPost value)?  winPost,TResult? Function( _FeedItemTextPost value)?  textPost,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _FeedItemTournament value)?  tournament,TResult? Function( _FeedItemRaffle value)?  raffle,TResult? Function( _FeedItemSpecial value)?  special,TResult? Function( _FeedItemCheckIn value)?  checkIn,TResult? Function( _FeedItemWinPost value)?  winPost,TResult? Function( _FeedItemTextPost value)?  textPost,TResult? Function( _FeedItemTrivia value)?  trivia,}){
 final _that = this;
 switch (_that) {
 case _FeedItemTournament() when tournament != null:
@@ -114,7 +116,8 @@ return raffle(_that);case _FeedItemSpecial() when special != null:
 return special(_that);case _FeedItemCheckIn() when checkIn != null:
 return checkIn(_that);case _FeedItemWinPost() when winPost != null:
 return winPost(_that);case _FeedItemTextPost() when textPost != null:
-return textPost(_that);case _:
+return textPost(_that);case _FeedItemTrivia() when trivia != null:
+return trivia(_that);case _:
   return null;
 
 }
@@ -131,7 +134,7 @@ return textPost(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( TournamentModel data)?  tournament,TResult Function( RaffleModel data)?  raffle,TResult Function( SpecialModel data)?  special,TResult Function( CheckInModel data)?  checkIn,TResult Function( WinPostModel data)?  winPost,TResult Function( TextPostModel data)?  textPost,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( TournamentModel data)?  tournament,TResult Function( RaffleModel data)?  raffle,TResult Function( SpecialModel data)?  special,TResult Function( CheckInModel data)?  checkIn,TResult Function( WinPostModel data)?  winPost,TResult Function( TextPostModel data)?  textPost,TResult Function( TriviaModel data)?  trivia,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FeedItemTournament() when tournament != null:
 return tournament(_that.data);case _FeedItemRaffle() when raffle != null:
@@ -139,7 +142,8 @@ return raffle(_that.data);case _FeedItemSpecial() when special != null:
 return special(_that.data);case _FeedItemCheckIn() when checkIn != null:
 return checkIn(_that.data);case _FeedItemWinPost() when winPost != null:
 return winPost(_that.data);case _FeedItemTextPost() when textPost != null:
-return textPost(_that.data);case _:
+return textPost(_that.data);case _FeedItemTrivia() when trivia != null:
+return trivia(_that.data);case _:
   return orElse();
 
 }
@@ -157,7 +161,7 @@ return textPost(_that.data);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( TournamentModel data)  tournament,required TResult Function( RaffleModel data)  raffle,required TResult Function( SpecialModel data)  special,required TResult Function( CheckInModel data)  checkIn,required TResult Function( WinPostModel data)  winPost,required TResult Function( TextPostModel data)  textPost,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( TournamentModel data)  tournament,required TResult Function( RaffleModel data)  raffle,required TResult Function( SpecialModel data)  special,required TResult Function( CheckInModel data)  checkIn,required TResult Function( WinPostModel data)  winPost,required TResult Function( TextPostModel data)  textPost,required TResult Function( TriviaModel data)  trivia,}) {final _that = this;
 switch (_that) {
 case _FeedItemTournament():
 return tournament(_that.data);case _FeedItemRaffle():
@@ -165,7 +169,8 @@ return raffle(_that.data);case _FeedItemSpecial():
 return special(_that.data);case _FeedItemCheckIn():
 return checkIn(_that.data);case _FeedItemWinPost():
 return winPost(_that.data);case _FeedItemTextPost():
-return textPost(_that.data);}
+return textPost(_that.data);case _FeedItemTrivia():
+return trivia(_that.data);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -179,7 +184,7 @@ return textPost(_that.data);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( TournamentModel data)?  tournament,TResult? Function( RaffleModel data)?  raffle,TResult? Function( SpecialModel data)?  special,TResult? Function( CheckInModel data)?  checkIn,TResult? Function( WinPostModel data)?  winPost,TResult? Function( TextPostModel data)?  textPost,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( TournamentModel data)?  tournament,TResult? Function( RaffleModel data)?  raffle,TResult? Function( SpecialModel data)?  special,TResult? Function( CheckInModel data)?  checkIn,TResult? Function( WinPostModel data)?  winPost,TResult? Function( TextPostModel data)?  textPost,TResult? Function( TriviaModel data)?  trivia,}) {final _that = this;
 switch (_that) {
 case _FeedItemTournament() when tournament != null:
 return tournament(_that.data);case _FeedItemRaffle() when raffle != null:
@@ -187,7 +192,8 @@ return raffle(_that.data);case _FeedItemSpecial() when special != null:
 return special(_that.data);case _FeedItemCheckIn() when checkIn != null:
 return checkIn(_that.data);case _FeedItemWinPost() when winPost != null:
 return winPost(_that.data);case _FeedItemTextPost() when textPost != null:
-return textPost(_that.data);case _:
+return textPost(_that.data);case _FeedItemTrivia() when trivia != null:
+return trivia(_that.data);case _:
   return null;
 
 }
@@ -640,6 +646,81 @@ as TextPostModel,
 $TextPostModelCopyWith<$Res> get data {
   
   return $TextPostModelCopyWith<$Res>(_self.data, (value) {
+    return _then(_self.copyWith(data: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class _FeedItemTrivia extends FeedItem {
+  const _FeedItemTrivia(this.data): super._();
+  
+
+@override final  TriviaModel data;
+
+/// Create a copy of FeedItem
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$FeedItemTriviaCopyWith<_FeedItemTrivia> get copyWith => __$FeedItemTriviaCopyWithImpl<_FeedItemTrivia>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FeedItemTrivia&&(identical(other.data, data) || other.data == data));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,data);
+
+@override
+String toString() {
+  return 'FeedItem.trivia(data: $data)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$FeedItemTriviaCopyWith<$Res> implements $FeedItemCopyWith<$Res> {
+  factory _$FeedItemTriviaCopyWith(_FeedItemTrivia value, $Res Function(_FeedItemTrivia) _then) = __$FeedItemTriviaCopyWithImpl;
+@useResult
+$Res call({
+ TriviaModel data
+});
+
+
+$TriviaModelCopyWith<$Res> get data;
+
+}
+/// @nodoc
+class __$FeedItemTriviaCopyWithImpl<$Res>
+    implements _$FeedItemTriviaCopyWith<$Res> {
+  __$FeedItemTriviaCopyWithImpl(this._self, this._then);
+
+  final _FeedItemTrivia _self;
+  final $Res Function(_FeedItemTrivia) _then;
+
+/// Create a copy of FeedItem
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? data = null,}) {
+  return _then(_FeedItemTrivia(
+null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as TriviaModel,
+  ));
+}
+
+/// Create a copy of FeedItem
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TriviaModelCopyWith<$Res> get data {
+  
+  return $TriviaModelCopyWith<$Res>(_self.data, (value) {
     return _then(_self.copyWith(data: value));
   });
 }

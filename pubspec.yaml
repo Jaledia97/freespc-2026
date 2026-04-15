@@ -78,6 +78,9 @@ dependencies:
   chewie: ^1.13.0
   video_player: ^2.11.1
   cloud_functions: ^6.1.0
+  flutter_dotenv: ^6.0.0
+  http: ^1.6.0
+  flutter_typeahead: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -105,7 +108,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - .env
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
