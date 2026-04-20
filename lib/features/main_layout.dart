@@ -34,7 +34,7 @@ class MainLayout extends ConsumerWidget {
         : const [
             HomeScreen(),
             WalletScreen(),
-            MyHallsScreen(),
+            MyVenuesScreen(),
             ProfileScreen(),
           ];
 

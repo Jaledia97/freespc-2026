@@ -18,14 +18,14 @@ final nearbyHallsFutureProvider =
           .getNearbyHalls(args.ids, location: args.location);
     });
 
-class MyHallsScreen extends ConsumerStatefulWidget {
-  const MyHallsScreen({super.key});
+class MyVenuesScreen extends ConsumerStatefulWidget {
+  const MyVenuesScreen({super.key});
 
   @override
-  ConsumerState<MyHallsScreen> createState() => _MyHallsScreenState();
+  ConsumerState<MyVenuesScreen> createState() => _MyVenuesScreenState();
 }
 
-class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
+class _MyVenuesScreenState extends ConsumerState<MyVenuesScreen> {
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +82,7 @@ class _MyHallsScreenState extends ConsumerState<MyHallsScreen> {
                 Consumer(
                   builder: (context, ref, child) {
                     final hallsAsync = ref.watch(
-                      venuesStreamProvider(user.following),
+                      venuesStreamProvider(user.following.join(',')),
                     );
 
                     return hallsAsync.when(

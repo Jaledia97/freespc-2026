@@ -4,7 +4,10 @@ import 'package:intl/intl.dart';
 import '../../wallet/repositories/wallet_repository.dart';
 import '../../../models/venue_membership_model.dart';
 import '../../home/repositories/venue_repository.dart';
+import '../../../services/location_service.dart';
 import 'wallet_screen.dart'; // Import focusedMembershipProvider
+
+enum _SortType { az, distance, points }
 
 class AllMembershipsScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -16,10 +19,16 @@ class AllMembershipsScreen extends ConsumerStatefulWidget {
 
 class _AllMembershipsScreenState extends ConsumerState<AllMembershipsScreen> {
   String _searchQuery = '';
+  _SortType _currentSort = _SortType.az;
 
   @override
   Widget build(BuildContext context) {
     final membershipsAsync = ref.watch(myMembershipsStreamProvider(widget.userId));
+    
+    // Batch fetch venues and location specifically for spatial logic
+    final venueIds = membershipsAsync.valueOrNull?.map((m) => m.venueId).toList() ?? [];
+    final allVenuesAsync = ref.watch(venuesStreamProvider(venueIds.join(',')));
+    final locationAsync = ref.watch(userLocationStreamProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
@@ -59,14 +68,27 @@ class _AllMembershipsScreenState extends ConsumerState<AllMembershipsScreen> {
                     color: Colors.white10,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: IconButton(
+                  child: PopupMenuButton<_SortType>(
                     icon: const Icon(Icons.filter_list, color: Colors.white),
-                    onPressed: () {
-                      // Alpha filter is default for now.
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Filtered A-Z')),
-                      );
+                    color: const Color(0xFF1E1E1E),
+                    initialValue: _currentSort,
+                    onSelected: (sortType) {
+                      setState(() => _currentSort = sortType);
                     },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: _SortType.az,
+                        child: Text("Sort A-Z", style: TextStyle(color: Colors.white)),
+                      ),
+                      const PopupMenuItem(
+                        value: _SortType.distance,
+                        child: Text("Sort by Distance", style: TextStyle(color: Colors.white)),
+                      ),
+                      const PopupMenuItem(
+                        value: _SortType.points,
+                        child: Text("Sort by Points Held", style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
                   ),
                 )
               ],
@@ -82,7 +104,31 @@ class _AllMembershipsScreenState extends ConsumerState<AllMembershipsScreen> {
                   return m.venueName.toLowerCase().contains(_searchQuery);
                 }).toList();
                 
-                filtered.sort((a, b) => a.venueName.compareTo(b.venueName));
+                // Route Multi-Dimensional Sorting Algorithms
+                if (_currentSort == _SortType.points) {
+                  // Descending order scaling Point Values
+                  filtered.sort((a, b) => b.balance.compareTo(a.balance));
+                } else if (_currentSort == _SortType.distance) {
+                  // Distance resolution scaling
+                  final venues = allVenuesAsync.valueOrNull ?? [];
+                  final loc = locationAsync.valueOrNull;
+                  final locationService = ref.read(locationServiceProvider);
+
+                  filtered.sort((a, b) {
+                    final venueA = venues.where((v) => v.id == a.venueId).firstOrNull;
+                    final venueB = venues.where((v) => v.id == b.venueId).firstOrNull;
+
+                    // If missing venue or location geometry, shift naturally backwards
+                    if (loc == null || venueA == null || venueB == null) return 0;
+                    
+                    final distA = locationService.getDistanceBetween(loc.latitude, loc.longitude, venueA.latitude, venueA.longitude);
+                    final distB = locationService.getDistanceBetween(loc.latitude, loc.longitude, venueB.latitude, venueB.longitude);
+                    return distA.compareTo(distB);
+                  });
+                } else {
+                  // Default Alphabetical A-Z execution natively
+                  filtered.sort((a, b) => a.venueName.compareTo(b.venueName));
+                }
 
                 if (filtered.isEmpty) {
                   return const Center(child: Text("No memberships found.", style: TextStyle(color: Colors.white54)));
@@ -168,15 +214,29 @@ class _CompactMembershipCard extends ConsumerWidget {
               ),
               const SizedBox(height: 4),
               
-              // Distance Mock
+              // Distance Marker
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(Icons.location_on, size: 12, color: Colors.white54),
                   const SizedBox(width: 4),
-                  Text(
-                    "1.2 mi",
-                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final uLoc = ref.watch(userLocationStreamProvider).valueOrNull;
+                      if (uLoc == null || venue == null) {
+                        return const Text("---", style: TextStyle(color: Colors.white54, fontSize: 11));
+                      }
+                      
+                      final meters = ref.read(locationServiceProvider).getDistanceBetween(
+                        uLoc.latitude, uLoc.longitude, 
+                        venue.latitude, venue.longitude
+                      );
+                      
+                      return Text(
+                        "${(meters * 0.000621371).toStringAsFixed(1)} mi",
+                        style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
+                      );
+                    },
                   ),
                 ],
               ),

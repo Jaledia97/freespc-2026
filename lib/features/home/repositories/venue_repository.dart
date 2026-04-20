@@ -23,7 +23,9 @@ final venueRepositoryProvider = Provider(
 );
 
 final venuesStreamProvider =
-    StreamProvider.family<List<VenueModel>, List<String>>((ref, ids) {
+    StreamProvider.family<List<VenueModel>, String>((ref, joinedIds) {
+      if (joinedIds.isEmpty) return Stream.value([]);
+      final ids = joinedIds.split(',');
       return ref.watch(venueRepositoryProvider).getHallsByIds(ids);
     });
 

@@ -15,6 +15,7 @@ import '../../../core/widgets/glass_container.dart';
 import '../../home/repositories/venue_repository.dart';
 import '../../messaging/presentation/messaging_hub_screen.dart';
 import '../../../core/widgets/notification_badge.dart';
+import '../../../services/location_service.dart'; // Import LocationService
 
 final focusedMembershipProvider = StateProvider.autoDispose<VenueMembershipModel?>((ref) => null);
 
@@ -140,12 +141,43 @@ class _HallCardsParamsState extends ConsumerState<_HallCardsParams> {
   @override
   Widget build(BuildContext context) {
     final membershipsAsync = ref.watch(myMembershipsStreamProvider(widget.userId));
+    
+    // Batch fetch venues and user location for spatial sorting
+    final venueIds = membershipsAsync.valueOrNull?.map((m) => m.venueId).toList() ?? [];
+    final allVenuesAsync = ref.watch(venuesStreamProvider(venueIds.join(',')));
+    final locationAsync = ref.watch(userLocationStreamProvider);
+
+    List<VenueMembershipModel> _getSortedMemberships(List<VenueMembershipModel> baseMemberships) {
+      var memberships = baseMemberships
+          .where((m) => widget.followingIds.contains(m.venueId))
+          .toList();
+      
+      final loc = locationAsync.valueOrNull;
+      if (loc != null && allVenuesAsync.hasValue) {
+        final venues = allVenuesAsync.value!;
+        final locationService = ref.read(locationServiceProvider);
+        
+        memberships.sort((a, b) {
+          final venueA = venues.where((v) => v.id == a.venueId).firstOrNull;
+          final venueB = venues.where((v) => v.id == b.venueId).firstOrNull;
+          
+          if (venueA == null || venueB == null) return 0;
+          
+          final distA = locationService.getDistanceBetween(
+            loc.latitude, loc.longitude, venueA.latitude, venueA.longitude
+          );
+          final distB = locationService.getDistanceBetween(
+            loc.latitude, loc.longitude, venueB.latitude, venueB.longitude
+          );
+          return distA.compareTo(distB);
+        });
+      }
+      return memberships;
+    }
 
     ref.listen(focusedMembershipProvider, (previous, next) {
       if (next != null && membershipsAsync.hasValue) {
-        final memberships = membershipsAsync.value!
-            .where((m) => widget.followingIds.contains(m.venueId))
-            .toList();
+        final memberships = _getSortedMemberships(membershipsAsync.value!);
         final index = memberships.indexWhere((m) => m.venueId == next.venueId);
         if (index != -1 && _pageController.hasClients && _pageController.page?.round() != index) {
           _pageController.animateToPage(
@@ -159,9 +191,7 @@ class _HallCardsParamsState extends ConsumerState<_HallCardsParams> {
 
     return membershipsAsync.when(
       data: (allMemberships) {
-        final memberships = allMemberships
-            .where((m) => widget.followingIds.contains(m.venueId))
-            .toList();
+        final memberships = _getSortedMemberships(allMemberships);
 
         if (memberships.isEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {

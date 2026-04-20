@@ -2,6 +2,15 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+78] - 2026-04-20 - Wallet Auto-Sort & Riverpod Parity
+
+### Added
+- **Distance Resolution Sorting**: Automatically extracted real-world physical GPS tracking dependencies onto the Main Wallet Slider securely aggregating elements accurately nearest the active user intrinsically.
+
+### Fixed
+- **Riverpod Caching Infinite Loops**: Overhauled the core `venuesStreamProvider` family routines to safely consume comma-separated String representations uniquely rather than dynamically evaluated Dart Arrays (Lists). This completely eliminates infinite refresh loops safely unlocking geolocation processing constraints flawlessly.
+
+
 ## [0.0.1+77] - 2026-04-19 - Wallet Space Optimizations & CMS Activity Dynamics
 
 ### Added

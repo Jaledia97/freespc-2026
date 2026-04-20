@@ -9,9 +9,8 @@ import '../../settings/presentation/privacy_settings_screen.dart';
 import '../../settings/presentation/display_settings_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'public_profile_screen.dart';
-import '../../../core/utils/role_utils.dart'; // Import RoleUtils
 import '../../../core/widgets/notification_badge.dart'; // Import NotificationBadge
-import '../../wallet/presentation/my_raffles_screen.dart'; // Import MyRafflesScreen
+import '../../my_venues/presentation/my_venues_screen.dart'; // Import MyVenuesScreen
 import '../../home/presentation/upcoming_games_screen.dart'; // Import UpcomingGamesScreen
 import '../../friends/presentation/friends_screen.dart'; // Import FriendsScreen
 import '../../messaging/presentation/messaging_hub_screen.dart';
@@ -74,9 +73,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               child: Icon(Icons.settings),
             ),
             onPressed: () {
-              final user = userAsync.value; // Safe
-              final role = user?.systemRole;
-
               showModalBottomSheet(
                 context: context,
                 backgroundColor: const Color(0xFF1E1E1E),
@@ -236,14 +232,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             Expanded(
                               child: _buildActionBtn(
                                 context,
-                                "Tournaments",
-                                Icons.emoji_events,
-                                Colors.purpleAccent,
+                                "Events",
+                                Icons.calendar_month,
+                                Colors.indigoAccent,
                                 () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => const UpcomingGamesScreen(
-                                      initialCategory: 'Tournaments',
+                                      initialCategory: null,
                                     ),
                                   ),
                                 ),
@@ -253,13 +249,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             Expanded(
                               child: _buildActionBtn(
                                 context,
-                                "Raffles",
-                                Icons.local_activity,
-                                Colors.orangeAccent,
+                                "My Places",
+                                Icons.storefront,
+                                Colors.amber,
                                 () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const MyRafflesScreen(),
+                                    builder: (_) => const MyVenuesScreen(),
                                   ),
                                 ),
                               ),
