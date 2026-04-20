@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../models/raffle_model.dart';
 import '../../../../core/utils/time_utils.dart';
-import '../../../home/repositories/hall_repository.dart';
+import '../../../home/repositories/venue_repository.dart';
 import 'edit_raffle_screen.dart';
 import '../raffle_tool/raffle_tool_screen.dart';
 
 class ManageRafflesScreen extends ConsumerStatefulWidget {
-  final String hallId;
-  const ManageRafflesScreen({super.key, required this.hallId});
+  final String venueId;
+  const ManageRafflesScreen({super.key, required this.venueId});
 
   @override
   ConsumerState<ManageRafflesScreen> createState() =>
@@ -36,7 +36,7 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
 
   @override
   Widget build(BuildContext context) {
-    final rafflesAsync = ref.watch(hallRafflesProvider(widget.hallId));
+    final rafflesAsync = ref.watch(hallRafflesProvider(widget.venueId));
     final isTemplateTab = _tabController.index == 2;
 
     return Scaffold(
@@ -63,7 +63,7 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
             context,
             MaterialPageRoute(
               builder: (_) => EditRaffleScreen(
-                hallId: widget.hallId,
+                venueId: widget.venueId,
                 isTemplate: isTemplateTab, // Auto-check template box if on tab
               ),
             ),
@@ -167,7 +167,7 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
                     context,
                     MaterialPageRoute(
                       builder: (_) => EditRaffleScreen(
-                        hallId: widget.hallId,
+                        venueId: widget.venueId,
                         isTemplate: true,
                       ),
                     ),
@@ -326,7 +326,7 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
                         isStarred: !raffle.isStarred,
                         unstarredAt: raffle.isStarred ? DateTime.now() : null,
                       );
-                      await ref.read(hallRepositoryProvider).updateRaffle(updated);
+                      await ref.read(venueRepositoryProvider).updateRaffle(updated);
                     },
                   )
                 : null,
@@ -383,7 +383,7 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
                 context,
                 MaterialPageRoute(
                   builder: (_) => EditRaffleScreen(
-                    hallId: widget.hallId,
+                    venueId: widget.venueId,
                     raffle: raffle,
                     isCreatingFromTemplate: true,
                   ),
@@ -403,7 +403,7 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
                 context,
                 MaterialPageRoute(
                   builder: (_) => EditRaffleScreen(
-                    hallId: widget.hallId,
+                    venueId: widget.venueId,
                     raffle: raffle,
                     isEditingTemplate: true,
                   ),
@@ -459,7 +459,7 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
               );
 
               if (confirm == true) {
-                await ref.read(hallRepositoryProvider).deleteRaffle(raffle.id);
+                await ref.read(venueRepositoryProvider).deleteRaffle(raffle.id);
                 if (context.mounted) Navigator.pop(ctx);
               }
             },
@@ -472,7 +472,7 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
                 context,
                 MaterialPageRoute(
                   builder: (_) =>
-                      EditRaffleScreen(hallId: widget.hallId, raffle: raffle),
+                      EditRaffleScreen(venueId: widget.venueId, raffle: raffle),
                 ),
               );
             },
@@ -531,7 +531,7 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
                     context,
                     MaterialPageRoute(
                       builder: (_) => RaffleToolScreen(
-                        hallId: widget.hallId,
+                        venueId: widget.venueId,
                         raffle: raffle,
                       ),
                     ),
@@ -557,7 +557,7 @@ class _ManageRafflesScreenState extends ConsumerState<ManageRafflesScreen>
                     context,
                     MaterialPageRoute(
                       builder: (_) => EditRaffleScreen(
-                        hallId: widget.hallId,
+                        venueId: widget.venueId,
                         raffle: raffle,
                       ),
                     ),

@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'hall_charity_model.dart';
+part of 'venue_charity_model.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -11,25 +11,32 @@ part of 'hall_charity_model.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
+VenueCharityModel _$VenueCharityModelFromJson(
+  Map<String, dynamic> json
+) {
+    return _HallCharityModel.fromJson(
+      json
+    );
+}
 
 /// @nodoc
-mixin _$HallCharityModel {
+mixin _$VenueCharityModel {
 
  String get id; String get name; String get logoUrl;// URL to uploaded image
  String? get websiteUrl;
-/// Create a copy of HallCharityModel
+/// Create a copy of VenueCharityModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$HallCharityModelCopyWith<HallCharityModel> get copyWith => _$HallCharityModelCopyWithImpl<HallCharityModel>(this as HallCharityModel, _$identity);
+$VenueCharityModelCopyWith<VenueCharityModel> get copyWith => _$VenueCharityModelCopyWithImpl<VenueCharityModel>(this as VenueCharityModel, _$identity);
 
-  /// Serializes this HallCharityModel to a JSON map.
+  /// Serializes this VenueCharityModel to a JSON map.
   Map<String, dynamic> toJson();
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HallCharityModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.websiteUrl, websiteUrl) || other.websiteUrl == websiteUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VenueCharityModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.websiteUrl, websiteUrl) || other.websiteUrl == websiteUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -38,15 +45,15 @@ int get hashCode => Object.hash(runtimeType,id,name,logoUrl,websiteUrl);
 
 @override
 String toString() {
-  return 'HallCharityModel(id: $id, name: $name, logoUrl: $logoUrl, websiteUrl: $websiteUrl)';
+  return 'VenueCharityModel(id: $id, name: $name, logoUrl: $logoUrl, websiteUrl: $websiteUrl)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $HallCharityModelCopyWith<$Res>  {
-  factory $HallCharityModelCopyWith(HallCharityModel value, $Res Function(HallCharityModel) _then) = _$HallCharityModelCopyWithImpl;
+abstract mixin class $VenueCharityModelCopyWith<$Res>  {
+  factory $VenueCharityModelCopyWith(VenueCharityModel value, $Res Function(VenueCharityModel) _then) = _$VenueCharityModelCopyWithImpl;
 @useResult
 $Res call({
  String id, String name, String logoUrl, String? websiteUrl
@@ -57,14 +64,14 @@ $Res call({
 
 }
 /// @nodoc
-class _$HallCharityModelCopyWithImpl<$Res>
-    implements $HallCharityModelCopyWith<$Res> {
-  _$HallCharityModelCopyWithImpl(this._self, this._then);
+class _$VenueCharityModelCopyWithImpl<$Res>
+    implements $VenueCharityModelCopyWith<$Res> {
+  _$VenueCharityModelCopyWithImpl(this._self, this._then);
 
-  final HallCharityModel _self;
-  final $Res Function(HallCharityModel) _then;
+  final VenueCharityModel _self;
+  final $Res Function(VenueCharityModel) _then;
 
-/// Create a copy of HallCharityModel
+/// Create a copy of VenueCharityModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? logoUrl = null,Object? websiteUrl = freezed,}) {
   return _then(_self.copyWith(
@@ -79,8 +86,8 @@ as String?,
 }
 
 
-/// Adds pattern-matching-related methods to [HallCharityModel].
-extension HallCharityModelPatterns on HallCharityModel {
+/// Adds pattern-matching-related methods to [VenueCharityModel].
+extension VenueCharityModelPatterns on VenueCharityModel {
 /// A variant of `map` that fallback to returning `orElse`.
 ///
 /// It is equivalent to doing:
@@ -212,7 +219,7 @@ return $default(_that.id,_that.name,_that.logoUrl,_that.websiteUrl);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _HallCharityModel implements HallCharityModel {
+class _HallCharityModel implements VenueCharityModel {
   const _HallCharityModel({required this.id, required this.name, required this.logoUrl, this.websiteUrl});
   factory _HallCharityModel.fromJson(Map<String, dynamic> json) => _$HallCharityModelFromJson(json);
 
@@ -222,7 +229,7 @@ class _HallCharityModel implements HallCharityModel {
 // URL to uploaded image
 @override final  String? websiteUrl;
 
-/// Create a copy of HallCharityModel
+/// Create a copy of VenueCharityModel
 /// with the given fields replaced by the non-null parameter values.
 @override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
@@ -244,14 +251,14 @@ int get hashCode => Object.hash(runtimeType,id,name,logoUrl,websiteUrl);
 
 @override
 String toString() {
-  return 'HallCharityModel(id: $id, name: $name, logoUrl: $logoUrl, websiteUrl: $websiteUrl)';
+  return 'VenueCharityModel(id: $id, name: $name, logoUrl: $logoUrl, websiteUrl: $websiteUrl)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class _$HallCharityModelCopyWith<$Res> implements $HallCharityModelCopyWith<$Res> {
+abstract mixin class _$HallCharityModelCopyWith<$Res> implements $VenueCharityModelCopyWith<$Res> {
   factory _$HallCharityModelCopyWith(_HallCharityModel value, $Res Function(_HallCharityModel) _then) = __$HallCharityModelCopyWithImpl;
 @override @useResult
 $Res call({
@@ -270,7 +277,7 @@ class __$HallCharityModelCopyWithImpl<$Res>
   final _HallCharityModel _self;
   final $Res Function(_HallCharityModel) _then;
 
-/// Create a copy of HallCharityModel
+/// Create a copy of VenueCharityModel
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? logoUrl = null,Object? websiteUrl = freezed,}) {
   return _then(_HallCharityModel(

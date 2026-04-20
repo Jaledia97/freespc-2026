@@ -10,8 +10,8 @@ _DrinkTicketModel _$DrinkTicketModelFromJson(Map<String, dynamic> json) =>
     _DrinkTicketModel(
       id: json['id'] as String,
       userId: json['userId'] as String,
-      hallId: json['hallId'] as String,
-      hallName: json['hallName'] as String,
+      venueId: json['venueId'] as String,
+      venueName: json['venueName'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
       issuedAt: DateTime.parse(json['issuedAt'] as String),
@@ -26,8 +26,8 @@ Map<String, dynamic> _$DrinkTicketModelToJson(_DrinkTicketModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'userId': instance.userId,
-      'hallId': instance.hallId,
-      'hallName': instance.hallName,
+      'venueId': instance.venueId,
+      'venueName': instance.venueName,
       'title': instance.title,
       'description': instance.description,
       'issuedAt': instance.issuedAt.toIso8601String(),

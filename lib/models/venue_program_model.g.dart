@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'hall_program_model.dart';
+part of 'venue_program_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

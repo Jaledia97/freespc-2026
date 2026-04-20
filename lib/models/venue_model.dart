@@ -1,17 +1,17 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Added for Timestamp
-import 'hall_program_model.dart';
-import 'hall_charity_model.dart';
+import 'venue_program_model.dart';
+import 'venue_charity_model.dart';
 
-part 'bingo_hall_model.freezed.dart';
-part 'bingo_hall_model.g.dart';
+part 'venue_model.freezed.dart';
+part 'venue_model.g.dart';
 
 @freezed
-abstract class BingoHallModel with _$BingoHallModel {
-  const BingoHallModel._();
+abstract class VenueModel with _$VenueModel {
+  const VenueModel._();
 
   @JsonSerializable(explicitToJson: true)
-  const factory BingoHallModel({
+  const factory VenueModel({
     required String id,
     required String name,
     required String beaconUuid,
@@ -35,9 +35,9 @@ abstract class BingoHallModel with _$BingoHallModel {
     // Operating Hours: Map<String, Map<String, String>> (day -> {open, close})
     @Default({}) Map<String, dynamic> operatingHours,
     // Programs
-    @Default([]) List<HallProgramModel> programs,
+    @Default([]) List<VenueProgramModel> programs,
     // Charities
-    @Default([]) List<HallCharityModel> charities,
+    @Default([]) List<VenueCharityModel> charities,
     // Loyalty Configuration
     @Default(LoyaltySettings()) LoyaltySettings loyaltySettings,
     // Store Categories
@@ -52,10 +52,10 @@ abstract class BingoHallModel with _$BingoHallModel {
     List<String> storeCategories,
     @Default('bingo') String venueType,
     @Default(SquadBonusConfig()) SquadBonusConfig squadBonusConfig,
-  }) = _BingoHallModel;
+  }) = _VenueModel;
 
-  factory BingoHallModel.fromJson(Map<String, dynamic> json) =>
-      _$BingoHallModelFromJson(json);
+  factory VenueModel.fromJson(Map<String, dynamic> json) =>
+      _$VenueModelFromJson(json);
 
   // Helper for GeoFlutterFire Plus
   Map<String, dynamic> get geoFirePoint => {

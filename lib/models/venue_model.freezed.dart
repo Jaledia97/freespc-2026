@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'bingo_hall_model.dart';
+part of 'venue_model.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -13,29 +13,29 @@ part of 'bingo_hall_model.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
-mixin _$BingoHallModel {
+mixin _$VenueModel {
 
  String get id; String get name; String get beaconUuid; double get latitude; double get longitude; bool get isActive; String? get street; String? get city; String? get state; String? get zipCode; String? get unitNumber; String? get phone; String? get websiteUrl; String? get description; String? get logoUrl; String? get bannerUrl;// Geohashing for scalable search
  String? get geoHash;// Bonus Logic
  double get followBonus;// Operating Hours: Map<String, Map<String, String>> (day -> {open, close})
  Map<String, dynamic> get operatingHours;// Programs
- List<HallProgramModel> get programs;// Charities
- List<HallCharityModel> get charities;// Loyalty Configuration
+ List<VenueProgramModel> get programs;// Charities
+ List<VenueCharityModel> get charities;// Loyalty Configuration
  LoyaltySettings get loyaltySettings;// Store Categories
  List<String> get storeCategories; String get venueType; SquadBonusConfig get squadBonusConfig;
-/// Create a copy of BingoHallModel
+/// Create a copy of VenueModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$BingoHallModelCopyWith<BingoHallModel> get copyWith => _$BingoHallModelCopyWithImpl<BingoHallModel>(this as BingoHallModel, _$identity);
+$VenueModelCopyWith<VenueModel> get copyWith => _$VenueModelCopyWithImpl<VenueModel>(this as VenueModel, _$identity);
 
-  /// Serializes this BingoHallModel to a JSON map.
+  /// Serializes this VenueModel to a JSON map.
   Map<String, dynamic> toJson();
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BingoHallModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.beaconUuid, beaconUuid) || other.beaconUuid == beaconUuid)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.street, street) || other.street == street)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode)&&(identical(other.unitNumber, unitNumber) || other.unitNumber == unitNumber)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.websiteUrl, websiteUrl) || other.websiteUrl == websiteUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&(identical(other.geoHash, geoHash) || other.geoHash == geoHash)&&(identical(other.followBonus, followBonus) || other.followBonus == followBonus)&&const DeepCollectionEquality().equals(other.operatingHours, operatingHours)&&const DeepCollectionEquality().equals(other.programs, programs)&&const DeepCollectionEquality().equals(other.charities, charities)&&(identical(other.loyaltySettings, loyaltySettings) || other.loyaltySettings == loyaltySettings)&&const DeepCollectionEquality().equals(other.storeCategories, storeCategories)&&(identical(other.venueType, venueType) || other.venueType == venueType)&&(identical(other.squadBonusConfig, squadBonusConfig) || other.squadBonusConfig == squadBonusConfig));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VenueModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.beaconUuid, beaconUuid) || other.beaconUuid == beaconUuid)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.street, street) || other.street == street)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode)&&(identical(other.unitNumber, unitNumber) || other.unitNumber == unitNumber)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.websiteUrl, websiteUrl) || other.websiteUrl == websiteUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&(identical(other.geoHash, geoHash) || other.geoHash == geoHash)&&(identical(other.followBonus, followBonus) || other.followBonus == followBonus)&&const DeepCollectionEquality().equals(other.operatingHours, operatingHours)&&const DeepCollectionEquality().equals(other.programs, programs)&&const DeepCollectionEquality().equals(other.charities, charities)&&(identical(other.loyaltySettings, loyaltySettings) || other.loyaltySettings == loyaltySettings)&&const DeepCollectionEquality().equals(other.storeCategories, storeCategories)&&(identical(other.venueType, venueType) || other.venueType == venueType)&&(identical(other.squadBonusConfig, squadBonusConfig) || other.squadBonusConfig == squadBonusConfig));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -44,18 +44,18 @@ int get hashCode => Object.hashAll([runtimeType,id,name,beaconUuid,latitude,long
 
 @override
 String toString() {
-  return 'BingoHallModel(id: $id, name: $name, beaconUuid: $beaconUuid, latitude: $latitude, longitude: $longitude, isActive: $isActive, street: $street, city: $city, state: $state, zipCode: $zipCode, unitNumber: $unitNumber, phone: $phone, websiteUrl: $websiteUrl, description: $description, logoUrl: $logoUrl, bannerUrl: $bannerUrl, geoHash: $geoHash, followBonus: $followBonus, operatingHours: $operatingHours, programs: $programs, charities: $charities, loyaltySettings: $loyaltySettings, storeCategories: $storeCategories, venueType: $venueType, squadBonusConfig: $squadBonusConfig)';
+  return 'VenueModel(id: $id, name: $name, beaconUuid: $beaconUuid, latitude: $latitude, longitude: $longitude, isActive: $isActive, street: $street, city: $city, state: $state, zipCode: $zipCode, unitNumber: $unitNumber, phone: $phone, websiteUrl: $websiteUrl, description: $description, logoUrl: $logoUrl, bannerUrl: $bannerUrl, geoHash: $geoHash, followBonus: $followBonus, operatingHours: $operatingHours, programs: $programs, charities: $charities, loyaltySettings: $loyaltySettings, storeCategories: $storeCategories, venueType: $venueType, squadBonusConfig: $squadBonusConfig)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $BingoHallModelCopyWith<$Res>  {
-  factory $BingoHallModelCopyWith(BingoHallModel value, $Res Function(BingoHallModel) _then) = _$BingoHallModelCopyWithImpl;
+abstract mixin class $VenueModelCopyWith<$Res>  {
+  factory $VenueModelCopyWith(VenueModel value, $Res Function(VenueModel) _then) = _$VenueModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String beaconUuid, double latitude, double longitude, bool isActive, String? street, String? city, String? state, String? zipCode, String? unitNumber, String? phone, String? websiteUrl, String? description, String? logoUrl, String? bannerUrl, String? geoHash, double followBonus, Map<String, dynamic> operatingHours, List<HallProgramModel> programs, List<HallCharityModel> charities, LoyaltySettings loyaltySettings, List<String> storeCategories, String venueType, SquadBonusConfig squadBonusConfig
+ String id, String name, String beaconUuid, double latitude, double longitude, bool isActive, String? street, String? city, String? state, String? zipCode, String? unitNumber, String? phone, String? websiteUrl, String? description, String? logoUrl, String? bannerUrl, String? geoHash, double followBonus, Map<String, dynamic> operatingHours, List<VenueProgramModel> programs, List<VenueCharityModel> charities, LoyaltySettings loyaltySettings, List<String> storeCategories, String venueType, SquadBonusConfig squadBonusConfig
 });
 
 
@@ -63,14 +63,14 @@ $LoyaltySettingsCopyWith<$Res> get loyaltySettings;$SquadBonusConfigCopyWith<$Re
 
 }
 /// @nodoc
-class _$BingoHallModelCopyWithImpl<$Res>
-    implements $BingoHallModelCopyWith<$Res> {
-  _$BingoHallModelCopyWithImpl(this._self, this._then);
+class _$VenueModelCopyWithImpl<$Res>
+    implements $VenueModelCopyWith<$Res> {
+  _$VenueModelCopyWithImpl(this._self, this._then);
 
-  final BingoHallModel _self;
-  final $Res Function(BingoHallModel) _then;
+  final VenueModel _self;
+  final $Res Function(VenueModel) _then;
 
-/// Create a copy of BingoHallModel
+/// Create a copy of VenueModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? beaconUuid = null,Object? latitude = null,Object? longitude = null,Object? isActive = null,Object? street = freezed,Object? city = freezed,Object? state = freezed,Object? zipCode = freezed,Object? unitNumber = freezed,Object? phone = freezed,Object? websiteUrl = freezed,Object? description = freezed,Object? logoUrl = freezed,Object? bannerUrl = freezed,Object? geoHash = freezed,Object? followBonus = null,Object? operatingHours = null,Object? programs = null,Object? charities = null,Object? loyaltySettings = null,Object? storeCategories = null,Object? venueType = null,Object? squadBonusConfig = null,}) {
   return _then(_self.copyWith(
@@ -94,15 +94,15 @@ as String?,geoHash: freezed == geoHash ? _self.geoHash : geoHash // ignore: cast
 as String?,followBonus: null == followBonus ? _self.followBonus : followBonus // ignore: cast_nullable_to_non_nullable
 as double,operatingHours: null == operatingHours ? _self.operatingHours : operatingHours // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>,programs: null == programs ? _self.programs : programs // ignore: cast_nullable_to_non_nullable
-as List<HallProgramModel>,charities: null == charities ? _self.charities : charities // ignore: cast_nullable_to_non_nullable
-as List<HallCharityModel>,loyaltySettings: null == loyaltySettings ? _self.loyaltySettings : loyaltySettings // ignore: cast_nullable_to_non_nullable
+as List<VenueProgramModel>,charities: null == charities ? _self.charities : charities // ignore: cast_nullable_to_non_nullable
+as List<VenueCharityModel>,loyaltySettings: null == loyaltySettings ? _self.loyaltySettings : loyaltySettings // ignore: cast_nullable_to_non_nullable
 as LoyaltySettings,storeCategories: null == storeCategories ? _self.storeCategories : storeCategories // ignore: cast_nullable_to_non_nullable
 as List<String>,venueType: null == venueType ? _self.venueType : venueType // ignore: cast_nullable_to_non_nullable
 as String,squadBonusConfig: null == squadBonusConfig ? _self.squadBonusConfig : squadBonusConfig // ignore: cast_nullable_to_non_nullable
 as SquadBonusConfig,
   ));
 }
-/// Create a copy of BingoHallModel
+/// Create a copy of VenueModel
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
@@ -111,7 +111,7 @@ $LoyaltySettingsCopyWith<$Res> get loyaltySettings {
   return $LoyaltySettingsCopyWith<$Res>(_self.loyaltySettings, (value) {
     return _then(_self.copyWith(loyaltySettings: value));
   });
-}/// Create a copy of BingoHallModel
+}/// Create a copy of VenueModel
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
@@ -124,8 +124,8 @@ $SquadBonusConfigCopyWith<$Res> get squadBonusConfig {
 }
 
 
-/// Adds pattern-matching-related methods to [BingoHallModel].
-extension BingoHallModelPatterns on BingoHallModel {
+/// Adds pattern-matching-related methods to [VenueModel].
+extension VenueModelPatterns on VenueModel {
 /// A variant of `map` that fallback to returning `orElse`.
 ///
 /// It is equivalent to doing:
@@ -138,10 +138,10 @@ extension BingoHallModelPatterns on BingoHallModel {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _BingoHallModel value)?  $default,{required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _VenueModel value)?  $default,{required TResult orElse(),}){
 final _that = this;
 switch (_that) {
-case _BingoHallModel() when $default != null:
+case _VenueModel() when $default != null:
 return $default(_that);case _:
   return orElse();
 
@@ -160,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _BingoHallModel value)  $default,){
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _VenueModel value)  $default,){
 final _that = this;
 switch (_that) {
-case _BingoHallModel():
+case _VenueModel():
 return $default(_that);case _:
   throw StateError('Unexpected subclass');
 
@@ -181,10 +181,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _BingoHallModel value)?  $default,){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _VenueModel value)?  $default,){
 final _that = this;
 switch (_that) {
-case _BingoHallModel() when $default != null:
+case _VenueModel() when $default != null:
 return $default(_that);case _:
   return null;
 
@@ -202,9 +202,9 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String beaconUuid,  double latitude,  double longitude,  bool isActive,  String? street,  String? city,  String? state,  String? zipCode,  String? unitNumber,  String? phone,  String? websiteUrl,  String? description,  String? logoUrl,  String? bannerUrl,  String? geoHash,  double followBonus,  Map<String, dynamic> operatingHours,  List<HallProgramModel> programs,  List<HallCharityModel> charities,  LoyaltySettings loyaltySettings,  List<String> storeCategories,  String venueType,  SquadBonusConfig squadBonusConfig)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String beaconUuid,  double latitude,  double longitude,  bool isActive,  String? street,  String? city,  String? state,  String? zipCode,  String? unitNumber,  String? phone,  String? websiteUrl,  String? description,  String? logoUrl,  String? bannerUrl,  String? geoHash,  double followBonus,  Map<String, dynamic> operatingHours,  List<VenueProgramModel> programs,  List<VenueCharityModel> charities,  LoyaltySettings loyaltySettings,  List<String> storeCategories,  String venueType,  SquadBonusConfig squadBonusConfig)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
-case _BingoHallModel() when $default != null:
+case _VenueModel() when $default != null:
 return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longitude,_that.isActive,_that.street,_that.city,_that.state,_that.zipCode,_that.unitNumber,_that.phone,_that.websiteUrl,_that.description,_that.logoUrl,_that.bannerUrl,_that.geoHash,_that.followBonus,_that.operatingHours,_that.programs,_that.charities,_that.loyaltySettings,_that.storeCategories,_that.venueType,_that.squadBonusConfig);case _:
   return orElse();
 
@@ -223,9 +223,9 @@ return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longit
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String beaconUuid,  double latitude,  double longitude,  bool isActive,  String? street,  String? city,  String? state,  String? zipCode,  String? unitNumber,  String? phone,  String? websiteUrl,  String? description,  String? logoUrl,  String? bannerUrl,  String? geoHash,  double followBonus,  Map<String, dynamic> operatingHours,  List<HallProgramModel> programs,  List<HallCharityModel> charities,  LoyaltySettings loyaltySettings,  List<String> storeCategories,  String venueType,  SquadBonusConfig squadBonusConfig)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String beaconUuid,  double latitude,  double longitude,  bool isActive,  String? street,  String? city,  String? state,  String? zipCode,  String? unitNumber,  String? phone,  String? websiteUrl,  String? description,  String? logoUrl,  String? bannerUrl,  String? geoHash,  double followBonus,  Map<String, dynamic> operatingHours,  List<VenueProgramModel> programs,  List<VenueCharityModel> charities,  LoyaltySettings loyaltySettings,  List<String> storeCategories,  String venueType,  SquadBonusConfig squadBonusConfig)  $default,) {final _that = this;
 switch (_that) {
-case _BingoHallModel():
+case _VenueModel():
 return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longitude,_that.isActive,_that.street,_that.city,_that.state,_that.zipCode,_that.unitNumber,_that.phone,_that.websiteUrl,_that.description,_that.logoUrl,_that.bannerUrl,_that.geoHash,_that.followBonus,_that.operatingHours,_that.programs,_that.charities,_that.loyaltySettings,_that.storeCategories,_that.venueType,_that.squadBonusConfig);case _:
   throw StateError('Unexpected subclass');
 
@@ -243,9 +243,9 @@ return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longit
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String beaconUuid,  double latitude,  double longitude,  bool isActive,  String? street,  String? city,  String? state,  String? zipCode,  String? unitNumber,  String? phone,  String? websiteUrl,  String? description,  String? logoUrl,  String? bannerUrl,  String? geoHash,  double followBonus,  Map<String, dynamic> operatingHours,  List<HallProgramModel> programs,  List<HallCharityModel> charities,  LoyaltySettings loyaltySettings,  List<String> storeCategories,  String venueType,  SquadBonusConfig squadBonusConfig)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String beaconUuid,  double latitude,  double longitude,  bool isActive,  String? street,  String? city,  String? state,  String? zipCode,  String? unitNumber,  String? phone,  String? websiteUrl,  String? description,  String? logoUrl,  String? bannerUrl,  String? geoHash,  double followBonus,  Map<String, dynamic> operatingHours,  List<VenueProgramModel> programs,  List<VenueCharityModel> charities,  LoyaltySettings loyaltySettings,  List<String> storeCategories,  String venueType,  SquadBonusConfig squadBonusConfig)?  $default,) {final _that = this;
 switch (_that) {
-case _BingoHallModel() when $default != null:
+case _VenueModel() when $default != null:
 return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longitude,_that.isActive,_that.street,_that.city,_that.state,_that.zipCode,_that.unitNumber,_that.phone,_that.websiteUrl,_that.description,_that.logoUrl,_that.bannerUrl,_that.geoHash,_that.followBonus,_that.operatingHours,_that.programs,_that.charities,_that.loyaltySettings,_that.storeCategories,_that.venueType,_that.squadBonusConfig);case _:
   return null;
 
@@ -257,9 +257,9 @@ return $default(_that.id,_that.name,_that.beaconUuid,_that.latitude,_that.longit
 /// @nodoc
 
 @JsonSerializable(explicitToJson: true)
-class _BingoHallModel extends BingoHallModel {
-  const _BingoHallModel({required this.id, required this.name, required this.beaconUuid, required this.latitude, required this.longitude, required this.isActive, this.street, this.city, this.state, this.zipCode, this.unitNumber, this.phone, this.websiteUrl, this.description, this.logoUrl, this.bannerUrl, this.geoHash, this.followBonus = 0.0, final  Map<String, dynamic> operatingHours = const {}, final  List<HallProgramModel> programs = const [], final  List<HallCharityModel> charities = const [], this.loyaltySettings = const LoyaltySettings(), final  List<String> storeCategories = const ['Merchandise', 'Food & Beverage', 'Sessions', 'Pull Tabs', 'Electronics', 'Other'], this.venueType = 'bingo', this.squadBonusConfig = const SquadBonusConfig()}): _operatingHours = operatingHours,_programs = programs,_charities = charities,_storeCategories = storeCategories,super._();
-  factory _BingoHallModel.fromJson(Map<String, dynamic> json) => _$BingoHallModelFromJson(json);
+class _VenueModel extends VenueModel {
+  const _VenueModel({required this.id, required this.name, required this.beaconUuid, required this.latitude, required this.longitude, required this.isActive, this.street, this.city, this.state, this.zipCode, this.unitNumber, this.phone, this.websiteUrl, this.description, this.logoUrl, this.bannerUrl, this.geoHash, this.followBonus = 0.0, final  Map<String, dynamic> operatingHours = const {}, final  List<VenueProgramModel> programs = const [], final  List<VenueCharityModel> charities = const [], this.loyaltySettings = const LoyaltySettings(), final  List<String> storeCategories = const ['Merchandise', 'Food & Beverage', 'Sessions', 'Pull Tabs', 'Electronics', 'Other'], this.venueType = 'bingo', this.squadBonusConfig = const SquadBonusConfig()}): _operatingHours = operatingHours,_programs = programs,_charities = charities,_storeCategories = storeCategories,super._();
+  factory _VenueModel.fromJson(Map<String, dynamic> json) => _$VenueModelFromJson(json);
 
 @override final  String id;
 @override final  String name;
@@ -291,18 +291,18 @@ class _BingoHallModel extends BingoHallModel {
 }
 
 // Programs
- final  List<HallProgramModel> _programs;
+ final  List<VenueProgramModel> _programs;
 // Programs
-@override@JsonKey() List<HallProgramModel> get programs {
+@override@JsonKey() List<VenueProgramModel> get programs {
   if (_programs is EqualUnmodifiableListView) return _programs;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_programs);
 }
 
 // Charities
- final  List<HallCharityModel> _charities;
+ final  List<VenueCharityModel> _charities;
 // Charities
-@override@JsonKey() List<HallCharityModel> get charities {
+@override@JsonKey() List<VenueCharityModel> get charities {
   if (_charities is EqualUnmodifiableListView) return _charities;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_charities);
@@ -322,20 +322,20 @@ class _BingoHallModel extends BingoHallModel {
 @override@JsonKey() final  String venueType;
 @override@JsonKey() final  SquadBonusConfig squadBonusConfig;
 
-/// Create a copy of BingoHallModel
+/// Create a copy of VenueModel
 /// with the given fields replaced by the non-null parameter values.
 @override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-_$BingoHallModelCopyWith<_BingoHallModel> get copyWith => __$BingoHallModelCopyWithImpl<_BingoHallModel>(this, _$identity);
+_$VenueModelCopyWith<_VenueModel> get copyWith => __$VenueModelCopyWithImpl<_VenueModel>(this, _$identity);
 
 @override
 Map<String, dynamic> toJson() {
-  return _$BingoHallModelToJson(this, );
+  return _$VenueModelToJson(this, );
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BingoHallModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.beaconUuid, beaconUuid) || other.beaconUuid == beaconUuid)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.street, street) || other.street == street)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode)&&(identical(other.unitNumber, unitNumber) || other.unitNumber == unitNumber)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.websiteUrl, websiteUrl) || other.websiteUrl == websiteUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&(identical(other.geoHash, geoHash) || other.geoHash == geoHash)&&(identical(other.followBonus, followBonus) || other.followBonus == followBonus)&&const DeepCollectionEquality().equals(other._operatingHours, _operatingHours)&&const DeepCollectionEquality().equals(other._programs, _programs)&&const DeepCollectionEquality().equals(other._charities, _charities)&&(identical(other.loyaltySettings, loyaltySettings) || other.loyaltySettings == loyaltySettings)&&const DeepCollectionEquality().equals(other._storeCategories, _storeCategories)&&(identical(other.venueType, venueType) || other.venueType == venueType)&&(identical(other.squadBonusConfig, squadBonusConfig) || other.squadBonusConfig == squadBonusConfig));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VenueModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.beaconUuid, beaconUuid) || other.beaconUuid == beaconUuid)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.street, street) || other.street == street)&&(identical(other.city, city) || other.city == city)&&(identical(other.state, state) || other.state == state)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode)&&(identical(other.unitNumber, unitNumber) || other.unitNumber == unitNumber)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.websiteUrl, websiteUrl) || other.websiteUrl == websiteUrl)&&(identical(other.description, description) || other.description == description)&&(identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl)&&(identical(other.geoHash, geoHash) || other.geoHash == geoHash)&&(identical(other.followBonus, followBonus) || other.followBonus == followBonus)&&const DeepCollectionEquality().equals(other._operatingHours, _operatingHours)&&const DeepCollectionEquality().equals(other._programs, _programs)&&const DeepCollectionEquality().equals(other._charities, _charities)&&(identical(other.loyaltySettings, loyaltySettings) || other.loyaltySettings == loyaltySettings)&&const DeepCollectionEquality().equals(other._storeCategories, _storeCategories)&&(identical(other.venueType, venueType) || other.venueType == venueType)&&(identical(other.squadBonusConfig, squadBonusConfig) || other.squadBonusConfig == squadBonusConfig));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -344,18 +344,18 @@ int get hashCode => Object.hashAll([runtimeType,id,name,beaconUuid,latitude,long
 
 @override
 String toString() {
-  return 'BingoHallModel(id: $id, name: $name, beaconUuid: $beaconUuid, latitude: $latitude, longitude: $longitude, isActive: $isActive, street: $street, city: $city, state: $state, zipCode: $zipCode, unitNumber: $unitNumber, phone: $phone, websiteUrl: $websiteUrl, description: $description, logoUrl: $logoUrl, bannerUrl: $bannerUrl, geoHash: $geoHash, followBonus: $followBonus, operatingHours: $operatingHours, programs: $programs, charities: $charities, loyaltySettings: $loyaltySettings, storeCategories: $storeCategories, venueType: $venueType, squadBonusConfig: $squadBonusConfig)';
+  return 'VenueModel(id: $id, name: $name, beaconUuid: $beaconUuid, latitude: $latitude, longitude: $longitude, isActive: $isActive, street: $street, city: $city, state: $state, zipCode: $zipCode, unitNumber: $unitNumber, phone: $phone, websiteUrl: $websiteUrl, description: $description, logoUrl: $logoUrl, bannerUrl: $bannerUrl, geoHash: $geoHash, followBonus: $followBonus, operatingHours: $operatingHours, programs: $programs, charities: $charities, loyaltySettings: $loyaltySettings, storeCategories: $storeCategories, venueType: $venueType, squadBonusConfig: $squadBonusConfig)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class _$BingoHallModelCopyWith<$Res> implements $BingoHallModelCopyWith<$Res> {
-  factory _$BingoHallModelCopyWith(_BingoHallModel value, $Res Function(_BingoHallModel) _then) = __$BingoHallModelCopyWithImpl;
+abstract mixin class _$VenueModelCopyWith<$Res> implements $VenueModelCopyWith<$Res> {
+  factory _$VenueModelCopyWith(_VenueModel value, $Res Function(_VenueModel) _then) = __$VenueModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String beaconUuid, double latitude, double longitude, bool isActive, String? street, String? city, String? state, String? zipCode, String? unitNumber, String? phone, String? websiteUrl, String? description, String? logoUrl, String? bannerUrl, String? geoHash, double followBonus, Map<String, dynamic> operatingHours, List<HallProgramModel> programs, List<HallCharityModel> charities, LoyaltySettings loyaltySettings, List<String> storeCategories, String venueType, SquadBonusConfig squadBonusConfig
+ String id, String name, String beaconUuid, double latitude, double longitude, bool isActive, String? street, String? city, String? state, String? zipCode, String? unitNumber, String? phone, String? websiteUrl, String? description, String? logoUrl, String? bannerUrl, String? geoHash, double followBonus, Map<String, dynamic> operatingHours, List<VenueProgramModel> programs, List<VenueCharityModel> charities, LoyaltySettings loyaltySettings, List<String> storeCategories, String venueType, SquadBonusConfig squadBonusConfig
 });
 
 
@@ -363,17 +363,17 @@ $Res call({
 
 }
 /// @nodoc
-class __$BingoHallModelCopyWithImpl<$Res>
-    implements _$BingoHallModelCopyWith<$Res> {
-  __$BingoHallModelCopyWithImpl(this._self, this._then);
+class __$VenueModelCopyWithImpl<$Res>
+    implements _$VenueModelCopyWith<$Res> {
+  __$VenueModelCopyWithImpl(this._self, this._then);
 
-  final _BingoHallModel _self;
-  final $Res Function(_BingoHallModel) _then;
+  final _VenueModel _self;
+  final $Res Function(_VenueModel) _then;
 
-/// Create a copy of BingoHallModel
+/// Create a copy of VenueModel
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? beaconUuid = null,Object? latitude = null,Object? longitude = null,Object? isActive = null,Object? street = freezed,Object? city = freezed,Object? state = freezed,Object? zipCode = freezed,Object? unitNumber = freezed,Object? phone = freezed,Object? websiteUrl = freezed,Object? description = freezed,Object? logoUrl = freezed,Object? bannerUrl = freezed,Object? geoHash = freezed,Object? followBonus = null,Object? operatingHours = null,Object? programs = null,Object? charities = null,Object? loyaltySettings = null,Object? storeCategories = null,Object? venueType = null,Object? squadBonusConfig = null,}) {
-  return _then(_BingoHallModel(
+  return _then(_VenueModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,beaconUuid: null == beaconUuid ? _self.beaconUuid : beaconUuid // ignore: cast_nullable_to_non_nullable
@@ -394,8 +394,8 @@ as String?,geoHash: freezed == geoHash ? _self.geoHash : geoHash // ignore: cast
 as String?,followBonus: null == followBonus ? _self.followBonus : followBonus // ignore: cast_nullable_to_non_nullable
 as double,operatingHours: null == operatingHours ? _self._operatingHours : operatingHours // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>,programs: null == programs ? _self._programs : programs // ignore: cast_nullable_to_non_nullable
-as List<HallProgramModel>,charities: null == charities ? _self._charities : charities // ignore: cast_nullable_to_non_nullable
-as List<HallCharityModel>,loyaltySettings: null == loyaltySettings ? _self.loyaltySettings : loyaltySettings // ignore: cast_nullable_to_non_nullable
+as List<VenueProgramModel>,charities: null == charities ? _self._charities : charities // ignore: cast_nullable_to_non_nullable
+as List<VenueCharityModel>,loyaltySettings: null == loyaltySettings ? _self.loyaltySettings : loyaltySettings // ignore: cast_nullable_to_non_nullable
 as LoyaltySettings,storeCategories: null == storeCategories ? _self._storeCategories : storeCategories // ignore: cast_nullable_to_non_nullable
 as List<String>,venueType: null == venueType ? _self.venueType : venueType // ignore: cast_nullable_to_non_nullable
 as String,squadBonusConfig: null == squadBonusConfig ? _self.squadBonusConfig : squadBonusConfig // ignore: cast_nullable_to_non_nullable
@@ -403,7 +403,7 @@ as SquadBonusConfig,
   ));
 }
 
-/// Create a copy of BingoHallModel
+/// Create a copy of VenueModel
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
@@ -412,7 +412,7 @@ $LoyaltySettingsCopyWith<$Res> get loyaltySettings {
   return $LoyaltySettingsCopyWith<$Res>(_self.loyaltySettings, (value) {
     return _then(_self.copyWith(loyaltySettings: value));
   });
-}/// Create a copy of BingoHallModel
+}/// Create a copy of VenueModel
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')

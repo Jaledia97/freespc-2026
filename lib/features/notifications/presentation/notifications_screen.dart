@@ -342,9 +342,9 @@ class _NotificationTile extends ConsumerWidget {
       }
     }
     // Handling manager photo queues
-    if (notification.type == 'hall_photo_pending' && notification.hallId != null) {
+    if (notification.type == 'hall_photo_pending' && notification.venueId != null) {
       if (context.mounted) {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoApprovalScreen(hallId: notification.hallId!, hallName: 'Review Photos')));
+        Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoApprovalScreen(venueId: notification.venueId!, venueName: 'Review Photos')));
       }
     }
   }

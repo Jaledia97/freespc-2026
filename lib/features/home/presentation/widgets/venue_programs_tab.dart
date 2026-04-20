@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../models/hall_program_model.dart';
+import '../../../../models/venue_program_model.dart';
 
 class HallProgramsTab extends StatelessWidget {
-  final List<HallProgramModel> programs;
+  final List<VenueProgramModel> programs;
 
   const HallProgramsTab({super.key, required this.programs});
 
@@ -11,7 +11,7 @@ class HallProgramsTab extends StatelessWidget {
     if (programs.isEmpty) {
       return const Center(
         child: Text(
-          "No programs listed for this hall.",
+          "No programs listed for this venue.",
           style: TextStyle(color: Colors.grey, fontSize: 16),
         ),
       );
@@ -59,7 +59,7 @@ class HallProgramsTab extends StatelessWidget {
     );
   }
 
-  bool _isProgramActive(HallProgramModel program) {
+  bool _isProgramActive(VenueProgramModel program) {
     // 1. Check Override
     if (program.overrideEndTime != null) {
       if (program.overrideEndTime!.isAfter(DateTime.now())) {
@@ -130,7 +130,7 @@ class HallProgramsTab extends StatelessWidget {
     }
   }
 
-  Widget _buildProgramCard(HallProgramModel program) {
+  Widget _buildProgramCard(VenueProgramModel program) {
     return Card(
       color: const Color(0xFF2C2C2C), // Dark Background
       margin: const EdgeInsets.only(bottom: 12),
@@ -230,7 +230,7 @@ class HallProgramsTab extends StatelessWidget {
     );
   }
 
-  String _formatSchedule(HallProgramModel program) {
+  String _formatSchedule(VenueProgramModel program) {
     if (program.selectedDays.isEmpty) return "Manual Only";
 
     String daysText = "Every Day";

@@ -63,7 +63,7 @@ class NotificationService {
     required String title,
     required String body,
     required String type,
-    String? hallId,
+    String? venueId,
     Map<String, dynamic>? metadata,
   }) async {
     final id = const Uuid().v4();
@@ -73,7 +73,7 @@ class NotificationService {
       title: title,
       body: body,
       type: type,
-      hallId: hallId,
+      venueId: venueId,
       metadata: metadata,
       createdAt: DateTime.now(),
       isRead: false,

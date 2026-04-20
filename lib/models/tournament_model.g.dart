@@ -9,7 +9,7 @@ part of 'tournament_model.dart';
 _TournamentModel _$TournamentModelFromJson(Map<String, dynamic> json) =>
     _TournamentModel(
       id: json['id'] as String,
-      hallId: json['hallId'] as String,
+      venueId: json['venueId'] as String,
       title: json['title'] as String,
       imageUrl: json['imageUrl'] as String?,
       description: json['description'] as String? ?? '',
@@ -62,7 +62,7 @@ _TournamentModel _$TournamentModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$TournamentModelToJson(_TournamentModel instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'hallId': instance.hallId,
+      'venueId': instance.venueId,
       'title': instance.title,
       'imageUrl': instance.imageUrl,
       'description': instance.description,

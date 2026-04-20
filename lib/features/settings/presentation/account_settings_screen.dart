@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/auth_service.dart';
@@ -199,7 +200,7 @@ class AccountSettingsScreen extends ConsumerWidget {
                             },
                           );
                         } catch (e) {
-                          print("Account Settings Team Model Crash: $e");
+                          debugPrint("Account Settings Team Model Crash: $e");
                           return const SizedBox.shrink();
                         }
                       }).toList(),
@@ -212,7 +213,7 @@ class AccountSettingsScreen extends ConsumerWidget {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text(
-                    'Register Business / Hall Portal',
+                    'Register Business / Venue Portal',
                     style: TextStyle(color: Colors.white),
                   ),
                   subtitle: const Text(

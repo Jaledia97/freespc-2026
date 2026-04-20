@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freespc/features/home/repositories/hall_repository.dart';
+import 'package:freespc/features/home/repositories/venue_repository.dart';
 import 'package:freespc/features/manager/repositories/tournament_repository.dart';
 import 'package:freespc/features/wallet/repositories/wallet_repository.dart';
 import 'package:freespc/services/auth_service.dart';
@@ -201,16 +201,16 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
             final List<String> discoveredTags = [];
             final results = allItems.where((item) {
               String title = '';
-              String hallName = '';
+              String venueName = '';
               List<String> tags = [];
 
               if (item is SpecialModel) {
                 title = item.title;
-                hallName = item.hallName;
+                venueName = item.venueName;
                 tags = item.tags;
               } else if (item is TournamentModel) {
                 title = item.title;
-                // As noted, TournamentModel lacks hallName currently, so search might be limited
+                // As noted, TournamentModel lacks venueName currently, so search might be limited
                 tags = ['Tournaments'];
               } else if (item is RaffleModel) {
                 title = item.name;
@@ -219,7 +219,7 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
 
               final matchesSearch =
                   title.toLowerCase().contains(_searchQuery) ||
-                  hallName.toLowerCase().contains(_searchQuery);
+                  venueName.toLowerCase().contains(_searchQuery);
               final matchesCategory =
                   _selectedCategory == null ||
                   tags.contains(_selectedCategory!) ||
@@ -384,7 +384,7 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
                               color: Colors.green,
                             ),
                             title: Text(ticket.title),
-                            subtitle: Text(ticket.hallName),
+                            subtitle: Text(ticket.venueName),
                             trailing: Text(
                               "x${ticket.quantity}",
                               style: const TextStyle(
@@ -454,8 +454,8 @@ class _UpcomingGamesScreenState extends ConsumerState<UpcomingGamesScreen> {
                             ),
                             title: Text(t.title),
                             subtitle: Text(
-                              t.hallName,
-                            ), // Need to ensure hallName is populated or fetched
+                              t.venueName,
+                            ), // Need to ensure venueName is populated or fetched
                             trailing: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,

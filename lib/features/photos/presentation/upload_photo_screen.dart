@@ -5,11 +5,11 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../services/auth_service.dart';
 import '../repositories/photo_repository.dart';
 import 'tagging_delegates.dart';
-import '../../../models/bingo_hall_model.dart';
+import '../../../models/venue_model.dart';
 import '../../../models/public_profile.dart';
 
 class UploadPhotoScreen extends ConsumerStatefulWidget {
-  final String? preSelectedHallId; // If coming from a specific hall
+  final String? preSelectedHallId; // If coming from a specific venue
 
   const UploadPhotoScreen({super.key, this.preSelectedHallId});
 
@@ -24,7 +24,7 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
   bool _isUploading = false;
 
   // Tagging State
-  final List<BingoHallModel> _taggedHalls = [];
+  final List<VenueModel> _taggedHalls = [];
   final List<PublicProfile> _taggedUsers = [];
 
   @override
@@ -36,16 +36,16 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
       // For MVP, if preSelected, we just add the ID to a temporary list or fetch it?
       // Actually, let's keep the preSelected as a separate logic or fetch it.
       // To simplify: If preSelectedHallId exists, we assume it's tagged but maybe not easily displayed in the new "Chip" list unless we fetch it.
-      // Or we just fetch it via ref.read(hallRepositoryProvider).getHallStream...
-      // Let's just default to "Current Hall" text if model missing?
+      // Or we just fetch it via ref.read(venueRepositoryProvider).getHallStream...
+      // Let's just default to "Current Venue" text if model missing?
       // Better: Fetch it in initState if possible? No async in initState.
-      // We can use a FutureBuilder for the initial selected hall chip?
-      // OR just keep the "Current Hall" display separate (lines 163-181) and use _taggedHalls for *additional* tags?
-      // User request: "tag their friends and halls".
-      // If I am on a hall page, that hall is implicitly tagged.
-      // If I tag *other* halls, they go into _taggedHalls.
+      // We can use a FutureBuilder for the initial selected venue chip?
+      // OR just keep the "Current Venue" display separate (lines 163-181) and use _taggedHalls for *additional* tags?
+      // User request: "tag their friends and venues".
+      // If I am on a venue page, that venue is implicitly tagged.
+      // If I tag *other* venues, they go into _taggedHalls.
       // Should I merge them?
-      // Let's KEEP lines 163-181 for the "Main" hall, and add a section for "Additional Tags".
+      // Let's KEEP lines 163-181 for the "Main" venue, and add a section for "Additional Tags".
     }
   }
 
@@ -79,7 +79,7 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
             Text("• 3rd Offense: Permanent Platform Ban"),
             SizedBox(height: 12),
             Text(
-              "If you tag a Hall, a manager MUST approve it before it appears on their profile.",
+              "If you tag a Venue, a manager MUST approve it before it appears on their profile.",
             ),
           ],
         ),
@@ -224,7 +224,7 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
             const SizedBox(height: 24),
 
             // Tagging Display
-            // 1. Current Hall (Immutable Tag)
+            // 1. Current Venue (Immutable Tag)
             if (widget.preSelectedHallId != null)
               Container(
                 width: double.infinity,
@@ -241,7 +241,7 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        "Posting to Current Hall",
+                        "Posting to Current Venue",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.blue,
@@ -253,17 +253,17 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
                 ),
               ),
 
-            // 2. Tagged Halls List
+            // 2. Tagged Venues List
             if (_taggedHalls.isNotEmpty)
               Wrap(
                 spacing: 8,
                 children: _taggedHalls
                     .map(
-                      (hall) => Chip(
+                      (venue) => Chip(
                         avatar: const Icon(Icons.location_on, size: 14),
-                        label: Text(hall.name),
+                        label: Text(venue.name),
                         onDeleted: () =>
-                            setState(() => _taggedHalls.remove(hall)),
+                            setState(() => _taggedHalls.remove(venue)),
                       ),
                     )
                     .toList(),
@@ -293,15 +293,15 @@ class _UploadPhotoScreenState extends ConsumerState<UploadPhotoScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.add_location_alt),
-                      label: const Text("Tag Hall"),
+                      label: const Text("Tag Venue"),
                       onPressed: () async {
-                        final hall = await showSearch(
+                        final venue = await showSearch(
                           context: context,
                           delegate: HallSearchDelegate(ref),
                         );
-                        if (hall != null &&
-                            !_taggedHalls.any((h) => h.id == hall.id)) {
-                          setState(() => _taggedHalls.add(hall));
+                        if (venue != null &&
+                            !_taggedHalls.any((h) => h.id == venue.id)) {
+                          setState(() => _taggedHalls.add(venue));
                         }
                       },
                     ),

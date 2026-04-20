@@ -7,7 +7,7 @@ import '../../../../services/auth_service.dart';
 import '../../../../services/storage_service.dart';
 import 'edit_profile_dialog.dart';
 import '../public_profile_screen.dart';
-import '../../../home/repositories/hall_repository.dart';
+import '../../../home/repositories/venue_repository.dart';
 
 class ProfileHeader extends ConsumerStatefulWidget {
   final UserModel user;

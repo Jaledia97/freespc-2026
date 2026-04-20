@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -41,13 +42,13 @@ class PhotoRepository {
       }
       return null;
     } catch (e) {
-      print("Error fetching photo by ID $photoId: $e");
+      debugPrint("Error fetching photo by ID $photoId: $e");
       return null;
     }
   }
 
   /// Uploads a photo to Storage and creates a GalleryPhotoModel in Firestore.
-  /// Halls tagged are initially added to 'pendingHallIds'.
+  /// Venues tagged are initially added to 'pendingHallIds'.
   Future<void> uploadPhoto({
     required File imageFile,
     required String uploaderId,
@@ -71,7 +72,7 @@ class PhotoRepository {
       description: description,
       taggedUserIds: taggedUserIds,
       taggedHallIds: taggedHallIds,
-      // All tagged halls start as PENDING.
+      // All tagged venues start as PENDING.
       pendingHallIds: taggedHallIds,
       approvedHallIds: [],
     );
@@ -99,11 +100,11 @@ class PhotoRepository {
     // without violating Firestore rules. For now, managers will see pending photos in their dashboard.
   }
 
-  /// Get Public Photos for a Hall (Must be APPROVED)
-  Stream<List<GalleryPhotoModel>> getHallPhotos(String hallId) {
+  /// Get Public Photos for a Venue (Must be APPROVED)
+  Stream<List<GalleryPhotoModel>> getHallPhotos(String venueId) {
     return _firestore
         .collection('gallery_photos')
-        .where('approvedHallIds', arrayContains: hallId)
+        .where('approvedHallIds', arrayContains: venueId)
         .where('isHidden', isEqualTo: false) // Hide reported content if needed
         .orderBy('timestamp', descending: true)
         .snapshots()
@@ -115,10 +116,10 @@ class PhotoRepository {
   }
 
   /// Get Pending Photos for a Manager Dashboard
-  Stream<List<GalleryPhotoModel>> getPendingHallPhotos(String hallId) {
+  Stream<List<GalleryPhotoModel>> getPendingHallPhotos(String venueId) {
     return _firestore
         .collection('gallery_photos')
-        .where('pendingHallIds', arrayContains: hallId)
+        .where('pendingHallIds', arrayContains: venueId)
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map(
@@ -128,8 +129,8 @@ class PhotoRepository {
         );
   }
 
-  /// Approve a photo for a specific hall
-  Future<void> approvePhoto(String photoId, String hallId) async {
+  /// Approve a photo for a specific venue
+  Future<void> approvePhoto(String photoId, String venueId) async {
     final docRef = _firestore.collection('gallery_photos').doc(photoId);
 
     await _firestore.runTransaction((transaction) async {
@@ -138,8 +139,8 @@ class PhotoRepository {
 
       // Move from Pending -> Approved
       transaction.update(docRef, {
-        'pendingHallIds': FieldValue.arrayRemove([hallId]),
-        'approvedHallIds': FieldValue.arrayUnion([hallId]),
+        'pendingHallIds': FieldValue.arrayRemove([venueId]),
+        'approvedHallIds': FieldValue.arrayUnion([venueId]),
       });
 
       // We also need to notify the user.
@@ -157,24 +158,24 @@ class PhotoRepository {
         title: "Photo Approved! 📸",
         body: "Your tagged photo has been approved for the gallery.",
         type: 'photo_approval',
-        hallId: hallId,
+        venueId: venueId,
         metadata: {'photoId': photo.id, 'uploaderId': photo.uploaderId},
       );
     }
   }
 
-  /// Decline a photo for a specific hall
-  Future<void> declinePhoto(String photoId, String hallId) async {
+  /// Decline a photo for a specific venue
+  Future<void> declinePhoto(String photoId, String venueId) async {
     final docRef = _firestore.collection('gallery_photos').doc(photoId);
 
     await _firestore.runTransaction((transaction) async {
       final snapshot = await transaction.get(docRef);
       if (!snapshot.exists) throw Exception("Photo not found");
 
-      // Remove from Pending (and Tagged, so it effectively disappears for this hall)
+      // Remove from Pending (and Tagged, so it effectively disappears for this venue)
       transaction.update(docRef, {
-        'pendingHallIds': FieldValue.arrayRemove([hallId]),
-        'taggedHallIds': FieldValue.arrayRemove([hallId]),
+        'pendingHallIds': FieldValue.arrayRemove([venueId]),
+        'taggedHallIds': FieldValue.arrayRemove([venueId]),
       });
     });
 
@@ -186,9 +187,9 @@ class PhotoRepository {
       await ns.sendNotification(
         userId: photo.uploaderId,
         title: "Photo Declined",
-        body: "Your photo was not approved for the hall's gallery.",
+        body: "Your photo was not approved for the venue's gallery.",
         type: 'photo_declined',
-        hallId: hallId,
+        venueId: venueId,
         metadata: {'photoId': photo.id, 'uploaderId': photo.uploaderId},
       );
     }
@@ -215,7 +216,7 @@ class PhotoRepository {
       await _storage.refFromURL(imageUrl).delete();
     } catch (e) {
       // Ignore storage errors (e.g., if file missing)
-      print("Storage delete error: $e");
+      debugPrint("Storage delete error: $e");
     }
 
     // 2. Delete from Firestore

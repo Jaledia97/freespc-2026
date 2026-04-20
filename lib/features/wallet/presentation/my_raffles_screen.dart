@@ -57,7 +57,7 @@ class MyRafflesScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        "Join a Hall to start playing!",
+                        "Join a Venue to start playing!",
                         style: TextStyle(color: Colors.white54),
                       ),
                     ],

@@ -6,8 +6,8 @@ import 'package:freespc/models/transaction_model.dart';
 
 class TransactionHistoryList extends ConsumerWidget {
   final String userId;
-  final String? hallId;
-  const TransactionHistoryList({super.key, required this.userId, this.hallId});
+  final String? venueId;
+  const TransactionHistoryList({super.key, required this.userId, this.venueId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,8 +16,8 @@ class TransactionHistoryList extends ConsumerWidget {
 
     return txAsync.when(
       data: (transactions) {
-        final filteredTx = hallId != null 
-            ? transactions.where((t) => t.hallId == hallId).toList() 
+        final filteredTx = venueId != null 
+            ? transactions.where((t) => t.venueId == venueId).toList() 
             : transactions;
 
         if (filteredTx.isEmpty) {
@@ -30,14 +30,14 @@ class TransactionHistoryList extends ConsumerWidget {
           );
         }
 
-        // Group by Date + Hall (A "Visit")
-        // Logic: Transactions on the same day at the same hall are grouped.
+        // Group by Date + Venue (A "Visit")
+        // Logic: Transactions on the same day at the same venue are grouped.
         final groupedVisits = <String, List<TransactionModel>>{};
 
         for (var tx in filteredTx) {
           final dateKey = DateFormat('yyyy-MM-dd').format(tx.timestamp);
           final key =
-              "$dateKey|${tx.hallName}"; // Format: 2026-02-18|Mary Esther Bingo
+              "$dateKey|${tx.venueName}"; // Format: 2026-02-18|Mary Esther Bingo
 
           if (!groupedVisits.containsKey(key)) {
             groupedVisits[key] = [];
@@ -59,7 +59,7 @@ class TransactionHistoryList extends ConsumerWidget {
             final visitTx = groupedVisits[key]!;
             final parts = key.split('|');
             final dateStr = parts[0];
-            final hallName = parts[1];
+            final venueName = parts[1];
 
             final date = DateTime.parse(dateStr);
             final formattedDate = _isToday(date)
@@ -82,7 +82,7 @@ class TransactionHistoryList extends ConsumerWidget {
                   collapsedBackgroundColor: const Color(0xFF1E1E1E),
                   backgroundColor: const Color(0xFF252525),
                   title: Text(
-                    hallName,
+                    venueName,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

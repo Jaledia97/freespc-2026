@@ -354,7 +354,7 @@ exports.onApproveClaim = onCall(async (request) => {
     const targetData = targetUserDoc.data();
     
     // Fetch Venue Name for Team Model
-    const venueDoc = await db.collection("bingo_halls").doc(venueId).get();
+    const venueDoc = await db.collection("venues").doc(venueId).get();
     const venueName = venueDoc.exists ? venueDoc.data().name : "Unknown Venue";
 
     // Elevate Target User by creating an Owner VenueTeamMemberModel
@@ -374,7 +374,7 @@ exports.onApproveClaim = onCall(async (request) => {
     }, { merge: true });
     
     // Trigger Global Public Discovery for the Sandbox natively!
-    const hallRef = db.collection("bingo_halls").doc(venueId);
+    const hallRef = db.collection("venues").doc(venueId);
     batch.update(hallRef, { isActive: true });
 
     // Clear legacy pending claim from root user document
@@ -392,7 +392,7 @@ exports.onApproveClaim = onCall(async (request) => {
         title: "Registration Approved! ✅",
         body: `Congratulations, your business verification for ${venueName} passed successfully! Switch to this Workspace safely to construct your architecture.`,
         type: "system",
-        hallId: venueId,
+        venueId: venueId,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         isRead: false
     });
@@ -472,7 +472,7 @@ exports.joinVenue = onCall(async (request) => {
     if (!venueId) throw new HttpsError('invalid-argument', 'venueId required.');
     
     const db = admin.firestore();
-    const venueRef = db.collection("bingo_halls").doc(venueId);
+    const venueRef = db.collection("venues").doc(venueId);
     const venueDoc = await venueRef.get();
     if (!venueDoc.exists) throw new HttpsError('not-found', 'Venue not found.');
     

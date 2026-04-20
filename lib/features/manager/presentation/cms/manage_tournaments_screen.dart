@@ -43,15 +43,15 @@ class _ManageTournamentsScreenState
         backgroundColor: Color(0xFF141414),
         body: Center(
           child: Text(
-            "No Hall Assigned to User",
+            "No Venue Assigned to User",
             style: TextStyle(color: Colors.white),
           ),
         ),
       );
     }
     
-    final hallId = session.activeVenueId!;
-    final tournamentsAsync = ref.watch(hallTournamentsProvider(hallId));
+    final venueId = session.activeVenueId!;
+    final tournamentsAsync = ref.watch(hallTournamentsProvider(venueId));
 
     return Scaffold(
           backgroundColor: const Color(0xFF141414),
@@ -78,7 +78,7 @@ class _ManageTournamentsScreenState
                 context,
                 MaterialPageRoute(
                   builder: (_) => EditTournamentScreen(
-                    hallId: hallId,
+                    venueId: venueId,
                     createTemplateMode: isTemplateMode,
                   ),
                 ),
@@ -148,19 +148,19 @@ class _ManageTournamentsScreenState
                 children: [
                   _buildList(
                     active,
-                    hallId,
+                    venueId,
                     "No active tournaments.",
                     isArchived: false,
                   ),
                   _buildList(
                     expired,
-                    hallId,
+                    venueId,
                     "No recently expired tournaments.",
                     isArchived: true,
                   ),
                   _buildList(
                     templates,
-                    hallId,
+                    venueId,
                     "No recurring events saved.",
                     isTemplate: true,
                   ),
@@ -180,7 +180,7 @@ class _ManageTournamentsScreenState
 
   Widget _buildList(
     List<TournamentModel> items,
-    String hallId,
+    String venueId,
     String emptyMsg, {
     bool isArchived = false,
     bool isTemplate = false,
@@ -203,7 +203,7 @@ class _ManageTournamentsScreenState
               context,
               MaterialPageRoute(
                 builder: (_) => EditTournamentScreen(
-                  hallId: hallId,
+                  venueId: venueId,
                   tournament: tournament,
                 ),
               ),
@@ -290,7 +290,7 @@ class _ManageTournamentsScreenState
                           isStarred: !tournament.isStarred,
                           unstarredAt: tournament.isStarred ? DateTime.now() : null,
                         );
-                        await ref.read(tournamentRepositoryProvider).saveTournament(hallId, updated);
+                        await ref.read(tournamentRepositoryProvider).saveTournament(venueId, updated);
                       },
                     ),
                   IconButton(
@@ -300,7 +300,7 @@ class _ManageTournamentsScreenState
                         context,
                         MaterialPageRoute(
                           builder: (_) => EditTournamentScreen(
-                            hallId: hallId,
+                            venueId: venueId,
                             tournament: tournament,
                           ),
                         ),
@@ -316,7 +316,7 @@ class _ManageTournamentsScreenState
     );
   }
 
-  void _createCopy(String hallId, TournamentModel original) {
+  void _createCopy(String venueId, TournamentModel original) {
     final copy = original.copyWith(
       id: '', // Empty ID signals "New"
       title: original.isTemplate ? original.title : "Copy of ${original.title}",
@@ -330,7 +330,7 @@ class _ManageTournamentsScreenState
       context,
       MaterialPageRoute(
         builder: (_) => EditTournamentScreen(
-          hallId: hallId,
+          venueId: venueId,
           tournament: copy,
           createTemplateMode: false,
         ),

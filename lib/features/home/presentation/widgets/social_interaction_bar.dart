@@ -6,7 +6,7 @@ import 'package:vibration/vibration.dart';
 import 'dart:convert';
 import '../../../../models/feed_item.dart';
 import '../../../../services/auth_service.dart';
-import '../../repositories/hall_repository.dart';
+import '../../repositories/venue_repository.dart';
 import '../../controllers/feed_pagination_controller.dart';
 import 'comments_bottom_sheet.dart';
 import '../../../../core/widgets/glass_container.dart';
@@ -140,7 +140,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
 
     try {
       await ref
-          .read(hallRepositoryProvider)
+          .read(venueRepositoryProvider)
           .toggleInteraction(
             collectionName,
             docId,
@@ -241,7 +241,7 @@ class _SocialInteractionBarState extends ConsumerState<SocialInteractionBar> {
       raffle: (r) => r.data.name,
       special: (s) => s.data.title,
       checkIn: (c) => "Live Check-in",
-      winPost: (w) => "Huge win at ${w.data.hallId}",
+      winPost: (w) => "Huge win at ${w.data.venueId}",
       textPost: (t) => t.data.title,
       trivia: (tr) => tr.data.title,
     );

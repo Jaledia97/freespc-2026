@@ -16,13 +16,13 @@ class TransactionService {
 
   Future<void> awardPoints({
     required String userId,
-    required String hallId,
+    required String venueId,
     required int points,
     required String description,
     String? authorizedByWorkerId,
   }) async {
-    if (hallId.isEmpty) {
-      throw Exception("Invalid Hall ID (Empty)");
+    if (venueId.isEmpty) {
+      throw Exception("Invalid Venue ID (Empty)");
     }
 
     final currentUser = _ref.read(userProfileProvider).value;
@@ -32,22 +32,22 @@ class TransactionService {
       }
     }
     final userRef = _firestore.collection('users').doc(userId);
-    final hallRef = _firestore.collection('bingo_halls').doc(hallId);
+    final hallRef = _firestore.collection('venues').doc(venueId);
     final transactionRef = userRef.collection('transactions').doc();
 
     await _firestore.runTransaction((transaction) async {
-      // 1. Validate Hall
+      // 1. Validate Venue
       final hallSnapshot = await transaction.get(hallRef);
       if (!hallSnapshot.exists) {
-        throw Exception("Invalid Hall: $hallId");
+        throw Exception("Invalid Venue: $venueId");
       }
 
       // 2. Validate Membership (User must be following)
-      final membershipRef = userRef.collection('memberships').doc(hallId);
+      final membershipRef = userRef.collection('memberships').doc(venueId);
       final membershipSnapshot = await transaction.get(membershipRef);
 
       if (!membershipSnapshot.exists) {
-        throw Exception("You must follow this Hall to earn points!");
+        throw Exception("You must follow this Venue to earn points!");
       }
 
       // 3. Update Membership Balance
@@ -69,7 +69,7 @@ class TransactionService {
       transaction.set(transactionRef, {
         'id': transactionRef.id,
         'userId': userId,
-        'hallId': hallId,
+        'venueId': venueId,
         'amount': points,
         'timestamp': FieldValue.serverTimestamp(),
         'type': 'earn',
@@ -82,25 +82,25 @@ class TransactionService {
 
   Future<void> redeemItem({
     required String userId,
-    required String hallId,
+    required String venueId,
     required String itemId,
     required String itemName,
     required int quantity,
     required int totalCost,
   }) async {
-    if (hallId.isEmpty || totalCost < 0 || quantity < 1) {
+    if (venueId.isEmpty || totalCost < 0 || quantity < 1) {
       throw Exception("Invalid redemption parameters");
     }
 
     final userRef = _firestore.collection('users').doc(userId);
-    final membershipRef = userRef.collection('memberships').doc(hallId);
+    final membershipRef = userRef.collection('memberships').doc(venueId);
     final transactionRef = userRef.collection('transactions').doc();
 
     await _firestore.runTransaction((transaction) async {
       // 1. Validate Membership & Balance
       final membershipSnapshot = await transaction.get(membershipRef);
       if (!membershipSnapshot.exists) {
-        throw Exception("You must follow this Hall to redeem items!");
+        throw Exception("You must follow this Venue to redeem items!");
       }
 
       final currentBalance =
@@ -129,7 +129,7 @@ class TransactionService {
       transaction.set(transactionRef, {
         'id': transactionRef.id,
         'userId': userId,
-        'hallId': hallId,
+        'venueId': venueId,
         'amount': -totalCost, // Negative for spend
         'timestamp': FieldValue.serverTimestamp(),
         'type': 'spend',
@@ -143,7 +143,7 @@ class TransactionService {
         'id': myItemRef.id,
         'itemId': itemId,
         'itemName': itemName,
-        'hallId': hallId,
+        'venueId': venueId,
         'quantity': quantity,
         'redeemedAt': FieldValue.serverTimestamp(),
         'status': 'active', // can be 'active', 'used', etc.

@@ -8,7 +8,7 @@ part of 'raffle_model.dart';
 
 _RaffleModel _$RaffleModelFromJson(Map<String, dynamic> json) => _RaffleModel(
   id: json['id'] as String,
-  hallId: json['hallId'] as String,
+  venueId: json['venueId'] as String,
   name: json['name'] as String,
   description: json['description'] as String,
   imageUrl: json['imageUrl'] as String,
@@ -48,7 +48,7 @@ _RaffleModel _$RaffleModelFromJson(Map<String, dynamic> json) => _RaffleModel(
 Map<String, dynamic> _$RaffleModelToJson(_RaffleModel instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'hallId': instance.hallId,
+      'venueId': instance.venueId,
       'name': instance.name,
       'description': instance.description,
       'imageUrl': instance.imageUrl,

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'hall_membership_model.dart';
+part of 'venue_membership_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
@@ -8,8 +8,8 @@ part of 'hall_membership_model.dart';
 
 _HallMembershipModel _$HallMembershipModelFromJson(Map<String, dynamic> json) =>
     _HallMembershipModel(
-      hallId: json['hallId'] as String,
-      hallName: json['hallName'] as String,
+      venueId: json['venueId'] as String,
+      venueName: json['venueName'] as String,
       balance: (json['balance'] as num).toDouble(),
       currencyName: json['currencyName'] as String? ?? 'Points',
       tier: json['tier'] as String? ?? 'Bronze',
@@ -19,8 +19,8 @@ _HallMembershipModel _$HallMembershipModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$HallMembershipModelToJson(
   _HallMembershipModel instance,
 ) => <String, dynamic>{
-  'hallId': instance.hallId,
-  'hallName': instance.hallName,
+  'venueId': instance.venueId,
+  'venueName': instance.venueName,
   'balance': instance.balance,
   'currencyName': instance.currencyName,
   'tier': instance.tier,

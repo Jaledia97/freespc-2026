@@ -4,7 +4,7 @@ import 'home/presentation/home_screen.dart';
 import 'scan/presentation/scan_screen.dart';
 import 'profile/presentation/profile_screen.dart';
 import 'wallet/presentation/wallet_screen.dart';
-import 'my_halls/presentation/my_halls_screen.dart';
+import 'my_venues/presentation/my_venues_screen.dart';
 import '../core/widgets/notification_badge.dart';
 import '../services/session_context_controller.dart';
 import 'manager/presentation/manager_dashboard_screen.dart';

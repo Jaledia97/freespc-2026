@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/bingo_hall_model.dart';
+import '../models/venue_model.dart';
 
-import '../features/home/repositories/hall_repository.dart';
+import '../features/home/repositories/venue_repository.dart';
 import '../services/location_service.dart';
 import 'session_context_controller.dart';
 
@@ -14,7 +14,7 @@ final consumerBeaconServiceProvider =
 
 class BeaconScanState {
   final bool isScanning;
-  final BingoHallModel? detectedHall;
+  final VenueModel? detectedHall;
   final bool hasTriggeredCheckIn;
 
   BeaconScanState({
@@ -25,7 +25,7 @@ class BeaconScanState {
 
   BeaconScanState copyWith({
     bool? isScanning,
-    BingoHallModel? detectedHall,
+    VenueModel? detectedHall,
     bool? hasTriggeredCheckIn,
   }) {
     return BeaconScanState(
@@ -46,25 +46,25 @@ class ConsumerBeaconService extends StateNotifier<BeaconScanState> {
   ConsumerBeaconService(this.ref)
       : super(BeaconScanState(isScanning: false, hasTriggeredCheckIn: false));
 
-  /// Starts an aggressive, continuous foreground BLE scan tailored for Bingo Halls.
+  /// Starts an aggressive, continuous foreground BLE scan tailored for Bingo Venues.
   Future<void> startListeningForVenues() async {
     if (state.isScanning) return;
 
-    // Fetch active halls from Firestore natively
+    // Fetch active venues from Firestore natively
     final userLoc = ref.read(userLocationStreamProvider).valueOrNull;
-    final activeHalls = await ref.read(hallRepositoryProvider).getHallsInRadius(
+    final activeHalls = await ref.read(venueRepositoryProvider).getHallsInRadius(
       latitude: userLoc?.latitude ?? 39.8283,
       longitude: userLoc?.longitude ?? -98.5795,
       radiusInMiles: 50,
     ).first;
 
-    // Filter down to only halls that actually have a registered beacon UUID.
+    // Filter down to only venues that actually have a registered beacon UUID.
     final hallUUIDs = activeHalls
         .where((h) => h.beaconUuid.isNotEmpty)
-        .fold<Map<String, BingoHallModel>>({}, (map, hall) {
+        .fold<Map<String, VenueModel>>({}, (map, venue) {
       // Normalize UUIDs (lowercase, no hyphens) for robust matching.
-      final cleanUuid = hall.beaconUuid.replaceAll('-', '').toLowerCase();
-      map[cleanUuid] = hall;
+      final cleanUuid = venue.beaconUuid.replaceAll('-', '').toLowerCase();
+      map[cleanUuid] = venue;
       return map;
     });
 
@@ -108,7 +108,7 @@ class ConsumerBeaconService extends StateNotifier<BeaconScanState> {
                 (_squelchCounters[cleanScanned] ?? 0) + 1;
 
             if (_squelchCounters[cleanScanned]! >= _requiredPings) {
-              // Squelch passed! We are firmly inside the Hall.
+              // Squelch passed! We are firmly inside the Venue.
               _triggerCheckInModal(targetHall);
               return;
             }
@@ -118,9 +118,9 @@ class ConsumerBeaconService extends StateNotifier<BeaconScanState> {
     });
   }
 
-  void _triggerCheckInModal(BingoHallModel hall) {
+  void _triggerCheckInModal(VenueModel venue) {
     // Lock the state so we don't spam the UI
-    state = state.copyWith(detectedHall: hall, hasTriggeredCheckIn: true);
+    state = state.copyWith(detectedHall: venue, hasTriggeredCheckIn: true);
     stopListening();
   }
 

@@ -2,25 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 class InviteStaffSheet extends StatelessWidget {
-  final String hallId;
-  final String hallName;
+  final String venueId;
+  final String venueName;
 
   const InviteStaffSheet({
     super.key,
-    required this.hallId,
-    required this.hallName,
+    required this.venueId,
+    required this.venueName,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Ensure we handle URL encoding for spaces in hall names, though standard URI builders handle it.
-    // Deep Link Format: https://freespc.app/join?hallId=...
+    // Ensure we handle URL encoding for spaces in venue names, though standard URI builders handle it.
+    // Deep Link Format: https://freespc.app/join?venueId=...
     // Note: In development/local, this might open the browser if not configured in AndroidManifest/Info.plist yet.
     // But 'app_links' will catch it if configured. For now, we simulate the link string.
 
-    // We can use a custom scheme 'freespc://join?hallId=...' or http if verified.
+    // We can use a custom scheme 'freespc://join?venueId=...' or http if verified.
     // Let's use a robust https link that *could* be a dynamic link.
-    final String inviteLink = "https://freespc.app/join?hallId=$hallId";
+    final String inviteLink = "https://freespc.app/join?venueId=$venueId";
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -42,7 +42,7 @@ class InviteStaffSheet extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            "Send this link to your staff members. When they click it, they will join '$hallName' as a pending member.",
+            "Send this link to your staff members. When they click it, they will join '$venueName' as a pending member.",
             style: TextStyle(color: Colors.grey[400]),
           ),
           const SizedBox(height: 24),
@@ -86,7 +86,7 @@ class InviteStaffSheet extends StatelessWidget {
               ),
               onPressed: () {
                 Share.share(
-                  "Join $hallName team on FreeSPC! Tap here: $inviteLink",
+                  "Join $venueName team on FreeSPC! Tap here: $inviteLink",
                 );
                 Navigator.pop(context);
               },

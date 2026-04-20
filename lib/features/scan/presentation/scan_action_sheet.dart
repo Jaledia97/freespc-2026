@@ -4,12 +4,12 @@ import '../../wallet/services/transaction_service.dart';
 import '../../../services/auth_service.dart';
 
 class ScanActionSheet extends ConsumerWidget {
-  final String hallId;
+  final String venueId;
   final VoidCallback onResumeCamera;
 
   const ScanActionSheet({
     super.key,
-    required this.hallId,
+    required this.venueId,
     required this.onResumeCamera,
   });
 
@@ -29,7 +29,7 @@ class ScanActionSheet extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            "Found Hall: $hallId",
+            "Found Venue: $venueId",
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
@@ -52,9 +52,9 @@ class ScanActionSheet extends ConsumerWidget {
                         .read(transactionServiceProvider)
                         .awardPoints(
                           userId: user.uid,
-                          hallId: hallId,
+                          venueId: venueId,
                           points: 10,
-                          description: "Scanned at $hallId",
+                          description: "Scanned at $venueId",
                         );
                     if (context.mounted) {
                       Navigator.pop(context); // Close sheet

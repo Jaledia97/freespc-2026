@@ -16,9 +16,9 @@ T _$identity<T>(T value) => value;
 mixin _$GalleryPhotoModel {
 
  String get id; String get uploaderId; String get imageUrl;@TimestampConverter() DateTime get timestamp; String? get description;// Tagging & Approval Logic
- List<String> get taggedUserIds; List<String> get taggedHallIds;// All halls tagged originally
- List<String> get approvedHallIds;// Halls that approved the tag
- List<String> get pendingHallIds;// Halls that need to approve
+ List<String> get taggedUserIds; List<String> get taggedHallIds;// All venues tagged originally
+ List<String> get approvedHallIds;// Venues that approved the tag
+ List<String> get pendingHallIds;// Venues that need to approve
 // Moderation
  int get reportCount; bool get isHidden;
 /// Create a copy of GalleryPhotoModel
@@ -248,25 +248,25 @@ class _GalleryPhotoModel implements GalleryPhotoModel {
   return EqualUnmodifiableListView(_taggedHallIds);
 }
 
-// All halls tagged originally
+// All venues tagged originally
  final  List<String> _approvedHallIds;
-// All halls tagged originally
+// All venues tagged originally
 @override@JsonKey() List<String> get approvedHallIds {
   if (_approvedHallIds is EqualUnmodifiableListView) return _approvedHallIds;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_approvedHallIds);
 }
 
-// Halls that approved the tag
+// Venues that approved the tag
  final  List<String> _pendingHallIds;
-// Halls that approved the tag
+// Venues that approved the tag
 @override@JsonKey() List<String> get pendingHallIds {
   if (_pendingHallIds is EqualUnmodifiableListView) return _pendingHallIds;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_pendingHallIds);
 }
 
-// Halls that need to approve
+// Venues that need to approve
 // Moderation
 @override@JsonKey() final  int reportCount;
 @override@JsonKey() final  bool isHidden;

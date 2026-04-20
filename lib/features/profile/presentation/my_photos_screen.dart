@@ -59,7 +59,7 @@ class MyPhotosScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text("Go Explore Halls"),
+                    child: const Text("Go Explore Venues"),
                   ),
                 ],
               ),

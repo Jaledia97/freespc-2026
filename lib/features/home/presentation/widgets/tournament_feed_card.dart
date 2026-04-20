@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:vibration/vibration.dart';
 import '../../../../models/feed_item.dart';
 import 'social_interaction_bar.dart';
-import 'dynamic_hall_header.dart';
+import 'dynamic_venue_header.dart';
 import 'expandable_post_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -45,12 +45,12 @@ class TournamentFeedCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (fullWidth)
-            DynamicHallHeader(
-              hallId: tournament.hallId,
+            DynamicVenueHeader(
+              venueId: tournament.venueId,
               fallbackName: "Tournament Event",
               subtitle: "Tournament",
               postId: tournament.id,
-              authorId: tournament.hallId,
+              authorId: tournament.venueId,
               targetType: 'tournament',
               createdAt: (!tournament.isTemplate && tournament.templateId != null && tournament.startTime != null)
                   ? tournament.startTime!

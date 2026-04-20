@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../home/repositories/hall_repository.dart';
+import '../../../home/repositories/venue_repository.dart';
 import '../../../../models/special_model.dart';
 import '../../../../services/storage_service.dart';
 import 'package:freespc/core/constants/default_tags.dart';
@@ -10,13 +10,13 @@ import 'package:freespc/core/utils/tag_utils.dart';
 import '../../../../core/widgets/glass_container.dart';
 
 class EditSpecialScreen extends ConsumerStatefulWidget {
-  final String hallId;
+  final String venueId;
   final SpecialModel? special; // If null, create mode
   final bool createTemplateMode; // Default false
 
   const EditSpecialScreen({
     super.key,
-    required this.hallId,
+    required this.venueId,
     this.special,
     this.createTemplateMode = false,
   });
@@ -163,12 +163,12 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
       // Upload (Using 'special' type)
       final url = await ref
           .read(storageServiceProvider)
-          .uploadHallImage(File(file.path), widget.hallId, 'special');
+          .uploadHallImage(File(file.path), widget.venueId, 'special');
 
       // Save to Asset Library for reuse
       await ref
-          .read(hallRepositoryProvider)
-          .addToAssetLibrary(widget.hallId, url, 'special');
+          .read(venueRepositoryProvider)
+          .addToAssetLibrary(widget.venueId, url, 'special');
 
       setState(() {
         _imageUrl = url;
@@ -214,8 +214,8 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                   builder: (_, ref, child) {
                     // Use historic images instead of empty asset library
                     final assetsStream = ref
-                        .watch(hallRepositoryProvider)
-                        .getRecentSpecialImages(widget.hallId);
+                        .watch(venueRepositoryProvider)
+                        .getRecentSpecialImages(widget.venueId);
                     return StreamBuilder<List<String>>(
                       stream: assetsStream,
                       builder: (context, snapshot) {
@@ -304,136 +304,111 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                 width: double.maxFinite,
                 child: Consumer(
                   builder: (context, ref, child) {
-                    final allTagsAsync = ref.watch(allCustomTagsProvider);
+                    final Map<String, int> tagsMap = ref.watch(allCustomTagsProvider);
 
-                    return allTagsAsync.when(
-                      data: (tagsMap) {
-                        return Autocomplete<String>(
-                          optionsBuilder: (TextEditingValue textEditingValue) {
-                            if (textEditingValue.text.isEmpty) {
-                              return const Iterable<String>.empty();
-                            }
-                            // Filter non-default tags matching input
-                            return tagsMap.keys.where(
-                              (tag) =>
-                                  !DefaultTags.categories.contains(tag) &&
-                                  tag.toLowerCase().contains(
-                                    textEditingValue.text.toLowerCase(),
-                                  ),
-                            );
-                          },
-                          onSelected: (String selection) {
-                            _tagCtrl.text = selection;
-                            _addTag();
-                            Navigator.pop(ctx);
-                          },
-                          fieldViewBuilder:
-                              (
-                                context,
-                                textEditingController,
-                                focusNode,
-                                onFieldSubmitted,
-                              ) {
-                                // Assign the external controller to our local one so ADD button still works
-                                textEditingController.addListener(() {
-                                  _tagCtrl.text = textEditingController.text;
-                                });
-
-                                return TextField(
-                                  controller: textEditingController,
-                                  focusNode: focusNode,
-                                  style: const TextStyle(color: Colors.white),
-                                  decoration: InputDecoration(
-                                    hintText: "e.g. Halloween",
-                                    hintStyle: const TextStyle(
-                                      color: Colors.white54,
-                                    ),
-                                    filled: true,
-                                    fillColor: const Color(0xFF1E1E1E),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                  ),
-                                  autofocus: true,
-                                  onSubmitted: (_) {
-                                    _addTag();
-                                    Navigator.pop(ctx);
-                                  },
-                                );
-                              },
-                          optionsViewBuilder: (context, onSelected, options) {
-                            return Align(
-                              alignment: Alignment.topLeft,
-                              child: Material(
-                                elevation: 4.0,
-                                color: const Color(0xFF333333),
-                                borderRadius: BorderRadius.circular(8),
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(
-                                    maxHeight: 200,
-                                    maxWidth: 300,
-                                  ),
-                                  child: ListView.builder(
-                                    padding: EdgeInsets.zero,
-                                    shrinkWrap: true,
-                                    itemCount: options.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                          final String option = options
-                                              .elementAt(index);
-                                          final int count =
-                                              tagsMap[option] ?? 0;
-                                          final trafficLabel =
-                                              TagUtils.getTrafficLabel(count);
-
-                                          return ListTile(
-                                            title: Text(
-                                              option,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                            subtitle: Text(
-                                              trafficLabel,
-                                              style: const TextStyle(
-                                                color: Colors.blueAccent,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                            onTap: () {
-                                              onSelected(option);
-                                            },
-                                          );
-                                        },
-                                  ),
-                                ),
+                    return Autocomplete<String>(
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        if (textEditingValue.text.isEmpty) {
+                          return const Iterable<String>.empty();
+                        }
+                        // Filter non-default tags matching input
+                        return tagsMap.keys.where(
+                          (tag) =>
+                              !DefaultTags.categories.contains(tag) &&
+                              tag.toLowerCase().contains(
+                                textEditingValue.text.toLowerCase(),
                               ),
-                            );
-                          },
                         );
                       },
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (_, __) => TextField(
-                        controller: _tagCtrl,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: "e.g. Halloween",
-                          hintStyle: const TextStyle(color: Colors.white54),
-                          filled: true,
-                          fillColor: const Color(0xFF1E1E1E),
-                          border: OutlineInputBorder(
+                      onSelected: (String selection) {
+                        _tagCtrl.text = selection;
+                        _addTag();
+                        Navigator.pop(ctx);
+                      },
+                      fieldViewBuilder:
+                          (
+                            context,
+                            textEditingController,
+                            focusNode,
+                            onFieldSubmitted,
+                          ) {
+                            // Assign the external controller to our local one so ADD button still works
+                            textEditingController.addListener(() {
+                              _tagCtrl.text = textEditingController.text;
+                            });
+
+                            return TextField(
+                              controller: textEditingController,
+                              focusNode: focusNode,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                hintText: "e.g. Halloween",
+                                hintStyle: const TextStyle(
+                                  color: Colors.white54,
+                                ),
+                                filled: true,
+                                fillColor: const Color(0xFF1E1E1E),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                              autofocus: true,
+                              onSubmitted: (_) {
+                                _addTag();
+                                Navigator.pop(ctx);
+                              },
+                            );
+                          },
+                      optionsViewBuilder: (context, onSelected, options) {
+                        return Align(
+                          alignment: Alignment.topLeft,
+                          child: Material(
+                            elevation: 4.0,
+                            color: const Color(0xFF333333),
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide.none,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                maxHeight: 200,
+                                maxWidth: 300,
+                              ),
+                              child: ListView.builder(
+                                padding: EdgeInsets.zero,
+                                shrinkWrap: true,
+                                itemCount: options.length,
+                                itemBuilder:
+                                    (BuildContext context, int index) {
+                                      final String option = options
+                                          .elementAt(index);
+                                      final int count =
+                                          tagsMap[option] ?? 0;
+                                      final trafficLabel =
+                                          TagUtils.getTrafficLabel(count);
+
+                                      return ListTile(
+                                        title: Text(
+                                          option,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          trafficLabel,
+                                          style: const TextStyle(
+                                            color: Colors.blueAccent,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        onTap: () {
+                                          onSelected(option);
+                                        },
+                                      );
+                                    },
+                              ),
+                            ),
                           ),
-                        ),
-                        autofocus: true,
-                        onSubmitted: (_) {
-                          _addTag();
-                          Navigator.pop(ctx);
-                        },
-                      ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -541,8 +516,8 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
 
       final baseSpecial = SpecialModel(
         id: widget.special?.id ?? '',
-        hallId: widget.hallId,
-        hallName: '',
+        venueId: widget.venueId,
+        venueName: '',
         title: _titleCtrl.text.trim(),
         description: _descCtrl.text.trim(),
         imageUrl: _imageUrl!,
@@ -563,7 +538,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
       if (baseSpecial.id.isEmpty) {
         // Create
         await ref
-            .read(hallRepositoryProvider)
+            .read(venueRepositoryProvider)
             .addSpecial(
               baseSpecial,
               sendNotification: _sendNotification && !_isTemplate,
@@ -575,7 +550,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
           postedAt: widget.special?.postedAt ?? DateTime.now(),
         );
         await ref
-            .read(hallRepositoryProvider)
+            .read(venueRepositoryProvider)
             .updateSpecial(updated, sendNotification: false);
       }
 
@@ -815,8 +790,8 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
                 builder: (context, ref, child) {
                   // Use historic images for quick select
                   final assetsStream = ref
-                      .watch(hallRepositoryProvider)
-                      .getRecentSpecialImages(widget.hallId);
+                      .watch(venueRepositoryProvider)
+                      .getRecentSpecialImages(widget.venueId);
                   return StreamBuilder<List<String>>(
                     stream: assetsStream,
                     builder: (context, snapshot) {
@@ -1574,7 +1549,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     setState(() => _isSaving = true);
     try {
       final cancelledSpecial = widget.special!.copyWith(isCancelled: true);
-      await ref.read(hallRepositoryProvider).updateSpecial(cancelledSpecial);
+      await ref.read(venueRepositoryProvider).updateSpecial(cancelledSpecial);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
@@ -1623,7 +1598,7 @@ class _EditSpecialScreenState extends ConsumerState<EditSpecialScreen> {
     setState(() => _isSaving = true);
     try {
       final restoredSpecial = widget.special!.copyWith(isCancelled: false);
-      await ref.read(hallRepositoryProvider).updateSpecial(restoredSpecial);
+      await ref.read(venueRepositoryProvider).updateSpecial(restoredSpecial);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {

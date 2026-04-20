@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -10,13 +11,13 @@ import '../../../../core/widgets/glass_container.dart';
 import '../../repositories/tournament_repository.dart';
 
 class EditTournamentScreen extends ConsumerStatefulWidget {
-  final String hallId;
+  final String venueId;
   final TournamentModel? tournament;
   final bool createTemplateMode;
 
   const EditTournamentScreen({
     super.key,
-    required this.hallId,
+    required this.venueId,
     this.tournament,
     this.createTemplateMode = false,
   });
@@ -857,13 +858,13 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
 
     try {
       final ref = FirebaseStorage.instance.ref().child(
-        'halls/${widget.hallId}/tournaments/$tournamentId/cover.jpg',
+        'venues/${widget.venueId}/tournaments/$tournamentId/cover.jpg',
       );
 
       await ref.putFile(_imageFile!);
       return await ref.getDownloadURL();
     } catch (e) {
-      print("Error uploading image: $e");
+      debugPrint("Error uploading image: $e");
       return null;
     }
   }
@@ -890,7 +891,7 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
 
       final tournament = TournamentModel(
         id: tournamentId, // Use the ID we generated/retrieved
-        hallId: widget.hallId,
+        venueId: widget.venueId,
         title: _titleCtrl.text,
         description: _descCtrl.text,
         imageUrl: imageUrl, // Save URL
@@ -905,14 +906,14 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
 
       await ref
           .read(tournamentRepositoryProvider)
-          .saveTournament(widget.hallId, tournament);
+          .saveTournament(widget.venueId, tournament);
 
       if (mounted) {
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        print("ERROR SAVING TOURNAMENT: $e");
+        debugPrint("ERROR SAVING TOURNAMENT: $e");
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("Error: $e")));
@@ -960,7 +961,7 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
       final cancelled = widget.tournament!.copyWith(isCancelled: true);
       await ref
           .read(tournamentRepositoryProvider)
-          .saveTournament(widget.hallId, cancelled);
+          .saveTournament(widget.venueId, cancelled);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
@@ -1011,7 +1012,7 @@ class _EditTournamentScreenState extends ConsumerState<EditTournamentScreen>
       final restored = widget.tournament!.copyWith(isCancelled: false);
       await ref
           .read(tournamentRepositoryProvider)
-          .saveTournament(widget.hallId, restored);
+          .saveTournament(widget.venueId, restored);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {

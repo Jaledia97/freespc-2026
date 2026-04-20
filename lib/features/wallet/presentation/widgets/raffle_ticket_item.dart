@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../models/raffle_ticket_model.dart';
-import '../../../home/presentation/hall_profile_screen.dart';
-import '../../../home/repositories/hall_repository.dart';
+import '../../../home/presentation/venue_profile_screen.dart';
+import '../../../home/repositories/venue_repository.dart';
 
 class RaffleTicketItem extends ConsumerWidget {
   final RaffleTicketModel ticket;
@@ -10,21 +10,21 @@ class RaffleTicketItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Listen to LIVE Hall Data
-    final hallAsync = ref.watch(hallStreamProvider(ticket.hallId));
+    // Listen to LIVE Venue Data
+    final hallAsync = ref.watch(venueStreamProvider(ticket.venueId));
 
     return hallAsync.when(
-      data: (hall) {
-        final hallName = hall?.name ?? ticket.hallName;
+      data: (venue) {
+        final venueName = venue?.name ?? ticket.venueName;
 
         return GestureDetector(
           onTap: () {
-            if (hall != null) {
+            if (venue != null) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => HallProfileScreen(
-                    hall: hall,
+                    venue: venue,
                     initialTabIndex: 2,
                   ), // 2 = Raffles Tab
                 ),
@@ -32,7 +32,7 @@ class RaffleTicketItem extends ConsumerWidget {
             } else {
               ScaffoldMessenger.of(
                 context,
-              ).showSnackBar(const SnackBar(content: Text("Hall not found")));
+              ).showSnackBar(const SnackBar(content: Text("Venue not found")));
             }
           },
           child: Container(
@@ -105,7 +105,7 @@ class RaffleTicketItem extends ConsumerWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                hallName,
+                                venueName,
                                 style: const TextStyle(
                                   color: Colors.white54,
                                   fontSize: 12,

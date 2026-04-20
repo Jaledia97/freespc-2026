@@ -371,7 +371,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           children: [
                             if (friend.currentCheckInHallId != null)
                               const Text(
-                                "📍 At a Bingo Hall",
+                                "📍 At a Venue",
                                 style: TextStyle(
                                   color: Colors.blueAccent,
                                   fontSize: 13,

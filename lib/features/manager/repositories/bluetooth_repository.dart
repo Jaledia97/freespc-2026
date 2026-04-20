@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -75,10 +76,10 @@ class BluetoothRepository {
           String command = "AT+PIN$pin";
           try {
             await characteristic.write(command.codeUnits);
-            print("Sent PIN: $command");
+            debugPrint("Sent PIN: $command");
             return; // Success (optimistic)
           } catch (e) {
-            print("Error writing PIN: $e");
+            debugPrint("Error writing PIN: $e");
           }
         }
       }
@@ -92,10 +93,10 @@ class BluetoothRepository {
         if (characteristic.properties.write) {
           try {
             await characteristic.write(command.codeUnits);
-            print("Sent Command: $command");
+            debugPrint("Sent Command: $command");
             return;
           } catch (e) {
-            print("Error writing command: $e");
+            debugPrint("Error writing command: $e");
             rethrow;
           }
         }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../home/repositories/hall_repository.dart';
+import '../../../home/repositories/venue_repository.dart';
 import '../../../../services/session_context_controller.dart';
 import '../../../../models/trivia_model.dart';
 import 'package:uuid/uuid.dart';
@@ -11,8 +11,8 @@ import '../../../../services/storage_service.dart';
 import 'package:intl/intl.dart';
 
 class ManageTriviaScreen extends ConsumerStatefulWidget {
-  final String hallId;
-  const ManageTriviaScreen({super.key, required this.hallId});
+  final String venueId;
+  const ManageTriviaScreen({super.key, required this.venueId});
 
   @override
   ConsumerState<ManageTriviaScreen> createState() => _ManageTriviaScreenState();
@@ -46,7 +46,7 @@ class _ManageTriviaScreenState extends ConsumerState<ManageTriviaScreen> {
                         if (file == null) return;
                         setStateBuilder(() => isUploadingImage = true);
                         try {
-                          final url = await ref.read(storageServiceProvider).uploadHallImage(File(file.path), widget.hallId, 'trivia');
+                          final url = await ref.read(storageServiceProvider).uploadHallImage(File(file.path), widget.venueId, 'trivia');
                           setStateBuilder(() {
                             localImageUrl = url;
                             isUploadingImage = false;
@@ -140,7 +140,7 @@ class _ManageTriviaScreenState extends ConsumerState<ManageTriviaScreen> {
                     if (titleCtrl.text.trim().isEmpty) return;
                     final trivia = TriviaModel(
                       id: isNew ? const Uuid().v4() : existingTrivia.id,
-                      venueId: widget.hallId,
+                      venueId: widget.venueId,
                       title: titleCtrl.text.trim(),
                       category: catCtrl.text.trim(),
                       prizeString: prizeCtrl.text.trim(),
@@ -151,9 +151,9 @@ class _ManageTriviaScreenState extends ConsumerState<ManageTriviaScreen> {
                     );
 
                     if (isNew) {
-                      await ref.read(hallRepositoryProvider).addTrivia(trivia);
+                      await ref.read(venueRepositoryProvider).addTrivia(trivia);
                     } else {
-                      await ref.read(hallRepositoryProvider).updateTrivia(trivia);
+                      await ref.read(venueRepositoryProvider).updateTrivia(trivia);
                     }
                     if (ctx.mounted) Navigator.pop(ctx);
                   },
@@ -169,7 +169,7 @@ class _ManageTriviaScreenState extends ConsumerState<ManageTriviaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final triviaAsync = ref.watch(hallTriviaProvider(widget.hallId));
+    final triviaAsync = ref.watch(hallTriviaProvider(widget.venueId));
 
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
@@ -216,7 +216,7 @@ class _ManageTriviaScreenState extends ConsumerState<ManageTriviaScreen> {
                         value: trivia.isActive,
                         activeColor: Colors.greenAccent,
                         onChanged: (val) {
-                          ref.read(hallRepositoryProvider).updateTrivia(trivia.copyWith(isActive: val));
+                          ref.read(venueRepositoryProvider).updateTrivia(trivia.copyWith(isActive: val));
                         },
                       ),
                       IconButton(
@@ -226,7 +226,7 @@ class _ManageTriviaScreenState extends ConsumerState<ManageTriviaScreen> {
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.redAccent),
                         onPressed: () {
-                          ref.read(hallRepositoryProvider).deleteTrivia(trivia.id);
+                          ref.read(venueRepositoryProvider).deleteTrivia(trivia.id);
                         },
                       ),
                     ],

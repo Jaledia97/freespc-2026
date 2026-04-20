@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/transaction_model.dart';
-import '../../../models/hall_membership_model.dart';
+import '../../../models/venue_membership_model.dart';
 import '../../../models/raffle_ticket_model.dart';
 import '../../../models/tournament_participation_model.dart';
 import '../../../models/drink_ticket_model.dart';
@@ -11,7 +11,7 @@ final walletRepositoryProvider = Provider(
 );
 
 final myMembershipsStreamProvider =
-    StreamProvider.family<List<HallMembershipModel>, String>((ref, userId) {
+    StreamProvider.family<List<VenueMembershipModel>, String>((ref, userId) {
       return ref.watch(walletRepositoryProvider).getMemberships(userId);
     });
 
@@ -36,8 +36,8 @@ final myTransactionsStreamProvider =
 
 // New Stream for Drink Tickets
 final myDrinkTicketsStreamProvider =
-    StreamProvider.family<List<DrinkTicketModel>, ({String userId, String hallId})>((ref, args) {
-      return ref.watch(walletRepositoryProvider).getDrinkTickets(args.userId, args.hallId);
+    StreamProvider.family<List<DrinkTicketModel>, ({String userId, String venueId})>((ref, args) {
+      return ref.watch(walletRepositoryProvider).getDrinkTickets(args.userId, args.venueId);
     });
 
 class WalletRepository {
@@ -47,7 +47,7 @@ class WalletRepository {
 
   // --- Streams ---
 
-  Stream<List<HallMembershipModel>> getMemberships(String userId) {
+  Stream<List<VenueMembershipModel>> getMemberships(String userId) {
     return _firestore
         .collection('users')
         .doc(userId)
@@ -55,17 +55,17 @@ class WalletRepository {
         .snapshots()
         .map((snapshot) {
           return snapshot.docs
-              .map((doc) => HallMembershipModel.fromJson(doc.data()))
+              .map((doc) => VenueMembershipModel.fromJson(doc.data()))
               .toList();
         });
   }
 
-  Stream<List<DrinkTicketModel>> getDrinkTickets(String userId, String hallId) {
+  Stream<List<DrinkTicketModel>> getDrinkTickets(String userId, String venueId) {
     return _firestore
         .collection('users')
         .doc(userId)
         .collection('drink_tickets')
-        .where('hallId', isEqualTo: hallId)
+        .where('venueId', isEqualTo: venueId)
         .where('isValid', isEqualTo: true)
         .orderBy('issuedAt', descending: true)
         .snapshots()
@@ -125,29 +125,29 @@ class WalletRepository {
     final batch = _firestore.batch();
     final userRef = _firestore.collection('users').doc(userId);
 
-    // 1. Seed Memberships (Hall Cards)
+    // 1. Seed Memberships (Venue Cards)
     final memberships = [
-      HallMembershipModel(
-        hallId: 'mary-esther-bingo',
-        hallName: 'Mary Esther Bingo',
+      VenueMembershipModel(
+        venueId: 'mary-esther-bingo',
+        venueName: 'Mary Esther Bingo',
         balance: 1250,
         currencyName: 'Points',
         tier: 'Gold',
         bannerUrl:
             'https://images.unsplash.com/photo-1518893063132-36e465be779d?auto=format&fit=crop&w=800&q=80',
       ),
-      HallMembershipModel(
-        hallId: 'grand-bingo-1',
-        hallName: 'Grand Bingo Hall',
+      VenueMembershipModel(
+        venueId: 'grand-bingo-1',
+        venueName: 'Grand Venue',
         balance: 450,
         currencyName: 'Credits',
         tier: 'Silver',
         bannerUrl:
             'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?auto=format&fit=crop&w=800&q=80',
       ),
-      HallMembershipModel(
-        hallId: 'beach-bingo',
-        hallName: 'Beachside Bingo',
+      VenueMembershipModel(
+        venueId: 'beach-bingo',
+        venueName: 'Beachside Bingo',
         balance: 50,
         currencyName: 'Tokens',
         tier: 'Bronze',
@@ -157,7 +157,7 @@ class WalletRepository {
     ];
 
     for (var m in memberships) {
-      final doc = userRef.collection('memberships').doc(m.hallId);
+      final doc = userRef.collection('memberships').doc(m.venueId);
       batch.set(doc, m.toJson());
     }
 
@@ -190,8 +190,8 @@ class WalletRepository {
       TransactionModel(
         id: 'tx_1',
         userId: userId,
-        hallId: 'mary-esther-bingo',
-        hallName: 'Mary Esther Bingo',
+        venueId: 'mary-esther-bingo',
+        venueName: 'Mary Esther Bingo',
         amount: 50,
         description: 'Daily Check-in',
         timestamp: now.subtract(const Duration(hours: 1)),
@@ -199,8 +199,8 @@ class WalletRepository {
       TransactionModel(
         id: 'tx_2',
         userId: userId,
-        hallId: 'mary-esther-bingo',
-        hallName: 'Mary Esther Bingo',
+        venueId: 'mary-esther-bingo',
+        venueName: 'Mary Esther Bingo',
         amount: -20,
         description: 'Raffle Ticket Purchase',
         timestamp: now.subtract(const Duration(hours: 2)),
@@ -208,8 +208,8 @@ class WalletRepository {
       TransactionModel(
         id: 'tx_3',
         userId: userId,
-        hallId: 'mary-esther-bingo',
-        hallName: 'Mary Esther Bingo',
+        venueId: 'mary-esther-bingo',
+        venueName: 'Mary Esther Bingo',
         amount: 500,
         description: 'Jackpot Consolation',
         timestamp: now.subtract(const Duration(minutes: 30)),
@@ -219,8 +219,8 @@ class WalletRepository {
       TransactionModel(
         id: 'tx_4',
         userId: userId,
-        hallId: 'grand-bingo-1',
-        hallName: 'Grand Bingo Hall',
+        venueId: 'grand-bingo-1',
+        venueName: 'Grand Venue',
         amount: 100,
         description: 'Bingo Win',
         timestamp: yesterday.subtract(const Duration(hours: 4)),
@@ -230,8 +230,8 @@ class WalletRepository {
       TransactionModel(
         id: 'tx_5',
         userId: userId,
-        hallId: 'beach-bingo',
-        hallName: 'Beachside Bingo',
+        venueId: 'beach-bingo',
+        venueName: 'Beachside Bingo',
         amount: -50,
         description: 'Snack Bar',
         timestamp: twoDaysAgo.subtract(const Duration(hours: 6)),

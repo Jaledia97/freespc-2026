@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../models/bingo_hall_model.dart';
+import '../../../../models/venue_model.dart';
 import '../../../../features/photos/repositories/photo_repository.dart';
 import '../../../../features/photos/models/gallery_photo_model.dart';
 import '../../../../features/photos/presentation/upload_photo_screen.dart';
 import '../../../../features/photos/presentation/photo_detail_screen.dart';
-import '../hall_full_gallery_screen.dart';
+import '../venue_full_gallery_screen.dart';
 
 class HallAboutTab extends ConsumerWidget {
-  final BingoHallModel hall;
+  final VenueModel venue;
 
-  const HallAboutTab({super.key, required this.hall});
+  const HallAboutTab({super.key, required this.venue});
 
   Future<void> _launchUrl(String? urlString) async {
     if (urlString == null) return;
@@ -31,7 +31,7 @@ class HallAboutTab extends ConsumerWidget {
 
   Future<void> _openMap() async {
     final uri = Uri.parse(
-      "https://www.google.com/maps/search/?api=1&query=${hall.latitude},${hall.longitude}",
+      "https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}",
     );
     if (!await launchUrl(uri)) {
       throw Exception('Could not launch map');
@@ -42,7 +42,7 @@ class HallAboutTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final photosStream = ref
         .watch(photoRepositoryProvider)
-        .getHallPhotos(hall.id);
+        .getHallPhotos(venue.id);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -60,7 +60,7 @@ class HallAboutTab extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            hall.description ?? "No description available.",
+            venue.description ?? "No description available.",
             style: const TextStyle(
               fontSize: 16,
               height: 1.5,
@@ -87,8 +87,8 @@ class HallAboutTab extends ConsumerWidget {
                     context,
                     MaterialPageRoute(
                       builder: (_) => HallFullGalleryScreen(
-                        hallId: hall.id,
-                        hallName: hall.name,
+                        venueId: venue.id,
+                        venueName: venue.name,
                       ),
                     ),
                   );
@@ -135,7 +135,7 @@ class HallAboutTab extends ConsumerWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) =>
-                              UploadPhotoScreen(preSelectedHallId: hall.id),
+                              UploadPhotoScreen(preSelectedHallId: venue.id),
                         ),
                       ),
                       child: Container(
@@ -195,7 +195,7 @@ class HallAboutTab extends ConsumerWidget {
           const SizedBox(height: 32),
 
           // Operating Hours Section
-          if (hall.operatingHours.isNotEmpty) ...[
+          if (venue.operatingHours.isNotEmpty) ...[
             const Text(
               "Operating Hours",
               style: TextStyle(
@@ -222,22 +222,22 @@ class HallAboutTab extends ConsumerWidget {
 
           _contactRow(
             Icons.location_on,
-            "${hall.street}${(hall.unitNumber != null && hall.unitNumber!.isNotEmpty) ? ' ${hall.unitNumber}' : ''}\n${hall.city}, ${hall.state} ${hall.zipCode}",
+            "${venue.street}${(venue.unitNumber != null && venue.unitNumber!.isNotEmpty) ? ' ${venue.unitNumber}' : ''}\n${venue.city}, ${venue.state} ${venue.zipCode}",
             onTap: _openMap,
           ),
           const Divider(height: 32),
           _contactRow(
             Icons.phone,
-            hall.phone ?? "No phone listed",
-            onTap: () => _callPhone(hall.phone),
-            isLink: hall.phone != null,
+            venue.phone ?? "No phone listed",
+            onTap: () => _callPhone(venue.phone),
+            isLink: venue.phone != null,
           ),
           const Divider(height: 32),
           _contactRow(
             Icons.language,
-            hall.websiteUrl ?? "No website listed",
-            onTap: () => _launchUrl(hall.websiteUrl),
-            isLink: hall.websiteUrl != null,
+            venue.websiteUrl ?? "No website listed",
+            onTap: () => _launchUrl(venue.websiteUrl),
+            isLink: venue.websiteUrl != null,
           ),
         ],
       ),
@@ -257,7 +257,7 @@ class HallAboutTab extends ConsumerWidget {
 
     return Column(
       children: days.map((day) {
-        final times = hall.operatingHours[day] as Map<String, dynamic>?;
+        final times = venue.operatingHours[day] as Map<String, dynamic>?;
         String timeString = "Closed";
 
         if (times != null) {

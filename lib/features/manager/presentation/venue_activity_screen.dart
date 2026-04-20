@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../models/special_model.dart';
+import '../../../models/bar_game_model.dart';
 import '../../../services/session_context_controller.dart';
-import '../../home/repositories/hall_repository.dart';
+import '../../home/repositories/venue_repository.dart';
 import '../../manager/repositories/tournament_repository.dart';
 import '../../home/presentation/widgets/special_card.dart';
 import '../../home/presentation/widgets/raffle_feed_card.dart';
@@ -22,9 +24,13 @@ class VenueActivityScreen extends ConsumerWidget {
       );
     }
 
+    final hallAsync = ref.watch(venueStreamProvider(venueId));
+
     final specialsAsync = ref.watch(hallSpecialsProvider(venueId));
     final rafflesAsync = ref.watch(hallRafflesProvider(venueId));
     final tournamentsAsync = ref.watch(hallTournamentsProvider(venueId));
+    final triviaAsync = ref.watch(hallTriviaProvider(venueId));
+    final barGamesAsync = ref.watch(hallBarGamesProvider(venueId));
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -33,11 +39,20 @@ class VenueActivityScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // Specials Section
-          _buildSectionHeader("Active Specials", Icons.local_fire_department, Colors.redAccent),
+      body: hallAsync.when(
+        data: (venue) {
+          if (venue == null) {
+            return const Center(child: Text("Venue not found.", style: TextStyle(color: Colors.white54)));
+          }
+
+          final venueType = venue.venueType.toLowerCase();
+          final isBingo = venueType == 'bingo';
+          
+          return CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Specials Section (Universal)
+              _buildSectionHeader("Active Specials", Icons.local_fire_department, Colors.redAccent),
           specialsAsync.when(
             data: (specials) {
               if (specials.isEmpty) {
@@ -54,44 +69,122 @@ class VenueActivityScreen extends ConsumerWidget {
             error: (e, _) => _buildErrorState(e),
           ),
 
-          // Tournaments Section
-          _buildSectionHeader("Live Tournaments", Icons.emoji_events, Colors.blueAccent),
-          tournamentsAsync.when(
-            data: (tournaments) {
-              if (tournaments.isEmpty) {
-                return _buildEmptyState("No active tournaments.");
-              }
-              return SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => TournamentFeedCard(tournament: tournaments[index], fullWidth: true),
-                  childCount: tournaments.length,
-                ),
-              );
-            },
-            loading: () => _buildLoadingState(),
-            error: (e, _) => _buildErrorState(e),
-          ),
+          // --- BAR/RESTAURANT SPECIFIC SECTION ---
+          if (!isBingo) ...[
+            _buildSectionHeader("Trivia Nights", Icons.psychology, Colors.purpleAccent),
+            triviaAsync.when(
+              data: (triviaList) {
+                if (triviaList.isEmpty) {
+                  return _buildEmptyState("No active trivia events.");
+                }
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final tr = triviaList[index];
+                      // Cast Trivia into a SpecialCard mapping
+                      return SpecialCard(
+                        special: SpecialModel(
+                          id: tr.id,
+                          venueId: tr.venueId,
+                          venueName: venue.name,
+                          title: tr.title,
+                          description: "Category: ${tr.category}\nPrize: ${tr.prizeString}",
+                          imageUrl: tr.imageUrl ?? "",
+                          postedAt: tr.createdAt ?? DateTime.now(),
+                          startTime: tr.date,
+                          tags: const ['Trivia'],
+                        ),
+                        fullWidth: true,
+                        isFeatured: false,
+                      );
+                    },
+                    childCount: triviaList.length,
+                  ),
+                );
+              },
+              loading: () => _buildLoadingState(),
+              error: (e, _) => _buildErrorState(e),
+            ),
 
-          // Raffles Section
-          _buildSectionHeader("Current Raffles", Icons.local_activity, Colors.greenAccent),
-          rafflesAsync.when(
-            data: (raffles) {
-              if (raffles.isEmpty) {
-                return _buildEmptyState("No ongoing raffles.");
-              }
-              return SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => RaffleFeedCard(raffle: raffles[index], fullWidth: true),
-                  childCount: raffles.length,
-                ),
-              );
-            },
-            loading: () => _buildLoadingState(),
-            error: (e, _) => _buildErrorState(e),
-          ),
+            _buildSectionHeader("Live Bar Games", Icons.sports_bar, Colors.orangeAccent),
+            barGamesAsync.when(
+              data: (gameList) {
+                if (gameList.isEmpty) {
+                  return _buildEmptyState("No active bar games run by the venue.");
+                }
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final game = gameList[index];
+                      return SpecialCard(
+                        special: SpecialModel(
+                          id: game.id,
+                          venueId: game.venueId,
+                          venueName: venue.name,
+                          title: game.gameType,
+                          description: "Status: ${game.status}\nParticipants: ${game.participantCount}${game.maxParticipants != null ? ' / ${game.maxParticipants}' : ''}",
+                          imageUrl: "", 
+                          postedAt: game.createdAt ?? DateTime.now(),
+                          tags: const ['Bar Game'],
+                        ),
+                        fullWidth: true,
+                        isFeatured: false,
+                      );
+                    },
+                    childCount: gameList.length,
+                  ),
+                );
+              },
+              loading: () => _buildLoadingState(),
+              error: (e, _) => _buildErrorState(e),
+            ),
+          ],
+
+          // --- BINGO SPECIFIC SECTION ---
+          if (isBingo) ...[
+            // Tournaments Section
+            _buildSectionHeader("Live Tournaments", Icons.emoji_events, Colors.blueAccent),
+            tournamentsAsync.when(
+              data: (tournaments) {
+                if (tournaments.isEmpty) {
+                  return _buildEmptyState("No active tournaments.");
+                }
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => TournamentFeedCard(tournament: tournaments[index], fullWidth: true),
+                    childCount: tournaments.length,
+                  ),
+                );
+              },
+              loading: () => _buildLoadingState(),
+              error: (e, _) => _buildErrorState(e),
+            ),
+
+            // Raffles Section
+            _buildSectionHeader("Current Raffles", Icons.local_activity, Colors.greenAccent),
+            rafflesAsync.when(
+              data: (raffles) {
+                if (raffles.isEmpty) {
+                  return _buildEmptyState("No ongoing raffles.");
+                }
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => RaffleFeedCard(raffle: raffles[index], fullWidth: true),
+                    childCount: raffles.length,
+                  ),
+                );
+              },
+              loading: () => _buildLoadingState(),
+              error: (e, _) => _buildErrorState(e),
+            ),
+          ],
 
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
+      );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, s) => Center(child: Text("Error: $e", style: const TextStyle(color: Colors.redAccent))),
       ),
     );
   }

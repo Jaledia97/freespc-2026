@@ -12,8 +12,8 @@ final tournamentRepositoryProvider = Provider(
 );
 
 final hallTournamentsProvider =
-    StreamProvider.family<List<TournamentModel>, String>((ref, hallId) {
-      return ref.watch(tournamentRepositoryProvider).streamTournaments(hallId);
+    StreamProvider.family<List<TournamentModel>, String>((ref, venueId) {
+      return ref.watch(tournamentRepositoryProvider).streamTournaments(venueId);
     });
 
 final tournamentsFeedProvider = StreamProvider<List<TournamentModel>>((ref) {
@@ -27,26 +27,47 @@ class TournamentRepository {
   TournamentRepository(this._firestore, this._ref);
 
   // Stream All Tournaments (Active, Expired, Templates)
-  Stream<List<TournamentModel>> streamTournaments(String hallId) {
+  Stream<List<TournamentModel>> streamTournaments(String venueId) {
     return _firestore
         .collection('tournaments')
-        .where('hallId', isEqualTo: hallId)
+        .where('venueId', isEqualTo: venueId)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs
+          final allTournaments = snapshot.docs
               .map((doc) => TournamentModel.fromFirestore(doc))
               .toList();
+
+          final uniqueTournaments = <String, TournamentModel>{};
+          
+          for (var tournament in allTournaments) {
+            final tId = tournament.templateId;
+            if (tId == null) {
+              uniqueTournaments[tournament.id] = tournament;
+            } else {
+              final existing = uniqueTournaments[tId];
+              if (existing == null) {
+                uniqueTournaments[tId] = tournament;
+              } else if (tournament.startTime != null && existing.startTime != null) {
+                if (tournament.startTime!.isBefore(existing.startTime!)) {
+                  uniqueTournaments[tId] = tournament;
+                }
+              }
+            }
+          }
+          
+          return uniqueTournaments.values.toList()
+             ..sort((a, b) => (a.startTime ?? DateTime.now()).compareTo((b.startTime ?? DateTime.now())));
         });
   }
 
   // Save (Create/Update)
-  Future<void> saveTournament(String hallId, TournamentModel tournament) async {
+  Future<void> saveTournament(String venueId, TournamentModel tournament) async {
     final collection = _firestore.collection('tournaments');
 
     final session = _ref.read(sessionContextProvider);
     final user = _ref.read(userProfileProvider).value;
 
-    TournamentModel processedTournament = tournament.copyWith(hallId: hallId);
+    TournamentModel processedTournament = tournament.copyWith(venueId: venueId);
     if (session.isBusiness) {
       processedTournament = processedTournament.copyWith(
         authorType: 'venue',
@@ -134,7 +155,7 @@ class TournamentRepository {
   }
 
   // Delete
-  Future<void> deleteTournament(String hallId, String tournamentId) async {
+  Future<void> deleteTournament(String venueId, String tournamentId) async {
     final batch = _firestore.batch();
     batch.delete(_firestore.collection('tournaments').doc(tournamentId));
 
@@ -160,12 +181,12 @@ class TournamentRepository {
   }
 
   // Get Currently Active Tournament (for Scanner)
-  Future<TournamentModel?> getActiveTournament(String hallId) async {
+  Future<TournamentModel?> getActiveTournament(String venueId) async {
     // Fetch all non-template tournaments
     // In production, might want to query active ones only, but for now fetching all is fine for MVP volume.
     final snapshot = await _firestore
-        .collection('bingo_halls')
-        .doc(hallId)
+        .collection('venues')
+        .doc(venueId)
         .collection('tournaments')
         .where('isTemplate', isEqualTo: false)
         .get();
@@ -186,7 +207,7 @@ class TournamentRepository {
       }
 
       // 2. Recurrence Check (Projecting)
-      // Reuse logic from HallRepository if possible, or duplicate for now.
+      // Reuse logic from VenueRepository if possible, or duplicate for now.
       // For MVP, let's assume if it has recurrence, we check if "today" matches and time matches.
 
       if (t.recurrenceRule != null && t.recurrenceRule!.frequency != 'none') {

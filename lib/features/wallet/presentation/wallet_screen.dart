@@ -4,18 +4,19 @@ import 'package:intl/intl.dart';
 import 'my_raffles_screen.dart'; // Import MyRafflesScreen
 import 'widgets/raffle_ticket_item.dart'; // Import RaffleTicketItem
 import 'widgets/transaction_history_list.dart'; // Import TransactionHistoryList
+import 'all_memberships_screen.dart'; // Import AllMembershipsScreen
 import '../../../services/auth_service.dart';
 import '../../wallet/repositories/wallet_repository.dart';
-import '../../../models/hall_membership_model.dart';
+import '../../../models/venue_membership_model.dart';
 import '../../../models/tournament_participation_model.dart';
 import '../../../models/drink_ticket_model.dart';
 import '../../../models/special_model.dart';
 import '../../../core/widgets/glass_container.dart';
-import '../../home/repositories/hall_repository.dart';
+import '../../home/repositories/venue_repository.dart';
 import '../../messaging/presentation/messaging_hub_screen.dart';
 import '../../../core/widgets/notification_badge.dart';
 
-final focusedMembershipProvider = StateProvider.autoDispose<HallMembershipModel?>((ref) => null);
+final focusedMembershipProvider = StateProvider.autoDispose<VenueMembershipModel?>((ref) => null);
 
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
@@ -58,9 +59,38 @@ class WalletScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. Hall Memberships (Cards)
+                // 1. Venue Memberships Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Memberships",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AllMembershipsScreen(userId: userId),
+                            ),
+                          );
+                        },
+                        child: const Text("See All", style: TextStyle(color: Colors.amber)),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // 2. Venue Memberships (Cards)
                 SizedBox(
-                  height: 220,
+                  height: 160,
                   child: _HallCardsParams(
                     userId: userId,
                     followingIds: user.following,
@@ -82,20 +112,55 @@ class WalletScreen extends ConsumerWidget {
   }
 }
 
-// --- Hall Cards PageView ---
-class _HallCardsParams extends ConsumerWidget {
+// --- Venue Cards PageView ---
+class _HallCardsParams extends ConsumerStatefulWidget {
   final String userId;
   final List<String> followingIds;
   const _HallCardsParams({required this.userId, required this.followingIds});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final membershipsAsync = ref.watch(myMembershipsStreamProvider(userId));
+  ConsumerState<_HallCardsParams> createState() => _HallCardsParamsState();
+}
+
+class _HallCardsParamsState extends ConsumerState<_HallCardsParams> {
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.9);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final membershipsAsync = ref.watch(myMembershipsStreamProvider(widget.userId));
+
+    ref.listen(focusedMembershipProvider, (previous, next) {
+      if (next != null && membershipsAsync.hasValue) {
+        final memberships = membershipsAsync.value!
+            .where((m) => widget.followingIds.contains(m.venueId))
+            .toList();
+        final index = memberships.indexWhere((m) => m.venueId == next.venueId);
+        if (index != -1 && _pageController.hasClients && _pageController.page?.round() != index) {
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
+    });
 
     return membershipsAsync.when(
       data: (allMemberships) {
         final memberships = allMemberships
-            .where((m) => followingIds.contains(m.hallId))
+            .where((m) => widget.followingIds.contains(m.venueId))
             .toList();
 
         if (memberships.isEmpty) {
@@ -137,16 +202,19 @@ class _HallCardsParams extends ConsumerWidget {
         // Initialize focused membership if null
         WidgetsBinding.instance.addPostFrameCallback((_) {
           final current = ref.read(focusedMembershipProvider);
-          if (current == null || !memberships.any((m) => m.hallId == current.hallId)) {
+          if (current == null || !memberships.any((m) => m.venueId == current.venueId)) {
             ref.read(focusedMembershipProvider.notifier).state = memberships[0];
           }
         });
 
         return PageView.builder(
-          controller: PageController(viewportFraction: 0.9),
+          controller: _pageController,
           itemCount: memberships.length,
           onPageChanged: (index) {
-            ref.read(focusedMembershipProvider.notifier).state = memberships[index];
+            final next = memberships[index];
+            if (ref.read(focusedMembershipProvider)?.venueId != next.venueId) {
+              ref.read(focusedMembershipProvider.notifier).state = next;
+            }
           },
           itemBuilder: (context, index) {
             return HallMembershipCard(membership: memberships[index]);
@@ -160,19 +228,19 @@ class _HallCardsParams extends ConsumerWidget {
 }
 
 class HallMembershipCard extends ConsumerWidget {
-  final HallMembershipModel membership;
+  final VenueMembershipModel membership;
   const HallMembershipCard({super.key, required this.membership});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Listen to LIVE Hall Data
-    final hallAsync = ref.watch(hallStreamProvider(membership.hallId));
+    // 1. Listen to LIVE Venue Data
+    final hallAsync = ref.watch(venueStreamProvider(membership.venueId));
 
     return hallAsync.when(
-      data: (hall) {
+      data: (venue) {
         // Use Live Data if available, else fallback to Membership snapshot
-        final hallName = hall?.name ?? membership.hallName;
-        final bannerUrl = hall?.bannerUrl ?? membership.bannerUrl;
+        final venueName = venue?.name ?? membership.venueName;
+        final bannerUrl = venue?.bannerUrl ?? membership.bannerUrl;
 
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -203,7 +271,7 @@ class HallMembershipCard extends ConsumerWidget {
               ),
             ],
           ),
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -211,13 +279,13 @@ class HallMembershipCard extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Hall Name (Live)
+                  // Venue Name (Live)
                   Expanded(
                     child: Text(
-                      hallName,
+                      venueName,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                       maxLines: 1,
@@ -227,12 +295,12 @@ class HallMembershipCard extends ConsumerWidget {
                   // Tier Badge
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
+                      horizontal: 8,
+                      vertical: 2,
                     ),
                     decoration: BoxDecoration(
                       color: Colors.amber.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.amber.withOpacity(0.5)),
                     ),
                     child: Text(
@@ -255,19 +323,19 @@ class HallMembershipCard extends ConsumerWidget {
                     NumberFormat.decimalPattern().format(membership.balance),
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 42,
+                      fontSize: 32,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: -1,
+                      letterSpacing: -0.5,
                     ),
                   ),
                   Text(
-                    (hall?.loyaltySettings.currencyName ??
+                    (venue?.loyaltySettings.currencyName ??
                             membership.currencyName)
                         .toUpperCase(),
                     style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 14,
-                      letterSpacing: 1.5,
+                      color: Colors.white70,
+                      fontSize: 12,
+                      letterSpacing: 1.2,
                     ),
                   ),
                 ],
@@ -278,13 +346,13 @@ class HallMembershipCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    "Member ID: **** 9382",
-                    style: TextStyle(color: Colors.white38, fontSize: 12),
+                    "ID: **** 9382",
+                    style: TextStyle(color: Colors.white54, fontSize: 11),
                   ),
                   Icon(
                     Icons.nfc,
-                    color: Colors.white.withOpacity(0.3),
-                    size: 32,
+                    color: Colors.white.withOpacity(0.4),
+                    size: 24,
                   ),
                 ],
               ),
@@ -318,16 +386,16 @@ class _DynamicVenueContent extends ConsumerWidget {
       return const SizedBox();
     }
 
-    final hallAsync = ref.watch(hallStreamProvider(focusedMembership.hallId));
+    final hallAsync = ref.watch(venueStreamProvider(focusedMembership.venueId));
 
     return hallAsync.when(
-      data: (hall) {
-        final venueType = hall?.venueType ?? 'bingo';
+      data: (venue) {
+        final venueType = venue?.venueType ?? 'bingo';
 
         if (venueType == 'bingo') {
           return _buildBingoLayout(context, userId);
         } else {
-          return _buildBarLayout(context, userId, focusedMembership.hallId);
+          return _buildBarLayout(context, userId, focusedMembership.venueId);
         }
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -410,7 +478,7 @@ class _DynamicVenueContent extends ConsumerWidget {
     );
   }
 
-  Widget _buildBarLayout(BuildContext context, String userId, String hallId) {
+  Widget _buildBarLayout(BuildContext context, String userId, String venueId) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -429,7 +497,7 @@ class _DynamicVenueContent extends ConsumerWidget {
         const SizedBox(height: 12),
         SizedBox(
           height: 150,
-          child: _MyDrinkTicketsList(userId: userId, hallId: hallId),
+          child: _MyDrinkTicketsList(userId: userId, venueId: venueId),
         ),
 
         const SizedBox(height: 32),
@@ -447,7 +515,7 @@ class _DynamicVenueContent extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _ActiveSpecialsList(hallId: hallId),
+        _ActiveSpecialsList(venueId: venueId),
 
         const SizedBox(height: 32),
 
@@ -464,7 +532,7 @@ class _DynamicVenueContent extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        TransactionHistoryList(userId: userId, hallId: hallId),
+        TransactionHistoryList(userId: userId, venueId: venueId),
       ],
     );
   }
@@ -550,12 +618,12 @@ class TournamentItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Listen to LIVE Hall Data
-    final hallAsync = ref.watch(hallStreamProvider(tournament.hallId));
+    // Listen to LIVE Venue Data
+    final hallAsync = ref.watch(venueStreamProvider(tournament.venueId));
 
     return hallAsync.when(
-      data: (hall) {
-        final hallName = hall?.name ?? tournament.hallName;
+      data: (venue) {
+        final venueName = venue?.name ?? tournament.venueName;
 
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(
@@ -583,7 +651,7 @@ class TournamentItem extends ConsumerWidget {
             ),
           ),
           subtitle: Text(
-            hallName,
+            venueName,
             style: const TextStyle(color: Colors.white54),
           ), // Use Live Name
           trailing: Column(
@@ -624,12 +692,12 @@ class TournamentItem extends ConsumerWidget {
 // --- Bar Wallet Modules ---
 class _MyDrinkTicketsList extends ConsumerWidget {
   final String userId;
-  final String hallId;
-  const _MyDrinkTicketsList({required this.userId, required this.hallId});
+  final String venueId;
+  const _MyDrinkTicketsList({required this.userId, required this.venueId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ticketsAsync = ref.watch(myDrinkTicketsStreamProvider((userId: userId, hallId: hallId)));
+    final ticketsAsync = ref.watch(myDrinkTicketsStreamProvider((userId: userId, venueId: venueId)));
 
     return ticketsAsync.when(
       data: (tickets) {
@@ -687,12 +755,12 @@ class _MyDrinkTicketsList extends ConsumerWidget {
 }
 
 class _ActiveSpecialsList extends ConsumerWidget {
-  final String hallId;
-  const _ActiveSpecialsList({required this.hallId});
+  final String venueId;
+  const _ActiveSpecialsList({required this.venueId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final specialsAsync = ref.watch(hallSpecialsProvider(hallId));
+    final specialsAsync = ref.watch(hallSpecialsProvider(venueId));
 
     return specialsAsync.when(
       data: (specials) {

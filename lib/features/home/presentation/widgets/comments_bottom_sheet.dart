@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../repositories/hall_repository.dart';
+import '../../repositories/venue_repository.dart';
 import '../../../../models/comment_model.dart';
 import 'package:intl/intl.dart';
 
@@ -11,7 +11,7 @@ final commentsProvider = StreamProvider.family<List<CommentModel>, String>((
   comboId,
 ) {
   final parts = comboId.split('|');
-  return ref.watch(hallRepositoryProvider).getComments(parts[0], parts[1]);
+  return ref.watch(venueRepositoryProvider).getComments(parts[0], parts[1]);
 });
 
 class CommentsBottomSheet extends ConsumerStatefulWidget {
@@ -88,7 +88,7 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                     return GestureDetector(
                       onTap: () async {
                         Navigator.pop(context);
-                        await ref.read(hallRepositoryProvider).reactToComment(
+                        await ref.read(venueRepositoryProvider).reactToComment(
                           widget.collectionName,
                           widget.docId,
                           comment.id,
@@ -128,7 +128,7 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                   onTap: () async {
                     Navigator.pop(context);
                     await ref
-                        .read(hallRepositoryProvider)
+                        .read(venueRepositoryProvider)
                         .deleteComment(
                           widget.collectionName,
                           widget.docId,
@@ -217,7 +217,7 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
     try {
       if (_editingCommentId != null) {
         await ref
-            .read(hallRepositoryProvider)
+            .read(venueRepositoryProvider)
             .updateComment(
               widget.collectionName,
               widget.docId,
@@ -249,7 +249,7 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
       );
 
       await ref
-          .read(hallRepositoryProvider)
+          .read(venueRepositoryProvider)
           .addComment(widget.collectionName, widget.docId, comment);
 
       _controller.clear();
@@ -549,7 +549,7 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
 
       return GestureDetector(
         onTap: () async {
-          await ref.read(hallRepositoryProvider).reactToComment(
+          await ref.read(venueRepositoryProvider).reactToComment(
             widget.collectionName, widget.docId, comment.id, widget.currentUser.uid, emoji);
         },
         child: Container(
@@ -649,7 +649,7 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                     children: [
                       GestureDetector(
                         onTap: () async {
-                          await ref.read(hallRepositoryProvider).reactToComment(
+                          await ref.read(venueRepositoryProvider).reactToComment(
                             widget.collectionName,
                             widget.docId,
                             comment.id,

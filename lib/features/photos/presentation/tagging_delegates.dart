@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../home/repositories/hall_repository.dart';
-import '../../../models/bingo_hall_model.dart';
+import '../../home/repositories/venue_repository.dart';
+import '../../../models/venue_model.dart';
 import '../../../models/public_profile.dart';
 import '../../../services/auth_service.dart';
 
-class HallSearchDelegate extends SearchDelegate<BingoHallModel?> {
+class HallSearchDelegate extends SearchDelegate<VenueModel?> {
   final WidgetRef ref;
 
   HallSearchDelegate(this.ref);
@@ -30,23 +30,23 @@ class HallSearchDelegate extends SearchDelegate<BingoHallModel?> {
   Widget buildResults(BuildContext context) {
     return Consumer(
       builder: (context, ref, _) {
-        return FutureBuilder<List<BingoHallModel>>(
-          future: ref.read(hallRepositoryProvider).searchHalls(query),
+        return FutureBuilder<List<VenueModel>>(
+          future: ref.read(venueRepositoryProvider).searchHalls(query),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting)
               return const Center(child: CircularProgressIndicator());
             if (!snapshot.hasData || snapshot.data!.isEmpty)
-              return const Center(child: Text("No halls found"));
+              return const Center(child: Text("No venues found"));
 
-            final halls = snapshot.data!;
+            final venues = snapshot.data!;
             return ListView.builder(
-              itemCount: halls.length,
+              itemCount: venues.length,
               itemBuilder: (context, index) {
-                final hall = halls[index];
+                final venue = venues[index];
                 return ListTile(
-                  title: Text(hall.name),
-                  subtitle: Text("${hall.city}, ${hall.state}"),
-                  onTap: () => close(context, hall),
+                  title: Text(venue.name),
+                  subtitle: Text("${venue.city}, ${venue.state}"),
+                  onTap: () => close(context, venue),
                 );
               },
             );
@@ -59,7 +59,7 @@ class HallSearchDelegate extends SearchDelegate<BingoHallModel?> {
   @override
   Widget buildSuggestions(BuildContext context) {
     if (query.length < 2)
-      return const Center(child: Text("Search for halls..."));
+      return const Center(child: Text("Search for venues..."));
     return buildResults(context);
   }
 }

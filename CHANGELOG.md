@@ -2,6 +2,21 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+77] - 2026-04-19 - Wallet Space Optimizations & CMS Activity Dynamics
+
+### Added
+- **Wallet Spatial Overhaul**: Shrunk the massive global Wallet `HallMembershipCard` dimensions, injecting native `See All` tracking which invokes a beautiful `SliverGrid` mapping matrix scaling actively up to 8 continuous columns based intrinsically on device width geometry.
+- **State-Linked Carousel Scroller**: Wrapped the primary Wallet PageView within an active Consumer Stateful Widget. Tapping any membership grid avatar in the "See All" layer automatically manipulates global state, effortlessly auto-sliding the main Wallet navigator natively directly to the requested profile card.
+- **My Places UI Redesign**: Fully eradicated the wasteful massive 120px vertical banners occupying the `my_venues_screen.dart` matrices. Converted the primary UI layouts entirely over to responsive Grid pipelines replicating the Wallet's `maxCrossAxisExtent` geometry identically for absolute global parity!
+
+### Changed
+- **Grid View Aspect Overrides**: Hand-tuned the `SliverGridDelegates` on Venue Lists skewing `0.85` strictly down to `0.75` layouts natively to successfully bypass standard Flutter RenderFlex text constraints mathematically eliminating 6-pixel overflow exceptions.
+
+### Fixed
+- **CMS Layout Stacking**: Repaired a layout regression under the `VenueActivityScreen` where missing `hallAsync.when()` data boundaries triggered the UI to immediately load Bingo Hall "Live Tournaments" natively for split seconds before executing network verification.
+- **Venue Context Targeting**: Updated `!isBar` strings simply executing as `isBingo == 'bingo'`, granting all adjacent physical venues (e.g., `restaurant`) inherent access sequentially into the Trivia formatting blocks effortlessly!
+
+
 ## [0.0.1+76] - 2026-04-15 - Contextual Bar Management & Trivia Night Pipeline
 
 ### Added

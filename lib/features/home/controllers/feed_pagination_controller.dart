@@ -1,10 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../../models/feed_item.dart';
 import '../../../../models/user_model.dart';
 import '../../../../services/auth_service.dart';
 import '../../../../services/location_service.dart';
-import '../../home/repositories/hall_repository.dart';
+import '../../home/repositories/venue_repository.dart';
 import '../../home/repositories/feed_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -98,7 +99,7 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
 
   Future<void> _fetchAndMerge() async {
     try {
-      final hallRepo = ref.read(hallRepositoryProvider);
+      final hallRepo = ref.read(venueRepositoryProvider);
       final feedRepo = ref.read(feedRepositoryProvider);
       final userLoc = ref.read(userLocationStreamProvider).valueOrNull;
 
@@ -220,9 +221,9 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
 
       final List<FeedItem> filteredItems = state.items.where((item) {
         final String authorId = item.map(
-          tournament: (t) => t.data.hallId,
-          raffle: (r) => r.data.hallId,
-          special: (s) => s.data.hallId,
+          tournament: (t) => t.data.venueId,
+          raffle: (r) => r.data.venueId,
+          special: (s) => s.data.venueId,
           checkIn: (c) => c.data.userId,
           winPost: (w) => w.data.userId,
           textPost: (tp) => tp.data.userId,
@@ -284,7 +285,7 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
         hasMore: overallHasMore,
       );
     } catch (e) {
-      print("Feed pagination error: $e");
+      debugPrint("Feed pagination error: $e");
       state = state.copyWith(isLoading: false);
     }
   }
@@ -362,9 +363,9 @@ class FeedPaginationController extends StateNotifier<FeedPaginationState> {
     // Instantly wipe from active UI array
     final newItems = state.items.where((item) {
       final String aId = item.map(
-        tournament: (t) => t.data.hallId,
-        raffle: (r) => r.data.hallId,
-        special: (s) => s.data.hallId,
+        tournament: (t) => t.data.venueId,
+        raffle: (r) => r.data.venueId,
+        special: (s) => s.data.venueId,
         checkIn: (c) => c.data.userId,
         winPost: (w) => w.data.userId,
         textPost: (tp) => tp.data.userId,

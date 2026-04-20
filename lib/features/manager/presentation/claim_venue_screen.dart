@@ -105,7 +105,7 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text("Hall Portal"),
+        title: const Text("Venue Portal"),
       ),
       body: SafeArea(
         child: PageView(
@@ -134,7 +134,7 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
           ),
           const SizedBox(height: 8),
           const Text(
-            "Search for your bingo hall below. If it's not listed, you can request to add it.",
+            "Search for your bingo venue below. If it's not listed, you can request to add it.",
             style: TextStyle(color: Colors.white70, fontSize: 16),
           ),
           const SizedBox(height: 32),
@@ -168,7 +168,7 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
               icon: const Icon(Icons.add_business, color: Colors.amber),
               label: const Flexible(
                 child: Text(
-                  "Can't find your hall? Create it now.",
+                  "Can't find your venue? Create it now.",
                   style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
                   overflow: TextOverflow.visible,
                   textAlign: TextAlign.center,
@@ -185,17 +185,17 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
     final query = _searchController.text.trim().toLowerCase();
 
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('bingo_halls').limit(20).snapshots(),
+      stream: FirebaseFirestore.instance.collection('venues').limit(20).snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
 
-        var halls = snapshot.data!.docs.where((doc) {
+        var venues = snapshot.data!.docs.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
           final name = (data['name'] ?? '').toString().toLowerCase();
           return name.contains(query);
         }).toList();
 
-        if (halls.isEmpty) {
+        if (venues.isEmpty) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(32),
@@ -211,12 +211,12 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
         return ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: halls.length,
+          itemCount: venues.length,
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
-            final doc = halls[index];
+            final doc = venues[index];
             final data = doc.data() as Map<String, dynamic>;
-            final name = data['name'] ?? 'Unknown Hall';
+            final name = data['name'] ?? 'Unknown Venue';
             final address = data['address'] ?? 'No Address Provided';
 
             return ListTile(
@@ -288,7 +288,7 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  "Enter an official business email associated with the hall (e.g. manager@myhall.com).",
+                  "Enter an official business email associated with the venue (e.g. manager@myhall.com).",
                   style: TextStyle(color: Colors.white54, fontSize: 14),
                 ),
                 const SizedBox(height: 16),
@@ -330,7 +330,7 @@ class _ClaimVenueScreenState extends ConsumerState<ClaimVenueScreen> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  "Upload a business license, utility bill, or letterhead verifying your association with the hall.",
+                  "Upload a business license, utility bill, or letterhead verifying your association with the venue.",
                   style: TextStyle(color: Colors.white54, fontSize: 14),
                 ),
                 const SizedBox(height: 24),

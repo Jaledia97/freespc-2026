@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -51,7 +52,7 @@ class LocationService {
         distanceFilter: 100, // Update every 100 meters
       ),
     ).handleError((error) {
-      print("Location Stream Error: $error");
+      debugPrint("Location Stream Error: $error");
       return null;
     });
   }

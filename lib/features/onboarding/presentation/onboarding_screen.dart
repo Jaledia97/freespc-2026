@@ -46,7 +46,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    _hallsFuture = FirebaseFirestore.instance.collection('bingo_halls').get();
+    _hallsFuture = FirebaseFirestore.instance.collection('venues').get();
   }
   
   void _checkUsernameAvailability(String val) async {
@@ -503,16 +503,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             
             // Deduplicate by name to prevent cloned test-venues from flooding the UI
             final uniqueNames = <String>{};
-            var halls = <QueryDocumentSnapshot>[];
+            var venues = <QueryDocumentSnapshot>[];
             for (var doc in rawHalls) {
               final data = doc.data() as Map<String, dynamic>;
               final name = (data['name'] ?? doc.id).toString().toLowerCase();
               if (uniqueNames.add(name)) {
-                halls.add(doc);
+                venues.add(doc);
               }
             }
             
-            if (halls.isEmpty) return const Text("No nearby venues found.", style: TextStyle(color: Colors.white54));
+            if (venues.isEmpty) return const Text("No nearby venues found.", style: TextStyle(color: Colors.white54));
 
             return GridView.builder(
               shrinkWrap: true,
@@ -523,9 +523,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 mainAxisSpacing: 16,
                 childAspectRatio: 0.75,
               ),
-              itemCount: halls.length,
+              itemCount: venues.length,
               itemBuilder: (context, index) {
-                final doc = halls[index];
+                final doc = venues[index];
                 final data = doc.data() as Map<String, dynamic>;
                 final isSelected = _selectedFavorites.contains(doc.id);
                 

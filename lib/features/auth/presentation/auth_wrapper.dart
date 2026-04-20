@@ -180,13 +180,13 @@ class _AuthHandlerState extends ConsumerState<_AuthHandler> with WidgetsBindingO
   Future<void> _checkPendingInvites() async {
     final prefs = ref.read(sharedPreferencesProvider);
 
-    // 1. Check Hall Join
-    final hallId = prefs.getString('pending_join_hall');
-    if (hallId != null && mounted) {
+    // 1. Check Venue Join
+    final venueId = prefs.getString('pending_join_hall');
+    if (venueId != null && mounted) {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (ctx) => _JoinHallDialog(hallId: hallId, prefs: prefs),
+        builder: (ctx) => _JoinHallDialog(venueId: venueId, prefs: prefs),
       );
     }
 
@@ -297,21 +297,21 @@ class _AuthHandlerState extends ConsumerState<_AuthHandler> with WidgetsBindingO
 }
 
 class _JoinHallDialog extends ConsumerWidget {
-  final String hallId;
+  final String venueId;
   final SharedPreferences prefs;
 
-  const _JoinHallDialog({required this.hallId, required this.prefs});
+  const _JoinHallDialog({required this.venueId, required this.prefs});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
       backgroundColor: const Color(0xFF2C2C2C),
       title: const Text(
-        "Join Hall Team?",
+        "Join Venue Team?",
         style: TextStyle(color: Colors.white),
       ),
       content: const Text(
-        "You have been invited to join a Bingo Hall staff team. Do you want to accept?",
+        "You have been invited to join a Venue staff team. Do you want to accept?",
         style: TextStyle(color: Colors.white70),
       ),
       actions: [
@@ -340,7 +340,7 @@ class _JoinHallDialog extends ConsumerWidget {
                     .collection('users')
                     .doc(user.uid)
                     .update({
-                      'homeBaseId': hallId,
+                      'homeBaseId': venueId,
                       'role':
                           'player', // Reset role to player pending assignment
                     });
@@ -351,7 +351,7 @@ class _JoinHallDialog extends ConsumerWidget {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
-                      "Joined Hall! Ask a manager to assign your role.",
+                      "Joined Venue! Ask a manager to assign your role.",
                     ),
                   ),
                 );

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../models/bingo_hall_model.dart';
-import '../../../home/repositories/hall_repository.dart';
+import '../../../../models/venue_model.dart';
+import '../../../home/repositories/venue_repository.dart';
 
 class LoyaltySettingsScreen extends ConsumerStatefulWidget {
-  final String hallId;
-  final BingoHallModel hall;
+  final String venueId;
+  final VenueModel venue;
 
   const LoyaltySettingsScreen({
     super.key,
-    required this.hallId,
-    required this.hall,
+    required this.venueId,
+    required this.venue,
   });
 
   @override
@@ -42,7 +42,7 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
   @override
   void initState() {
     super.initState();
-    final settings = widget.hall.loyaltySettings;
+    final settings = widget.venue.loyaltySettings;
 
     _nameController = TextEditingController(text: settings.currencyName);
     _symbolController = TextEditingController(text: settings.currencySymbol);
@@ -65,7 +65,7 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
       text: settings.dailyEarningCap?.toString() ?? "100",
     );
 
-    final squadConfig = widget.hall.squadBonusConfig;
+    final squadConfig = widget.venue.squadBonusConfig;
     _isSquadBonusActive = squadConfig.isSquadBonusActive;
     _squadMultiplierController = TextEditingController(
       text: squadConfig.squadBonusMultiplier.toString(),
@@ -117,12 +117,12 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
         endTime: _squadEndTime,
       );
 
-      final updatedHall = widget.hall.copyWith(
+      final updatedHall = widget.venue.copyWith(
         loyaltySettings: updatedSettings,
         squadBonusConfig: updatedSquadConfig,
       );
 
-      await ref.read(hallRepositoryProvider).updateHall(updatedHall);
+      await ref.read(venueRepositoryProvider).updateHall(updatedHall);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -220,7 +220,7 @@ class _LoyaltySettingsScreenState extends ConsumerState<LoyaltySettingsScreen> {
               controller: _timeDropAmountController,
               label: "Time-Drop Amount",
               suffix: "pts",
-              desc: "Points awarded passively for staying at the hall.",
+              desc: "Points awarded passively for staying at the venue.",
             ),
             _buildNumberField(
               controller: _timeDropIntervalController,

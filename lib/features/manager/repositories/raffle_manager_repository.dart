@@ -8,8 +8,8 @@ final raffleManagerRepositoryProvider = Provider(
 );
 
 final activeRaffleSessionProvider =
-    StreamProvider.family<Map<String, dynamic>?, String>((ref, hallId) {
-      return ref.watch(raffleManagerRepositoryProvider).getSession(hallId);
+    StreamProvider.family<Map<String, dynamic>?, String>((ref, venueId) {
+      return ref.watch(raffleManagerRepositoryProvider).getSession(venueId);
     });
 
 class RaffleManagerRepository {
@@ -17,21 +17,21 @@ class RaffleManagerRepository {
 
   RaffleManagerRepository(this._firestore);
 
-  Stream<Map<String, dynamic>?> getSession(String hallId) {
+  Stream<Map<String, dynamic>?> getSession(String venueId) {
     return _firestore
         .collection('raffle_sessions')
-        .doc(hallId)
+        .doc(venueId)
         .snapshots()
         .map((doc) => doc.data());
   }
 
   // Step 1: Start Roll Call
-  Future<void> startRollCall(String hallId) async {
+  Future<void> startRollCall(String venueId) async {
     final code = (Random().nextInt(9000) + 1000)
         .toString(); // 4 Digit 1000-9999
 
-    await _firestore.collection('raffle_sessions').doc(hallId).set({
-      'hallId': hallId,
+    await _firestore.collection('raffle_sessions').doc(venueId).set({
+      'venueId': venueId,
       'status': 'roll_call', // roll_call, locked, distributing, complete
       'code': code,
       'createdAt': FieldValue.serverTimestamp(),
@@ -42,11 +42,11 @@ class RaffleManagerRepository {
 
   // Step 1.5: User Joins (This would be called by User App, but putting here for logic ref)
   Future<void> joinRollCall(
-    String hallId,
+    String venueId,
     String inputCode,
     UserModel user,
   ) async {
-    final docRef = _firestore.collection('raffle_sessions').doc(hallId);
+    final docRef = _firestore.collection('raffle_sessions').doc(venueId);
 
     return _firestore.runTransaction((transaction) async {
       final snapshot = await transaction.get(docRef);
@@ -74,20 +74,20 @@ class RaffleManagerRepository {
   }
 
   // Step 2: Lock
-  Future<void> lockRollCall(String hallId) async {
-    await _firestore.collection('raffle_sessions').doc(hallId).update({
+  Future<void> lockRollCall(String venueId) async {
+    await _firestore.collection('raffle_sessions').doc(venueId).update({
       'status': 'locked',
     });
   }
 
   // Step 3: Distribute Tickets (Adds 1 ticket to each user's wallet)
   Future<void> distributeTickets(
-    String hallId,
+    String venueId,
     String raffleName, {
     required String raffleId,
     required String imageUrl,
   }) async {
-    final docRef = _firestore.collection('raffle_sessions').doc(hallId);
+    final docRef = _firestore.collection('raffle_sessions').doc(venueId);
     final data = (await docRef.get()).data();
     if (data == null) return;
 
@@ -109,9 +109,9 @@ class RaffleManagerRepository {
       batch.set(ticketRef, {
         'id': ticketRef.id,
         'raffleId': raffleId, // Link to real raffle
-        'hallId': hallId,
+        'venueId': venueId,
         'title': raffleName,
-        'hallName': 'Hall Draw', // fetch real name later
+        'venueName': 'Venue Draw', // fetch real name later
         'quantity': 1,
         'purchaseDate': FieldValue.serverTimestamp(),
         'imageUrl': imageUrl,
@@ -125,8 +125,8 @@ class RaffleManagerRepository {
   }
 
   // Step 4: Draw Winner
-  Future<void> drawWinner(String hallId) async {
-    final docRef = _firestore.collection('raffle_sessions').doc(hallId);
+  Future<void> drawWinner(String venueId) async {
+    final docRef = _firestore.collection('raffle_sessions').doc(venueId);
 
     await _firestore.runTransaction((transaction) async {
       final snapshot = await transaction.get(docRef);
@@ -144,7 +144,7 @@ class RaffleManagerRepository {
   }
 
   // Step 5: Reset
-  Future<void> resetSession(String hallId) async {
-    await _firestore.collection('raffle_sessions').doc(hallId).delete();
+  Future<void> resetSession(String venueId) async {
+    await _firestore.collection('raffle_sessions').doc(venueId).delete();
   }
 }

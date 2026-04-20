@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../models/bingo_hall_model.dart';
-import '../../home/repositories/hall_repository.dart';
+import '../../../models/venue_model.dart';
+import '../../home/repositories/venue_repository.dart';
 import '../../../services/auth_service.dart';
 import 'widgets/special_card.dart';
 import 'widgets/raffle_list_card.dart';
-import 'widgets/hall_about_tab.dart';
-import 'widgets/hall_programs_tab.dart';
+import 'widgets/venue_about_tab.dart';
+import 'widgets/venue_programs_tab.dart';
 import 'widgets/tournament_list_card.dart';
 import '../../manager/repositories/tournament_repository.dart'; // Restored Import
-import 'hall_full_gallery_screen.dart';
-import 'hall_store_screen.dart'; // Import New Store Screen
+import 'venue_full_gallery_screen.dart';
+import 'venue_store_screen.dart'; // Import New Store Screen
 
 class HallProfileScreen extends ConsumerWidget {
-  final BingoHallModel hall;
+  final VenueModel venue;
   final double? distanceInMeters;
   final int initialTabIndex;
 
   const HallProfileScreen({
     super.key,
-    required this.hall,
+    required this.venue,
     this.distanceInMeters,
     this.initialTabIndex = 0,
   });
@@ -42,7 +42,7 @@ class HallProfileScreen extends ConsumerWidget {
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(
-                    hall.name,
+                    venue.name,
                     style: const TextStyle(
                       shadows: [Shadow(blurRadius: 2, color: Colors.black)],
                     ),
@@ -51,9 +51,9 @@ class HallProfileScreen extends ConsumerWidget {
                     fit: StackFit.expand,
                     children: [
                       // Banner Image
-                      hall.bannerUrl != null
+                      venue.bannerUrl != null
                           ? CachedNetworkImage(
-                              imageUrl: hall.bannerUrl!,
+                              imageUrl: venue.bannerUrl!,
                               fit: BoxFit.cover,
                               placeholder: (context, url) =>
                                   Container(color: Colors.grey[800]),
@@ -87,7 +87,7 @@ class HallProfileScreen extends ConsumerWidget {
                       ),
 
                       // Logo Overlay (Bottom Left)
-                      if (hall.logoUrl != null)
+                      if (venue.logoUrl != null)
                         Positioned(
                           bottom:
                               10, // Adjust based on collapse behavior if needed
@@ -106,7 +106,7 @@ class HallProfileScreen extends ConsumerWidget {
                               ],
                               image: DecorationImage(
                                 image: CachedNetworkImageProvider(
-                                  hall.logoUrl!,
+                                  venue.logoUrl!,
                                 ),
                                 fit: BoxFit.cover,
                               ),
@@ -154,7 +154,7 @@ class HallProfileScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  "${hall.city}, ${hall.state}",
+                                  "${venue.city}, ${venue.state}",
                                   style: const TextStyle(color: Colors.grey),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -169,7 +169,7 @@ class HallProfileScreen extends ConsumerWidget {
                       userProfileAsync.when(
                         data: (user) {
                           if (user == null) return const SizedBox.shrink();
-                          final isFollowing = user.following.contains(hall.id);
+                          final isFollowing = user.following.contains(venue.id);
 
                           return Row(
                             children: [
@@ -178,12 +178,12 @@ class HallProfileScreen extends ConsumerWidget {
                                 child: InkWell(
                                   onTap: () {
                                     ref
-                                        .read(hallRepositoryProvider)
+                                        .read(venueRepositoryProvider)
                                         .toggleFollow(
                                           user.uid,
-                                          hall.id,
+                                          venue.id,
                                           isFollowing,
-                                          hall.name,
+                                          venue.name,
                                         );
                                   },
                                   borderRadius: BorderRadius.circular(30),
@@ -234,8 +234,8 @@ class HallProfileScreen extends ConsumerWidget {
                                       context,
                                       MaterialPageRoute(
                                         builder: (_) => HallFullGalleryScreen(
-                                          hallId: hall.id,
-                                          hallName: hall.name,
+                                          venueId: venue.id,
+                                          venueName: venue.name,
                                         ),
                                       ),
                                     );
@@ -282,8 +282,8 @@ class HallProfileScreen extends ConsumerWidget {
                                       context,
                                       MaterialPageRoute(
                                         builder: (_) => HallStoreScreen(
-                                          hallId: hall.id,
-                                          hallName: hall.name,
+                                          venueId: venue.id,
+                                          venueName: venue.name,
                                         ),
                                       ),
                                     );
@@ -364,7 +364,7 @@ class HallProfileScreen extends ConsumerWidget {
               Consumer(
                 builder: (context, ref, _) {
                   final specialsAsync = ref.watch(
-                    hallSpecialsProvider(hall.id),
+                    hallSpecialsProvider(venue.id),
                   );
                   return specialsAsync.when(
                     data: (specials) {
@@ -393,12 +393,12 @@ class HallProfileScreen extends ConsumerWidget {
               ),
 
               // 2. Programs Tab
-              HallProgramsTab(programs: hall.programs),
+              HallProgramsTab(programs: venue.programs),
 
               // 2. Raffles Tab
               Consumer(
                 builder: (context, ref, _) {
-                  final rafflesAsync = ref.watch(hallRafflesProvider(hall.id));
+                  final rafflesAsync = ref.watch(hallRafflesProvider(venue.id));
                   return rafflesAsync.when(
                     data: (raffles) {
                       final visibleRaffles = raffles
@@ -417,8 +417,8 @@ class HallProfileScreen extends ConsumerWidget {
                                 onPressed: () async {
                                   try {
                                     await ref
-                                        .read(hallRepositoryProvider)
-                                        .seedRaffles(hall.id);
+                                        .read(venueRepositoryProvider)
+                                        .seedRaffles(venue.id);
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(
                                         context,
@@ -469,7 +469,7 @@ class HallProfileScreen extends ConsumerWidget {
               Consumer(
                 builder: (context, ref, _) {
                   final tournamentsAsync = ref.watch(
-                    hallTournamentsProvider(hall.id),
+                    hallTournamentsProvider(venue.id),
                   );
                   return tournamentsAsync.when(
                     data: (tournaments) {
@@ -503,7 +503,7 @@ class HallProfileScreen extends ConsumerWidget {
               ),
 
               // 4. About Tab
-              HallAboutTab(hall: hall),
+              HallAboutTab(venue: venue),
             ],
           ),
         ),

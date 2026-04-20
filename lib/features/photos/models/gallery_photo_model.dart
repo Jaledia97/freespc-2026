@@ -28,9 +28,9 @@ abstract class GalleryPhotoModel with _$GalleryPhotoModel {
 
     // Tagging & Approval Logic
     @Default([]) List<String> taggedUserIds,
-    @Default([]) List<String> taggedHallIds, // All halls tagged originally
-    @Default([]) List<String> approvedHallIds, // Halls that approved the tag
-    @Default([]) List<String> pendingHallIds, // Halls that need to approve
+    @Default([]) List<String> taggedHallIds, // All venues tagged originally
+    @Default([]) List<String> approvedHallIds, // Venues that approved the tag
+    @Default([]) List<String> pendingHallIds, // Venues that need to approve
     // Moderation
     @Default(0) int reportCount,
     @Default(false) bool isHidden,

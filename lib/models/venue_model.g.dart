@@ -1,69 +1,67 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'bingo_hall_model.dart';
+part of 'venue_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_BingoHallModel _$BingoHallModelFromJson(Map<String, dynamic> json) =>
-    _BingoHallModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      beaconUuid: json['beaconUuid'] as String,
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
-      isActive: json['isActive'] as bool,
-      street: json['street'] as String?,
-      city: json['city'] as String?,
-      state: json['state'] as String?,
-      zipCode: json['zipCode'] as String?,
-      unitNumber: json['unitNumber'] as String?,
-      phone: json['phone'] as String?,
-      websiteUrl: json['websiteUrl'] as String?,
-      description: json['description'] as String?,
-      logoUrl: json['logoUrl'] as String?,
-      bannerUrl: json['bannerUrl'] as String?,
-      geoHash: json['geoHash'] as String?,
-      followBonus: (json['followBonus'] as num?)?.toDouble() ?? 0.0,
-      operatingHours:
-          json['operatingHours'] as Map<String, dynamic>? ?? const {},
-      programs:
-          (json['programs'] as List<dynamic>?)
-              ?.map((e) => HallProgramModel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      charities:
-          (json['charities'] as List<dynamic>?)
-              ?.map((e) => HallCharityModel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      loyaltySettings: json['loyaltySettings'] == null
-          ? const LoyaltySettings()
-          : LoyaltySettings.fromJson(
-              json['loyaltySettings'] as Map<String, dynamic>,
-            ),
-      storeCategories:
-          (json['storeCategories'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          const [
-            'Merchandise',
-            'Food & Beverage',
-            'Sessions',
-            'Pull Tabs',
-            'Electronics',
-            'Other',
-          ],
-      venueType: json['venueType'] as String? ?? 'bingo',
-      squadBonusConfig: json['squadBonusConfig'] == null
-          ? const SquadBonusConfig()
-          : SquadBonusConfig.fromJson(
-              json['squadBonusConfig'] as Map<String, dynamic>,
-            ),
-    );
+_VenueModel _$VenueModelFromJson(Map<String, dynamic> json) => _VenueModel(
+  id: json['id'] as String,
+  name: json['name'] as String,
+  beaconUuid: json['beaconUuid'] as String,
+  latitude: (json['latitude'] as num).toDouble(),
+  longitude: (json['longitude'] as num).toDouble(),
+  isActive: json['isActive'] as bool,
+  street: json['street'] as String?,
+  city: json['city'] as String?,
+  state: json['state'] as String?,
+  zipCode: json['zipCode'] as String?,
+  unitNumber: json['unitNumber'] as String?,
+  phone: json['phone'] as String?,
+  websiteUrl: json['websiteUrl'] as String?,
+  description: json['description'] as String?,
+  logoUrl: json['logoUrl'] as String?,
+  bannerUrl: json['bannerUrl'] as String?,
+  geoHash: json['geoHash'] as String?,
+  followBonus: (json['followBonus'] as num?)?.toDouble() ?? 0.0,
+  operatingHours: json['operatingHours'] as Map<String, dynamic>? ?? const {},
+  programs:
+      (json['programs'] as List<dynamic>?)
+          ?.map((e) => VenueProgramModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  charities:
+      (json['charities'] as List<dynamic>?)
+          ?.map((e) => VenueCharityModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  loyaltySettings: json['loyaltySettings'] == null
+      ? const LoyaltySettings()
+      : LoyaltySettings.fromJson(
+          json['loyaltySettings'] as Map<String, dynamic>,
+        ),
+  storeCategories:
+      (json['storeCategories'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [
+        'Merchandise',
+        'Food & Beverage',
+        'Sessions',
+        'Pull Tabs',
+        'Electronics',
+        'Other',
+      ],
+  venueType: json['venueType'] as String? ?? 'bingo',
+  squadBonusConfig: json['squadBonusConfig'] == null
+      ? const SquadBonusConfig()
+      : SquadBonusConfig.fromJson(
+          json['squadBonusConfig'] as Map<String, dynamic>,
+        ),
+);
 
-Map<String, dynamic> _$BingoHallModelToJson(_BingoHallModel instance) =>
+Map<String, dynamic> _$VenueModelToJson(_VenueModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,

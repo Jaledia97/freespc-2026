@@ -9,7 +9,7 @@ part of 'store_item_model.dart';
 _StoreItemModel _$StoreItemModelFromJson(Map<String, dynamic> json) =>
     _StoreItemModel(
       id: json['id'] as String,
-      hallId: json['hallId'] as String,
+      venueId: json['venueId'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
       cost: (json['cost'] as num).toInt(),
@@ -26,7 +26,7 @@ _StoreItemModel _$StoreItemModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$StoreItemModelToJson(_StoreItemModel instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'hallId': instance.hallId,
+      'venueId': instance.venueId,
       'title': instance.title,
       'description': instance.description,
       'cost': instance.cost,

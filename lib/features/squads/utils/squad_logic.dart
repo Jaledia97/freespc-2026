@@ -1,16 +1,18 @@
+import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../models/squad_model.dart';
-import '../../../models/bingo_hall_model.dart';
+import '../../../models/venue_model.dart';
 
 double calculateSquadBonus(
   SquadModel? userSquad,
   List<String> currentlyCheckedInUserIds,
-  BingoHallModel hall,
+  VenueModel venue,
 ) {
   if (userSquad == null) return 1.0;
   if (!userSquad.isValidSquad) return 1.0;
-  if (!hall.squadBonusConfig.isSquadBonusActive) return 1.0;
+  if (!venue.squadBonusConfig.isSquadBonusActive) return 1.0;
 
-  final config = hall.squadBonusConfig;
+  final config = venue.squadBonusConfig;
   final now = DateTime.now();
   if (config.startTime != null && now.isBefore(config.startTime!)) return 1.0;
   if (config.endTime != null && now.isAfter(config.endTime!)) return 1.0;
@@ -63,10 +65,10 @@ class SquadAssemblyDropResult {
 SquadAssemblyDropResult evaluateAssemblyDrop({
   required SquadModel squad,
   required List<String> presentMemberIds,
-  required BingoHallModel hall,
+  required VenueModel venue,
   required SquadAssemblyState currentState,
 }) {
-  final config = hall.squadBonusConfig;
+  final config = venue.squadBonusConfig;
   if (!config.isSquadBonusActive) {
     return SquadAssemblyDropResult(newState: SquadAssemblyState());
   }
@@ -135,7 +137,7 @@ SquadAssemblyDropResult evaluateAssemblyDrop({
 Future<List<String>> getEligiblePayoutMembers(
   FirebaseFirestore firestore,
   List<String> presentMemberIds,
-  String hallId,
+  String venueId,
 ) async {
   List<String> eligible = [];
   final now = DateTime.now();
@@ -148,7 +150,7 @@ Future<List<String>> getEligiblePayoutMembers(
           .collection('users')
           .doc(memberId)
           .collection('transactions')
-          .where('hallId', isEqualTo: hallId)
+          .where('venueId', isEqualTo: venueId)
           .where('description', isEqualTo: 'Squad Assembly Drop')
           .where('timestamp', isGreaterThanOrEqualTo: startOfDay)
           .where('timestamp', isLessThanOrEqualTo: endOfDay)
@@ -159,7 +161,7 @@ Future<List<String>> getEligiblePayoutMembers(
         eligible.add(memberId);
       }
     } catch (e) {
-      print("Error checking eligibility for \$memberId: \$e");
+      debugPrint("Error checking eligibility for \$memberId: \$e");
     }
   }
 

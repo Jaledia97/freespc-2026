@@ -4,7 +4,7 @@ import '../../../core/widgets/glass_container.dart';
 import '../../../models/venue_claim_model.dart';
 import '../repositories/admin_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../home/presentation/hall_profile_screen.dart';
+import '../../home/presentation/venue_profile_screen.dart';
 
 class SuperadminDashboardScreen extends ConsumerWidget {
   const SuperadminDashboardScreen({super.key});
@@ -234,7 +234,7 @@ class _VenueClaimCardState extends ConsumerState<_VenueClaimCard> {
                         if (mounted) setState(() => _isProcessing = false);
 
                         if (hallData != null && mounted) {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => HallProfileScreen(hall: hallData)));
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => HallProfileScreen(venue: hallData)));
                         } else if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Sandbox mapping failed. Missing JSON bindings."), backgroundColor: Colors.red));
                         }

@@ -8,9 +8,9 @@ final storeRepositoryProvider = Provider(
 
 final storeItemsProvider = StreamProvider.family<List<StoreItemModel>, String>((
   ref,
-  hallId,
+  venueId,
 ) {
-  return ref.watch(storeRepositoryProvider).getStoreItems(hallId);
+  return ref.watch(storeRepositoryProvider).getStoreItems(venueId);
 });
 
 class StoreRepository {
@@ -18,11 +18,11 @@ class StoreRepository {
 
   StoreRepository(this._firestore);
 
-  // Get all items for a hall (Realtime)
-  Stream<List<StoreItemModel>> getStoreItems(String hallId) {
+  // Get all items for a venue (Realtime)
+  Stream<List<StoreItemModel>> getStoreItems(String venueId) {
     return _firestore
-        .collection('bingo_halls')
-        .doc(hallId)
+        .collection('venues')
+        .doc(venueId)
         .collection('store_items')
         .orderBy('createdAt', descending: true)
         .snapshots()
@@ -34,10 +34,10 @@ class StoreRepository {
   }
 
   // Get ONLY active items (For Consumer View)
-  Stream<List<StoreItemModel>> getActiveStoreItems(String hallId) {
+  Stream<List<StoreItemModel>> getActiveStoreItems(String venueId) {
     return _firestore
-        .collection('bingo_halls')
-        .doc(hallId)
+        .collection('venues')
+        .doc(venueId)
         .collection('store_items')
         .where('isActive', isEqualTo: true)
         .orderBy('createdAt', descending: true)
@@ -51,8 +51,8 @@ class StoreRepository {
 
   Future<void> createStoreItem(StoreItemModel item) async {
     await _firestore
-        .collection('bingo_halls')
-        .doc(item.hallId)
+        .collection('venues')
+        .doc(item.venueId)
         .collection('store_items')
         .doc(item.id)
         .set(item.toJson());
@@ -60,17 +60,17 @@ class StoreRepository {
 
   Future<void> updateStoreItem(StoreItemModel item) async {
     await _firestore
-        .collection('bingo_halls')
-        .doc(item.hallId)
+        .collection('venues')
+        .doc(item.venueId)
         .collection('store_items')
         .doc(item.id)
         .update(item.toJson());
   }
 
-  Future<void> deleteStoreItem(String hallId, String itemId) async {
+  Future<void> deleteStoreItem(String venueId, String itemId) async {
     await _firestore
-        .collection('bingo_halls')
-        .doc(hallId)
+        .collection('venues')
+        .doc(venueId)
         .collection('store_items')
         .doc(itemId)
         .delete();

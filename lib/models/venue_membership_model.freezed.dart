@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'hall_membership_model.dart';
+part of 'venue_membership_model.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -11,46 +11,53 @@ part of 'hall_membership_model.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
+VenueMembershipModel _$VenueMembershipModelFromJson(
+  Map<String, dynamic> json
+) {
+    return _HallMembershipModel.fromJson(
+      json
+    );
+}
 
 /// @nodoc
-mixin _$HallMembershipModel {
+mixin _$VenueMembershipModel {
 
- String get hallId; String get hallName; double get balance; String get currencyName;// e.g. "Points", "Tokens", "Credits"
+ String get venueId; String get venueName; double get balance; String get currencyName;// e.g. "Points", "Tokens", "Credits"
  String get tier;// e.g. "Gold", "VIP"
  String? get bannerUrl;
-/// Create a copy of HallMembershipModel
+/// Create a copy of VenueMembershipModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$HallMembershipModelCopyWith<HallMembershipModel> get copyWith => _$HallMembershipModelCopyWithImpl<HallMembershipModel>(this as HallMembershipModel, _$identity);
+$VenueMembershipModelCopyWith<VenueMembershipModel> get copyWith => _$VenueMembershipModelCopyWithImpl<VenueMembershipModel>(this as VenueMembershipModel, _$identity);
 
-  /// Serializes this HallMembershipModel to a JSON map.
+  /// Serializes this VenueMembershipModel to a JSON map.
   Map<String, dynamic> toJson();
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HallMembershipModel&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currencyName, currencyName) || other.currencyName == currencyName)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VenueMembershipModel&&(identical(other.venueId, venueId) || other.venueId == venueId)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currencyName, currencyName) || other.currencyName == currencyName)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,hallId,hallName,balance,currencyName,tier,bannerUrl);
+int get hashCode => Object.hash(runtimeType,venueId,venueName,balance,currencyName,tier,bannerUrl);
 
 @override
 String toString() {
-  return 'HallMembershipModel(hallId: $hallId, hallName: $hallName, balance: $balance, currencyName: $currencyName, tier: $tier, bannerUrl: $bannerUrl)';
+  return 'VenueMembershipModel(venueId: $venueId, venueName: $venueName, balance: $balance, currencyName: $currencyName, tier: $tier, bannerUrl: $bannerUrl)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $HallMembershipModelCopyWith<$Res>  {
-  factory $HallMembershipModelCopyWith(HallMembershipModel value, $Res Function(HallMembershipModel) _then) = _$HallMembershipModelCopyWithImpl;
+abstract mixin class $VenueMembershipModelCopyWith<$Res>  {
+  factory $VenueMembershipModelCopyWith(VenueMembershipModel value, $Res Function(VenueMembershipModel) _then) = _$VenueMembershipModelCopyWithImpl;
 @useResult
 $Res call({
- String hallId, String hallName, double balance, String currencyName, String tier, String? bannerUrl
+ String venueId, String venueName, double balance, String currencyName, String tier, String? bannerUrl
 });
 
 
@@ -58,19 +65,19 @@ $Res call({
 
 }
 /// @nodoc
-class _$HallMembershipModelCopyWithImpl<$Res>
-    implements $HallMembershipModelCopyWith<$Res> {
-  _$HallMembershipModelCopyWithImpl(this._self, this._then);
+class _$VenueMembershipModelCopyWithImpl<$Res>
+    implements $VenueMembershipModelCopyWith<$Res> {
+  _$VenueMembershipModelCopyWithImpl(this._self, this._then);
 
-  final HallMembershipModel _self;
-  final $Res Function(HallMembershipModel) _then;
+  final VenueMembershipModel _self;
+  final $Res Function(VenueMembershipModel) _then;
 
-/// Create a copy of HallMembershipModel
+/// Create a copy of VenueMembershipModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? hallId = null,Object? hallName = null,Object? balance = null,Object? currencyName = null,Object? tier = null,Object? bannerUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? venueId = null,Object? venueName = null,Object? balance = null,Object? currencyName = null,Object? tier = null,Object? bannerUrl = freezed,}) {
   return _then(_self.copyWith(
-hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
-as String,hallName: null == hallName ? _self.hallName : hallName // ignore: cast_nullable_to_non_nullable
+venueId: null == venueId ? _self.venueId : venueId // ignore: cast_nullable_to_non_nullable
+as String,venueName: null == venueName ? _self.venueName : venueName // ignore: cast_nullable_to_non_nullable
 as String,balance: null == balance ? _self.balance : balance // ignore: cast_nullable_to_non_nullable
 as double,currencyName: null == currencyName ? _self.currencyName : currencyName // ignore: cast_nullable_to_non_nullable
 as String,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
@@ -82,8 +89,8 @@ as String?,
 }
 
 
-/// Adds pattern-matching-related methods to [HallMembershipModel].
-extension HallMembershipModelPatterns on HallMembershipModel {
+/// Adds pattern-matching-related methods to [VenueMembershipModel].
+extension VenueMembershipModelPatterns on VenueMembershipModel {
 /// A variant of `map` that fallback to returning `orElse`.
 ///
 /// It is equivalent to doing:
@@ -160,10 +167,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String hallId,  String hallName,  double balance,  String currencyName,  String tier,  String? bannerUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String venueId,  String venueName,  double balance,  String currencyName,  String tier,  String? bannerUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HallMembershipModel() when $default != null:
-return $default(_that.hallId,_that.hallName,_that.balance,_that.currencyName,_that.tier,_that.bannerUrl);case _:
+return $default(_that.venueId,_that.venueName,_that.balance,_that.currencyName,_that.tier,_that.bannerUrl);case _:
   return orElse();
 
 }
@@ -181,10 +188,10 @@ return $default(_that.hallId,_that.hallName,_that.balance,_that.currencyName,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String hallId,  String hallName,  double balance,  String currencyName,  String tier,  String? bannerUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String venueId,  String venueName,  double balance,  String currencyName,  String tier,  String? bannerUrl)  $default,) {final _that = this;
 switch (_that) {
 case _HallMembershipModel():
-return $default(_that.hallId,_that.hallName,_that.balance,_that.currencyName,_that.tier,_that.bannerUrl);case _:
+return $default(_that.venueId,_that.venueName,_that.balance,_that.currencyName,_that.tier,_that.bannerUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -201,10 +208,10 @@ return $default(_that.hallId,_that.hallName,_that.balance,_that.currencyName,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String hallId,  String hallName,  double balance,  String currencyName,  String tier,  String? bannerUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String venueId,  String venueName,  double balance,  String currencyName,  String tier,  String? bannerUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _HallMembershipModel() when $default != null:
-return $default(_that.hallId,_that.hallName,_that.balance,_that.currencyName,_that.tier,_that.bannerUrl);case _:
+return $default(_that.venueId,_that.venueName,_that.balance,_that.currencyName,_that.tier,_that.bannerUrl);case _:
   return null;
 
 }
@@ -215,12 +222,12 @@ return $default(_that.hallId,_that.hallName,_that.balance,_that.currencyName,_th
 /// @nodoc
 @JsonSerializable()
 
-class _HallMembershipModel implements HallMembershipModel {
-  const _HallMembershipModel({required this.hallId, required this.hallName, required this.balance, this.currencyName = 'Points', this.tier = 'Bronze', this.bannerUrl});
+class _HallMembershipModel implements VenueMembershipModel {
+  const _HallMembershipModel({required this.venueId, required this.venueName, required this.balance, this.currencyName = 'Points', this.tier = 'Bronze', this.bannerUrl});
   factory _HallMembershipModel.fromJson(Map<String, dynamic> json) => _$HallMembershipModelFromJson(json);
 
-@override final  String hallId;
-@override final  String hallName;
+@override final  String venueId;
+@override final  String venueName;
 @override final  double balance;
 @override@JsonKey() final  String currencyName;
 // e.g. "Points", "Tokens", "Credits"
@@ -228,7 +235,7 @@ class _HallMembershipModel implements HallMembershipModel {
 // e.g. "Gold", "VIP"
 @override final  String? bannerUrl;
 
-/// Create a copy of HallMembershipModel
+/// Create a copy of VenueMembershipModel
 /// with the given fields replaced by the non-null parameter values.
 @override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
@@ -241,27 +248,27 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HallMembershipModel&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currencyName, currencyName) || other.currencyName == currencyName)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HallMembershipModel&&(identical(other.venueId, venueId) || other.venueId == venueId)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currencyName, currencyName) || other.currencyName == currencyName)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.bannerUrl, bannerUrl) || other.bannerUrl == bannerUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,hallId,hallName,balance,currencyName,tier,bannerUrl);
+int get hashCode => Object.hash(runtimeType,venueId,venueName,balance,currencyName,tier,bannerUrl);
 
 @override
 String toString() {
-  return 'HallMembershipModel(hallId: $hallId, hallName: $hallName, balance: $balance, currencyName: $currencyName, tier: $tier, bannerUrl: $bannerUrl)';
+  return 'VenueMembershipModel(venueId: $venueId, venueName: $venueName, balance: $balance, currencyName: $currencyName, tier: $tier, bannerUrl: $bannerUrl)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class _$HallMembershipModelCopyWith<$Res> implements $HallMembershipModelCopyWith<$Res> {
+abstract mixin class _$HallMembershipModelCopyWith<$Res> implements $VenueMembershipModelCopyWith<$Res> {
   factory _$HallMembershipModelCopyWith(_HallMembershipModel value, $Res Function(_HallMembershipModel) _then) = __$HallMembershipModelCopyWithImpl;
 @override @useResult
 $Res call({
- String hallId, String hallName, double balance, String currencyName, String tier, String? bannerUrl
+ String venueId, String venueName, double balance, String currencyName, String tier, String? bannerUrl
 });
 
 
@@ -276,12 +283,12 @@ class __$HallMembershipModelCopyWithImpl<$Res>
   final _HallMembershipModel _self;
   final $Res Function(_HallMembershipModel) _then;
 
-/// Create a copy of HallMembershipModel
+/// Create a copy of VenueMembershipModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? hallId = null,Object? hallName = null,Object? balance = null,Object? currencyName = null,Object? tier = null,Object? bannerUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? venueId = null,Object? venueName = null,Object? balance = null,Object? currencyName = null,Object? tier = null,Object? bannerUrl = freezed,}) {
   return _then(_HallMembershipModel(
-hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
-as String,hallName: null == hallName ? _self.hallName : hallName // ignore: cast_nullable_to_non_nullable
+venueId: null == venueId ? _self.venueId : venueId // ignore: cast_nullable_to_non_nullable
+as String,venueName: null == venueName ? _self.venueName : venueName // ignore: cast_nullable_to_non_nullable
 as String,balance: null == balance ? _self.balance : balance // ignore: cast_nullable_to_non_nullable
 as double,currencyName: null == currencyName ? _self.currencyName : currencyName // ignore: cast_nullable_to_non_nullable
 as String,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable

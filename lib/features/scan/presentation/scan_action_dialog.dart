@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../wallet/services/transaction_service.dart';
 import '../../../services/auth_service.dart';
-import '../../home/repositories/hall_repository.dart';
+import '../../home/repositories/venue_repository.dart';
 import '../../manager/repositories/tournament_repository.dart'; // Import
 import '../../../models/user_model.dart';
 import '../../../models/tournament_model.dart'; // Import
@@ -65,26 +66,26 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
           }
         }
       } catch (e) {
-        print("Error parsing deep link: $e");
+        debugPrint("Error parsing deep link: $e");
       }
     }
 
     // 2. Check if this is a worker
     final worker = await ref
-        .read(hallRepositoryProvider)
+        .read(venueRepositoryProvider)
         .getWorkerFromQr(widget.content);
 
     if (worker != null && worker['homeBaseId'] != null) {
       // Worker Found! Now check for active tournament
-      final hallId = worker['homeBaseId'] as String;
+      final venueId = worker['homeBaseId'] as String;
       final tournament = await ref
           .read(tournamentRepositoryProvider)
-          .getActiveTournament(hallId);
+          .getActiveTournament(venueId);
 
       if (mounted) {
         setState(() {
           _verifiedWorker = worker;
-          _targetHallId = hallId;
+          _targetHallId = venueId;
           _activeTournament = tournament;
           _state = DialogState.idle;
         });
@@ -383,7 +384,7 @@ class _ScanActionDialogState extends ConsumerState<ScanActionDialog> {
             .read(transactionServiceProvider)
             .awardPoints(
               userId: user.uid,
-              hallId: _targetHallId!,
+              venueId: _targetHallId!,
               points: points,
               description:
                   "$description (${_verifiedWorker!['firstName']})", // include worker name

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,11 +7,11 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:rxdart/rxdart.dart';
 import 'dart:math' as math;
-import '../../home/repositories/hall_repository.dart';
+import '../../home/repositories/venue_repository.dart';
 import '../../../services/location_service.dart';
-import '../../../models/bingo_hall_model.dart';
+import '../../../models/venue_model.dart';
 import '../../../core/widgets/glass_container.dart';
-import 'widgets/hall_map_detail_panel.dart';
+import 'widgets/venue_map_detail_panel.dart';
 
 class HallSearchScreen extends ConsumerStatefulWidget {
   const HallSearchScreen({super.key});
@@ -27,9 +28,9 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
 
   // Search State
   final _searchSubject = BehaviorSubject<SearchCriteria>();
-  late Stream<List<BingoHallModel>> _hallsStream;
-  List<BingoHallModel> _allFetchedHalls = []; // All halls from repository
-  List<BingoHallModel> _currentHalls = []; // Visible filtered halls
+  late Stream<List<VenueModel>> _hallsStream;
+  List<VenueModel> _allFetchedHalls = []; // All venues from repository
+  List<VenueModel> _currentHalls = []; // Visible filtered venues
   Set<Marker> _markers = {};
   // Removed _circles as per user request
 
@@ -53,7 +54,7 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
         .debounceTime(const Duration(milliseconds: 100))
         .switchMap((criteria) {
           return ref
-              .read(hallRepositoryProvider)
+              .read(venueRepositoryProvider)
               .getHallsInRadius(
                 latitude: criteria.center.latitude,
                 longitude: criteria.center.longitude,
@@ -62,10 +63,10 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
         });
 
     // Listen to update local state
-    _hallsStream.listen((halls) {
+    _hallsStream.listen((venues) {
       if (mounted) {
         setState(() {
-          _allFetchedHalls = halls;
+          _allFetchedHalls = venues;
           _filterVisibleHalls(); // Filter immediately upon new data
         });
       }
@@ -75,28 +76,28 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
   }
 
   void _filterVisibleHalls() {
-    List<BingoHallModel> filtered;
+    List<VenueModel> filtered;
 
     if (_currentBounds == null) {
       // Fallback if bounds aren't ready (e.g. initial load before map idle)
       filtered = _allFetchedHalls;
     } else {
-      filtered = _allFetchedHalls.where((hall) {
+      filtered = _allFetchedHalls.where((venue) {
         return _contains(
           _currentBounds!,
-          LatLng(hall.latitude, hall.longitude),
+          LatLng(venue.latitude, venue.longitude),
         );
       }).toList();
     }
 
     setState(() {
       _currentHalls = filtered;
-      _markers = filtered.map((hall) {
+      _markers = filtered.map((venue) {
         return Marker(
-          markerId: MarkerId(hall.id),
-          position: LatLng(hall.latitude, hall.longitude),
-          infoWindow: InfoWindow(title: hall.name, snippet: hall.city),
-          onTap: () => _onHallSelected(hall),
+          markerId: MarkerId(venue.id),
+          position: LatLng(venue.latitude, venue.longitude),
+          infoWindow: InfoWindow(title: venue.name, snippet: venue.city),
+          onTap: () => _onHallSelected(venue),
         );
       }).toSet();
     });
@@ -181,7 +182,7 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
         ).showSnackBar(const SnackBar(content: Text("Location not found")));
       }
     } catch (e) {
-      print("Geocoding Error for '$effectiveQuery': $e");
+      debugPrint("Geocoding Error for '$effectiveQuery': $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Error finding location. Try adding State/Country."),
@@ -190,15 +191,15 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
     }
   }
 
-  BingoHallModel? _selectedHall; // Null = List View, Value = Detail View
+  VenueModel? _selectedHall; // Null = List View, Value = Detail View
 
-  void _onHallSelected(BingoHallModel hall) {
-    setState(() => _selectedHall = hall);
-    // Center map on hall with slightly higher zoom + offset for panel
+  void _onHallSelected(VenueModel venue) {
+    setState(() => _selectedHall = venue);
+    // Center map on venue with slightly higher zoom + offset for panel
     // Offset logic: Center is usually obscured by panel. Shift slightly North?
     // For MVP, just center without offset.
     _animateTo(
-      LatLng(hall.latitude, hall.longitude),
+      LatLng(venue.latitude, venue.longitude),
       5.0,
     ); // 5 mile radius view
     _panelController.open();
@@ -236,8 +237,8 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
           color: const Color(0xFF1A1A1A),
           panel: _selectedHall == null
               ? _buildListView()
-              : HallMapDetailPanel(
-                  hall: _selectedHall!,
+              : VenueMapDetailPanel(
+                  venue: _selectedHall!,
                   onClose: _onBackFromDetail,
                 ),
           body: Stack(
@@ -253,7 +254,7 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
                 },
                 onCameraMove: (position) {
                   if (!_isProgrammaticMove) {
-                    // User is pinching/panning manually (only update if no hall selected to avoid jumping)
+                    // User is pinching/panning manually (only update if no venue selected to avoid jumping)
                     if (_selectedHall == null) {
                       final newRadius = _getRadiusFromZoom(position.zoom);
                       setState(() {
@@ -268,7 +269,7 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
                   }
                 },
                 onCameraIdle: () async {
-                  // Update bounds and filter list only if no hall selected (keep pins stable in detail view)
+                  // Update bounds and filter list only if no venue selected (keep pins stable in detail view)
                   if (_mapController != null && _selectedHall == null) {
                     final bounds = await _mapController!.getVisibleRegion();
                     setState(() {
@@ -285,7 +286,7 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
               ),
 
               // Top Overlay (Search + Radius) - Hide when detail view active? Or keep?
-              // User said "scrollable panel should pop halfway up... underneath it should JUST show that hall's next 5 events"
+              // User said "scrollable panel should pop halfway up... underneath it should JUST show that venue's next 5 events"
               // implies complete focus. Let's hide search bar when detail is open to clean UI.
               if (_selectedHall == null)
                 SafeArea(
@@ -444,7 +445,7 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
                   separatorBuilder: (c, i) =>
                       const Divider(color: Colors.white12),
                   itemBuilder: (context, index) {
-                    final hall = _currentHalls[index];
+                    final venue = _currentHalls[index];
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: Container(
@@ -453,9 +454,9 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
                         decoration: BoxDecoration(
                           color: Colors.amber.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
-                          image: hall.logoUrl != null
+                          image: venue.logoUrl != null
                               ? DecorationImage(
-                                  image: NetworkImage(hall.logoUrl!),
+                                  image: NetworkImage(venue.logoUrl!),
                                   fit: BoxFit.cover,
                                 )
                               : const DecorationImage(
@@ -465,26 +466,26 @@ class _HallSearchScreenState extends ConsumerState<HallSearchScreen> {
                                   fit: BoxFit.cover,
                                 ),
                         ),
-                        child: hall.logoUrl == null
+                        child: venue.logoUrl == null
                             ? const Icon(Icons.store, color: Colors.amber)
                             : null,
                       ),
                       title: Text(
-                        hall.name,
+                        venue.name,
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       subtitle: Text(
-                        "${hall.city}, ${hall.state}",
+                        "${venue.city}, ${venue.state}",
                         style: const TextStyle(color: Colors.white70),
                       ),
                       trailing: const Icon(
                         Icons.chevron_right,
                         color: Colors.white24,
                       ),
-                      onTap: () => _onHallSelected(hall),
+                      onTap: () => _onHallSelected(venue),
                     );
                   },
                 ),

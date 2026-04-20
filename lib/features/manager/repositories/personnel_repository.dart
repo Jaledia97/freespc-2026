@@ -13,11 +13,11 @@ class PersonnelRepository {
 
   PersonnelRepository(this._firestore);
 
-  // Get all staff for a specific hall
-  Stream<List<VenueTeamMemberModel>> getStaffStream(String hallId) {
+  // Get all staff for a specific venue
+  Stream<List<VenueTeamMemberModel>> getStaffStream(String venueId) {
     return _firestore
         .collection('venues')
-        .doc(hallId)
+        .doc(venueId)
         .collection('team')
         .snapshots()
         .map(
@@ -28,33 +28,33 @@ class PersonnelRepository {
   }
 
   // Update a user's role (Strict checks should be done in UI/Security Rules, but we add safe guards here if needed)
-  Future<void> updateRole(String hallId, String userId, String newRole) async {
+  Future<void> updateRole(String venueId, String userId, String newRole) async {
     await _firestore
         .collection('venues')
-        .doc(hallId)
+        .doc(venueId)
         .collection('team')
         .doc(userId)
         .update({'assignedRole': newRole});
   }
 
-  // Remove staff from hall (delete team document)
-  Future<void> removeStaff(String hallId, String userId) async {
+  // Remove staff from venue (delete team document)
+  Future<void> removeStaff(String venueId, String userId) async {
     await _firestore
         .collection('venues')
-        .doc(hallId)
+        .doc(venueId)
         .collection('team')
         .doc(userId)
         .delete();
   }
 
-  // Assign user to hall (e.g. from invite link) - often done by Cloud Function but fallback here
-  Future<void> joinHall(String hallId, String hallName, UserModel user, String addedByUid) async {
-    final teamDoc = _firestore.collection('venues').doc(hallId).collection('team').doc(user.uid);
+  // Assign user to venue (e.g. from invite link) - often done by Cloud Function but fallback here
+  Future<void> joinHall(String venueId, String venueName, UserModel user, String addedByUid) async {
+    final teamDoc = _firestore.collection('venues').doc(venueId).collection('team').doc(user.uid);
     
     final newMember = VenueTeamMemberModel(
       uid: user.uid,
-      venueId: hallId,
-      venueName: hallName,
+      venueId: venueId,
+      venueName: venueName,
       firstName: user.firstName,
       lastName: user.lastName,
       username: user.username,

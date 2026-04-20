@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/utils/time_utils.dart';
-import '../../../../models/bingo_hall_model.dart';
-import '../hall_profile_screen.dart';
+import '../../../../models/venue_model.dart';
+import '../venue_profile_screen.dart';
 import 'post_header.dart';
 
-final singleHallHeaderProvider = FutureProvider.family<BingoHallModel?, String>(
-  (ref, hallId) async {
+final singleHallHeaderProvider = FutureProvider.family<VenueModel?, String>(
+  (ref, venueId) async {
     try {
       final snap = await FirebaseFirestore.instance
-          .collection('bingo_halls')
-          .doc(hallId)
+          .collection('venues')
+          .doc(venueId)
           .get();
       if (snap.exists && snap.data() != null) {
-        return BingoHallModel.fromJson({'id': snap.id, ...snap.data()!});
+        return VenueModel.fromJson({'id': snap.id, ...snap.data()!});
       }
       return null;
     } catch (e) {
@@ -23,8 +23,8 @@ final singleHallHeaderProvider = FutureProvider.family<BingoHallModel?, String>(
   },
 );
 
-class DynamicHallHeader extends ConsumerWidget {
-  final String hallId;
+class DynamicVenueHeader extends ConsumerWidget {
+  final String venueId;
   final String fallbackName;
   final String subtitle;
   final DateTime? createdAt;
@@ -32,9 +32,9 @@ class DynamicHallHeader extends ConsumerWidget {
   final String authorId;
   final String targetType;
 
-  const DynamicHallHeader({
+  const DynamicVenueHeader({
     super.key,
-    required this.hallId,
+    required this.venueId,
     required this.fallbackName,
     required this.subtitle,
     required this.postId,
@@ -45,15 +45,15 @@ class DynamicHallHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hallAsync = ref.watch(singleHallHeaderProvider(hallId));
+    final hallAsync = ref.watch(singleHallHeaderProvider(venueId));
     final String timeAgoStr = createdAt != null
         ? " • ${TimeUtils.getTimeAgo(createdAt!)}"
         : "";
     final String fullSubtitle = "$subtitle$timeAgoStr";
 
     return hallAsync.when(
-      data: (hall) {
-        if (hall == null) {
+      data: (venue) {
+        if (venue == null) {
           return PostHeader(
             title: fallbackName,
             subtitle: fullSubtitle,
@@ -63,9 +63,9 @@ class DynamicHallHeader extends ConsumerWidget {
           );
         }
         return PostHeader(
-          title: hall.name,
+          title: venue.name,
           subtitle: fullSubtitle,
-          avatarUrl: hall.logoUrl ?? hall.bannerUrl,
+          avatarUrl: venue.logoUrl ?? venue.bannerUrl,
           postId: postId,
           authorId: authorId,
           targetType: targetType,
@@ -73,7 +73,7 @@ class DynamicHallHeader extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => HallProfileScreen(hall: hall),
+                builder: (context) => HallProfileScreen(venue: venue),
               ),
             );
           },

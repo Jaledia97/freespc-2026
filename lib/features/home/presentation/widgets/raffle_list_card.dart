@@ -194,7 +194,7 @@ class _RaffleListCardState extends State<RaffleListCard>
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                "Visit the Hall to enter this raffle!",
+                                "Visit the Venue to enter this raffle!",
                               ),
                             ),
                           );

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../home/repositories/hall_repository.dart';
+import '../../../home/repositories/venue_repository.dart';
 
 class CmsAssetLibraryModal extends ConsumerWidget {
-  final String hallId;
+  final String venueId;
   final Function(String url) onAssetSelected;
 
   const CmsAssetLibraryModal({
     super.key,
-    required this.hallId,
+    required this.venueId,
     required this.onAssetSelected,
   });
 
@@ -41,11 +41,11 @@ class CmsAssetLibraryModal extends ConsumerWidget {
               child: Consumer(
                 builder: (_, ref, child) {
                   // Fetch recent special images.
-                  // In the future, we might want to pass a 'type' (special vs store vs hall)
+                  // In the future, we might want to pass a 'type' (special vs store vs venue)
                   // but for now, reusing special images is a good start as they are likely similar promo content.
                   final assetsStream = ref
-                      .watch(hallRepositoryProvider)
-                      .getRecentSpecialImages(hallId);
+                      .watch(venueRepositoryProvider)
+                      .getRecentSpecialImages(venueId);
 
                   return StreamBuilder<List<String>>(
                     stream: assetsStream,

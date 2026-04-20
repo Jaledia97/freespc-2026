@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'cms/manage_specials_screen.dart';
-import 'cms/edit_hall_profile_screen.dart';
+import 'cms/edit_venue_profile_screen.dart';
 import 'cms/manage_raffles_screen.dart'; // New Import
 import 'cms/photo_approval_screen.dart';
 import 'cms/manage_tournaments_screen.dart'; // New Import
@@ -11,14 +11,15 @@ import 'cms/manage_personnel_screen.dart'; // New Import
 import 'cms/manage_store_screen.dart'; // New Import
 import 'cms/manage_trivia_screen.dart';
 import 'cms/manage_bar_games_screen.dart';
-import '../../profile/presentation/hall_selection_screen.dart';
+import '../../profile/presentation/venue_selection_screen.dart';
 import '../../../../core/widgets/notification_badge.dart'; // Import NotificationBadge
+import 'business_alerts_screen.dart'; // New Import
 import 'business_setup_tutorial_screen.dart'; // New Import
 import 'package:shared_preferences/shared_preferences.dart'; // New Import
 // import 'raffle_tool/raffle_tool_screen.dart'; // No longer direct link
 import '../../../../services/auth_service.dart';
-import '../../home/repositories/hall_repository.dart';
-import '../../../../models/bingo_hall_model.dart';
+import '../../home/repositories/venue_repository.dart';
+import '../../../../models/venue_model.dart';
 
 import '../../../../core/utils/role_utils.dart';
 import '../../../../services/session_context_controller.dart';
@@ -67,25 +68,24 @@ class _ManagerDashboardScreenState
     final session = ref.watch(sessionContextProvider);
     final homeHallId = session.activeVenueId;
 
-    // Fetch hall details to get Beacon Code & specific Name
+    // Fetch venue details to get Beacon Code & specific Name
     final hallAsync = homeHallId != null
-        ? ref.watch(hallStreamProvider(homeHallId))
+        ? ref.watch(venueStreamProvider(homeHallId))
         : const AsyncValue.data(null);
-    final hall = hallAsync.value;
+    final venue = hallAsync.value;
 
     return Scaffold(
         backgroundColor: const Color(0xFF141414), // Darker than standard
         appBar: AppBar(
           leading: const BackButton(color: Colors.white),
-          title: const Text('Hall Manager'),
+          title: const Text('Venue Manager'),
           backgroundColor: Colors.transparent,
           elevation: 0,
           actions: [
             IconButton(
               onPressed: () {
-                // TODO: Navigate to Business Alerts Screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Business Alerts coming soon')),
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const BusinessAlertsScreen()),
                 );
               },
               icon: const NotificationBadge(
@@ -128,7 +128,7 @@ class _ManagerDashboardScreenState
                           ),
                         ),
                 // Welcome / Status
-                _buildStatusHeader(hall, homeHallId),
+                _buildStatusHeader(venue, homeHallId),
                 const SizedBox(height: 24),
 
                 // Super Admin Section
@@ -144,10 +144,10 @@ class _ManagerDashboardScreenState
                   const SizedBox(height: 12),
                   _buildModuleCard(
                     context,
-                    title: "Switch Managed Hall",
+                    title: "Switch Managed Venue",
                     icon: Icons.swap_horiz,
                     color: Colors.amberAccent,
-                    desc: "Select a different hall to manage",
+                    desc: "Select a different venue to manage",
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -177,7 +177,7 @@ class _ManagerDashboardScreenState
                           RoleUtils.canManageGames(user, session, homeHallId))
                         _buildModuleCard(
                           context,
-                          title: "Hall Profile",
+                          title: "Venue Profile",
                           icon: Icons.storefront,
                           color: Colors.deepPurpleAccent,
                           desc: "Edit Logo, Banner, Name",
@@ -185,7 +185,7 @@ class _ManagerDashboardScreenState
                             context,
                             MaterialPageRoute(
                               builder: (_) =>
-                                  EditHallProfileScreen(hallId: homeHallId),
+                                  EditVenueProfileScreen(venueId: homeHallId),
                             ),
                           ),
                         ),
@@ -239,7 +239,7 @@ class _ManagerDashboardScreenState
                             context,
                             MaterialPageRoute(
                               builder: (_) =>
-                                  ManageRafflesScreen(hallId: homeHallId),
+                                  ManageRafflesScreen(venueId: homeHallId),
                             ),
                           ),
                         ),
@@ -247,7 +247,7 @@ class _ManagerDashboardScreenState
                       // TOURNAMENTS (Manager+, Bingo Only)
                       if (homeHallId != null &&
                           RoleUtils.canManageGames(user, session, homeHallId) &&
-                          (hall?.venueType ?? 'bingo').toLowerCase().contains('bingo'))
+                          (venue?.venueType ?? 'bingo').toLowerCase().contains('bingo'))
                         _buildModuleCard(
                           context,
                           title: "Tournaments",
@@ -276,8 +276,8 @@ class _ManagerDashboardScreenState
                             context,
                             MaterialPageRoute(
                               builder: (_) => PhotoApprovalScreen(
-                                hallId: homeHallId,
-                                hallName: hall?.name ?? '',
+                                venueId: homeHallId,
+                                venueName: venue?.name ?? '',
                               ),
                             ),
                           ),
@@ -286,7 +286,7 @@ class _ManagerDashboardScreenState
                       // STORE (Manager+, Bingo Only)
                       if (homeHallId != null &&
                           RoleUtils.canManageGames(user, session, homeHallId) &&
-                          (hall?.venueType ?? 'bingo').toLowerCase().contains('bingo'))
+                          (venue?.venueType ?? 'bingo').toLowerCase().contains('bingo'))
                         _buildModuleCard(
                           context,
                           title: "Manage Store",
@@ -297,7 +297,7 @@ class _ManagerDashboardScreenState
                             context,
                             MaterialPageRoute(
                               builder: (_) =>
-                                  ManageStoreScreen(hallId: homeHallId),
+                                  ManageStoreScreen(venueId: homeHallId),
                             ),
                           ),
                         ),
@@ -306,8 +306,8 @@ class _ManagerDashboardScreenState
                       if (homeHallId != null &&
                           (RoleUtils.isOwner(user, session) ||
                               RoleUtils.isSuperAdmin(user)) &&
-                          hall != null &&
-                          (hall.venueType ?? 'bingo').toLowerCase().contains('bingo'))
+                          venue != null &&
+                          (venue.venueType ?? 'bingo').toLowerCase().contains('bingo'))
                         _buildModuleCard(
                           context,
                           title: "Loyalty Settings",
@@ -318,8 +318,8 @@ class _ManagerDashboardScreenState
                             context,
                             MaterialPageRoute(
                               builder: (_) => LoyaltySettingsScreen(
-                                hallId: homeHallId,
-                                hall: hall,
+                                venueId: homeHallId,
+                                venue: venue,
                               ),
                             ),
                           ),
@@ -328,7 +328,7 @@ class _ManagerDashboardScreenState
                       // TRIVIA NIGHT (Manager+, Bar Only)
                       if (homeHallId != null &&
                           RoleUtils.canManageGames(user, session, homeHallId) &&
-                          (hall?.venueType ?? 'bingo').toLowerCase().contains('bar'))
+                          (venue?.venueType ?? 'bingo').toLowerCase().contains('bar'))
                         _buildModuleCard(
                           context,
                           title: "Trivia Night",
@@ -338,7 +338,7 @@ class _ManagerDashboardScreenState
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => ManageTriviaScreen(hallId: homeHallId)),
+                              MaterialPageRoute(builder: (_) => ManageTriviaScreen(venueId: homeHallId)),
                             );
                           },
                         ),
@@ -346,7 +346,7 @@ class _ManagerDashboardScreenState
                       // BAR GAMES (Manager+, Bar Only)
                       if (homeHallId != null &&
                           RoleUtils.canManageGames(user, session, homeHallId) &&
-                          (hall?.venueType ?? 'bingo').toLowerCase().contains('bar'))
+                          (venue?.venueType ?? 'bingo').toLowerCase().contains('bar'))
                         _buildModuleCard(
                           context,
                           title: "Bar Games",
@@ -356,7 +356,7 @@ class _ManagerDashboardScreenState
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => ManageBarGamesScreen(hallId: homeHallId)),
+                              MaterialPageRoute(builder: (_) => ManageBarGamesScreen(venueId: homeHallId)),
                             );
                           },
                         ),
@@ -365,7 +365,7 @@ class _ManagerDashboardScreenState
                       if (homeHallId != null &&
                           (RoleUtils.isOwner(user, session) ||
                               RoleUtils.isSuperAdmin(user)) &&
-                          hall != null)
+                          venue != null)
                         _buildModuleCard(
                           context,
                           title: "Bluetooth Settings",
@@ -376,8 +376,8 @@ class _ManagerDashboardScreenState
                             context,
                             MaterialPageRoute(
                               builder: (_) => BluetoothSettingsScreen(
-                                hallId: homeHallId,
-                                hall: hall,
+                                venueId: homeHallId,
+                                venue: venue,
                               ),
                             ),
                           ),
@@ -388,7 +388,7 @@ class _ManagerDashboardScreenState
                       // RoleUtils.canManagePersonnel handles this check.
                       if (homeHallId != null &&
                           RoleUtils.canManagePersonnel(user, session, homeHallId) &&
-                          hall != null)
+                          venue != null)
                         _buildModuleCard(
                           context,
                           title: "Personnel",
@@ -443,7 +443,7 @@ class _ManagerDashboardScreenState
 
                             if (confirm == true) {
                               try {
-                                await ref.read(hallRepositoryProvider).deleteHall(homeHallId);
+                                await ref.read(venueRepositoryProvider).deleteHall(homeHallId);
                                 if (context.mounted) {
                                   Navigator.of(context).popUntil((route) => route.isFirst);
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -470,7 +470,7 @@ class _ManagerDashboardScreenState
     );
   }
 
-  Widget _buildStatusHeader(BingoHallModel? hall, String? hallId) {
+  Widget _buildStatusHeader(VenueModel? venue, String? venueId) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -503,9 +503,9 @@ class _ManagerDashboardScreenState
                   ),
                 ),
                 const SizedBox(height: 4),
-                if (hall != null) ...[
+                if (venue != null) ...[
                   Text(
-                    hall.name,
+                    venue.name,
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 14,
@@ -513,7 +513,7 @@ class _ManagerDashboardScreenState
                     ),
                   ),
                   Text(
-                    "Beacon: ${hall.beaconUuid}",
+                    "Beacon: ${venue.beaconUuid}",
                     style: const TextStyle(
                       color: Colors.orangeAccent,
                       fontSize: 12,
@@ -522,7 +522,7 @@ class _ManagerDashboardScreenState
                   ),
                 ] else
                   Text(
-                    hallId != null ? "Managing: $hallId" : "No Hall Assigned",
+                    venueId != null ? "Managing: $venueId" : "No Venue Assigned",
                     style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
               ],

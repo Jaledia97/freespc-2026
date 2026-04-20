@@ -14,8 +14,8 @@ _CheckInModel _$CheckInModelFromJson(Map<String, dynamic> json) =>
       userId: json['userId'] as String,
       userName: json['userName'] as String,
       userProfilePicture: json['userProfilePicture'] as String?,
-      hallId: json['hallId'] as String,
-      hallName: json['hallName'] as String,
+      venueId: json['venueId'] as String,
+      venueName: json['venueName'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       reactionUserIds:
           (json['reactionUserIds'] as List<dynamic>?)
@@ -39,8 +39,8 @@ Map<String, dynamic> _$CheckInModelToJson(_CheckInModel instance) =>
       'userId': instance.userId,
       'userName': instance.userName,
       'userProfilePicture': instance.userProfilePicture,
-      'hallId': instance.hallId,
-      'hallName': instance.hallName,
+      'venueId': instance.venueId,
+      'venueName': instance.venueName,
       'createdAt': instance.createdAt.toIso8601String(),
       'reactionUserIds': instance.reactionUserIds,
       'interestedUserIds': instance.interestedUserIds,

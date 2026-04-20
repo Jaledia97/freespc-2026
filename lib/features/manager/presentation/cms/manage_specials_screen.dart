@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../home/repositories/hall_repository.dart';
+import '../../../home/repositories/venue_repository.dart';
 import '../../../../services/auth_service.dart';
 import '../../../../services/session_context_controller.dart';
 import '../../../../models/special_model.dart';
@@ -99,7 +99,7 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
       // Perform deletion
       // Ideally batch this in repo, but for now loop is sufficient for small lists
       for (var id in idsToDelete) {
-        await ref.read(hallRepositoryProvider).deleteSpecial(id);
+        await ref.read(venueRepositoryProvider).deleteSpecial(id);
       }
 
       if (mounted) {
@@ -123,15 +123,15 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
         backgroundColor: Color(0xFF141414),
         body: Center(
           child: Text(
-            "No Hall Assigned to User",
+            "No Venue Assigned to User",
             style: TextStyle(color: Colors.white),
           ),
         ),
       );
     }
     
-    final hallId = session.activeVenueId!;
-    final specialsAsync = ref.watch(hallSpecialsProvider(hallId));
+    final venueId = session.activeVenueId!;
+    final specialsAsync = ref.watch(hallSpecialsProvider(venueId));
 
     return Scaffold(
           backgroundColor: const Color(0xFF141414),
@@ -181,7 +181,7 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
                       context,
                       MaterialPageRoute(
                         builder: (_) => EditSpecialScreen(
-                          hallId: hallId,
+                          venueId: venueId,
                           createTemplateMode: isTemplateMode,
                         ),
                       ),
@@ -249,19 +249,19 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
                 children: [
                   _buildList(
                     active,
-                    hallId,
+                    venueId,
                     "No active specials.",
                     isArchived: false,
                   ),
                   _buildList(
                     expired,
-                    hallId,
+                    venueId,
                     "No recently expired specials.",
                     isArchived: true,
                   ),
                   _buildList(
                     templates,
-                    hallId,
+                    venueId,
                     "No recurring events saved.",
                     isTemplate: true,
                   ),
@@ -281,7 +281,7 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
 
   Widget _buildList(
     List<SpecialModel> items,
-    String hallId,
+    String venueId,
     String emptyMsg, {
     bool isArchived = false,
     bool isTemplate = false,
@@ -316,7 +316,7 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
                 context,
                 MaterialPageRoute(
                   builder: (_) =>
-                      EditSpecialScreen(hallId: hallId, special: special),
+                      EditSpecialScreen(venueId: venueId, special: special),
                 ),
               );
             }
@@ -431,7 +431,7 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
                                    isStarred: !special.isStarred,
                                    unstarredAt: special.isStarred ? DateTime.now() : null,
                                );
-                               await ref.read(hallRepositoryProvider).updateSpecial(updated);
+                               await ref.read(venueRepositoryProvider).updateSpecial(updated);
                             },
                           ),
                         IconButton(
@@ -444,7 +444,7 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
                               context,
                               MaterialPageRoute(
                                 builder: (_) => EditSpecialScreen(
-                                  hallId: hallId,
+                                  venueId: venueId,
                                   special: special,
                                 ),
                               ),
@@ -460,7 +460,7 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
     );
   }
 
-  void _createCopy(String hallId, SpecialModel original) {
+  void _createCopy(String venueId, SpecialModel original) {
     final copy = original.copyWith(
       id: '', // Empty ID signals "New"
       title: original.isTemplate
@@ -477,7 +477,7 @@ class _ManageSpecialsScreenState extends ConsumerState<ManageSpecialsScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => EditSpecialScreen(hallId: hallId, special: copy),
+        builder: (_) => EditSpecialScreen(venueId: venueId, special: copy),
       ),
     );
   }

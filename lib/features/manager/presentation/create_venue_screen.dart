@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -31,9 +32,9 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _websiteController = TextEditingController();
 
-  String _venueType = 'Bingo Hall';
+  String _venueType = 'Venue';
   final List<String> _venueTypes = [
-    'Bingo Hall',
+    'Venue',
     'Bar / Club',
     'Restaurant',
     'Event Center',
@@ -128,7 +129,7 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
 
     try {
       // Generate Sandbox UUID smoothly
-      final newVenueRef = FirebaseFirestore.instance.collection('bingo_halls').doc();
+      final newVenueRef = FirebaseFirestore.instance.collection('venues').doc();
       final newVenueId = newVenueRef.id;
 
       // Elevate Legacy User Role
@@ -153,7 +154,7 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
           lng = locations.first.longitude;
         }
       } catch (e) {
-        print("Sandbox Geocoding Error: $e");
+        debugPrint("Sandbox Geocoding Error: $e");
       }
       
       final geoPoint = GeoFirePoint(GeoPoint(lat, lng));

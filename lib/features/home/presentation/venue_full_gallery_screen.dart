@@ -7,24 +7,24 @@ import '../../photos/presentation/upload_photo_screen.dart';
 import '../../photos/presentation/photo_detail_screen.dart';
 
 class HallFullGalleryScreen extends ConsumerWidget {
-  final String hallId;
-  final String hallName;
+  final String venueId;
+  final String venueName;
 
   const HallFullGalleryScreen({
     super.key,
-    required this.hallId,
-    required this.hallName,
+    required this.venueId,
+    required this.venueName,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final photosStream = ref
         .watch(photoRepositoryProvider)
-        .getHallPhotos(hallId);
+        .getHallPhotos(venueId);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("$hallName Gallery"),
+        title: Text("$venueName Gallery"),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_a_photo),
@@ -32,7 +32,7 @@ class HallFullGalleryScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => UploadPhotoScreen(preSelectedHallId: hallId),
+                  builder: (_) => UploadPhotoScreen(preSelectedHallId: venueId),
                 ),
               );
             },

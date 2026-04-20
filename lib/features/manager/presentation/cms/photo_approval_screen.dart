@@ -7,13 +7,13 @@ import '../../../../services/auth_service.dart';
 import '../../../../services/notification_service.dart';
 
 class PhotoApprovalScreen extends ConsumerStatefulWidget {
-  final String hallId;
-  final String hallName;
+  final String venueId;
+  final String venueName;
 
   const PhotoApprovalScreen({
     super.key,
-    required this.hallId,
-    required this.hallName,
+    required this.venueId,
+    required this.venueName,
   });
 
   @override
@@ -40,10 +40,10 @@ class _PhotoApprovalScreenState extends ConsumerState<PhotoApprovalScreen> {
   Widget build(BuildContext context) {
     final pendingPhotosStream = ref
         .watch(photoRepositoryProvider)
-        .getPendingHallPhotos(widget.hallId);
+        .getPendingHallPhotos(widget.venueId);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Approvals: ${widget.hallName}")),
+      appBar: AppBar(title: Text("Approvals: ${widget.venueName}")),
       body: StreamBuilder<List<GalleryPhotoModel>>(
         stream: pendingPhotosStream,
         builder: (context, snapshot) {
@@ -150,7 +150,7 @@ class _PhotoApprovalScreenState extends ConsumerState<PhotoApprovalScreen> {
                             onPressed: () {
                               ref
                                   .read(photoRepositoryProvider)
-                                  .declinePhoto(photo.id, widget.hallId);
+                                  .declinePhoto(photo.id, widget.venueId);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text("Photo Declined & Tag Removed"),
@@ -177,7 +177,7 @@ class _PhotoApprovalScreenState extends ConsumerState<PhotoApprovalScreen> {
                             onPressed: () {
                               ref
                                   .read(photoRepositoryProvider)
-                                  .approvePhoto(photo.id, widget.hallId);
+                                  .approvePhoto(photo.id, widget.venueId);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text("Photo Approved!"),

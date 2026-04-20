@@ -75,7 +75,7 @@ class PrivacySettingsScreen extends ConsumerWidget {
               _buildPrivacyTile(
                 context,
                 icon: Icons.block,
-                title: 'Blocked Users & Halls',
+                title: 'Blocked Users & Venues',
                 subtitle: 'Manage the accounts you have blocked.',
                 onTap: () {
                   Navigator.push(

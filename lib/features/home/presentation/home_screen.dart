@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../home/repositories/hall_repository.dart';
+import '../../home/repositories/venue_repository.dart';
 import '../../home/repositories/feed_repository.dart';
-import 'hall_search_screen.dart';
+import 'venue_search_screen.dart';
 import 'widgets/special_card.dart';
 import 'widgets/raffle_feed_card.dart';
 import 'widgets/tournament_feed_card.dart';
@@ -19,11 +19,11 @@ import '../../messaging/presentation/messaging_hub_screen.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../../core/widgets/notification_badge.dart';
 import '../../../services/auth_service.dart';
-import 'hall_search_screen.dart';
+import 'venue_search_screen.dart';
 import '../../../models/public_profile.dart'; // Add this for PublicProfile
-import '../../../models/bingo_hall_model.dart'; // Add this for BingoHallModel
+import '../../../models/venue_model.dart'; // Add this for VenueModel
 import '../../profile/presentation/public_profile_screen.dart'; // For user routing
-import 'hall_profile_screen.dart'; // For hall routing
+import 'venue_profile_screen.dart'; // For venue routing
 import 'package:vibration/vibration.dart';
 import '../controllers/feed_pagination_controller.dart';
 import '../../../services/consumer_beacon_service.dart';
@@ -36,11 +36,11 @@ final homeSearchUsersProvider =
     });
 
 final homeSearchHallsProvider =
-    FutureProvider.family<List<BingoHallModel>, String>((ref, query) async {
+    FutureProvider.family<List<VenueModel>, String>((ref, query) async {
       if (query.isEmpty) return [];
       final userLoc = ref.read(userLocationStreamProvider).valueOrNull;
-      final halls = await ref
-          .read(hallRepositoryProvider)
+      final venues = await ref
+          .read(venueRepositoryProvider)
           .getHallsInRadius(
             latitude: userLoc?.latitude ?? 39.8283,
             longitude: userLoc?.longitude ?? -98.5795,
@@ -48,7 +48,7 @@ final homeSearchHallsProvider =
           )
           .first;
 
-      return halls
+      return venues
           .where(
             (h) =>
                 h.name.toLowerCase().contains(query) ||
@@ -421,8 +421,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         trivia: (tr) => SpecialCard(
                           special: SpecialModel(
                             id: tr.data.id,
-                            hallId: tr.data.venueId,
-                            hallName: "",
+                            venueId: tr.data.venueId,
+                            venueName: "",
                             title: tr.data.title,
                             description: "Category: ${tr.data.category}\nPrize: ${tr.data.prizeString}",
                             imageUrl: tr.data.imageUrl ?? "",
@@ -510,13 +510,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Halls Section
+            // Venues Section
             hallsAsync.when(
-              data: (halls) {
-                if (halls.isEmpty) return const SizedBox.shrink();
+              data: (venues) {
+                if (venues.isEmpty) return const SizedBox.shrink();
                 return _buildSectionGroup(
-                  "Halls",
-                  halls
+                  "Venues",
+                  venues
                       .take(3)
                       .map(
                         (h) => ListTile(
@@ -535,7 +535,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => HallProfileScreen(hall: h),
+                              builder: (_) => HallProfileScreen(venue: h),
                             ),
                           ),
                         ),
@@ -600,7 +600,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                       subtitle: Text(
-                        s.data.hallName,
+                        s.data.venueName,
                         style: const TextStyle(color: Colors.white54),
                       ),
                     ),
@@ -708,7 +708,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _showBeaconCheckInModal(BuildContext context, BingoHallModel hall) {
+  void _showBeaconCheckInModal(BuildContext context, VenueModel venue) {
     Vibration.vibrate(pattern: [0, 50, 100, 50]); // Double pulse success
     
     showModalBottomSheet(
@@ -747,7 +747,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                "Welcome to ${hall.name}",
+                "Welcome to ${venue.name}",
                 style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 16,
@@ -764,15 +764,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     // Actually perform the Check In natively
                     final currentUser = ref.read(authStateChangesProvider).value;
                     if (currentUser != null) {
-                      await ref.read(hallRepositoryProvider).checkIn(
+                      await ref.read(venueRepositoryProvider).checkIn(
                             userId: currentUser.uid,
-                            hallId: hall.id,
-                            hallName: hall.name,
+                            venueId: venue.id,
+                            venueName: venue.name,
                           );
                       
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text("Successfully checked into ${hall.name}!"),
+                          content: Text("Successfully checked into ${venue.name}!"),
                           backgroundColor: Colors.green,
                         ),
                       );

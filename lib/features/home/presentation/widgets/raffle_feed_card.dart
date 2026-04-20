@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/feed_item.dart';
 import '../../../../models/feed_item.dart';
 import 'social_interaction_bar.dart';
-import 'dynamic_hall_header.dart';
+import 'dynamic_venue_header.dart';
 import 'expandable_post_text.dart';
 import 'package:vibration/vibration.dart';
 
@@ -43,12 +43,12 @@ class RaffleFeedCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (fullWidth)
-            DynamicHallHeader(
-              hallId: raffle.hallId,
+            DynamicVenueHeader(
+              venueId: raffle.venueId,
               fallbackName: "Raffle Event",
               subtitle: "Raffle",
               postId: raffle.id,
-              authorId: raffle.hallId,
+              authorId: raffle.venueId,
               targetType: 'raffle',
               createdAt: (!raffle.isTemplate && raffle.templateId != null)
                   ? (raffle.createdAt ?? raffle.endsAt)

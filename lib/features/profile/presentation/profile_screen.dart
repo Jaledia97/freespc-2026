@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/auth_service.dart';
-import '../../home/repositories/hall_repository.dart';
+import '../../home/repositories/venue_repository.dart';
 import '../../wallet/repositories/wallet_repository.dart';
 import 'widgets/profile_header.dart';
 import '../../settings/presentation/account_settings_screen.dart'; // Added
@@ -399,7 +399,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             children: [
                               ListTile(
                                 title: const Text(
-                                  'ADMIN: Seed Mock Hall',
+                                  'ADMIN: Seed Mock Venue',
                                   style: TextStyle(color: Colors.red),
                                 ),
                                 trailing: const Icon(
@@ -408,11 +408,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 ),
                                 onTap: () {
                                   ref
-                                      .read(hallRepositoryProvider)
+                                      .read(venueRepositoryProvider)
                                       .createMockHall();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Mock Hall Created'),
+                                      content: Text('Mock Venue Created'),
                                     ),
                                   );
                                 },
@@ -432,9 +432,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 onTap: () async {
                                   try {
                                     final repo = ref.read(
-                                      hallRepositoryProvider,
+                                      venueRepositoryProvider,
                                     );
-                                    // 1. Reset Hall & User
+                                    // 1. Reset Venue & User
                                     await repo.seedMaryEstherEnv(user.uid);
                                     // 2. Reset Raffles (Sync with Wallet)
                                     await repo.seedRaffles('mary-esther-bingo');
@@ -449,7 +449,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                       ).showSnackBar(
                                         const SnackBar(
                                           content: Text(
-                                            'Master Reset Complete! (User, Hall, Raffles, Wallet)',
+                                            'Master Reset Complete! (User, Venue, Raffles, Wallet)',
                                           ),
                                         ),
                                       );
@@ -476,7 +476,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 ),
                                 onTap: () async {
                                   await ref
-                                      .read(hallRepositoryProvider)
+                                      .read(venueRepositoryProvider)
                                       .seedSpecials();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -497,7 +497,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 ),
                                 onTap: () async {
                                   await ref
-                                      .read(hallRepositoryProvider)
+                                      .read(venueRepositoryProvider)
                                       .seedCarouselEvents();
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -550,7 +550,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 ),
                                 onTap: () async {
                                   await ref
-                                      .read(hallRepositoryProvider)
+                                      .read(venueRepositoryProvider)
                                       .promoteToSuperAdmin(user.uid);
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(

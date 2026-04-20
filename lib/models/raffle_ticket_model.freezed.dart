@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RaffleTicketModel {
 
- String get id; String get raffleId; String get hallId; String get title; String get hallName; int get quantity; DateTime get purchaseDate; String? get imageUrl;
+ String get id; String get raffleId; String get venueId; String get title; String get venueName; int get quantity; DateTime get purchaseDate; String? get imageUrl;
 /// Create a copy of RaffleTicketModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $RaffleTicketModelCopyWith<RaffleTicketModel> get copyWith => _$RaffleTicketMode
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RaffleTicketModel&&(identical(other.id, id) || other.id == id)&&(identical(other.raffleId, raffleId) || other.raffleId == raffleId)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.title, title) || other.title == title)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.purchaseDate, purchaseDate) || other.purchaseDate == purchaseDate)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RaffleTicketModel&&(identical(other.id, id) || other.id == id)&&(identical(other.raffleId, raffleId) || other.raffleId == raffleId)&&(identical(other.venueId, venueId) || other.venueId == venueId)&&(identical(other.title, title) || other.title == title)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.purchaseDate, purchaseDate) || other.purchaseDate == purchaseDate)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,raffleId,hallId,title,hallName,quantity,purchaseDate,imageUrl);
+int get hashCode => Object.hash(runtimeType,id,raffleId,venueId,title,venueName,quantity,purchaseDate,imageUrl);
 
 @override
 String toString() {
-  return 'RaffleTicketModel(id: $id, raffleId: $raffleId, hallId: $hallId, title: $title, hallName: $hallName, quantity: $quantity, purchaseDate: $purchaseDate, imageUrl: $imageUrl)';
+  return 'RaffleTicketModel(id: $id, raffleId: $raffleId, venueId: $venueId, title: $title, venueName: $venueName, quantity: $quantity, purchaseDate: $purchaseDate, imageUrl: $imageUrl)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $RaffleTicketModelCopyWith<$Res>  {
   factory $RaffleTicketModelCopyWith(RaffleTicketModel value, $Res Function(RaffleTicketModel) _then) = _$RaffleTicketModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String raffleId, String hallId, String title, String hallName, int quantity, DateTime purchaseDate, String? imageUrl
+ String id, String raffleId, String venueId, String title, String venueName, int quantity, DateTime purchaseDate, String? imageUrl
 });
 
 
@@ -65,13 +65,13 @@ class _$RaffleTicketModelCopyWithImpl<$Res>
 
 /// Create a copy of RaffleTicketModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? raffleId = null,Object? hallId = null,Object? title = null,Object? hallName = null,Object? quantity = null,Object? purchaseDate = null,Object? imageUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? raffleId = null,Object? venueId = null,Object? title = null,Object? venueName = null,Object? quantity = null,Object? purchaseDate = null,Object? imageUrl = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,raffleId: null == raffleId ? _self.raffleId : raffleId // ignore: cast_nullable_to_non_nullable
-as String,hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
+as String,venueId: null == venueId ? _self.venueId : venueId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,hallName: null == hallName ? _self.hallName : hallName // ignore: cast_nullable_to_non_nullable
+as String,venueName: null == venueName ? _self.venueName : venueName // ignore: cast_nullable_to_non_nullable
 as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,purchaseDate: null == purchaseDate ? _self.purchaseDate : purchaseDate // ignore: cast_nullable_to_non_nullable
 as DateTime,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
@@ -160,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String raffleId,  String hallId,  String title,  String hallName,  int quantity,  DateTime purchaseDate,  String? imageUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String raffleId,  String venueId,  String title,  String venueName,  int quantity,  DateTime purchaseDate,  String? imageUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RaffleTicketModel() when $default != null:
-return $default(_that.id,_that.raffleId,_that.hallId,_that.title,_that.hallName,_that.quantity,_that.purchaseDate,_that.imageUrl);case _:
+return $default(_that.id,_that.raffleId,_that.venueId,_that.title,_that.venueName,_that.quantity,_that.purchaseDate,_that.imageUrl);case _:
   return orElse();
 
 }
@@ -181,10 +181,10 @@ return $default(_that.id,_that.raffleId,_that.hallId,_that.title,_that.hallName,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String raffleId,  String hallId,  String title,  String hallName,  int quantity,  DateTime purchaseDate,  String? imageUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String raffleId,  String venueId,  String title,  String venueName,  int quantity,  DateTime purchaseDate,  String? imageUrl)  $default,) {final _that = this;
 switch (_that) {
 case _RaffleTicketModel():
-return $default(_that.id,_that.raffleId,_that.hallId,_that.title,_that.hallName,_that.quantity,_that.purchaseDate,_that.imageUrl);case _:
+return $default(_that.id,_that.raffleId,_that.venueId,_that.title,_that.venueName,_that.quantity,_that.purchaseDate,_that.imageUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -201,10 +201,10 @@ return $default(_that.id,_that.raffleId,_that.hallId,_that.title,_that.hallName,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String raffleId,  String hallId,  String title,  String hallName,  int quantity,  DateTime purchaseDate,  String? imageUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String raffleId,  String venueId,  String title,  String venueName,  int quantity,  DateTime purchaseDate,  String? imageUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _RaffleTicketModel() when $default != null:
-return $default(_that.id,_that.raffleId,_that.hallId,_that.title,_that.hallName,_that.quantity,_that.purchaseDate,_that.imageUrl);case _:
+return $default(_that.id,_that.raffleId,_that.venueId,_that.title,_that.venueName,_that.quantity,_that.purchaseDate,_that.imageUrl);case _:
   return null;
 
 }
@@ -216,14 +216,14 @@ return $default(_that.id,_that.raffleId,_that.hallId,_that.title,_that.hallName,
 @JsonSerializable()
 
 class _RaffleTicketModel implements RaffleTicketModel {
-  const _RaffleTicketModel({required this.id, required this.raffleId, required this.hallId, required this.title, required this.hallName, required this.quantity, required this.purchaseDate, this.imageUrl});
+  const _RaffleTicketModel({required this.id, required this.raffleId, required this.venueId, required this.title, required this.venueName, required this.quantity, required this.purchaseDate, this.imageUrl});
   factory _RaffleTicketModel.fromJson(Map<String, dynamic> json) => _$RaffleTicketModelFromJson(json);
 
 @override final  String id;
 @override final  String raffleId;
-@override final  String hallId;
+@override final  String venueId;
 @override final  String title;
-@override final  String hallName;
+@override final  String venueName;
 @override final  int quantity;
 @override final  DateTime purchaseDate;
 @override final  String? imageUrl;
@@ -241,16 +241,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RaffleTicketModel&&(identical(other.id, id) || other.id == id)&&(identical(other.raffleId, raffleId) || other.raffleId == raffleId)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.title, title) || other.title == title)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.purchaseDate, purchaseDate) || other.purchaseDate == purchaseDate)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RaffleTicketModel&&(identical(other.id, id) || other.id == id)&&(identical(other.raffleId, raffleId) || other.raffleId == raffleId)&&(identical(other.venueId, venueId) || other.venueId == venueId)&&(identical(other.title, title) || other.title == title)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.purchaseDate, purchaseDate) || other.purchaseDate == purchaseDate)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,raffleId,hallId,title,hallName,quantity,purchaseDate,imageUrl);
+int get hashCode => Object.hash(runtimeType,id,raffleId,venueId,title,venueName,quantity,purchaseDate,imageUrl);
 
 @override
 String toString() {
-  return 'RaffleTicketModel(id: $id, raffleId: $raffleId, hallId: $hallId, title: $title, hallName: $hallName, quantity: $quantity, purchaseDate: $purchaseDate, imageUrl: $imageUrl)';
+  return 'RaffleTicketModel(id: $id, raffleId: $raffleId, venueId: $venueId, title: $title, venueName: $venueName, quantity: $quantity, purchaseDate: $purchaseDate, imageUrl: $imageUrl)';
 }
 
 
@@ -261,7 +261,7 @@ abstract mixin class _$RaffleTicketModelCopyWith<$Res> implements $RaffleTicketM
   factory _$RaffleTicketModelCopyWith(_RaffleTicketModel value, $Res Function(_RaffleTicketModel) _then) = __$RaffleTicketModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String raffleId, String hallId, String title, String hallName, int quantity, DateTime purchaseDate, String? imageUrl
+ String id, String raffleId, String venueId, String title, String venueName, int quantity, DateTime purchaseDate, String? imageUrl
 });
 
 
@@ -278,13 +278,13 @@ class __$RaffleTicketModelCopyWithImpl<$Res>
 
 /// Create a copy of RaffleTicketModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? raffleId = null,Object? hallId = null,Object? title = null,Object? hallName = null,Object? quantity = null,Object? purchaseDate = null,Object? imageUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? raffleId = null,Object? venueId = null,Object? title = null,Object? venueName = null,Object? quantity = null,Object? purchaseDate = null,Object? imageUrl = freezed,}) {
   return _then(_RaffleTicketModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,raffleId: null == raffleId ? _self.raffleId : raffleId // ignore: cast_nullable_to_non_nullable
-as String,hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
+as String,venueId: null == venueId ? _self.venueId : venueId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,hallName: null == hallName ? _self.hallName : hallName // ignore: cast_nullable_to_non_nullable
+as String,venueName: null == venueName ? _self.venueName : venueName // ignore: cast_nullable_to_non_nullable
 as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,purchaseDate: null == purchaseDate ? _self.purchaseDate : purchaseDate // ignore: cast_nullable_to_non_nullable
 as DateTime,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable

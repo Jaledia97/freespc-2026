@@ -113,45 +113,36 @@ service cloud.firestore {
       allow write: if isManager();
     }
 
-    // 3. BINGO HALLS COLLECTION
-    // Policy: Public Read, Manager Write, Local Operator Write.
-    match /bingo_halls/{hallId} {
+    // 3. VENUES COLLECTION
+    // Policy: Public Read, Manager Write, Local Operator Write, Sandbox Provisioning
+    match /venues/{venueId} {
       allow read: if true;
-      allow write: if isManager() || isLocalVenueManager(hallId);
+      allow write: if isManager() || isLocalVenueManager(venueId);
+      allow create: if request.auth != null && request.resource.data.isActive == false;
       
       // Tournaments Subcollection
       match /tournaments/{tournamentId} {
         allow read: if true;
-        allow write: if isManager() || isLocalVenueManager(hallId);
+        allow write: if isManager() || isLocalVenueManager(venueId);
       }
 
       // Store Items Subcollection
       match /store_items/{itemId} {
         allow read: if true;
-        allow write: if isSystemAdmin() || isLocalVenueManager(hallId);
+        allow write: if isSystemAdmin() || isLocalVenueManager(venueId);
       }
 
       // Asset Library Subcollection
       match /assets/{assetId} {
         allow read: if true;
-        allow write: if isManager() || isLocalVenueManager(hallId);
+        allow write: if isManager() || isLocalVenueManager(venueId);
       }
       
       // Team Members Subcollection (Multi-Entity Switcher RBAC)
       match /team/{userId} {
         allow read: if true;
-        allow write: if isSystemAdmin() || isLocalVenueManager(hallId);
-      }
-    }
-    
-    // 3.5. VENUES (Alias for BINGO HALLS in new RBAC)
-    match /venues/{venueId} {
-      allow read: if true;
-      allow write: if isSystemAdmin() || isLocalVenueManager(venueId);
-      
-      match /team/{userId} {
-        allow read: if true;
         allow write: if isSystemAdmin() || isLocalVenueManager(venueId);
+        allow create: if request.auth != null && get(/databases/$(database)/documents/venues/$(venueId)).data.isActive == false;
       }
     }
 
@@ -222,6 +213,10 @@ service cloud.firestore {
 
     // 7. COLLECTION GROUP QUERIES AND SUPER ADMIN COLLECTIONS
     match /{path=**}/tournaments/{tournamentId} {
+      allow read: if true;
+    }
+
+    match /{path=**}/trivia/{triviaId} {
       allow read: if true;
     }
     

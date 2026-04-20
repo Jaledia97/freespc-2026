@@ -12,7 +12,7 @@ abstract class TournamentModel with _$TournamentModel {
   @JsonSerializable(explicitToJson: true)
   const factory TournamentModel({
     required String id,
-    required String hallId,
+    required String venueId,
     required String title,
     String? imageUrl,
     @Default('') String description,

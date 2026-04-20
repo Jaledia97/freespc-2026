@@ -10,9 +10,9 @@ _RaffleTicketModel _$RaffleTicketModelFromJson(Map<String, dynamic> json) =>
     _RaffleTicketModel(
       id: json['id'] as String,
       raffleId: json['raffleId'] as String,
-      hallId: json['hallId'] as String,
+      venueId: json['venueId'] as String,
       title: json['title'] as String,
-      hallName: json['hallName'] as String,
+      venueName: json['venueName'] as String,
       quantity: (json['quantity'] as num).toInt(),
       purchaseDate: DateTime.parse(json['purchaseDate'] as String),
       imageUrl: json['imageUrl'] as String?,
@@ -22,9 +22,9 @@ Map<String, dynamic> _$RaffleTicketModelToJson(_RaffleTicketModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'raffleId': instance.raffleId,
-      'hallId': instance.hallId,
+      'venueId': instance.venueId,
       'title': instance.title,
-      'hallName': instance.hallName,
+      'venueName': instance.venueName,
       'quantity': instance.quantity,
       'purchaseDate': instance.purchaseDate.toIso8601String(),
       'imageUrl': instance.imageUrl,

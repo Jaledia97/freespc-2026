@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'hall_program_model.dart';
+part of 'venue_program_model.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -11,27 +11,34 @@ part of 'hall_program_model.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
+VenueProgramModel _$VenueProgramModelFromJson(
+  Map<String, dynamic> json
+) {
+    return _HallProgramModel.fromJson(
+      json
+    );
+}
 
 /// @nodoc
-mixin _$HallProgramModel {
+mixin _$VenueProgramModel {
 
  String get title; String get pricing; String get details; List<int> get selectedDays;// 1=Mon, 7=Sun. Empty = Every Day.
  String? get startTime;// e.g., "6:00 PM"
  String? get endTime;// e.g., "9:00 PM"
  DateTime? get overrideEndTime;
-/// Create a copy of HallProgramModel
+/// Create a copy of VenueProgramModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$HallProgramModelCopyWith<HallProgramModel> get copyWith => _$HallProgramModelCopyWithImpl<HallProgramModel>(this as HallProgramModel, _$identity);
+$VenueProgramModelCopyWith<VenueProgramModel> get copyWith => _$VenueProgramModelCopyWithImpl<VenueProgramModel>(this as VenueProgramModel, _$identity);
 
-  /// Serializes this HallProgramModel to a JSON map.
+  /// Serializes this VenueProgramModel to a JSON map.
   Map<String, dynamic> toJson();
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HallProgramModel&&(identical(other.title, title) || other.title == title)&&(identical(other.pricing, pricing) || other.pricing == pricing)&&(identical(other.details, details) || other.details == details)&&const DeepCollectionEquality().equals(other.selectedDays, selectedDays)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.overrideEndTime, overrideEndTime) || other.overrideEndTime == overrideEndTime));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VenueProgramModel&&(identical(other.title, title) || other.title == title)&&(identical(other.pricing, pricing) || other.pricing == pricing)&&(identical(other.details, details) || other.details == details)&&const DeepCollectionEquality().equals(other.selectedDays, selectedDays)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.overrideEndTime, overrideEndTime) || other.overrideEndTime == overrideEndTime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -40,15 +47,15 @@ int get hashCode => Object.hash(runtimeType,title,pricing,details,const DeepColl
 
 @override
 String toString() {
-  return 'HallProgramModel(title: $title, pricing: $pricing, details: $details, selectedDays: $selectedDays, startTime: $startTime, endTime: $endTime, overrideEndTime: $overrideEndTime)';
+  return 'VenueProgramModel(title: $title, pricing: $pricing, details: $details, selectedDays: $selectedDays, startTime: $startTime, endTime: $endTime, overrideEndTime: $overrideEndTime)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $HallProgramModelCopyWith<$Res>  {
-  factory $HallProgramModelCopyWith(HallProgramModel value, $Res Function(HallProgramModel) _then) = _$HallProgramModelCopyWithImpl;
+abstract mixin class $VenueProgramModelCopyWith<$Res>  {
+  factory $VenueProgramModelCopyWith(VenueProgramModel value, $Res Function(VenueProgramModel) _then) = _$VenueProgramModelCopyWithImpl;
 @useResult
 $Res call({
  String title, String pricing, String details, List<int> selectedDays, String? startTime, String? endTime, DateTime? overrideEndTime
@@ -59,14 +66,14 @@ $Res call({
 
 }
 /// @nodoc
-class _$HallProgramModelCopyWithImpl<$Res>
-    implements $HallProgramModelCopyWith<$Res> {
-  _$HallProgramModelCopyWithImpl(this._self, this._then);
+class _$VenueProgramModelCopyWithImpl<$Res>
+    implements $VenueProgramModelCopyWith<$Res> {
+  _$VenueProgramModelCopyWithImpl(this._self, this._then);
 
-  final HallProgramModel _self;
-  final $Res Function(HallProgramModel) _then;
+  final VenueProgramModel _self;
+  final $Res Function(VenueProgramModel) _then;
 
-/// Create a copy of HallProgramModel
+/// Create a copy of VenueProgramModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? pricing = null,Object? details = null,Object? selectedDays = null,Object? startTime = freezed,Object? endTime = freezed,Object? overrideEndTime = freezed,}) {
   return _then(_self.copyWith(
@@ -84,8 +91,8 @@ as DateTime?,
 }
 
 
-/// Adds pattern-matching-related methods to [HallProgramModel].
-extension HallProgramModelPatterns on HallProgramModel {
+/// Adds pattern-matching-related methods to [VenueProgramModel].
+extension VenueProgramModelPatterns on VenueProgramModel {
 /// A variant of `map` that fallback to returning `orElse`.
 ///
 /// It is equivalent to doing:
@@ -217,7 +224,7 @@ return $default(_that.title,_that.pricing,_that.details,_that.selectedDays,_that
 /// @nodoc
 @JsonSerializable()
 
-class _HallProgramModel implements HallProgramModel {
+class _HallProgramModel implements VenueProgramModel {
   const _HallProgramModel({required this.title, this.pricing = '', this.details = '', final  List<int> selectedDays = const [], this.startTime, this.endTime, this.overrideEndTime}): _selectedDays = selectedDays;
   factory _HallProgramModel.fromJson(Map<String, dynamic> json) => _$HallProgramModelFromJson(json);
 
@@ -238,7 +245,7 @@ class _HallProgramModel implements HallProgramModel {
 // e.g., "9:00 PM"
 @override final  DateTime? overrideEndTime;
 
-/// Create a copy of HallProgramModel
+/// Create a copy of VenueProgramModel
 /// with the given fields replaced by the non-null parameter values.
 @override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
@@ -260,14 +267,14 @@ int get hashCode => Object.hash(runtimeType,title,pricing,details,const DeepColl
 
 @override
 String toString() {
-  return 'HallProgramModel(title: $title, pricing: $pricing, details: $details, selectedDays: $selectedDays, startTime: $startTime, endTime: $endTime, overrideEndTime: $overrideEndTime)';
+  return 'VenueProgramModel(title: $title, pricing: $pricing, details: $details, selectedDays: $selectedDays, startTime: $startTime, endTime: $endTime, overrideEndTime: $overrideEndTime)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class _$HallProgramModelCopyWith<$Res> implements $HallProgramModelCopyWith<$Res> {
+abstract mixin class _$HallProgramModelCopyWith<$Res> implements $VenueProgramModelCopyWith<$Res> {
   factory _$HallProgramModelCopyWith(_HallProgramModel value, $Res Function(_HallProgramModel) _then) = __$HallProgramModelCopyWithImpl;
 @override @useResult
 $Res call({
@@ -286,7 +293,7 @@ class __$HallProgramModelCopyWithImpl<$Res>
   final _HallProgramModel _self;
   final $Res Function(_HallProgramModel) _then;
 
-/// Create a copy of HallProgramModel
+/// Create a copy of VenueProgramModel
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? pricing = null,Object? details = null,Object? selectedDays = null,Object? startTime = freezed,Object? endTime = freezed,Object? overrideEndTime = freezed,}) {
   return _then(_HallProgramModel(

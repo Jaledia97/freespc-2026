@@ -9,8 +9,8 @@ part of 'special_model.dart';
 _SpecialModel _$SpecialModelFromJson(Map<String, dynamic> json) =>
     _SpecialModel(
       id: json['id'] as String,
-      hallId: json['hallId'] as String,
-      hallName: json['hallName'] as String,
+      venueId: json['venueId'] as String,
+      venueName: json['venueName'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
       imageUrl: json['imageUrl'] as String,
@@ -62,8 +62,8 @@ _SpecialModel _$SpecialModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$SpecialModelToJson(_SpecialModel instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'hallId': instance.hallId,
-      'hallName': instance.hallName,
+      'venueId': instance.venueId,
+      'venueName': instance.venueName,
       'title': instance.title,
       'description': instance.description,
       'imageUrl': instance.imageUrl,

@@ -11,7 +11,7 @@ abstract class StoreItemModel with _$StoreItemModel {
   @JsonSerializable(explicitToJson: true)
   const factory StoreItemModel({
     required String id,
-    required String hallId,
+    required String venueId,
     required String title,
     required String description,
     required int cost, // Points required

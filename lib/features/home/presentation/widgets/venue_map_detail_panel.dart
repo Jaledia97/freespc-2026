@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../models/bingo_hall_model.dart';
-import '../../repositories/hall_repository.dart';
+import '../../../../models/venue_model.dart';
+import '../../repositories/venue_repository.dart';
 import '../../../../models/special_model.dart';
-import '../hall_profile_screen.dart';
+import '../venue_profile_screen.dart';
 
-class HallMapDetailPanel extends ConsumerWidget {
-  final BingoHallModel hall;
+class VenueMapDetailPanel extends ConsumerWidget {
+  final VenueModel venue;
   final VoidCallback onClose;
 
-  const HallMapDetailPanel({
+  const VenueMapDetailPanel({
     super.key,
-    required this.hall,
+    required this.venue,
     required this.onClose,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Fetch upcoming specials for this hall
-    final specialsStream = ref.watch(hallSpecialsProvider(hall.id));
+    // Fetch upcoming specials for this venue
+    final specialsStream = ref.watch(hallSpecialsProvider(venue.id));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +47,7 @@ class HallMapDetailPanel extends ConsumerWidget {
                 radius: 28,
                 backgroundColor: Colors.blue.shade50,
                 child: Text(
-                  hall.name[0],
+                  venue.name[0],
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -61,7 +61,7 @@ class HallMapDetailPanel extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      hall.name,
+                      venue.name,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -71,7 +71,7 @@ class HallMapDetailPanel extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "${hall.city}, ${hall.state}",
+                      "${venue.city}, ${venue.state}",
                       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 8),
@@ -124,7 +124,7 @@ class HallMapDetailPanel extends ConsumerWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => HallProfileScreen(hall: hall),
+                    builder: (_) => HallProfileScreen(venue: venue),
                   ),
                 );
               },

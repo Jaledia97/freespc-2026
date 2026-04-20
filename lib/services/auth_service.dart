@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -34,7 +35,7 @@ class AuthService {
         try {
           return UserModel.fromJson(snapshot.data()!);
         } catch (e) {
-          print("CRITICAL RESILIENCE WARNING: Failed to parse UserModel for $uid. Sending to Onboarding to self-heal. Error: $e");
+          debugPrint("CRITICAL RESILIENCE WARNING: Failed to parse UserModel for $uid. Sending to Onboarding to self-heal. Error: $e");
           return null; // Forcing null routes the broken account directly back into Onboarding where it will be regenerated with all explicit fields upon submit
         }
       }
@@ -65,7 +66,7 @@ class AuthService {
         );
       }
     } catch (e) {
-      print("Error fetching public profile: $e");
+      debugPrint("Error fetching public profile: $e");
     }
     return null;
   }
@@ -85,7 +86,7 @@ class AuthService {
 
       return await _auth.signInWithCredential(credential);
     } catch (e) {
-      print("Error signing in with Google: $e");
+      debugPrint("Error signing in with Google: $e");
       return null;
     }
   }
@@ -100,7 +101,7 @@ class AuthService {
         password: password,
       );
     } catch (e) {
-      print("Error signing in: $e");
+      debugPrint("Error signing in: $e");
       rethrow;
     }
   }
@@ -115,7 +116,7 @@ class AuthService {
         password: password,
       );
     } catch (e) {
-      print("Error registering: $e");
+      debugPrint("Error registering: $e");
       rethrow;
     }
   }
@@ -137,7 +138,7 @@ class AuthService {
 
       return await _auth.signInWithCredential(credential);
     } catch (e) {
-      print("Error signing in with Apple: $e");
+      debugPrint("Error signing in with Apple: $e");
       // Identify if canceled by user
       return null;
     }
@@ -154,11 +155,11 @@ class AuthService {
         );
         return await _auth.signInWithCredential(credential);
       } else {
-        print("Facebook Login Failed: ${result.status} - ${result.message}");
+        debugPrint("Facebook Login Failed: ${result.status} - ${result.message}");
         return null;
       }
     } catch (e) {
-      print("Error signing in with Facebook: $e");
+      debugPrint("Error signing in with Facebook: $e");
       return null;
     }
   }
@@ -190,7 +191,7 @@ class AuthService {
       );
       return await _auth.signInWithCredential(credential);
     } catch (e) {
-      print("Error verifying SMS code: $e");
+      debugPrint("Error verifying SMS code: $e");
       rethrow;
     }
   }
@@ -201,7 +202,7 @@ class AuthService {
     try {
       return await _auth.signInWithCredential(credential);
     } catch (e) {
-      print("Error signing in with credential: $e");
+      debugPrint("Error signing in with credential: $e");
       rethrow;
     }
   }
@@ -259,7 +260,7 @@ class AuthService {
             .set(publicUpdates, SetOptions(merge: true));
       }
     } catch (e) {
-      print("Error updating profile: $e");
+      debugPrint("Error updating profile: $e");
       rethrow;
     }
   }
@@ -294,7 +295,7 @@ class AuthService {
             .set(publicUpdates, SetOptions(merge: true));
       }
     } catch (e) {
-      print("Error updating user fields: $e");
+      debugPrint("Error updating user fields: $e");
       rethrow;
     }
   }
@@ -305,7 +306,7 @@ class AuthService {
         'lastViewedPhotoApprovals': DateTime.now().toIso8601String(),
       });
     } catch (e) {
-      print("Error updating lastViewedPhotoApprovals: $e");
+      debugPrint("Error updating lastViewedPhotoApprovals: $e");
     }
   }
 
@@ -327,7 +328,7 @@ class AuthService {
         });
       });
     } catch (e) {
-      print("Error updating FCM token: $e");
+      debugPrint("Error updating FCM token: $e");
     }
   }
 
@@ -391,7 +392,7 @@ class AuthService {
 
       return results;
     } catch (e) {
-      print("Error searching users: $e");
+      debugPrint("Error searching users: $e");
       return [];
     }
   }
@@ -416,7 +417,7 @@ class AuthService {
           .cast<PublicProfile>()
           .toList();
     } catch (e) {
-      print("Error getting suggested users: $e");
+      debugPrint("Error getting suggested users: $e");
       return [];
     }
   }
@@ -431,10 +432,24 @@ class AuthService {
       final user = _auth.currentUser;
       if (user == null) throw Exception("No user logged in");
 
-      // 1. Delete Firestore Data (Optional: Cloud Function usually better for recursive delete)
-      // Here we just delete the main doc. Subcollections might persist unless recursive delete used.
-      // For compliance, a flag 'deleted' might be better, but strict delete requested.
-      // Deleting main doc:
+      // 1. Delete Firestore Data - Deep recursive subcollection purge
+      final subcollections = [
+        'memberships',
+        'friends',
+        'transactions',
+        'raffle_tickets',
+        'tournaments',
+        'my_items',
+        'notifications',
+      ];
+      
+      for (var sub in subcollections) {
+        final docs = await _firestore.collection('users/${user.uid}/$sub').get();
+        for (var doc in docs.docs) {
+          await doc.reference.delete();
+        }
+      }
+
       await _firestore.collection('users').doc(user.uid).delete();
       await _firestore.collection('public_profiles').doc(user.uid).delete();
 
@@ -442,7 +457,7 @@ class AuthService {
       // Requires recent login. Re-authentication might be needed if old session.
       await user.delete();
     } catch (e) {
-      print("Error deleting account: $e");
+      debugPrint("Error deleting account: $e");
       // If error is 'requires-recent-login', generic e.code check
       if (e is FirebaseAuthException && e.code == 'requires-recent-login') {
         // UI should handle re-auth, but for now we rethrow
@@ -462,7 +477,7 @@ class AuthService {
         'customCategories': FieldValue.arrayUnion([category]),
       });
     } catch (e) {
-      print("Error saving custom category: $e");
+      debugPrint("Error saving custom category: $e");
       throw Exception("Failed to save custom category.");
     }
   }
@@ -474,7 +489,7 @@ class AuthService {
         'customCategories': FieldValue.arrayRemove([category]),
       });
     } catch (e) {
-      print("Error removing custom category: $e");
+      debugPrint("Error removing custom category: $e");
       throw Exception("Failed to remove custom category.");
     }
   }

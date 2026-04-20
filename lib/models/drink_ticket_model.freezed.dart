@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DrinkTicketModel {
 
- String get id; String get userId; String get hallId; String get hallName; String get title; String get description; DateTime get issuedAt; DateTime? get expiresAt; bool get isValid; String? get imageUrl;
+ String get id; String get userId; String get venueId; String get venueName; String get title; String get description; DateTime get issuedAt; DateTime? get expiresAt; bool get isValid; String? get imageUrl;
 /// Create a copy of DrinkTicketModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $DrinkTicketModelCopyWith<DrinkTicketModel> get copyWith => _$DrinkTicketModelCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DrinkTicketModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.issuedAt, issuedAt) || other.issuedAt == issuedAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.isValid, isValid) || other.isValid == isValid)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DrinkTicketModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.venueId, venueId) || other.venueId == venueId)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.issuedAt, issuedAt) || other.issuedAt == issuedAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.isValid, isValid) || other.isValid == isValid)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,hallId,hallName,title,description,issuedAt,expiresAt,isValid,imageUrl);
+int get hashCode => Object.hash(runtimeType,id,userId,venueId,venueName,title,description,issuedAt,expiresAt,isValid,imageUrl);
 
 @override
 String toString() {
-  return 'DrinkTicketModel(id: $id, userId: $userId, hallId: $hallId, hallName: $hallName, title: $title, description: $description, issuedAt: $issuedAt, expiresAt: $expiresAt, isValid: $isValid, imageUrl: $imageUrl)';
+  return 'DrinkTicketModel(id: $id, userId: $userId, venueId: $venueId, venueName: $venueName, title: $title, description: $description, issuedAt: $issuedAt, expiresAt: $expiresAt, isValid: $isValid, imageUrl: $imageUrl)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $DrinkTicketModelCopyWith<$Res>  {
   factory $DrinkTicketModelCopyWith(DrinkTicketModel value, $Res Function(DrinkTicketModel) _then) = _$DrinkTicketModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String hallId, String hallName, String title, String description, DateTime issuedAt, DateTime? expiresAt, bool isValid, String? imageUrl
+ String id, String userId, String venueId, String venueName, String title, String description, DateTime issuedAt, DateTime? expiresAt, bool isValid, String? imageUrl
 });
 
 
@@ -65,12 +65,12 @@ class _$DrinkTicketModelCopyWithImpl<$Res>
 
 /// Create a copy of DrinkTicketModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? hallId = null,Object? hallName = null,Object? title = null,Object? description = null,Object? issuedAt = null,Object? expiresAt = freezed,Object? isValid = null,Object? imageUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? venueId = null,Object? venueName = null,Object? title = null,Object? description = null,Object? issuedAt = null,Object? expiresAt = freezed,Object? isValid = null,Object? imageUrl = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
-as String,hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
-as String,hallName: null == hallName ? _self.hallName : hallName // ignore: cast_nullable_to_non_nullable
+as String,venueId: null == venueId ? _self.venueId : venueId // ignore: cast_nullable_to_non_nullable
+as String,venueName: null == venueName ? _self.venueName : venueName // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,issuedAt: null == issuedAt ? _self.issuedAt : issuedAt // ignore: cast_nullable_to_non_nullable
@@ -162,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String hallId,  String hallName,  String title,  String description,  DateTime issuedAt,  DateTime? expiresAt,  bool isValid,  String? imageUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String venueId,  String venueName,  String title,  String description,  DateTime issuedAt,  DateTime? expiresAt,  bool isValid,  String? imageUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DrinkTicketModel() when $default != null:
-return $default(_that.id,_that.userId,_that.hallId,_that.hallName,_that.title,_that.description,_that.issuedAt,_that.expiresAt,_that.isValid,_that.imageUrl);case _:
+return $default(_that.id,_that.userId,_that.venueId,_that.venueName,_that.title,_that.description,_that.issuedAt,_that.expiresAt,_that.isValid,_that.imageUrl);case _:
   return orElse();
 
 }
@@ -183,10 +183,10 @@ return $default(_that.id,_that.userId,_that.hallId,_that.hallName,_that.title,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String hallId,  String hallName,  String title,  String description,  DateTime issuedAt,  DateTime? expiresAt,  bool isValid,  String? imageUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String venueId,  String venueName,  String title,  String description,  DateTime issuedAt,  DateTime? expiresAt,  bool isValid,  String? imageUrl)  $default,) {final _that = this;
 switch (_that) {
 case _DrinkTicketModel():
-return $default(_that.id,_that.userId,_that.hallId,_that.hallName,_that.title,_that.description,_that.issuedAt,_that.expiresAt,_that.isValid,_that.imageUrl);case _:
+return $default(_that.id,_that.userId,_that.venueId,_that.venueName,_that.title,_that.description,_that.issuedAt,_that.expiresAt,_that.isValid,_that.imageUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +203,10 @@ return $default(_that.id,_that.userId,_that.hallId,_that.hallName,_that.title,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String hallId,  String hallName,  String title,  String description,  DateTime issuedAt,  DateTime? expiresAt,  bool isValid,  String? imageUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String venueId,  String venueName,  String title,  String description,  DateTime issuedAt,  DateTime? expiresAt,  bool isValid,  String? imageUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _DrinkTicketModel() when $default != null:
-return $default(_that.id,_that.userId,_that.hallId,_that.hallName,_that.title,_that.description,_that.issuedAt,_that.expiresAt,_that.isValid,_that.imageUrl);case _:
+return $default(_that.id,_that.userId,_that.venueId,_that.venueName,_that.title,_that.description,_that.issuedAt,_that.expiresAt,_that.isValid,_that.imageUrl);case _:
   return null;
 
 }
@@ -218,13 +218,13 @@ return $default(_that.id,_that.userId,_that.hallId,_that.hallName,_that.title,_t
 
 @JsonSerializable(explicitToJson: true)
 class _DrinkTicketModel extends DrinkTicketModel {
-  const _DrinkTicketModel({required this.id, required this.userId, required this.hallId, required this.hallName, required this.title, required this.description, required this.issuedAt, this.expiresAt, this.isValid = true, this.imageUrl}): super._();
+  const _DrinkTicketModel({required this.id, required this.userId, required this.venueId, required this.venueName, required this.title, required this.description, required this.issuedAt, this.expiresAt, this.isValid = true, this.imageUrl}): super._();
   factory _DrinkTicketModel.fromJson(Map<String, dynamic> json) => _$DrinkTicketModelFromJson(json);
 
 @override final  String id;
 @override final  String userId;
-@override final  String hallId;
-@override final  String hallName;
+@override final  String venueId;
+@override final  String venueName;
 @override final  String title;
 @override final  String description;
 @override final  DateTime issuedAt;
@@ -245,16 +245,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DrinkTicketModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&(identical(other.hallName, hallName) || other.hallName == hallName)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.issuedAt, issuedAt) || other.issuedAt == issuedAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.isValid, isValid) || other.isValid == isValid)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DrinkTicketModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.venueId, venueId) || other.venueId == venueId)&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.issuedAt, issuedAt) || other.issuedAt == issuedAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.isValid, isValid) || other.isValid == isValid)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,hallId,hallName,title,description,issuedAt,expiresAt,isValid,imageUrl);
+int get hashCode => Object.hash(runtimeType,id,userId,venueId,venueName,title,description,issuedAt,expiresAt,isValid,imageUrl);
 
 @override
 String toString() {
-  return 'DrinkTicketModel(id: $id, userId: $userId, hallId: $hallId, hallName: $hallName, title: $title, description: $description, issuedAt: $issuedAt, expiresAt: $expiresAt, isValid: $isValid, imageUrl: $imageUrl)';
+  return 'DrinkTicketModel(id: $id, userId: $userId, venueId: $venueId, venueName: $venueName, title: $title, description: $description, issuedAt: $issuedAt, expiresAt: $expiresAt, isValid: $isValid, imageUrl: $imageUrl)';
 }
 
 
@@ -265,7 +265,7 @@ abstract mixin class _$DrinkTicketModelCopyWith<$Res> implements $DrinkTicketMod
   factory _$DrinkTicketModelCopyWith(_DrinkTicketModel value, $Res Function(_DrinkTicketModel) _then) = __$DrinkTicketModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String hallId, String hallName, String title, String description, DateTime issuedAt, DateTime? expiresAt, bool isValid, String? imageUrl
+ String id, String userId, String venueId, String venueName, String title, String description, DateTime issuedAt, DateTime? expiresAt, bool isValid, String? imageUrl
 });
 
 
@@ -282,12 +282,12 @@ class __$DrinkTicketModelCopyWithImpl<$Res>
 
 /// Create a copy of DrinkTicketModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? hallId = null,Object? hallName = null,Object? title = null,Object? description = null,Object? issuedAt = null,Object? expiresAt = freezed,Object? isValid = null,Object? imageUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? venueId = null,Object? venueName = null,Object? title = null,Object? description = null,Object? issuedAt = null,Object? expiresAt = freezed,Object? isValid = null,Object? imageUrl = freezed,}) {
   return _then(_DrinkTicketModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
-as String,hallId: null == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
-as String,hallName: null == hallName ? _self.hallName : hallName // ignore: cast_nullable_to_non_nullable
+as String,venueId: null == venueId ? _self.venueId : venueId // ignore: cast_nullable_to_non_nullable
+as String,venueName: null == venueName ? _self.venueName : venueName // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,issuedAt: null == issuedAt ? _self.issuedAt : issuedAt // ignore: cast_nullable_to_non_nullable

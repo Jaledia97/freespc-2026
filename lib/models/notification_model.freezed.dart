@@ -13,11 +13,11 @@ part of 'notification_model.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
-mixin _$NotificationModel {
+mixin _$NotificationModel implements DiagnosticableTreeMixin {
 
  String get id; String get userId;// Target user
  String get title; String get body; String get type;// 'system', 'hall_update', 'event'
- String? get hallId;// Source of notification
+ String? get venueId;// Source of notification
  Map<String, dynamic>? get metadata;// Deep link payload, e.g. {'photoId': '...'}
 @TimestampConverter() DateTime get createdAt; bool get isRead;
 /// Create a copy of NotificationModel
@@ -29,19 +29,25 @@ $NotificationModelCopyWith<NotificationModel> get copyWith => _$NotificationMode
   /// Serializes this NotificationModel to a JSON map.
   Map<String, dynamic> toJson();
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'NotificationModel'))
+    ..add(DiagnosticsProperty('id', id))..add(DiagnosticsProperty('userId', userId))..add(DiagnosticsProperty('title', title))..add(DiagnosticsProperty('body', body))..add(DiagnosticsProperty('type', type))..add(DiagnosticsProperty('venueId', venueId))..add(DiagnosticsProperty('metadata', metadata))..add(DiagnosticsProperty('createdAt', createdAt))..add(DiagnosticsProperty('isRead', isRead));
+}
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is NotificationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.title, title) || other.title == title)&&(identical(other.body, body) || other.body == body)&&(identical(other.type, type) || other.type == type)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&const DeepCollectionEquality().equals(other.metadata, metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isRead, isRead) || other.isRead == isRead));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is NotificationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.title, title) || other.title == title)&&(identical(other.body, body) || other.body == body)&&(identical(other.type, type) || other.type == type)&&(identical(other.venueId, venueId) || other.venueId == venueId)&&const DeepCollectionEquality().equals(other.metadata, metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isRead, isRead) || other.isRead == isRead));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,title,body,type,hallId,const DeepCollectionEquality().hash(metadata),createdAt,isRead);
+int get hashCode => Object.hash(runtimeType,id,userId,title,body,type,venueId,const DeepCollectionEquality().hash(metadata),createdAt,isRead);
 
 @override
-String toString() {
-  return 'NotificationModel(id: $id, userId: $userId, title: $title, body: $body, type: $type, hallId: $hallId, metadata: $metadata, createdAt: $createdAt, isRead: $isRead)';
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'NotificationModel(id: $id, userId: $userId, title: $title, body: $body, type: $type, venueId: $venueId, metadata: $metadata, createdAt: $createdAt, isRead: $isRead)';
 }
 
 
@@ -52,7 +58,7 @@ abstract mixin class $NotificationModelCopyWith<$Res>  {
   factory $NotificationModelCopyWith(NotificationModel value, $Res Function(NotificationModel) _then) = _$NotificationModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String title, String body, String type, String? hallId, Map<String, dynamic>? metadata,@TimestampConverter() DateTime createdAt, bool isRead
+ String id, String userId, String title, String body, String type, String? venueId, Map<String, dynamic>? metadata,@TimestampConverter() DateTime createdAt, bool isRead
 });
 
 
@@ -69,14 +75,14 @@ class _$NotificationModelCopyWithImpl<$Res>
 
 /// Create a copy of NotificationModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? title = null,Object? body = null,Object? type = null,Object? hallId = freezed,Object? metadata = freezed,Object? createdAt = null,Object? isRead = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? title = null,Object? body = null,Object? type = null,Object? venueId = freezed,Object? metadata = freezed,Object? createdAt = null,Object? isRead = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,body: null == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as String,hallId: freezed == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
+as String,venueId: freezed == venueId ? _self.venueId : venueId // ignore: cast_nullable_to_non_nullable
 as String?,metadata: freezed == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,isRead: null == isRead ? _self.isRead : isRead // ignore: cast_nullable_to_non_nullable
@@ -165,10 +171,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String title,  String body,  String type,  String? hallId,  Map<String, dynamic>? metadata, @TimestampConverter()  DateTime createdAt,  bool isRead)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String title,  String body,  String type,  String? venueId,  Map<String, dynamic>? metadata, @TimestampConverter()  DateTime createdAt,  bool isRead)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _NotificationModel() when $default != null:
-return $default(_that.id,_that.userId,_that.title,_that.body,_that.type,_that.hallId,_that.metadata,_that.createdAt,_that.isRead);case _:
+return $default(_that.id,_that.userId,_that.title,_that.body,_that.type,_that.venueId,_that.metadata,_that.createdAt,_that.isRead);case _:
   return orElse();
 
 }
@@ -186,10 +192,10 @@ return $default(_that.id,_that.userId,_that.title,_that.body,_that.type,_that.ha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String title,  String body,  String type,  String? hallId,  Map<String, dynamic>? metadata, @TimestampConverter()  DateTime createdAt,  bool isRead)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String title,  String body,  String type,  String? venueId,  Map<String, dynamic>? metadata, @TimestampConverter()  DateTime createdAt,  bool isRead)  $default,) {final _that = this;
 switch (_that) {
 case _NotificationModel():
-return $default(_that.id,_that.userId,_that.title,_that.body,_that.type,_that.hallId,_that.metadata,_that.createdAt,_that.isRead);case _:
+return $default(_that.id,_that.userId,_that.title,_that.body,_that.type,_that.venueId,_that.metadata,_that.createdAt,_that.isRead);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +212,10 @@ return $default(_that.id,_that.userId,_that.title,_that.body,_that.type,_that.ha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String title,  String body,  String type,  String? hallId,  Map<String, dynamic>? metadata, @TimestampConverter()  DateTime createdAt,  bool isRead)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String title,  String body,  String type,  String? venueId,  Map<String, dynamic>? metadata, @TimestampConverter()  DateTime createdAt,  bool isRead)?  $default,) {final _that = this;
 switch (_that) {
 case _NotificationModel() when $default != null:
-return $default(_that.id,_that.userId,_that.title,_that.body,_that.type,_that.hallId,_that.metadata,_that.createdAt,_that.isRead);case _:
+return $default(_that.id,_that.userId,_that.title,_that.body,_that.type,_that.venueId,_that.metadata,_that.createdAt,_that.isRead);case _:
   return null;
 
 }
@@ -220,8 +226,8 @@ return $default(_that.id,_that.userId,_that.title,_that.body,_that.type,_that.ha
 /// @nodoc
 @JsonSerializable()
 
-class _NotificationModel extends NotificationModel {
-  const _NotificationModel({required this.id, required this.userId, required this.title, required this.body, required this.type, this.hallId, final  Map<String, dynamic>? metadata, @TimestampConverter() required this.createdAt, this.isRead = false}): _metadata = metadata,super._();
+class _NotificationModel extends NotificationModel with DiagnosticableTreeMixin {
+  const _NotificationModel({required this.id, required this.userId, required this.title, required this.body, required this.type, this.venueId, final  Map<String, dynamic>? metadata, @TimestampConverter() required this.createdAt, this.isRead = false}): _metadata = metadata,super._();
   factory _NotificationModel.fromJson(Map<String, dynamic> json) => _$NotificationModelFromJson(json);
 
 @override final  String id;
@@ -231,7 +237,7 @@ class _NotificationModel extends NotificationModel {
 @override final  String body;
 @override final  String type;
 // 'system', 'hall_update', 'event'
-@override final  String? hallId;
+@override final  String? venueId;
 // Source of notification
  final  Map<String, dynamic>? _metadata;
 // Source of notification
@@ -257,19 +263,25 @@ _$NotificationModelCopyWith<_NotificationModel> get copyWith => __$NotificationM
 Map<String, dynamic> toJson() {
   return _$NotificationModelToJson(this, );
 }
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'NotificationModel'))
+    ..add(DiagnosticsProperty('id', id))..add(DiagnosticsProperty('userId', userId))..add(DiagnosticsProperty('title', title))..add(DiagnosticsProperty('body', body))..add(DiagnosticsProperty('type', type))..add(DiagnosticsProperty('venueId', venueId))..add(DiagnosticsProperty('metadata', metadata))..add(DiagnosticsProperty('createdAt', createdAt))..add(DiagnosticsProperty('isRead', isRead));
+}
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NotificationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.title, title) || other.title == title)&&(identical(other.body, body) || other.body == body)&&(identical(other.type, type) || other.type == type)&&(identical(other.hallId, hallId) || other.hallId == hallId)&&const DeepCollectionEquality().equals(other._metadata, _metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isRead, isRead) || other.isRead == isRead));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NotificationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.title, title) || other.title == title)&&(identical(other.body, body) || other.body == body)&&(identical(other.type, type) || other.type == type)&&(identical(other.venueId, venueId) || other.venueId == venueId)&&const DeepCollectionEquality().equals(other._metadata, _metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.isRead, isRead) || other.isRead == isRead));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,title,body,type,hallId,const DeepCollectionEquality().hash(_metadata),createdAt,isRead);
+int get hashCode => Object.hash(runtimeType,id,userId,title,body,type,venueId,const DeepCollectionEquality().hash(_metadata),createdAt,isRead);
 
 @override
-String toString() {
-  return 'NotificationModel(id: $id, userId: $userId, title: $title, body: $body, type: $type, hallId: $hallId, metadata: $metadata, createdAt: $createdAt, isRead: $isRead)';
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'NotificationModel(id: $id, userId: $userId, title: $title, body: $body, type: $type, venueId: $venueId, metadata: $metadata, createdAt: $createdAt, isRead: $isRead)';
 }
 
 
@@ -280,7 +292,7 @@ abstract mixin class _$NotificationModelCopyWith<$Res> implements $NotificationM
   factory _$NotificationModelCopyWith(_NotificationModel value, $Res Function(_NotificationModel) _then) = __$NotificationModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String title, String body, String type, String? hallId, Map<String, dynamic>? metadata,@TimestampConverter() DateTime createdAt, bool isRead
+ String id, String userId, String title, String body, String type, String? venueId, Map<String, dynamic>? metadata,@TimestampConverter() DateTime createdAt, bool isRead
 });
 
 
@@ -297,14 +309,14 @@ class __$NotificationModelCopyWithImpl<$Res>
 
 /// Create a copy of NotificationModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? title = null,Object? body = null,Object? type = null,Object? hallId = freezed,Object? metadata = freezed,Object? createdAt = null,Object? isRead = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? title = null,Object? body = null,Object? type = null,Object? venueId = freezed,Object? metadata = freezed,Object? createdAt = null,Object? isRead = null,}) {
   return _then(_NotificationModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,body: null == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as String,hallId: freezed == hallId ? _self.hallId : hallId // ignore: cast_nullable_to_non_nullable
+as String,venueId: freezed == venueId ? _self.venueId : venueId // ignore: cast_nullable_to_non_nullable
 as String?,metadata: freezed == metadata ? _self._metadata : metadata // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,isRead: null == isRead ? _self.isRead : isRead // ignore: cast_nullable_to_non_nullable

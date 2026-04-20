@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/tournament_model.dart';
 import 'package:intl/intl.dart';
-import '../../repositories/hall_repository.dart';
+import '../../repositories/venue_repository.dart';
 
 class TournamentListCard extends ConsumerWidget {
   final TournamentModel tournament;
@@ -19,7 +19,7 @@ class TournamentListCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dateFormat = DateFormat('MMM d, h:mm a');
     final hallAsync = showHallName
-        ? ref.watch(hallStreamProvider(tournament.hallId))
+        ? ref.watch(venueStreamProvider(tournament.venueId))
         : null;
 
     return Card(
@@ -62,7 +62,7 @@ class TournamentListCard extends ConsumerWidget {
                 children: [
                   if (showHallName) ...[
                     hallAsync?.when(
-                          data: (hall) => Row(
+                          data: (venue) => Row(
                             children: [
                               Icon(
                                 Icons.location_on,
@@ -72,9 +72,9 @@ class TournamentListCard extends ConsumerWidget {
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  (hall?.name != null && hall!.name.isNotEmpty)
-                                      ? hall.name
-                                      : "Unknown Hall",
+                                  (venue?.name != null && venue!.name.isNotEmpty)
+                                      ? venue.name
+                                      : "Unknown Venue",
                                   style: TextStyle(
                                     color: Theme.of(context).primaryColor,
                                     fontSize: 12,

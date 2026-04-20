@@ -4,12 +4,12 @@ import '../../repositories/raffle_manager_repository.dart';
 import '../../../../models/raffle_model.dart'; // Import Model
 
 class RaffleToolScreen extends ConsumerStatefulWidget {
-  final String hallId;
+  final String venueId;
   final RaffleModel raffle; // Requirement
 
   const RaffleToolScreen({
     super.key,
-    required this.hallId,
+    required this.venueId,
     required this.raffle,
   });
 
@@ -96,11 +96,11 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
       ); // Wait for dialog
     }
 
-    // We use the hallId + raffleId to make unique session key if needed, or just hallId?
-    // Repository logic uses 'hallId' as the document key currently.
+    // We use the venueId + raffleId to make unique session key if needed, or just venueId?
+    // Repository logic uses 'venueId' as the document key currently.
     // To support multiple concurrent raffles, we should probably use raffleId.
-    // BUT for simplicity/MVP refactor, let's keep it one session per hall at a time.
-    final sessionAsync = ref.watch(activeRaffleSessionProvider(widget.hallId));
+    // BUT for simplicity/MVP refactor, let's keep it one session per venue at a time.
+    final sessionAsync = ref.watch(activeRaffleSessionProvider(widget.venueId));
 
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
@@ -112,7 +112,7 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () =>
-                ref.invalidate(activeRaffleSessionProvider(widget.hallId)),
+                ref.invalidate(activeRaffleSessionProvider(widget.venueId)),
           ),
         ],
       ),
@@ -166,7 +166,7 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
             onPressed: () {
               ref
                   .read(raffleManagerRepositoryProvider)
-                  .startRollCall(widget.hallId);
+                  .startRollCall(widget.venueId);
             },
           ),
         ],
@@ -254,7 +254,7 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
               onPressed: () {
                 ref
                     .read(raffleManagerRepositoryProvider)
-                    .lockRollCall(widget.hallId);
+                    .lockRollCall(widget.venueId);
               },
               child: const Text("CONFIRM & LOCK LIST"),
             ),
@@ -296,7 +296,7 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
               ref
                   .read(raffleManagerRepositoryProvider)
                   .distributeTickets(
-                    widget.hallId,
+                    widget.venueId,
                     widget.raffle.name,
                     raffleId: widget.raffle.id, // Pass real ID
                     imageUrl: widget.raffle.imageUrl, // Pass image
@@ -335,7 +335,7 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
             onPressed: () {
               ref
                   .read(raffleManagerRepositoryProvider)
-                  .drawWinner(widget.hallId);
+                  .drawWinner(widget.venueId);
             },
             child: const Text("DRAW WINNER", style: TextStyle(fontSize: 20)),
           ),
@@ -380,7 +380,7 @@ class _RaffleToolScreenState extends ConsumerState<RaffleToolScreen> {
                 onPressed: () {
                   ref
                       .read(raffleManagerRepositoryProvider)
-                      .resetSession(widget.hallId);
+                      .resetSession(widget.venueId);
                   Navigator.pop(context); // Exit after reset
                 },
                 child: const Text("Close Session"),

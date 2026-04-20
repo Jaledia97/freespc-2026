@@ -1,24 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geocoding/geocoding.dart';
-import '../../../home/repositories/hall_repository.dart';
-import '../../../../models/bingo_hall_model.dart';
-import '../../../../models/hall_program_model.dart';
-import '../../../../models/hall_charity_model.dart';
+import '../../../home/repositories/venue_repository.dart';
+import '../../../../models/venue_model.dart';
+import '../../../../models/venue_program_model.dart';
+import '../../../../models/venue_charity_model.dart';
 import '../../../../services/storage_service.dart';
 
-class EditHallProfileScreen extends ConsumerStatefulWidget {
-  final String hallId;
-  const EditHallProfileScreen({super.key, required this.hallId});
+class EditVenueProfileScreen extends ConsumerStatefulWidget {
+  final String venueId;
+  const EditVenueProfileScreen({super.key, required this.venueId});
 
   @override
-  ConsumerState<EditHallProfileScreen> createState() =>
-      _EditHallProfileScreenState();
+  ConsumerState<EditVenueProfileScreen> createState() =>
+      _EditVenueProfileScreenState();
 }
 
-class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
+class _EditVenueProfileScreenState extends ConsumerState<EditVenueProfileScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Controllers
@@ -45,14 +46,14 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
   final Map<String, Map<String, TextEditingController>> _hoursCtrls = {};
 
   // Programs Logic
-  List<HallProgramModel> _programs = [];
+  List<VenueProgramModel> _programs = [];
 
   // Charities Logic
-  List<HallCharityModel> _charities = [];
+  List<VenueCharityModel> _charities = [];
 
   bool _isInit = false;
   bool _isSaving = false;
-  BingoHallModel? _currentHall;
+  VenueModel? _currentHall;
 
   // Image State
   String? _bannerUrl;
@@ -103,25 +104,25 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
-      final hallAsync = ref.watch(hallStreamProvider(widget.hallId));
-      hallAsync.whenData((hall) {
-        if (hall != null && _currentHall == null) {
-          _currentHall = hall;
-          _nameCtrl.text = hall.name;
-          _phoneCtrl.text = hall.phone ?? '';
-          _webCtrl.text = hall.websiteUrl ?? '';
-          _streetCtrl.text = hall.street ?? '';
-          _cityCtrl.text = hall.city ?? '';
-          _zipCtrl.text = hall.zipCode ?? '';
-          _unitCtrl.text = hall.unitNumber ?? '';
-          _stateCtrl.text = hall.state ?? '';
-          _descCtrl.text = hall.description ?? '';
-          _bannerUrl = hall.bannerUrl;
-          _logoUrl = hall.logoUrl;
+      final hallAsync = ref.watch(venueStreamProvider(widget.venueId));
+      hallAsync.whenData((venue) {
+        if (venue != null && _currentHall == null) {
+          _currentHall = venue;
+          _nameCtrl.text = venue.name;
+          _phoneCtrl.text = venue.phone ?? '';
+          _webCtrl.text = venue.websiteUrl ?? '';
+          _streetCtrl.text = venue.street ?? '';
+          _cityCtrl.text = venue.city ?? '';
+          _zipCtrl.text = venue.zipCode ?? '';
+          _unitCtrl.text = venue.unitNumber ?? '';
+          _stateCtrl.text = venue.state ?? '';
+          _descCtrl.text = venue.description ?? '';
+          _bannerUrl = venue.bannerUrl;
+          _logoUrl = venue.logoUrl;
 
           // Populate Hours
-          if (hall.operatingHours.isNotEmpty) {
-            hall.operatingHours.forEach((day, times) {
+          if (venue.operatingHours.isNotEmpty) {
+            venue.operatingHours.forEach((day, times) {
               if (_hoursCtrls.containsKey(day)) {
                 _hoursCtrls[day]?['open']?.text = times['open'] ?? '';
                 _hoursCtrls[day]?['close']?.text = times['close'] ?? '';
@@ -130,12 +131,12 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
           }
 
           // Populate Programs
-          if (hall.programs.isNotEmpty) {
-            _programs = List.from(hall.programs);
+          if (venue.programs.isNotEmpty) {
+            _programs = List.from(venue.programs);
           }
 
-          if (hall.charities.isNotEmpty) {
-            _charities = List.from(hall.charities);
+          if (venue.charities.isNotEmpty) {
+            _charities = List.from(venue.charities);
           }
         }
       });
@@ -207,12 +208,12 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
       // Upload
       final url = await ref
           .read(storageServiceProvider)
-          .uploadHallImage(File(file.path), widget.hallId, type);
+          .uploadHallImage(File(file.path), widget.venueId, type);
 
       // Save to Asset Library
       await ref
-          .read(hallRepositoryProvider)
-          .addToAssetLibrary(widget.hallId, url, type);
+          .read(venueRepositoryProvider)
+          .addToAssetLibrary(widget.venueId, url, type);
 
       // Update UI temporarily (until full save)
       setState(() {
@@ -259,8 +260,8 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                 child: Consumer(
                   builder: (_, ref, __) {
                     final assetsAsync = ref
-                        .watch(hallRepositoryProvider)
-                        .getAssetLibrary(widget.hallId, type);
+                        .watch(venueRepositoryProvider)
+                        .getAssetLibrary(widget.venueId, type);
                     return StreamBuilder<List<String>>(
                       stream: assetsAsync,
                       builder: (context, snapshot) {
@@ -385,7 +386,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
               );
           }
         } catch (e) {
-          print("Geocoding error: $e");
+          debugPrint("Geocoding error: $e");
           if (mounted)
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -425,7 +426,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         longitude: newLng,
       );
 
-      await ref.read(hallRepositoryProvider).updateHall(updatedHall);
+      await ref.read(venueRepositoryProvider).updateHall(updatedHall);
 
       if (mounted) {
         ScaffoldMessenger.of(
@@ -445,13 +446,13 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Force rebuild of UI if async hall loads to populate controllers (in didChangeDep)
+    // Force rebuild of UI if async venue loads to populate controllers (in didChangeDep)
     // But we use _currentHall once loaded.
 
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
-        title: const Text('Edit Hall Profile'),
+        title: const Text('Edit Venue Profile'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -497,7 +498,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                             title: "General Information",
                             initiallyExpanded: false,
                             children: [
-                              _input("Hall Name", _nameCtrl),
+                              _input("Venue Name", _nameCtrl),
                               const SizedBox(height: 12),
                               _input(
                                 "Bio / Description",
@@ -1039,7 +1040,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
           borderSide: BorderSide.none,
         ),
       ),
-      validator: (v) => label == "Hall Name" && v!.isEmpty ? "Required" : null,
+      validator: (v) => label == "Venue Name" && v!.isEmpty ? "Required" : null,
     );
   }
 
@@ -1054,7 +1055,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
     );
   }
 
-  void _showAddEditProgramDialog({HallProgramModel? existing, int? index}) {
+  void _showAddEditProgramDialog({VenueProgramModel? existing, int? index}) {
     final titleCtrl = TextEditingController(text: existing?.title ?? '');
     final pricingCtrl = TextEditingController(
       text: existing?.pricing ?? '',
@@ -1328,7 +1329,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                 onPressed: () {
                   if (titleCtrl.text.isEmpty) return;
 
-                  final newProgram = HallProgramModel(
+                  final newProgram = VenueProgramModel(
                     title: titleCtrl.text.trim(),
                     pricing: pricingCtrl.text.trim(),
                     details: detailsCtrl.text.trim(),
@@ -1358,7 +1359,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
         setState(() {
           if (result == 'DELETE' && existing != null) {
             _programs.removeAt(index!);
-          } else if (result is HallProgramModel) {
+          } else if (result is VenueProgramModel) {
             if (existing != null) {
               _programs[index!] = result;
             } else {
@@ -1403,7 +1404,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                               .read(storageServiceProvider)
                               .uploadHallImage(
                                 File(file.path),
-                                widget.hallId,
+                                widget.venueId,
                                 'charity_logo',
                               );
                           setDialogState(() {
@@ -1462,7 +1463,7 @@ class _EditHallProfileScreenState extends ConsumerState<EditHallProfileScreen> {
                     return;
                   }
 
-                  final newCharity = HallCharityModel(
+                  final newCharity = VenueCharityModel(
                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                     name: nameCtrl.text.trim(),
                     logoUrl: logoUrl!,

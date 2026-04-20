@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,21 +28,21 @@ class StorageService {
       final ref = _storage.ref().child(
         'users/$userId/profile_v${DateTime.now().millisecondsSinceEpoch}.jpg',
       );
-      print('Starting upload to: ${ref.fullPath}');
+      debugPrint('Starting upload to: ${ref.fullPath}');
 
       try {
         final snapshot = await ref.putFile(file);
-        print('Upload state: ${snapshot.state}');
+        debugPrint('Upload state: ${snapshot.state}');
 
         if (snapshot.state == TaskState.success) {
           final url = await ref.getDownloadURL();
-          print('Download success: $url');
+          debugPrint('Download success: $url');
           return url;
         } else {
           throw Exception('Upload failed with state: ${snapshot.state}');
         }
       } catch (uploadError) {
-        print('PutFile Error: $uploadError');
+        debugPrint('PutFile Error: $uploadError');
         // Check if this is a permission error
         if (uploadError.toString().contains('permission-denied')) {
           throw Exception(
@@ -51,7 +52,7 @@ class StorageService {
         rethrow;
       }
     } catch (e) {
-      print('General Upload Error: $e');
+      debugPrint('General Upload Error: $e');
       rethrow;
     }
   }
@@ -61,7 +62,7 @@ class StorageService {
       final ref = _storage.ref().child(
         'users/$userId/banner_v${DateTime.now().millisecondsSinceEpoch}.jpg',
       );
-      print('Starting banner upload to: ${ref.fullPath}');
+      debugPrint('Starting banner upload to: ${ref.fullPath}');
 
       final snapshot = await ref.putFile(file);
       if (snapshot.state == TaskState.success) {
@@ -70,26 +71,26 @@ class StorageService {
         throw Exception('Banner upload failed: ${snapshot.state}');
       }
     } catch (e) {
-      print('Error uploading banner image: $e');
+      debugPrint('Error uploading banner image: $e');
       rethrow;
     }
   }
 
-  Future<String> uploadHallImage(File file, String hallId, String type) async {
+  Future<String> uploadHallImage(File file, String venueId, String type) async {
     try {
       final ref = _storage.ref().child(
-        'halls/$hallId/${type}_v${DateTime.now().millisecondsSinceEpoch}.jpg',
+        'venues/$venueId/${type}_v${DateTime.now().millisecondsSinceEpoch}.jpg',
       );
-      print('Starting hall image upload to: ${ref.fullPath}');
+      debugPrint('Starting venue image upload to: ${ref.fullPath}');
 
       final snapshot = await ref.putFile(file);
       if (snapshot.state == TaskState.success) {
         return await ref.getDownloadURL();
       } else {
-        throw Exception('Hall image upload failed: ${snapshot.state}');
+        throw Exception('Venue image upload failed: ${snapshot.state}');
       }
     } catch (e) {
-      print('Error uploading hall image: $e');
+      debugPrint('Error uploading venue image: $e');
       rethrow;
     }
   }
@@ -99,7 +100,7 @@ class StorageService {
       final ref = _storage.ref().child(
         'claims/$userId/logo_v${DateTime.now().millisecondsSinceEpoch}.jpg',
       );
-      print('Starting claim logo upload to: ${ref.fullPath}');
+      debugPrint('Starting claim logo upload to: ${ref.fullPath}');
 
       final snapshot = await ref.putFile(file);
       if (snapshot.state == TaskState.success) {
@@ -108,7 +109,7 @@ class StorageService {
         throw Exception('Claim logo upload failed: ${snapshot.state}');
       }
     } catch (e) {
-      print('Error uploading claim logo: $e');
+      debugPrint('Error uploading claim logo: $e');
       rethrow;
     }
   }

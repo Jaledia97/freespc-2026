@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../home/repositories/hall_repository.dart';
-import '../../../../models/bingo_hall_model.dart';
+import '../../home/repositories/venue_repository.dart';
+import '../../../../models/venue_model.dart';
 import '../../../../services/auth_service.dart';
 
 class HallSelectionScreen extends ConsumerStatefulWidget {
@@ -19,13 +19,13 @@ class _HallSelectionScreenState extends ConsumerState<HallSelectionScreen> {
   Widget build(BuildContext context) {
     // We reuse the getAllHalls future/logic.
     // Since getAllHalls isn't a stream provider yet, we'll use a FutureBuilder wrapper or ref.watch if available.
-    // Actually, HallRepository has searchHalls, we can use that for filtered, or getAllHalls.
+    // Actually, VenueRepository has searchHalls, we can use that for filtered, or getAllHalls.
     // Let's create a future provider ad-hoc or just use FutureBuilder.
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        title: const Text('Select Hall to Manage'),
+        title: const Text('Select Venue to Manage'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -36,7 +36,7 @@ class _HallSelectionScreenState extends ConsumerState<HallSelectionScreen> {
             child: TextField(
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'Search halls...',
+                hintText: 'Search venues...',
                 hintStyle: const TextStyle(color: Colors.white38),
                 prefixIcon: const Icon(Icons.search, color: Colors.white54),
                 filled: true,
@@ -51,9 +51,9 @@ class _HallSelectionScreenState extends ConsumerState<HallSelectionScreen> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<BingoHallModel>>(
+            child: FutureBuilder<List<VenueModel>>(
               future: ref
-                  .read(hallRepositoryProvider)
+                  .read(venueRepositoryProvider)
                   .getAllHalls(), // We assume this gets ALL.
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -78,7 +78,7 @@ class _HallSelectionScreenState extends ConsumerState<HallSelectionScreen> {
                 if (filtered.isEmpty) {
                   return const Center(
                     child: Text(
-                      "No halls found",
+                      "No venues found",
                       style: TextStyle(color: Colors.white54),
                     ),
                   );
@@ -87,21 +87,21 @@ class _HallSelectionScreenState extends ConsumerState<HallSelectionScreen> {
                 return ListView.builder(
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
-                    final hall = filtered[index];
+                    final venue = filtered[index];
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundColor: Colors.white10,
                         child: Text(
-                          hall.name.substring(0, 1),
+                          venue.name.substring(0, 1),
                           style: const TextStyle(color: Colors.white),
                         ),
                       ),
                       title: Text(
-                        hall.name,
+                        venue.name,
                         style: const TextStyle(color: Colors.white),
                       ),
                       subtitle: Text(
-                        "${hall.city}, ${hall.state}",
+                        "${venue.city}, ${venue.state}",
                         style: const TextStyle(color: Colors.white54),
                       ),
                       trailing: const Icon(
@@ -113,15 +113,15 @@ class _HallSelectionScreenState extends ConsumerState<HallSelectionScreen> {
                         final user = ref.read(userProfileProvider).value;
                         if (user != null) {
                           await ref
-                              .read(hallRepositoryProvider)
+                              .read(venueRepositoryProvider)
                               .toggleHomeBase(
                                 user.uid,
-                                hall.id,
+                                venue.id,
                                 null,
                               ); // Force set
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Managing: ${hall.name}")),
+                              SnackBar(content: Text("Managing: ${venue.name}")),
                             );
                             Navigator.pop(context); // Close selection
                           }

@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import '../../repositories/bluetooth_repository.dart';
-import '../../../../models/bingo_hall_model.dart';
-import '../../../home/repositories/hall_repository.dart';
+import '../../../../models/venue_model.dart';
+import '../../../home/repositories/venue_repository.dart';
 
 class BluetoothSettingsScreen extends ConsumerStatefulWidget {
-  final String hallId;
-  final BingoHallModel hall;
+  final String venueId;
+  final VenueModel venue;
 
   const BluetoothSettingsScreen({
     super.key,
-    required this.hallId,
-    required this.hall,
+    required this.venueId,
+    required this.venue,
   });
 
   @override
@@ -282,7 +282,7 @@ class _BluetoothSettingsScreenState
           const SizedBox(height: 12),
           const Text("Current UUID:", style: TextStyle(color: Colors.white54)),
           Text(
-            widget.hall.beaconUuid,
+            widget.venue.beaconUuid,
             style: const TextStyle(
               color: Colors.white,
               fontFamily: "Courier",
@@ -301,8 +301,8 @@ class _BluetoothSettingsScreenState
                 setState(() {}); // refresh UI?
 
                 // Update Firestore
-                final updatedHall = widget.hall.copyWith(beaconUuid: newUuid);
-                ref.read(hallRepositoryProvider).updateHall(updatedHall);
+                final updatedHall = widget.venue.copyWith(beaconUuid: newUuid);
+                ref.read(venueRepositoryProvider).updateHall(updatedHall);
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("UUID Rotated & Spec Updated!")),

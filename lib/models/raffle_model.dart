@@ -11,7 +11,7 @@ abstract class RaffleModel with _$RaffleModel {
   @JsonSerializable(explicitToJson: true)
   const factory RaffleModel({
     required String id,
-    required String hallId,
+    required String venueId,
     required String name, // Was title
     required String description,
     required String imageUrl,

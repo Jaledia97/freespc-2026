@@ -6,10 +6,10 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../../../../models/raffle_model.dart';
 import '../../../../models/special_model.dart'; // For RecurrenceRule
 import '../../../../core/utils/time_utils.dart';
-import '../../../home/repositories/hall_repository.dart';
+import '../../../home/repositories/venue_repository.dart';
 
 class EditRaffleScreen extends ConsumerStatefulWidget {
-  final String hallId;
+  final String venueId;
   final RaffleModel? raffle;
   final bool isCreatingFromTemplate;
   final bool isTemplate;
@@ -17,7 +17,7 @@ class EditRaffleScreen extends ConsumerStatefulWidget {
 
   const EditRaffleScreen({
     super.key,
-    required this.hallId,
+    required this.venueId,
     this.raffle,
     this.isCreatingFromTemplate = false,
     this.isTemplate = false,
@@ -92,7 +92,7 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
 
       // Upload to Firebase Storage
       final ref = FirebaseStorage.instance.ref().child(
-        'raffles/${widget.hallId}/${DateTime.now().millisecondsSinceEpoch}.jpg',
+        'raffles/${widget.venueId}/${DateTime.now().millisecondsSinceEpoch}.jpg',
       );
 
       await ref.putFile(File(image.path));
@@ -134,7 +134,7 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
 
       final raffle = RaffleModel(
         id: id,
-        hallId: widget.hallId,
+        venueId: widget.venueId,
         name: _nameCtrl.text.trim(),
         description: _descCtrl.text.trim(),
         imageUrl: _imgUrlCtrl.text.trim(),
@@ -153,7 +153,7 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
         recurrenceRule: _isTemplate ? _recurrenceRule : null,
       );
 
-      final repo = ref.read(hallRepositoryProvider);
+      final repo = ref.read(venueRepositoryProvider);
       if (id.isEmpty) {
         await repo.addRaffle(raffle);
       } else {
@@ -604,7 +604,7 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
     setState(() => _isSaving = true);
     try {
       final cancelled = widget.raffle!.copyWith(isCancelled: true);
-      await ref.read(hallRepositoryProvider).updateRaffle(cancelled);
+      await ref.read(venueRepositoryProvider).updateRaffle(cancelled);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
@@ -653,7 +653,7 @@ class _EditRaffleScreenState extends ConsumerState<EditRaffleScreen> {
     setState(() => _isSaving = true);
     try {
       final restored = widget.raffle!.copyWith(isCancelled: false);
-      await ref.read(hallRepositoryProvider).updateRaffle(restored);
+      await ref.read(venueRepositoryProvider).updateRaffle(restored);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {

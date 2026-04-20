@@ -31,17 +31,17 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 Future<void> _showLocalNotification(RemoteMessage message) async {
-  print("--- BACKGROUND NOTIFICATION WAKE ---");
-  print("Platform: $defaultTargetPlatform");
+  debugPrint("--- BACKGROUND NOTIFICATION WAKE ---");
+  debugPrint("Platform: $defaultTargetPlatform");
   if (defaultTargetPlatform != TargetPlatform.android) return;
 
   final data = message.data;
-  print("Data Payload: $data");
+  debugPrint("Data Payload: $data");
   
   final type = data['type'] as String?;
 
   if (type != 'new_message' && type != 'new_comment' && type != 'new_reaction' && type != 'friend_request' && type != 'friend_request_accepted') {
-    print("Unhandled data message type: $type. Returning.");
+    debugPrint("Unhandled data message type: $type. Returning.");
     return;
   }
 
@@ -66,18 +66,25 @@ Future<void> _showLocalNotification(RemoteMessage message) async {
     summarySuffix = 'new requests';
   }
 
-  print("Loading SharedPreferences...");
+  debugPrint("Loading SharedPreferences...");
   final prefs = await SharedPreferences.getInstance();
   final historyKey = 'notification_history_$threadId';
 
-  List<String> history = prefs.getStringList(historyKey) ?? [];
+  List<String> history = [];
+  try {
+    history = prefs.getStringList(historyKey) ?? [];
+  } catch (e) {
+    debugPrint("Warning: Corrupt notification history. Resetting for $threadId.");
+    await prefs.remove(historyKey);
+  }
+  
   history.add(body);
 
   if (history.length > 7) {
     history.removeRange(0, history.length - 7);
   }
   await prefs.setStringList(historyKey, history);
-  print("Saved History: $history");
+  debugPrint("Saved History: $history");
 
   final inboxStyle = InboxStyleInformation(
     history,
@@ -85,7 +92,7 @@ Future<void> _showLocalNotification(RemoteMessage message) async {
     summaryText: "${history.length} $summarySuffix",
   );
 
-  print("Initializing Local Notifications...");
+  debugPrint("Initializing Local Notifications...");
   final flnp = FlutterLocalNotificationsPlugin();
   await flnp.initialize(
     settings: const InitializationSettings(
@@ -93,7 +100,7 @@ Future<void> _showLocalNotification(RemoteMessage message) async {
     ),
   );
 
-  print("Triggering flnp.show() for thread: $threadId...");
+  debugPrint("Triggering flnp.show() for thread: $threadId...");
   try {
     await flnp.show(
       id: threadId.hashCode, // One unique expanding card per Thread natively
@@ -112,9 +119,9 @@ Future<void> _showLocalNotification(RemoteMessage message) async {
       ),
       payload: jsonEncode(data),
     );
-    print("SUCCESS: Notification Drawn Locally!");
+    debugPrint("SUCCESS: Notification Drawn Locally!");
   } catch (e) {
-    print("FATAL ERROR IN BACKGROUND ISOLATE: $e");
+    debugPrint("FATAL ERROR IN BACKGROUND ISOLATE: $e");
   }
 }
 
@@ -247,7 +254,7 @@ void main() async {
 
   // Temporary Migration Script for Main Account
   try {
-    print("Running Temp Account Migration...");
+    debugPrint("Running Temp Account Migration...");
     final auth = FirebaseAuth.instance;
     await Future.delayed(
       const Duration(milliseconds: 1500),
@@ -281,12 +288,12 @@ void main() async {
         'onlineStatus': 'Online',
         'lastSeen': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-      print("Migration complete for ${user.uid}");
+      debugPrint("Migration complete for ${user.uid}");
     } else {
-      print("No user logged in for migration.");
+      debugPrint("No user logged in for migration.");
     }
   } catch (e) {
-    print("Error during migration: $e");
+    debugPrint("Error during migration: $e");
   }
 
   runApp(
@@ -376,17 +383,17 @@ class _MyAppState extends ConsumerState<MyApp> {
     // Shared Preferences logic
     final prefs = await SharedPreferences.getInstance();
 
-    final hallId = uri.queryParameters['hallId'];
-    if (hallId != null) {
-      print("Deep Link Detected: Joining Hall $hallId");
-      await prefs.setString('pending_join_hall', hallId);
+    final venueId = uri.queryParameters['venueId'];
+    if (venueId != null) {
+      debugPrint("Deep Link Detected: Joining Venue $venueId");
+      await prefs.setString('pending_join_hall', venueId);
       ref.invalidate(pendingInviteProvider);
       return;
     }
 
     final uid = uri.queryParameters['uid'];
     if (uri.toString().contains('add_friend') && uid != null) {
-      print("Deep Link Detected: Add Friend $uid");
+      debugPrint("Deep Link Detected: Add Friend $uid");
       await prefs.setString('pending_add_friend', uid);
       ref.invalidate(pendingInviteProvider);
       return;
@@ -396,7 +403,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     final type = uri.queryParameters['type'];
     final docId = uri.queryParameters['id'];
     if (uri.toString().contains('feed') && type != null && docId != null) {
-      print("Deep Link Detected: Deferred Feed Routing -> type:$type id:$docId");
+      debugPrint("Deep Link Detected: Deferred Feed Routing -> type:$type id:$docId");
       await prefs.setString('pending_feed_type', type);
       await prefs.setString('pending_feed_id', docId);
       ref.invalidate(pendingInviteProvider);

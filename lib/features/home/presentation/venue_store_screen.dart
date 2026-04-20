@@ -7,16 +7,16 @@ import '../../../services/auth_service.dart';
 import '../../wallet/services/transaction_service.dart';
 import 'package:intl/intl.dart';
 import '../../wallet/repositories/wallet_repository.dart';
-import '../../home/repositories/hall_repository.dart';
+import '../../home/repositories/venue_repository.dart';
 
 class HallStoreScreen extends ConsumerStatefulWidget {
-  final String hallId;
-  final String hallName;
+  final String venueId;
+  final String venueName;
 
   const HallStoreScreen({
     super.key,
-    required this.hallId,
-    required this.hallName,
+    required this.venueId,
+    required this.venueName,
   });
 
   @override
@@ -29,12 +29,12 @@ class _HallStoreScreenState extends ConsumerState<HallStoreScreen> {
     // Fetch all active items
     final activeItemsStream = ref
         .watch(storeRepositoryProvider)
-        .getActiveStoreItems(widget.hallId);
+        .getActiveStoreItems(widget.venueId);
 
     final user = ref.watch(userProfileProvider).value;
     final userId = user?.uid;
 
-    final hallAsync = ref.watch(hallStreamProvider(widget.hallId));
+    final hallAsync = ref.watch(venueStreamProvider(widget.venueId));
     final baseCategories =
         hallAsync.value?.storeCategories ??
         [
@@ -53,12 +53,12 @@ class _HallStoreScreenState extends ConsumerState<HallStoreScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFF141414),
         appBar: AppBar(
-          title: Text("${widget.hallName} Store"),
+          title: Text("${widget.venueName} Store"),
           backgroundColor: Colors.transparent,
           elevation: 0,
           actions: [
             if (userId != null)
-              _BalanceDisplay(userId: userId, hallId: widget.hallId),
+              _BalanceDisplay(userId: userId, venueId: widget.venueId),
           ],
           bottom: TabBar(
             isScrollable: true,
@@ -178,7 +178,7 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard> {
           .read(transactionServiceProvider)
           .redeemItem(
             userId: user.uid,
-            hallId: widget.item.hallId,
+            venueId: widget.item.venueId,
             itemId: widget.item.id,
             itemName: widget.item.title,
             quantity: _quantity,
@@ -411,9 +411,9 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard> {
 
 class _BalanceDisplay extends ConsumerWidget {
   final String userId;
-  final String hallId;
+  final String venueId;
 
-  const _BalanceDisplay({required this.userId, required this.hallId});
+  const _BalanceDisplay({required this.userId, required this.venueId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -422,7 +422,7 @@ class _BalanceDisplay extends ConsumerWidget {
     return membershipsAsync.when(
       data: (memberships) {
         final membership = memberships
-            .where((m) => m.hallId == hallId)
+            .where((m) => m.venueId == venueId)
             .firstOrNull;
         if (membership == null) return const SizedBox();
 

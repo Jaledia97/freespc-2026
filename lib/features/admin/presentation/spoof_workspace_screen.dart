@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/widgets/glass_container.dart';
-import '../../../models/bingo_hall_model.dart';
+import '../../../models/venue_model.dart';
 import '../../../services/session_context_controller.dart';
 import '../../settings/data/display_settings_repository.dart'; // Gives sharedPreferencesProvider access
 import 'dart:convert';
@@ -17,7 +17,7 @@ class SpoofWorkspaceScreen extends ConsumerStatefulWidget {
 class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  List<BingoHallModel> _history = [];
+  List<VenueModel> _history = [];
 
   @override
   void initState() {
@@ -31,18 +31,18 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
     setState(() {
       _history = historyJson.map((str) {
         try {
-          return BingoHallModel.fromJson(jsonDecode(str) as Map<String, dynamic>);
+          return VenueModel.fromJson(jsonDecode(str) as Map<String, dynamic>);
         } catch (e) {
           return null; // Handle malformed or outdated history gracefully
         }
-      }).whereType<BingoHallModel>().toList();
+      }).whereType<VenueModel>().toList();
     });
   }
 
-  void _saveToHistory(BingoHallModel hall) {
+  void _saveToHistory(VenueModel venue) {
     // Avoid duplicates, keep max 10
-    _history.removeWhere((h) => h.id == hall.id);
-    _history.insert(0, hall);
+    _history.removeWhere((h) => h.id == venue.id);
+    _history.insert(0, venue);
     if (_history.length > 10) {
       _history = _history.sublist(0, 10);
     }
@@ -61,14 +61,14 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
     return query.length >= 20 && !query.contains(' ');
   }
 
-  void _applySpoof(BingoHallModel hall) {
+  void _applySpoof(VenueModel venue) {
     ref.read(sessionContextProvider.notifier).switchToBusiness(
-      hall.id,
-      hall.name,
+      venue.id,
+      venue.name,
       'owner',
       isSuperAdmin: true,
     );
-    _saveToHistory(hall);
+    _saveToHistory(venue);
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("God Mode Engaged")));
     Navigator.of(context).popUntil((route) => route.isFirst); // Force jump back to root Dashboard
   }
@@ -98,7 +98,7 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
                   style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
                     icon: Icon(Icons.search, color: Colors.purpleAccent),
-                    hintText: "Search Hall Name or Exact ID...",
+                    hintText: "Search Venue Name or Exact ID...",
                     hintStyle: TextStyle(color: Colors.white54),
                     border: InputBorder.none,
                   ),
@@ -156,7 +156,7 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
 
   Widget _buildIdSearch() {
     return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('bingo_halls').doc(_searchQuery).get(),
+      future: FirebaseFirestore.instance.collection('venues').doc(_searchQuery).get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator(color: Colors.purpleAccent));
@@ -166,15 +166,18 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
         }
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return const Center(
-            child: Text("No Hall found with this exact ID.", style: TextStyle(color: Colors.white54)),
+            child: Text("No Venue found with this exact ID.", style: TextStyle(color: Colors.white54)),
           );
         }
 
-        final data = snapshot.data!.data() as Map<String, dynamic>;
-        data['id'] = snapshot.data!.id;
-        final hall = BingoHallModel.fromJson(data);
-
-        return _buildHallCard(hall);
+        try {
+          final data = snapshot.data!.data() as Map<String, dynamic>;
+          data['id'] = snapshot.data!.id;
+          final venue = VenueModel.fromJson(data);
+          return _buildHallCard(venue);
+        } catch(e) {
+          return Center(child: Text("Error Parsing Venue: \$e", style: const TextStyle(color: Colors.red)));
+        }
       },
     );
   }
@@ -183,9 +186,9 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
     final queryLower = _searchQuery.toLowerCase();
 
     return StreamBuilder<QuerySnapshot>(
-      // Listen to all halls natively for Superadmins to allow full case-insensitive filtering
+      // Listen to all venues natively for Superadmins to allow full case-insensitive filtering
       stream: FirebaseFirestore.instance
-          .collection('bingo_halls')
+          .collection('venues')
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -196,23 +199,28 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(
-            child: Text("No Halls registered.", style: TextStyle(color: Colors.white54)),
+            child: Text("No Venues registered.", style: TextStyle(color: Colors.white54)),
           );
         }
 
-        final halls = snapshot.data!.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          data['id'] = doc.id;
-          return BingoHallModel.fromJson(data);
-        }).where((hall) {
-          return hall.name.toLowerCase().contains(queryLower) || 
-                 hall.id.toLowerCase().contains(queryLower);
+        final venues = snapshot.data!.docs.map((doc) {
+          try {
+            final data = doc.data() as Map<String, dynamic>;
+            data['id'] = doc.id;
+            return VenueModel.fromJson(data);
+          } catch (e) {
+            print("Failed to parse venue \${doc.id}: \$e");
+            return null;
+          }
+        }).whereType<VenueModel>().where((venue) {
+          return venue.name.toLowerCase().contains(queryLower) || 
+                 venue.id.toLowerCase().contains(queryLower);
         }).toList();
 
         // Sort alphabetically to maintain order
-        halls.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        venues.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
-        if (halls.isEmpty) {
+        if (venues.isEmpty) {
             return const Center(
               child: Text("No Workplaces match this query.", style: TextStyle(color: Colors.white54)),
             );
@@ -220,17 +228,17 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
 
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          itemCount: halls.length,
+          itemCount: venues.length,
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
-            return _buildHallCard(halls[index]);
+            return _buildHallCard(venues[index]);
           },
         );
       },
     );
   }
 
-  Widget _buildHallCard(BingoHallModel hall) {
+  Widget _buildHallCard(VenueModel venue) {
     return GlassContainer(
       blur: 10,
       opacity: 0.05,
@@ -244,19 +252,19 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
           decoration: BoxDecoration(
             color: Colors.purpleAccent.withOpacity(0.2),
             borderRadius: BorderRadius.circular(12),
-            image: hall.logoUrl != null
-                ? DecorationImage(image: NetworkImage(hall.logoUrl!), fit: BoxFit.cover)
+            image: venue.logoUrl != null
+                ? DecorationImage(image: NetworkImage(venue.logoUrl!), fit: BoxFit.cover)
                 : null,
           ),
-          child: hall.logoUrl == null ? const Icon(Icons.store, color: Colors.purpleAccent) : null,
+          child: venue.logoUrl == null ? const Icon(Icons.store, color: Colors.purpleAccent) : null,
         ),
-        title: Text(hall.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(venue.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text(hall.id, style: const TextStyle(color: Colors.white54, fontSize: 11, fontFamily: 'monospace')),
-            Text("${hall.city}, ${hall.state}", style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            Text(venue.id, style: const TextStyle(color: Colors.white54, fontSize: 11, fontFamily: 'monospace')),
+            Text("${venue.city}, ${venue.state}", style: const TextStyle(color: Colors.white70, fontSize: 13)),
           ],
         ),
         trailing: OutlinedButton(
@@ -265,7 +273,7 @@ class _SpoofWorkspaceScreenState extends ConsumerState<SpoofWorkspaceScreen> {
             side: const BorderSide(color: Colors.purpleAccent),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          onPressed: () => _applySpoof(hall),
+          onPressed: () => _applySpoof(venue),
           child: const Text("Spoof"),
         ),
       ),

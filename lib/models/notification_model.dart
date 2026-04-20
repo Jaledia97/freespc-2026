@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -33,7 +34,7 @@ class TimestampConverter implements JsonConverter<DateTime, dynamic> {
         }
       }
     } catch (e) {
-      print(
+      debugPrint(
         "Error parsing timestamp in NotificationModel: $e. Falling back to now(). json was $json",
       );
     }
@@ -55,7 +56,7 @@ abstract class NotificationModel with _$NotificationModel {
     required String title,
     required String body,
     required String type, // 'system', 'hall_update', 'event'
-    String? hallId, // Source of notification
+    String? venueId, // Source of notification
     Map<String, dynamic>?
     metadata, // Deep link payload, e.g. {'photoId': '...'}
     @TimestampConverter() required DateTime createdAt,

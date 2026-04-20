@@ -5,9 +5,9 @@ import '../../../store/repositories/store_repository.dart';
 import 'edit_store_item_screen.dart';
 
 class ManageStoreScreen extends ConsumerStatefulWidget {
-  final String hallId;
+  final String venueId;
 
-  const ManageStoreScreen({super.key, required this.hallId});
+  const ManageStoreScreen({super.key, required this.venueId});
 
   @override
   ConsumerState<ManageStoreScreen> createState() => _ManageStoreScreenState();
@@ -25,7 +25,7 @@ class _ManageStoreScreenState extends ConsumerState<ManageStoreScreen>
 
   @override
   Widget build(BuildContext context) {
-    final itemsAsync = ref.watch(storeItemsProvider(widget.hallId));
+    final itemsAsync = ref.watch(storeItemsProvider(widget.venueId));
 
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
@@ -48,7 +48,7 @@ class _ManageStoreScreenState extends ConsumerState<ManageStoreScreen>
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => EditStoreItemScreen(hallId: widget.hallId),
+            builder: (_) => EditStoreItemScreen(venueId: widget.venueId),
           ),
         ),
         label: const Text("Add Item"),
@@ -65,12 +65,12 @@ class _ManageStoreScreenState extends ConsumerState<ManageStoreScreen>
             children: [
               _ItemsList(
                 items: activeItems,
-                hallId: widget.hallId,
+                venueId: widget.venueId,
                 isDraftsTab: false,
               ),
               _ItemsList(
                 items: inactiveItems,
-                hallId: widget.hallId,
+                venueId: widget.venueId,
                 isDraftsTab: true,
               ),
             ],
@@ -87,12 +87,12 @@ class _ManageStoreScreenState extends ConsumerState<ManageStoreScreen>
 
 class _ItemsList extends StatelessWidget {
   final List<StoreItemModel> items;
-  final String hallId;
+  final String venueId;
   final bool isDraftsTab;
 
   const _ItemsList({
     required this.items,
-    required this.hallId,
+    required this.venueId,
     this.isDraftsTab = false,
   });
 
@@ -196,7 +196,7 @@ class _ItemsList extends StatelessWidget {
         context,
         MaterialPageRoute(
           builder: (_) =>
-              EditStoreItemScreen(hallId: hallId, existingItem: item),
+              EditStoreItemScreen(venueId: venueId, existingItem: item),
         ),
       ),
       borderRadius: BorderRadius.circular(12),

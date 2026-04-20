@@ -21,43 +21,47 @@ class RoleUtils {
     return user.pendingVenueClaimId != null;
   }
 
-  // Hall-Level Permissions
+  // Venue-Level Permissions
   static bool isOwner(UserModel user, SessionState session) {
     if (isSuperAdmin(user)) return true;
     return session.isBusiness && session.activeRole == owner;
   }
 
-  static bool canManageHall(UserModel user, SessionState session, String hallId) {
+  static bool canManageVenue(UserModel user, SessionState session, String venueId) {
     if (isSuperAdmin(user)) return true;
-    if (session.activeVenueId != hallId) return false;
+    if (session.activeVenueId != venueId) return false;
     return session.isBusiness && [owner, manager].contains(session.activeRole);
   }
 
-  static bool canManageFinancials(UserModel user, SessionState session, String hallId) {
+  static bool canAccessDashboard(UserModel user) {
+    return isAdmin(user) || [owner, manager].contains(user.systemRole);
+  }
+
+  static bool canManageFinancials(UserModel user, SessionState session, String venueId) {
     if (isSuperAdmin(user)) return true;
-    if (session.activeVenueId != hallId) return false;
+    if (session.activeVenueId != venueId) return false;
     return session.isBusiness && session.activeRole == owner;
   }
 
-  static bool canManagePersonnel(UserModel user, SessionState session, String hallId) {
+  static bool canManagePersonnel(UserModel user, SessionState session, String venueId) {
     if (isSuperAdmin(user)) return true;
-    if (session.activeVenueId != hallId) return false;
+    if (session.activeVenueId != venueId) return false;
     return session.isBusiness && [owner, manager].contains(session.activeRole);
   }
 
-  static bool canManageSpecials(UserModel user, SessionState session, String hallId) {
+  static bool canManageSpecials(UserModel user, SessionState session, String venueId) {
     if (isAdmin(user)) return true; // Admins can help setup
-    if (session.activeVenueId != hallId) return false;
+    if (session.activeVenueId != venueId) return false;
     return session.isBusiness && [owner, manager].contains(session.activeRole);
   }
 
-  static bool canManageGames(UserModel user, SessionState session, String hallId) {
-    return canManageSpecials(user, session, hallId);
+  static bool canManageGames(UserModel user, SessionState session, String venueId) {
+    return canManageSpecials(user, session, venueId);
   }
 
-  static bool canScanAndVerify(UserModel user, SessionState session, String hallId) {
+  static bool canScanAndVerify(UserModel user, SessionState session, String venueId) {
     if (isAdmin(user)) return true;
-    if (session.activeVenueId != hallId) return false;
+    if (session.activeVenueId != venueId) return false;
     return session.isBusiness && [owner, manager, worker].contains(session.activeRole);
   }
 }

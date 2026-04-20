@@ -15,10 +15,10 @@ class PhotoDetailScreen extends ConsumerWidget {
     final user = userAsync.value;
 
     final isOwner = user != null && user.uid == photo.uploaderId;
-    // Basic check for manager (real apps would check specific hall rights,
+    // Basic check for manager (real apps would check specific venue rights,
     // but here we just check if they are owner/manager role for simplicity
     // or just let them delete if they are super-admin.
-    // For now, only OWNER of photo can delete, unless we pass in hall permissions context).
+    // For now, only OWNER of photo can delete, unless we pass in venue permissions context).
     // Let's stick to Uploader Only for now to be safe.
 
     return Scaffold(

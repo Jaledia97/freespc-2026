@@ -8,17 +8,17 @@ import 'package:path/path.dart' as path;
 
 import '../../../../models/store_item_model.dart';
 import '../../../store/repositories/store_repository.dart';
-import '../../../home/repositories/hall_repository.dart';
+import '../../../home/repositories/venue_repository.dart';
 import '../widgets/cms_asset_library_modal.dart'; // Reusing Asset Library
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditStoreItemScreen extends ConsumerStatefulWidget {
-  final String hallId;
+  final String venueId;
   final StoreItemModel? existingItem; // Null = Create Mode
 
   const EditStoreItemScreen({
     super.key,
-    required this.hallId,
+    required this.venueId,
     this.existingItem,
   });
 
@@ -87,7 +87,7 @@ class _EditStoreItemScreenState extends ConsumerState<EditStoreItemScreen> {
       setState(() => _isSaving = true); // Show loading
       try {
         final ref = FirebaseStorage.instance.ref().child(
-          'halls/${widget.hallId}/store/${DateTime.now().millisecondsSinceEpoch}${path.extension(image.path)}',
+          'venues/${widget.venueId}/store/${DateTime.now().millisecondsSinceEpoch}${path.extension(image.path)}',
         );
 
         await ref.putFile(File(image.path));
@@ -156,7 +156,7 @@ class _EditStoreItemScreenState extends ConsumerState<EditStoreItemScreen> {
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
                   builder: (context) => CmsAssetLibraryModal(
-                    hallId: widget.hallId,
+                    venueId: widget.venueId,
                     onAssetSelected: (url) {
                       setState(() => _imageUrl = url);
                       Navigator.pop(context);
@@ -185,7 +185,7 @@ class _EditStoreItemScreenState extends ConsumerState<EditStoreItemScreen> {
     try {
       final item = StoreItemModel(
         id: widget.existingItem?.id ?? const Uuid().v4(),
-        hallId: widget.hallId,
+        venueId: widget.venueId,
         title: _titleController.text.trim(),
         description: _descController.text.trim(),
         cost: int.parse(_costController.text.trim()),
@@ -246,8 +246,8 @@ class _EditStoreItemScreenState extends ConsumerState<EditStoreItemScreen> {
               if (newCat.isNotEmpty) {
                 // Atomic update
                 await FirebaseFirestore.instance
-                    .collection('bingo_halls')
-                    .doc(widget.hallId)
+                    .collection('venues')
+                    .doc(widget.venueId)
                     .update({
                       'storeCategories': FieldValue.arrayUnion([newCat]),
                     });
@@ -264,7 +264,7 @@ class _EditStoreItemScreenState extends ConsumerState<EditStoreItemScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final hallAsync = ref.watch(hallStreamProvider(widget.hallId));
+    final hallAsync = ref.watch(venueStreamProvider(widget.venueId));
     final categoriesList =
         hallAsync.value?.storeCategories ??
         [
@@ -584,7 +584,7 @@ class _EditStoreItemScreenState extends ConsumerState<EditStoreItemScreen> {
                         await ref
                             .read(storeRepositoryProvider)
                             .deleteStoreItem(
-                              widget.hallId,
+                              widget.venueId,
                               widget.existingItem!.id,
                             );
                         if (context.mounted) Navigator.pop(context);

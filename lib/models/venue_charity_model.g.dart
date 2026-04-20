@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'hall_charity_model.dart';
+part of 'venue_charity_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

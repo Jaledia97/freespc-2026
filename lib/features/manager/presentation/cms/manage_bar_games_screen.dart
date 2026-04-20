@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../home/repositories/hall_repository.dart';
+import '../../../home/repositories/venue_repository.dart';
 import '../../../../services/session_context_controller.dart';
 import '../../../../models/bar_game_model.dart';
 import 'package:uuid/uuid.dart';
 
 class ManageBarGamesScreen extends ConsumerStatefulWidget {
-  final String hallId;
-  const ManageBarGamesScreen({super.key, required this.hallId});
+  final String venueId;
+  const ManageBarGamesScreen({super.key, required this.venueId});
 
   @override
   ConsumerState<ManageBarGamesScreen> createState() => _ManageBarGamesScreenState();
@@ -61,12 +61,12 @@ class _ManageBarGamesScreenState extends ConsumerState<ManageBarGamesScreen> {
                     final max = int.tryParse(countCtrl.text.trim()) ?? 8;
                     final game = BarGameModel(
                       id: const Uuid().v4(),
-                      venueId: widget.hallId,
+                      venueId: widget.venueId,
                       gameType: selectedGameType,
                       maxParticipants: max,
                       createdAt: DateTime.now(),
                     );
-                    await ref.read(hallRepositoryProvider).addBarGame(game);
+                    await ref.read(venueRepositoryProvider).addBarGame(game);
                     if (ctx.mounted) Navigator.pop(ctx);
                   },
                   child: const Text("INITIALIZE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -81,7 +81,7 @@ class _ManageBarGamesScreenState extends ConsumerState<ManageBarGamesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final gamesAsync = ref.watch(hallBarGamesProvider(widget.hallId));
+    final gamesAsync = ref.watch(hallBarGamesProvider(widget.venueId));
 
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
@@ -129,13 +129,13 @@ class _ManageBarGamesScreenState extends ConsumerState<ManageBarGamesScreen> {
                         onPressed: () {
                           // Simple state advancement
                           String next = game.status == 'Registration' ? 'Active' : 'Completed';
-                          ref.read(hallRepositoryProvider).updateBarGame(game.copyWith(status: next));
+                          ref.read(venueRepositoryProvider).updateBarGame(game.copyWith(status: next));
                         },
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
                         onPressed: () {
-                          ref.read(hallRepositoryProvider).deleteBarGame(game.id);
+                          ref.read(venueRepositoryProvider).deleteBarGame(game.id);
                         },
                       ),
                     ],

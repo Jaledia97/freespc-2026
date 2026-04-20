@@ -5,13 +5,13 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../models/special_model.dart';
-import '../../repositories/hall_repository.dart';
-import '../hall_profile_screen.dart';
+import '../../repositories/venue_repository.dart';
+import '../venue_profile_screen.dart';
 
 import 'package:flutter/services.dart';
 import '../../../../models/feed_item.dart';
 import 'social_interaction_bar.dart';
-import 'dynamic_hall_header.dart';
+import 'dynamic_venue_header.dart';
 import 'expandable_post_text.dart';
 import 'package:vibration/vibration.dart';
 
@@ -60,14 +60,14 @@ class _SpecialCardState extends ConsumerState<SpecialCard>
         mainAxisSize: MainAxisSize.min,
         children: [
           if (widget.fullWidth || widget.isFeatured)
-            DynamicHallHeader(
-              hallId: widget.special.hallId,
-              fallbackName: widget.special.hallName.isNotEmpty
-                  ? widget.special.hallName
+            DynamicVenueHeader(
+              venueId: widget.special.venueId,
+              fallbackName: widget.special.venueName.isNotEmpty
+                  ? widget.special.venueName
                   : "FreeSpc",
               subtitle: "Special Offer",
               postId: widget.special.id,
-              authorId: widget.special.hallId,
+              authorId: widget.special.venueId,
               targetType: 'special',
               createdAt: (!widget.special.isTemplate && widget.special.templateId != null && widget.special.startTime != null)
                   ? widget.special.startTime!
@@ -176,7 +176,7 @@ class _SpecialCardState extends ConsumerState<SpecialCard>
   }
 
   String _formattedDate(SpecialModel special) {
-    if (special.startTime == null) return "Check Hall for Time";
+    if (special.startTime == null) return "Check Venue for Time";
 
     final dt = special.startTime!;
     final timeStr =
@@ -227,17 +227,17 @@ class _SpecialCardState extends ConsumerState<SpecialCard>
 }
 
 class DynamicHallName extends ConsumerWidget {
-  final String hallId;
+  final String venueId;
 
-  const DynamicHallName({super.key, required this.hallId});
+  const DynamicHallName({super.key, required this.venueId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hallAsync = ref.watch(hallStreamProvider(hallId));
+    final hallAsync = ref.watch(venueStreamProvider(venueId));
 
     return hallAsync.when(
-      data: (hall) => Text(
-        hall?.name ?? "Unknown Hall",
+      data: (venue) => Text(
+        venue?.name ?? "Unknown Venue",
         style: TextStyle(
           color: Theme.of(context).primaryColor,
           fontWeight: FontWeight.w600,
@@ -250,7 +250,7 @@ class DynamicHallName extends ConsumerWidget {
         style: TextStyle(fontSize: 12, color: Colors.grey),
       ),
       error: (error, stackTrace) => const Text(
-        "Unknown Hall",
+        "Unknown Venue",
         style: TextStyle(fontSize: 12, color: Colors.grey),
       ),
     );

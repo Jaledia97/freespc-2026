@@ -10,8 +10,8 @@ abstract class SpecialModel with _$SpecialModel {
   @JsonSerializable(explicitToJson: true)
   const factory SpecialModel({
     required String id,
-    required String hallId,
-    required String hallName,
+    required String venueId,
+    required String venueName,
     required String title,
     required String description,
     required String imageUrl,

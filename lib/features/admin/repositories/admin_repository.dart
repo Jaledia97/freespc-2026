@@ -1,9 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../../models/venue_claim_model.dart';
-import '../../../models/bingo_hall_model.dart';
+import '../../../models/venue_model.dart';
 
 final adminRepositoryProvider = Provider((ref) => AdminRepository());
 
@@ -29,7 +30,7 @@ class AdminRepository {
           data['id'] = doc.id;
           claims.add(VenueClaimModel.fromJson(data));
         } catch (e) {
-          print('Error mapping claim ${doc.id}: $e');
+          debugPrint('Error mapping claim ${doc.id}: $e');
         }
       }
       return claims;
@@ -46,17 +47,17 @@ class AdminRepository {
     await callable.call({'claimId': claimId, 'rejectReason': rejectReason});
   }
 
-  // Helper just to display hall details on the claim card
-  Future<BingoHallModel?> getHallDetails(String hallId) async {
+  // Helper just to display venue details on the claim card
+  Future<VenueModel?> getHallDetails(String venueId) async {
     try {
-      final doc = await _firestore.collection('bingo_halls').doc(hallId).get();
+      final doc = await _firestore.collection('venues').doc(venueId).get();
       if (doc.exists) {
         final data = doc.data()!;
         data['id'] = doc.id;
-        return BingoHallModel.fromJson(data);
+        return VenueModel.fromJson(data);
       }
     } catch (e) {
-      print('Error fetching hall for claim: \$e');
+      debugPrint('Error fetching venue for claim: \$e');
     }
     return null;
   }

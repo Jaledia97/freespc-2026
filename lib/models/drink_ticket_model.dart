@@ -11,8 +11,8 @@ abstract class DrinkTicketModel with _$DrinkTicketModel {
   const factory DrinkTicketModel({
     required String id,
     required String userId,
-    required String hallId,
-    required String hallName,
+    required String venueId,
+    required String venueName,
     required String title,
     required String description,
     required DateTime issuedAt,
