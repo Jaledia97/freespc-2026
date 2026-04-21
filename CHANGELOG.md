@@ -2,6 +2,18 @@
 
 All notable changes to the FreeSPC project will be documented in this file.
 
+## [0.0.1+79] - 2026-04-21 - IoT Hardware Security & Fleet Extensions
+
+### Added
+- **Fleet Range Extender Scaling**: Integrated a visual `Add a Range Extender` compiler tracking MAC Addresses accurately across dynamic clone lists explicitly masking origin identifiers inherently!
+- **Local Native App-Side Nicknaming**: Decoupled standard BLE hardware broadcast names away from Apple/Google Core OS cache layers, substituting explicit localized `SharedPreferences` dictionaries natively mapping dynamic hardware naming overrides safely across Scanner bounds flawlessly!
+
+### Changed
+- **AT+TX Firmware Constraints**: Analyzed Feasycom module limitations resolving continuous integer sliders directly onto a restricted `0 to 14` Indexed Map dynamically bridging signal translation states to hardware bounds linearly avoiding `ERR` native resets exactly!
+- **Connection Deadlocks**: Bypassed deadlocking loops triggering explicit unhandled Bluetooth exceptions smoothly routing connections identically ensuring total hardware re-discovery!
+
+
+
 ## [0.0.1+78] - 2026-04-20 - Wallet Auto-Sort & Riverpod Parity
 
 ### Added

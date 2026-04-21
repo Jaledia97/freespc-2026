@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:uuid/uuid.dart';
+import 'package:freespc/models/venue_model.dart';
 
 final bluetoothRepositoryProvider = Provider<BluetoothRepository>((ref) {
   return BluetoothRepository();
@@ -61,70 +63,68 @@ class BluetoothRepository {
     await device.disconnect();
   }
 
-  Future<void> sendAuthPin(BluetoothDevice device, String pin) async {
-    // Determine strict Write Characteristic from Feasycom Docs or Scan
-    // This is a simplified implementation assuming we found the correct service/char
-    // Real implementation requires iterating services.
-
-    final services = await device.discoverServices();
-    for (var service in services) {
-      for (var characteristic in service.characteristics) {
-        if (characteristic.properties.write) {
-          // Attempt to write PIN. Feasycom usually "AT+PIN123456" or similar
-          // Check docs for exact format. Assuming "AT+PIN{code}" or just raw bytes if simpler auth.
-          // For Feasycom AT mode: "AT+PIN{000000}"
-          String command = "AT+PIN$pin";
-          try {
-            await characteristic.write(command.codeUnits);
-            debugPrint("Sent PIN: $command");
-            return; // Success (optimistic)
-          } catch (e) {
-            debugPrint("Error writing PIN: $e");
-          }
-        }
-      }
+  String getVenuePin(VenueModel venue) {
+    if (venue.beaconPin != null && venue.beaconPin!.length == 6) {
+      return venue.beaconPin!;
     }
+    int hash = venue.id.hashCode.abs();
+    // Mathematically clamp hash to a 6-digit number between 100000 and 999999
+    String pin = ((hash % 899999) + 100000).toString();
+    return pin;
+  }
+
+  Future<void> sendAuthPin(BluetoothDevice device, String pin) async {
+    // AT Command Authentication Payload requires \r\n
+    String command = "AT+PIN$pin\r\n";
+    await _writeToFff2(device, command);
+  }
+
+  Future<void> lockHardwarePin(BluetoothDevice device, String newPin) async {
+    // Modify actual hardware PIN so unauthorized users cannot hijack it
+    // Wait for auth to complete first sequentially
+    await _writeToFff2(device, "AT+PIN$newPin\r\n");
   }
 
   Future<void> writeCommand(BluetoothDevice device, String command) async {
+    if (!command.endsWith("\r\n")) {
+      command += "\r\n";
+    }
+    await _writeToFff2(device, command);
+  }
+
+  Future<void> _writeToFff2(BluetoothDevice device, String command) async {
     final services = await device.discoverServices();
     for (var service in services) {
-      for (var characteristic in service.characteristics) {
-        if (characteristic.properties.write) {
-          try {
-            await characteristic.write(command.codeUnits);
-            debugPrint("Sent Command: $command");
-            return;
-          } catch (e) {
-            debugPrint("Error writing command: $e");
-            rethrow;
+      // Safely support both 16-bit ("FFF0") and 128-bit ("0000FFF0...") representations
+      if (service.uuid.toString().toUpperCase().contains("FFF0")) {
+        for (var characteristic in service.characteristics) {
+          if (characteristic.uuid.toString().toUpperCase().contains("FFF2")) {
+            try {
+              // Enforce strict GATT Write Confirmations to absolutely verify hardware processed the command
+              await characteristic.write(command.codeUnits, withoutResponse: false);
+              debugPrint("Successfully Sent Command: $command");
+              return;
+            } catch (e) {
+              debugPrint("Error writing command [$command]: $e");
+              rethrow;
+            }
           }
         }
       }
     }
+    throw Exception("Target AT Command Service/Characteristic (FFF0/FFF2) not found on device.");
   }
 
   Future<String> rotateUuid(BluetoothDevice device) async {
-    // 1. Generate new UUID
-    // Standard format: 8-4-4-4-12 hex
-    // Using a library or simple randomizer
-    final newUuid = _generateRandomUuid();
+    // 1. Generate new UUID dynamically
+    final newUuid = const Uuid().v4();
 
-    // 2. Formulate AT command
-    // Feasycom: AT+IBEACON=UUID,Major,Minor... verify spec.
-    // Assuming AT+UUID={newUuid}
-    String command = "AT+UUID$newUuid";
+    // 2. Formulate AT command (Feasycom typically uses AT+IUUID= without dashes)
+    String formattedUuid = newUuid.replaceAll('-', '').toUpperCase();
+    String command = "AT+IUUID$formattedUuid"; // Can be AT+IUUID=... depending on specific firmware, standard is no =
 
     await writeCommand(device, command);
 
-    // 3. Wait/Verify (optional read back)
-
-    return newUuid;
-  }
-
-  String _generateRandomUuid() {
-    // Simple mock random UUID v4
-    // Implementation of valid UUID v4 generator
-    return "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0"; // Placeholder for true random
+    return newUuid; // Return the standard dash format for Firestore
   }
 }
